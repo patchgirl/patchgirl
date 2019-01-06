@@ -31,7 +31,7 @@ view httpRequestValidity =
   let
     status = case httpRequestValidity.httpHeadersValid of
       False -> "Invalid Headers"
-      True -> "Valid Headers"
+      True -> ""
   in
     div []
       [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput UpdateHeaders ] []

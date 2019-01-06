@@ -12,6 +12,7 @@ import HttpRequestValidity
 import HttpMethod exposing (Model(..))
 import HttpHeader
 import HttpUrl
+import HttpBodyInput
 
 main =
   Browser.element
@@ -28,7 +29,12 @@ subscriptions _ =
 init : () -> ((HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model), Cmd Msg)
 init _ =
   let
-    model = { url = "swapi.co/api/people/1", httpScheme = "HTTP", httpMethod = Get, httpHeaders = [] }
+    model =
+      { url = "swapi.co/api/people/1"
+      , httpScheme = "HTTP"
+      , httpMethod = Get
+      , httpHeaders = []
+      , httpBody = Nothing }
     httpRequestValidity = { urlValid = False, httpHeadersValid = True }
     httpResponse = Nothing
   in ((model, httpRequestValidity, httpResponse), Cmd.none)
@@ -53,7 +59,7 @@ update msg (model, validity, mHttpResponse) =
 
     SetHttpMethod newMethod ->
       case newMethod of
-        "GET" -> ( ({ model | httpMethod = Get }
+        "GET" -> ( ({ model | httpMethod = Get, httpBody = Nothing }
                    , validity
                    , mHttpResponse)
                  , Cmd.none)
@@ -102,6 +108,9 @@ update msg (model, validity, mHttpResponse) =
           }
       in ((model, validity, mHttpResponse), httpRequest)
 
+    SetHttpBodyInput body ->
+      ( ({ model | httpBody = Just body }, validity, mHttpResponse), Cmd.none )
+
 -- VIEW
 
 view : (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model) -> Html Msg
@@ -109,5 +118,6 @@ view (model, httpRequestValidity, mHttpResponse) =
   div []
     [ HttpUrl.view (model, httpRequestValidity)
     , HttpHeader.view httpRequestValidity
+    , HttpBodyInput.view model.httpMethod
     , HttpResponse.view mHttpResponse
     ]
