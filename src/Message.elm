@@ -9,4 +9,4 @@ type Msg
   | UpdateHeaders String
   | SetHttpScheme String
   | GetHttpResponse (Result Http.Error String)
-  | SetHttpBodyInput String
+  | SetHttpBody String

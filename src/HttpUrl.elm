@@ -11,14 +11,14 @@ import HttpRequestValidity
 import Json.Decode as Json
 import Regex
 import Url
-import HttpBodyInput
+import HttpBody
 
 type alias Model =
   { url : String
   , httpScheme : String
   , httpMethod : HttpMethod.Model
   , httpHeaders : List HttpHeader.Model
-  , httpBody : Maybe HttpBodyInput.Model
+  , httpBody : Maybe HttpBody.Model
   }
 
 fullUrl : Model -> String

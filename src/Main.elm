@@ -12,7 +12,7 @@ import HttpRequestValidity
 import HttpMethod exposing (Model(..))
 import HttpHeader
 import HttpUrl
-import HttpBodyInput
+import HttpBody
 
 main =
   Browser.element
@@ -108,7 +108,7 @@ update msg (model, validity, mHttpResponse) =
           }
       in ((model, validity, mHttpResponse), httpRequest)
 
-    SetHttpBodyInput body ->
+    SetHttpBody body ->
       ( ({ model | httpBody = Just body }, validity, mHttpResponse), Cmd.none )
 
 -- VIEW
@@ -118,6 +118,6 @@ view (model, httpRequestValidity, mHttpResponse) =
   div []
     [ HttpUrl.view (model, httpRequestValidity)
     , HttpHeader.view httpRequestValidity
-    , HttpBodyInput.view model.httpMethod
+    , HttpBody.view model.httpMethod
     , HttpResponse.view mHttpResponse
     ]

@@ -1,4 +1,4 @@
-module HttpBodyInput exposing (..)
+module HttpBody exposing (..)
 
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
@@ -16,5 +16,5 @@ view method =
     whenGetMethod = method == Get
   in
     div [ hidden whenGetMethod ]
-      [ textarea [ placeholder "{ \n  \"your\": \"data\"\n}", onInput SetHttpBodyInput ] []
+      [ textarea [ placeholder "{ \n  \"your\": \"data\"\n}", onInput SetHttpBody ] []
       ]
