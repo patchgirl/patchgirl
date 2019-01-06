@@ -1,14 +1,18 @@
 import Browser
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
-import Html.Events exposing (onInput, onClick)
-import Http exposing (get, post)
+import Html.Events exposing (onInput, onClick, keyCode, on)
+import Http
 import Debug
-import Maybe.Extra
 import Url
-import Regex
+import Json.Decode as Json
+import HttpResponse
+import Message exposing (Msg(..))
+import HttpRequestValidity
+import HttpMethod exposing (Model(..))
+import HttpHeader
+import HttpUrl
 
--- MAIN
 main =
   Browser.element
     { init = init
@@ -17,164 +21,93 @@ main =
     , view = view
     }
 
--- MODEL
-
-subscriptions : (Model, HttpRequestValidity) -> Sub Msg
+subscriptions : (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model) -> Sub Msg
 subscriptions _ =
   Sub.none
 
-type HttpMethod = Get | Post
-
-httpMethodToString : HttpMethod -> String
-httpMethodToString httpMethod =
-  case httpMethod of
-    Get -> "GET"
-    Post -> "POST"
-
-type alias Model =
-  { url : String
-  , httpScheme : String
-  , httpMethod : HttpMethod
-  , httpHeaders : List (String, String)
-  }
-
-type alias HttpRequestValidity =
-  { urlValid : Bool,
-    httpHeadersValid : Bool
-  }
-
-init : () -> ((Model, HttpRequestValidity), Cmd Msg)
+init : () -> ((HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model), Cmd Msg)
 init _ =
   let
-    model = { url = "", httpScheme = "HTTP", httpMethod = Get, httpHeaders = [] }
+    model = { url = "swapi.co/api/people/1", httpScheme = "HTTP", httpMethod = Get, httpHeaders = [] }
     httpRequestValidity = { urlValid = False, httpHeadersValid = True }
-  in ((model, httpRequestValidity), Cmd.none)
-
-fullUrl : Model -> String
-fullUrl model =
-  model.httpScheme ++ "://" ++ model.url
-
-parseUrl : Model -> String -> Maybe Url.Url
-parseUrl model url =
-  let
-    scheme = case model.httpScheme of
-      "HTTP" -> "http"
-      _ -> "https"
-    urlRegex = Maybe.withDefault Regex.never <| Regex.fromString "(\\w+\\.\\w{2,}.*)|(localhost.*)"
-    validUrl = Regex.contains urlRegex url
-  in
-    case validUrl of
-      True -> Url.fromString <| scheme ++ "://" ++ url
-      False -> Nothing
-
-parseHeaders : String -> Maybe (List(String, String))
-parseHeaders headers =
-  let
-    parseRawHeader : String -> Maybe(String, String)
-    parseRawHeader rawHeader =
-      case String.split ":" rawHeader of
-        [headerKey, headerValue] -> Just (headerKey, headerValue)
-        _ -> Nothing
-  in
-    Maybe.Extra.traverse parseRawHeader (
-      String.lines headers |> List.filter (not << String.isEmpty)
-    )
+    httpResponse = Nothing
+  in ((model, httpRequestValidity, httpResponse), Cmd.none)
 
 -- UPDATE
 
-type Msg
-  = UpdateUrl String
-  | SetHttpMethod String
-  | RunHttpRequest
-  | GetHttpResponse (Result Http.Error String)
-  | UpdateHeaders String
-  | SetHttpScheme String
-
-update : Msg -> (Model, HttpRequestValidity) -> ((Model, HttpRequestValidity), Cmd Msg)
-update msg (model, validity) =
+update : Msg
+       -> (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model)
+       -> ((HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model), Cmd Msg)
+update msg (model, validity, mHttpResponse) =
   case msg of
     UpdateUrl url ->
-      case  parseUrl model url of
+      case HttpUrl.parseUrl model url of
         Just u -> ( ( { model | url = url }
-                    , { validity | urlValid = True })
+                    , { validity | urlValid = True }
+                    , mHttpResponse)
                   , Cmd.none)
         Nothing -> ( ( { model | url = url }
-                     , { validity | urlValid = False })
+                     , { validity | urlValid = False }
+                     , mHttpResponse)
                    , Cmd.none)
 
     SetHttpMethod newMethod ->
       case newMethod of
-        "GET" -> (({ model | httpMethod = Get }, validity), Cmd.none)
-        _ -> (({ model | httpMethod = Post }, validity), Cmd.none)
+        "GET" -> ( ({ model | httpMethod = Get }
+                   , validity
+                   , mHttpResponse)
+                 , Cmd.none)
+        _ -> ( ({ model | httpMethod = Post }
+               , validity
+               , mHttpResponse)
+             , Cmd.none)
 
     SetHttpScheme scheme ->
       case scheme of
-        "HTTP" -> (({ model | httpScheme = "HTTP" }, validity), Cmd.none)
-        _ -> (({ model | httpScheme = "HTTPS" }, validity), Cmd.none)
+        "HTTP" -> ( ({ model | httpScheme = "HTTP" }
+                    , validity
+                    , mHttpResponse)
+                  , Cmd.none)
+        _ -> ( ({ model | httpScheme = "HTTPS" }
+               , validity
+               , mHttpResponse)
+             , Cmd.none)
 
     GetHttpResponse result ->
-      ((model, validity), Cmd.none)
+      ((model, validity, Just result), Cmd.none)
 
     UpdateHeaders rawHeaders ->
-      case parseHeaders rawHeaders of
+      case HttpHeader.parseHeaders rawHeaders of
         Just httpHeaders ->
           ( ( { model | httpHeaders = httpHeaders }
-            , { validity | httpHeadersValid = True })
+            , { validity | httpHeadersValid = True }
+            , mHttpResponse)
           , Cmd.none)
         Nothing ->
-          ( (model, { validity | httpHeadersValid = False }), Cmd.none )
+          ( (model
+            , { validity | httpHeadersValid = False }
+            , mHttpResponse)
+          , Cmd.none )
 
     RunHttpRequest ->
       let
-        mkHeader : (String, String) -> Http.Header
-        mkHeader (keyHeader, valueHeader) = Http.header keyHeader valueHeader
         httpRequest = Http.request
-          { method = httpMethodToString model.httpMethod
-          , headers = List.map mkHeader model.httpHeaders
-          , url = fullUrl model
+          { method = HttpMethod.toString model.httpMethod
+          , headers = List.map HttpHeader.mkHeader model.httpHeaders
+          , url = HttpUrl.fullUrl model
           , body = Http.emptyBody
           , expect = Http.expectString GetHttpResponse
           , timeout = Nothing
           , tracker = Nothing
           }
-      in ((model, validity), httpRequest)
+      in ((model, validity, mHttpResponse), httpRequest)
 
 -- VIEW
-httpMethodToOption : HttpMethod -> Html Msg
-httpMethodToOption httpMethod = option [ Html.Attributes.value (httpMethodToString httpMethod) ] [ text <| httpMethodToString httpMethod ]
 
-view : (Model, HttpRequestValidity) -> Html Msg
-view (model, httpRequestValidity) =
+view : (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model) -> Html Msg
+view (model, httpRequestValidity, mHttpResponse) =
   div []
-    [ urlView (model, httpRequestValidity)
-    , headersView (model, httpRequestValidity)
+    [ HttpUrl.view (model, httpRequestValidity)
+    , HttpHeader.view httpRequestValidity
+    , HttpResponse.view mHttpResponse
     ]
-
-urlView : (Model, HttpRequestValidity) -> Html Msg
-urlView (model, httpRequestValidity) =
-  let
-    status = case httpRequestValidity.urlValid of
-      False -> "Invalid Url"
-      True -> "Send"
-  in
-    div []
-      [ select [ onInput SetHttpMethod ] ([Get, Post] |> List.map httpMethodToOption)
-      , select [ onInput SetHttpScheme ]
-        [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
-        , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
-        ]
-      , input [ placeholder "myApi.com/path?arg=someArg", value model.url, onInput UpdateUrl ] []
-      , button [onClick RunHttpRequest, disabled <| not httpRequestValidity.urlValid] [ text status ]
-      ]
-
-headersView : (Model, HttpRequestValidity) -> Html Msg
-headersView (model, httpRequestValidity) =
-  let
-    status = case httpRequestValidity.httpHeadersValid of
-      False -> "Invalid Headers"
-      True -> "Valid Headers"
-  in
-    div []
-      [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput UpdateHeaders ] []
-      , div [] [ text status ]
-      ]
