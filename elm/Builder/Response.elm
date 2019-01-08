@@ -5,14 +5,13 @@ import Html exposing (Html, Attribute, div, input, text, a, select, option, butt
 import Html.Attributes exposing (value, placeholder, href, disabled)
 import Html.Events exposing (onInput, onClick, keyCode, on)
 
+import Builder.Model exposing (Model)
 import Builder.Message exposing (Msg)
 
-type alias Model = Result Http.Error String
-
-view : Maybe Model -> Html Msg
-view mHttpResponse =
+view : Model -> Html Msg
+view model =
   let
-    status = case mHttpResponse of
+    status = case model.response of
       Just (Err error) ->
         case error of
           Http.BadUrl url -> "Bad url: [" ++ url ++ "]"
@@ -21,7 +20,7 @@ view mHttpResponse =
           Http.BadStatus statusCode -> "Error " ++ (String.fromInt statusCode)
           Http.BadBody body -> "Error " ++ (body)
       _ -> ""
-    response = case mHttpResponse of
+    response = case model.response of
       Just (Ok responseBody) -> responseBody
       _ -> ""
   in

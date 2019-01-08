@@ -5,10 +5,8 @@ import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled, id)
 import Html.Events exposing (onInput)
-import Builder.RequestValidity
 import Builder.Message exposing (Msg)
-
-type alias Model = (String, String)
+import Builder.Model exposing (Model, Header)
 
 parseHeaders : String -> Maybe (List(String, String))
 parseHeaders headers =
@@ -23,13 +21,13 @@ parseHeaders headers =
       String.lines headers |> List.filter (not << String.isEmpty)
     )
 
-mkHeader : Model -> Http.Header
+mkHeader : Header -> Http.Header
 mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
 
-view : Builder.RequestValidity.Model -> Html Msg
-view httpRequestValidity =
+view : Model -> Html Msg
+view model =
   let
-    status = case httpRequestValidity.httpHeadersValid of
+    status = case model.validity.headers of
       False -> "Invalid Headers"
       True -> ""
   in

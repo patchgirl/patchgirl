@@ -4,12 +4,11 @@ import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
 import Builder.Message exposing (Msg)
+import Builder.Model exposing (Method(..), Model)
 
-type Model = Get | Post | Put | Delete | Patch | Head | Options
-
-toString : Model -> String
-toString httpMethod =
-  case httpMethod of
+toString : Method -> String
+toString method =
+  case method of
     Get -> "GET"
     Post -> "POST"
     Put -> "PUT"
@@ -18,7 +17,8 @@ toString httpMethod =
     Head -> "HEAD"
     _ -> "OPTIONS"
 
-toOption : Model -> Html Msg
-toOption httpMethod = option
-                        [ Html.Attributes.value (toString httpMethod) ]
-                        [ text <| toString httpMethod ]
+toOption : Method -> Html Msg
+toOption method =
+  option
+    [ Html.Attributes.value (toString method) ]
+    [ text (toString method) ]

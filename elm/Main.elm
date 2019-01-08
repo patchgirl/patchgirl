@@ -9,11 +9,12 @@ import Json.Decode as Json
 
 import Builder.Response
 import Builder.Message exposing (Msg(..))
-import Builder.RequestValidity
-import Builder.Method exposing (Model(..))
 import Builder.Header
 import Builder.Url
 import Builder.Body
+import Builder.Tree
+import Builder.App as BuilderApp
+import Builder.Model
 
 main =
   Browser.element
@@ -23,107 +24,31 @@ main =
     , view = view
     }
 
-subscriptions : (Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model) -> Sub Msg
+type alias Model = List ((Builder.Model.Model, Bool))
+type Msg = SetBuilder Builder.Model.Model
+
+init : () -> (Model, Cmd Msg)
+init _ =
+  let
+    model = [ (BuilderApp.defaultModel, True) ]
+  in (model, Cmd.none)
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg builders =
+  case msg of
+    SetBuilder builder -> (builders, Cmd.none)
+
+subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
 
-init : () -> ((Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model), Cmd Msg)
-init _ =
+view : Model -> Html Msg
+view builders =
   let
-    model =
-      { url = "swapi.co/api/people/1"
-      , httpScheme = "HTTP"
-      , httpMethod = Get
-      , httpHeaders = []
-      , httpBody = Nothing }
-    httpRequestValidity = { urlValid = False, httpHeadersValid = True }
-    httpResponse = Nothing
-  in ((model, httpRequestValidity, httpResponse), Cmd.none)
-
--- UPDATE
-
-update : Msg
-       -> (Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model)
-       -> ((Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model), Cmd Msg)
-update msg (model, validity, mHttpResponse) =
-  case msg of
-    UpdateUrl url ->
-      case Builder.Url.parseUrl model url of
-        Just u -> ( ( { model | url = url }
-                    , { validity | urlValid = True }
-                    , mHttpResponse)
-                  , Cmd.none)
-        Nothing -> ( ( { model | url = url }
-                     , { validity | urlValid = False }
-                     , mHttpResponse)
-                   , Cmd.none)
-
-    SetHttpMethod newMethod ->
-      case newMethod of
-        "GET" -> ( ({ model | httpMethod = Get, httpBody = Nothing }
-                   , validity
-                   , mHttpResponse)
-                 , Cmd.none)
-        _ -> ( ({ model | httpMethod = Post }
-               , validity
-               , mHttpResponse)
-             , Cmd.none)
-
-    SetHttpScheme scheme ->
-      case scheme of
-        "HTTP" -> ( ({ model | httpScheme = "HTTP" }
-                    , validity
-                    , mHttpResponse)
-                  , Cmd.none)
-        _ -> ( ({ model | httpScheme = "HTTPS" }
-               , validity
-               , mHttpResponse)
-             , Cmd.none)
-
-    GetHttpResponse result ->
-      ((model, validity, Just result), Cmd.none)
-
-    UpdateHeaders rawHeaders ->
-      case Builder.Header.parseHeaders rawHeaders of
-        Just httpHeaders ->
-          ( ( { model | httpHeaders = httpHeaders }
-            , { validity | httpHeadersValid = True }
-            , mHttpResponse)
-          , Cmd.none)
-        Nothing ->
-          ( (model
-            , { validity | httpHeadersValid = False }
-            , mHttpResponse)
-          , Cmd.none )
-
-    RunHttpRequest ->
-      let
-        httpRequest = Http.request
-          { method = Builder.Method.toString model.httpMethod
-          , headers = List.map Builder.Header.mkHeader model.httpHeaders
-          , url = Builder.Url.fullUrl model
-          , body = Http.emptyBody
-          , expect = Http.expectString GetHttpResponse
-          , timeout = Nothing
-          , tracker = Nothing
-          }
-      in ((model, validity, mHttpResponse), httpRequest)
-
-    SetHttpBody body ->
-      ( ({ model | httpBody = Just body }, validity, mHttpResponse), Cmd.none )
-
--- VIEW
-
-view : (Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model) -> Html Msg
-view (model, httpRequestValidity, mHttpResponse) =
-  div [ id "app" ]
-    [ div [ id "tree" ] [ text "test" ]
-    , div [ id "builder" ] <| urlBuilderView model httpRequestValidity mHttpResponse
-    ]
-
-urlBuilderView model httpRequestValidity mHttpResponse =
-  [ Builder.Url.view (model, httpRequestValidity)
-  , Builder.Header.view httpRequestValidity
-  , Builder.Body.view model.httpMethod
-  , Builder.Response.view mHttpResponse
-  ]
+    builderView : (Builder.Model.Model, Bool) -> Html Msg
+    builderView (builder, selected) =
+      div []
+        [ div [ onClick (SetBuilder builder) ] [ text builder.name ]
+        ]
+  in
+    div [ id "app" ] (List.map builderView builders)

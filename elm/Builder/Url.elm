@@ -8,28 +8,20 @@ import Json.Decode as Json
 import Regex
 import Url as ElmUrl
 
-import Builder.Message exposing (Msg)
-import Builder.RequestValidity
-import Builder.Method exposing (Model(..))
+import Builder.Message exposing (Msg(..))
 import Builder.Body
 import Builder.Header
-
-type alias Model =
-  { url : String
-  , httpScheme : String
-  , httpMethod : Builder.Method.Model
-  , httpHeaders : List Builder.Header.Model
-  , httpBody : Maybe Builder.Body.Model
-  }
+import Builder.Model exposing (Model, Method(..))
+import Builder.Method
 
 fullUrl : Model -> String
 fullUrl model =
-  model.httpScheme ++ "://" ++ model.url
+  model.scheme ++ "://" ++ model.url
 
 parseUrl : Model -> String -> Maybe ElmUrl.Url
 parseUrl model url =
   let
-    scheme = case model.httpScheme of
+    scheme = case model.scheme of
       "HTTP" -> "http"
       _ -> "https"
     urlRegex = Maybe.withDefault Regex.never <| Regex.fromString "(\\w+\\.\\w{2,}.*)|(localhost.*)"
@@ -39,21 +31,21 @@ parseUrl model url =
       True -> ElmUrl.fromString <| scheme ++ "://" ++ url
       False -> Nothing
 
-view : (Model, Builder.RequestValidity.Model) -> Html Msg
-view (model, httpRequestValidity) =
+view : Model -> Html Msg
+view model =
   let
-    status = case httpRequestValidity.urlValid of
+    status = case model.validity.url of
       False -> "Invalid Url"
       True -> "Send"
   in
     div [ id "urlBuilder" ]
-      [ select [ onInput Builder.Message.SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.Method.toOption)
-      , select [ onInput Builder.Message.SetHttpScheme ]
+      [ select [ onInput SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.Method.toOption)
+      , select [ onInput SetHttpScheme ]
         [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
         , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
         ]
       , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput Builder.Message.UpdateUrl, onEnter Builder.Message.RunHttpRequest ] []
-      , button [onClick Builder.Message.RunHttpRequest, disabled <| not httpRequestValidity.urlValid] [ text status ]
+      , button [onClick RunHttpRequest, disabled <| not model.validity.url] [ text status ]
       ]
 
 onEnter : Msg -> Attribute Msg
