@@ -1,6 +1,6 @@
 import Browser
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
-import Html.Attributes exposing (value, placeholder, href, disabled)
+import Html.Attributes exposing (value, placeholder, href, disabled, class, id)
 import Html.Events exposing (onInput, onClick, keyCode, on)
 import Http
 import Debug
@@ -115,9 +115,14 @@ update msg (model, validity, mHttpResponse) =
 
 view : (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model) -> Html Msg
 view (model, httpRequestValidity, mHttpResponse) =
-  div []
-    [ HttpUrl.view (model, httpRequestValidity)
-    , HttpHeader.view httpRequestValidity
-    , HttpBody.view model.httpMethod
-    , HttpResponse.view mHttpResponse
+  div [ id "app" ]
+    [ div [ id "tree" ] [ text "test" ]
+    , div [ id "builder" ] <| urlBuilderView model httpRequestValidity mHttpResponse
     ]
+
+urlBuilderView model httpRequestValidity mHttpResponse =
+  [ HttpUrl.view (model, httpRequestValidity)
+  , HttpHeader.view httpRequestValidity
+  , HttpBody.view model.httpMethod
+  , HttpResponse.view mHttpResponse
+  ]

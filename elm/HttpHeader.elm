@@ -3,7 +3,7 @@ module HttpHeader exposing (..)
 import Maybe.Extra
 import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
-import Html.Attributes exposing (value, placeholder, href, disabled)
+import Html.Attributes exposing (value, placeholder, href, disabled, id)
 import Html.Events exposing (onInput)
 import HttpRequestValidity
 import Message exposing (Msg(..))
@@ -33,7 +33,7 @@ view httpRequestValidity =
       False -> "Invalid Headers"
       True -> ""
   in
-    div []
+    div [ id "headersBuilder" ]
       [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput UpdateHeaders ] []
       , div [] [ text status ]
       ]

@@ -1,7 +1,7 @@
 module HttpUrl exposing (..)
 
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
-import Html.Attributes exposing (value, placeholder, href, disabled)
+import Html.Attributes exposing (value, placeholder, href, disabled, id)
 import Html.Events exposing (onInput, onClick, keyCode, on)
 
 import Message exposing (Msg(..))
@@ -45,13 +45,13 @@ view (model, httpRequestValidity) =
       False -> "Invalid Url"
       True -> "Send"
   in
-    div []
+    div [ id "urlBuilder" ]
       [ select [ onInput SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map HttpMethod.toOption)
       , select [ onInput SetHttpScheme ]
         [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
         , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
         ]
-      , input [ placeholder "myApi.com/path?arg=someArg", value model.url, onInput UpdateUrl, onEnter RunHttpRequest ] []
+      , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput UpdateUrl, onEnter RunHttpRequest ] []
       , button [onClick RunHttpRequest, disabled <| not httpRequestValidity.urlValid] [ text status ]
       ]
 
