@@ -4586,7 +4586,7 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$HttpMethod$Get = {$: 'Get'};
+var author$project$Builder$Method$Get = {$: 'Get'};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
@@ -5065,7 +5065,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (_n0) {
-	var model = {httpBody: elm$core$Maybe$Nothing, httpHeaders: _List_Nil, httpMethod: author$project$HttpMethod$Get, httpScheme: 'HTTP', url: 'swapi.co/api/people/1'};
+	var model = {httpBody: elm$core$Maybe$Nothing, httpHeaders: _List_Nil, httpMethod: author$project$Builder$Method$Get, httpScheme: 'HTTP', url: 'swapi.co/api/people/1'};
 	var httpResponse = elm$core$Maybe$Nothing;
 	var httpRequestValidity = {httpHeadersValid: true, urlValid: false};
 	return _Utils_Tuple2(
@@ -5082,7 +5082,7 @@ var elm$http$Http$Header = F2(
 		return {$: 'Header', a: a, b: b};
 	});
 var elm$http$Http$header = elm$http$Http$Header;
-var author$project$HttpHeader$mkHeader = function (_n0) {
+var author$project$Builder$Header$mkHeader = function (_n0) {
 	var headerKey = _n0.a;
 	var headerValue = _n0.b;
 	return A2(elm$http$Http$header, headerKey, headerValue);
@@ -5192,7 +5192,7 @@ var elm_community$maybe_extra$Maybe$Extra$traverse = function (f) {
 		step,
 		elm$core$Maybe$Just(_List_Nil));
 };
-var author$project$HttpHeader$parseHeaders = function (headers) {
+var author$project$Builder$Header$parseHeaders = function (headers) {
 	var parseRawHeader = function (rawHeader) {
 		var _n0 = A2(elm$core$String$split, ':', rawHeader);
 		if ((_n0.b && _n0.b.b) && (!_n0.b.b.b)) {
@@ -5213,8 +5213,11 @@ var author$project$HttpHeader$parseHeaders = function (headers) {
 			A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$String$isEmpty),
 			elm$core$String$lines(headers)));
 };
-var author$project$HttpMethod$Post = {$: 'Post'};
-var author$project$HttpMethod$toString = function (httpMethod) {
+var author$project$Builder$Message$GetHttpResponse = function (a) {
+	return {$: 'GetHttpResponse', a: a};
+};
+var author$project$Builder$Method$Post = {$: 'Post'};
+var author$project$Builder$Method$toString = function (httpMethod) {
 	switch (httpMethod.$) {
 		case 'Get':
 			return 'GET';
@@ -5232,7 +5235,7 @@ var author$project$HttpMethod$toString = function (httpMethod) {
 			return 'OPTIONS';
 	}
 };
-var author$project$HttpUrl$fullUrl = function (model) {
+var author$project$Builder$Url$fullUrl = function (model) {
 	return model.httpScheme + ('://' + model.url);
 };
 var elm$core$Maybe$withDefault = F2(
@@ -5383,7 +5386,7 @@ var elm$url$Url$fromString = function (str) {
 		elm$url$Url$Https,
 		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
 };
-var author$project$HttpUrl$parseUrl = F2(
+var author$project$Builder$Url$parseUrl = F2(
 	function (model, url) {
 		var urlRegex = A2(
 			elm$core$Maybe$withDefault,
@@ -5404,9 +5407,6 @@ var author$project$HttpUrl$parseUrl = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
-var author$project$Message$GetHttpResponse = function (a) {
-	return {$: 'GetHttpResponse', a: a};
-};
 var elm$core$List$map = F2(
 	function (f, xs) {
 		return A3(
@@ -6243,7 +6243,7 @@ var author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'UpdateUrl':
 				var url = msg.a;
-				var _n2 = A2(author$project$HttpUrl$parseUrl, model, url);
+				var _n2 = A2(author$project$Builder$Url$parseUrl, model, url);
 				if (_n2.$ === 'Just') {
 					var u = _n2.a;
 					return _Utils_Tuple2(
@@ -6275,7 +6275,7 @@ var author$project$Main$update = F2(
 						_Utils_Tuple3(
 							_Utils_update(
 								model,
-								{httpBody: elm$core$Maybe$Nothing, httpMethod: author$project$HttpMethod$Get}),
+								{httpBody: elm$core$Maybe$Nothing, httpMethod: author$project$Builder$Method$Get}),
 							validity,
 							mHttpResponse),
 						elm$core$Platform$Cmd$none);
@@ -6284,7 +6284,7 @@ var author$project$Main$update = F2(
 						_Utils_Tuple3(
 							_Utils_update(
 								model,
-								{httpMethod: author$project$HttpMethod$Post}),
+								{httpMethod: author$project$Builder$Method$Post}),
 							validity,
 							mHttpResponse),
 						elm$core$Platform$Cmd$none);
@@ -6320,7 +6320,7 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'UpdateHeaders':
 				var rawHeaders = msg.a;
-				var _n5 = author$project$HttpHeader$parseHeaders(rawHeaders);
+				var _n5 = author$project$Builder$Header$parseHeaders(rawHeaders);
 				if (_n5.$ === 'Just') {
 					var httpHeaders = _n5.a;
 					return _Utils_Tuple2(
@@ -6347,12 +6347,12 @@ var author$project$Main$update = F2(
 				var httpRequest = elm$http$Http$request(
 					{
 						body: elm$http$Http$emptyBody,
-						expect: elm$http$Http$expectString(author$project$Message$GetHttpResponse),
-						headers: A2(elm$core$List$map, author$project$HttpHeader$mkHeader, model.httpHeaders),
-						method: author$project$HttpMethod$toString(model.httpMethod),
+						expect: elm$http$Http$expectString(author$project$Builder$Message$GetHttpResponse),
+						headers: A2(elm$core$List$map, author$project$Builder$Header$mkHeader, model.httpHeaders),
+						method: author$project$Builder$Method$toString(model.httpMethod),
 						timeout: elm$core$Maybe$Nothing,
 						tracker: elm$core$Maybe$Nothing,
-						url: author$project$HttpUrl$fullUrl(model)
+						url: author$project$Builder$Url$fullUrl(model)
 					});
 				return _Utils_Tuple2(
 					_Utils_Tuple3(model, validity, mHttpResponse),
@@ -6371,7 +6371,7 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Message$SetHttpBody = function (a) {
+var author$project$Builder$Message$SetHttpBody = function (a) {
 	return {$: 'SetHttpBody', a: a};
 };
 var elm$json$Json$Decode$map = _Json_map1;
@@ -6443,8 +6443,8 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			elm$html$Html$Events$alwaysStop,
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
-var author$project$HttpBody$view = function (method) {
-	var whenGetMethod = _Utils_eq(method, author$project$HttpMethod$Get);
+var author$project$Builder$Body$view = function (method) {
+	var whenGetMethod = _Utils_eq(method, author$project$Builder$Method$Get);
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -6458,18 +6458,18 @@ var author$project$HttpBody$view = function (method) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$placeholder('{ \n  \"your\": \"data\"\n}'),
-						elm$html$Html$Events$onInput(author$project$Message$SetHttpBody)
+						elm$html$Html$Events$onInput(author$project$Builder$Message$SetHttpBody)
 					]),
 				_List_Nil)
 			]));
 };
-var author$project$Message$UpdateHeaders = function (a) {
+var author$project$Builder$Message$UpdateHeaders = function (a) {
 	return {$: 'UpdateHeaders', a: a};
 };
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var author$project$HttpHeader$view = function (httpRequestValidity) {
+var author$project$Builder$Header$view = function (httpRequestValidity) {
 	var status = function () {
 		var _n0 = httpRequestValidity.httpHeadersValid;
 		if (!_n0) {
@@ -6491,7 +6491,7 @@ var author$project$HttpHeader$view = function (httpRequestValidity) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$placeholder('Header: SomeHeader\nHeader2: SomeHeader2'),
-						elm$html$Html$Events$onInput(author$project$Message$UpdateHeaders)
+						elm$html$Html$Events$onInput(author$project$Builder$Message$UpdateHeaders)
 					]),
 				_List_Nil),
 				A2(
@@ -6503,7 +6503,7 @@ var author$project$HttpHeader$view = function (httpRequestValidity) {
 					]))
 			]));
 };
-var author$project$HttpResponse$view = function (mHttpResponse) {
+var author$project$Builder$Response$view = function (mHttpResponse) {
 	var status = function () {
 		if ((mHttpResponse.$ === 'Just') && (mHttpResponse.a.$ === 'Err')) {
 			var error = mHttpResponse.a.a;
@@ -6558,25 +6558,35 @@ var author$project$HttpResponse$view = function (mHttpResponse) {
 					]))
 			]));
 };
-var author$project$HttpMethod$Delete = {$: 'Delete'};
-var author$project$HttpMethod$Head = {$: 'Head'};
-var author$project$HttpMethod$Options = {$: 'Options'};
-var author$project$HttpMethod$Patch = {$: 'Patch'};
-var author$project$HttpMethod$Put = {$: 'Put'};
+var author$project$Builder$Message$RunHttpRequest = {$: 'RunHttpRequest'};
+var author$project$Builder$Message$SetHttpMethod = function (a) {
+	return {$: 'SetHttpMethod', a: a};
+};
+var author$project$Builder$Message$SetHttpScheme = function (a) {
+	return {$: 'SetHttpScheme', a: a};
+};
+var author$project$Builder$Message$UpdateUrl = function (a) {
+	return {$: 'UpdateUrl', a: a};
+};
+var author$project$Builder$Method$Delete = {$: 'Delete'};
+var author$project$Builder$Method$Head = {$: 'Head'};
+var author$project$Builder$Method$Options = {$: 'Options'};
+var author$project$Builder$Method$Patch = {$: 'Patch'};
+var author$project$Builder$Method$Put = {$: 'Put'};
 var elm$html$Html$option = _VirtualDom_node('option');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
-var author$project$HttpMethod$toOption = function (httpMethod) {
+var author$project$Builder$Method$toOption = function (httpMethod) {
 	return A2(
 		elm$html$Html$option,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$value(
-				author$project$HttpMethod$toString(httpMethod))
+				author$project$Builder$Method$toString(httpMethod))
 			]),
 		_List_fromArray(
 			[
 				elm$html$Html$text(
-				author$project$HttpMethod$toString(httpMethod))
+				author$project$Builder$Method$toString(httpMethod))
 			]));
 };
 var elm$json$Json$Decode$int = _Json_decodeInt;
@@ -6593,7 +6603,7 @@ var elm$html$Html$Events$on = F2(
 	});
 var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$fail = _Json_fail;
-var author$project$HttpUrl$onEnter = function (msg) {
+var author$project$Builder$Url$onEnter = function (msg) {
 	var isEnter = function (code) {
 		return (code === 13) ? elm$json$Json$Decode$succeed(msg) : elm$json$Json$Decode$fail('not ENTER');
 	};
@@ -6601,16 +6611,6 @@ var author$project$HttpUrl$onEnter = function (msg) {
 		elm$html$Html$Events$on,
 		'keydown',
 		A2(elm$json$Json$Decode$andThen, isEnter, elm$html$Html$Events$keyCode));
-};
-var author$project$Message$RunHttpRequest = {$: 'RunHttpRequest'};
-var author$project$Message$SetHttpMethod = function (a) {
-	return {$: 'SetHttpMethod', a: a};
-};
-var author$project$Message$SetHttpScheme = function (a) {
-	return {$: 'SetHttpScheme', a: a};
-};
-var author$project$Message$UpdateUrl = function (a) {
-	return {$: 'UpdateUrl', a: a};
 };
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$input = _VirtualDom_node('input');
@@ -6622,7 +6622,7 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$HttpUrl$view = function (_n0) {
+var author$project$Builder$Url$view = function (_n0) {
 	var model = _n0.a;
 	var httpRequestValidity = _n0.b;
 	var status = function () {
@@ -6645,18 +6645,18 @@ var author$project$HttpUrl$view = function (_n0) {
 				elm$html$Html$select,
 				_List_fromArray(
 					[
-						elm$html$Html$Events$onInput(author$project$Message$SetHttpMethod)
+						elm$html$Html$Events$onInput(author$project$Builder$Message$SetHttpMethod)
 					]),
 				A2(
 					elm$core$List$map,
-					author$project$HttpMethod$toOption,
+					author$project$Builder$Method$toOption,
 					_List_fromArray(
-						[author$project$HttpMethod$Get, author$project$HttpMethod$Post, author$project$HttpMethod$Put, author$project$HttpMethod$Delete, author$project$HttpMethod$Head, author$project$HttpMethod$Patch, author$project$HttpMethod$Options]))),
+						[author$project$Builder$Method$Get, author$project$Builder$Method$Post, author$project$Builder$Method$Put, author$project$Builder$Method$Delete, author$project$Builder$Method$Head, author$project$Builder$Method$Patch, author$project$Builder$Method$Options]))),
 				A2(
 				elm$html$Html$select,
 				_List_fromArray(
 					[
-						elm$html$Html$Events$onInput(author$project$Message$SetHttpScheme)
+						elm$html$Html$Events$onInput(author$project$Builder$Message$SetHttpScheme)
 					]),
 				_List_fromArray(
 					[
@@ -6688,15 +6688,15 @@ var author$project$HttpUrl$view = function (_n0) {
 						elm$html$Html$Attributes$id('urlInput'),
 						elm$html$Html$Attributes$placeholder('myApi.com/path?arg=someArg'),
 						elm$html$Html$Attributes$value(model.url),
-						elm$html$Html$Events$onInput(author$project$Message$UpdateUrl),
-						author$project$HttpUrl$onEnter(author$project$Message$RunHttpRequest)
+						elm$html$Html$Events$onInput(author$project$Builder$Message$UpdateUrl),
+						author$project$Builder$Url$onEnter(author$project$Builder$Message$RunHttpRequest)
 					]),
 				_List_Nil),
 				A2(
 				elm$html$Html$button,
 				_List_fromArray(
 					[
-						elm$html$Html$Events$onClick(author$project$Message$RunHttpRequest),
+						elm$html$Html$Events$onClick(author$project$Builder$Message$RunHttpRequest),
 						elm$html$Html$Attributes$disabled(!httpRequestValidity.urlValid)
 					]),
 				_List_fromArray(
@@ -6709,11 +6709,11 @@ var author$project$Main$urlBuilderView = F3(
 	function (model, httpRequestValidity, mHttpResponse) {
 		return _List_fromArray(
 			[
-				author$project$HttpUrl$view(
+				author$project$Builder$Url$view(
 				_Utils_Tuple2(model, httpRequestValidity)),
-				author$project$HttpHeader$view(httpRequestValidity),
-				author$project$HttpBody$view(model.httpMethod),
-				author$project$HttpResponse$view(mHttpResponse)
+				author$project$Builder$Header$view(httpRequestValidity),
+				author$project$Builder$Body$view(model.httpMethod),
+				author$project$Builder$Response$view(mHttpResponse)
 			]);
 	});
 var author$project$Main$view = function (_n0) {

@@ -1,12 +1,12 @@
-module HttpHeader exposing (..)
+module Builder.Header exposing (..)
 
 import Maybe.Extra
 import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled, id)
 import Html.Events exposing (onInput)
-import HttpRequestValidity
-import Message exposing (Msg(..))
+import Builder.RequestValidity
+import Builder.Message exposing (Msg)
 
 type alias Model = (String, String)
 
@@ -26,7 +26,7 @@ parseHeaders headers =
 mkHeader : Model -> Http.Header
 mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
 
-view : HttpRequestValidity.Model -> Html Msg
+view : Builder.RequestValidity.Model -> Html Msg
 view httpRequestValidity =
   let
     status = case httpRequestValidity.httpHeadersValid of
@@ -34,6 +34,6 @@ view httpRequestValidity =
       True -> ""
   in
     div [ id "headersBuilder" ]
-      [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput UpdateHeaders ] []
+      [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput Builder.Message.UpdateHeaders ] []
       , div [] [ text status ]
       ]

@@ -6,13 +6,14 @@ import Http
 import Debug
 import Url
 import Json.Decode as Json
-import HttpResponse
-import Message exposing (Msg(..))
-import HttpRequestValidity
-import HttpMethod exposing (Model(..))
-import HttpHeader
-import HttpUrl
-import HttpBody
+
+import Builder.Response
+import Builder.Message exposing (Msg(..))
+import Builder.RequestValidity
+import Builder.Method exposing (Model(..))
+import Builder.Header
+import Builder.Url
+import Builder.Body
 
 main =
   Browser.element
@@ -22,11 +23,11 @@ main =
     , view = view
     }
 
-subscriptions : (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model) -> Sub Msg
+subscriptions : (Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model) -> Sub Msg
 subscriptions _ =
   Sub.none
 
-init : () -> ((HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model), Cmd Msg)
+init : () -> ((Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model), Cmd Msg)
 init _ =
   let
     model =
@@ -42,12 +43,12 @@ init _ =
 -- UPDATE
 
 update : Msg
-       -> (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model)
-       -> ((HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model), Cmd Msg)
+       -> (Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model)
+       -> ((Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model), Cmd Msg)
 update msg (model, validity, mHttpResponse) =
   case msg of
     UpdateUrl url ->
-      case HttpUrl.parseUrl model url of
+      case Builder.Url.parseUrl model url of
         Just u -> ( ( { model | url = url }
                     , { validity | urlValid = True }
                     , mHttpResponse)
@@ -83,7 +84,7 @@ update msg (model, validity, mHttpResponse) =
       ((model, validity, Just result), Cmd.none)
 
     UpdateHeaders rawHeaders ->
-      case HttpHeader.parseHeaders rawHeaders of
+      case Builder.Header.parseHeaders rawHeaders of
         Just httpHeaders ->
           ( ( { model | httpHeaders = httpHeaders }
             , { validity | httpHeadersValid = True }
@@ -98,9 +99,9 @@ update msg (model, validity, mHttpResponse) =
     RunHttpRequest ->
       let
         httpRequest = Http.request
-          { method = HttpMethod.toString model.httpMethod
-          , headers = List.map HttpHeader.mkHeader model.httpHeaders
-          , url = HttpUrl.fullUrl model
+          { method = Builder.Method.toString model.httpMethod
+          , headers = List.map Builder.Header.mkHeader model.httpHeaders
+          , url = Builder.Url.fullUrl model
           , body = Http.emptyBody
           , expect = Http.expectString GetHttpResponse
           , timeout = Nothing
@@ -113,7 +114,7 @@ update msg (model, validity, mHttpResponse) =
 
 -- VIEW
 
-view : (HttpUrl.Model, HttpRequestValidity.Model, Maybe HttpResponse.Model) -> Html Msg
+view : (Builder.Url.Model, Builder.RequestValidity.Model, Maybe Builder.Response.Model) -> Html Msg
 view (model, httpRequestValidity, mHttpResponse) =
   div [ id "app" ]
     [ div [ id "tree" ] [ text "test" ]
@@ -121,8 +122,8 @@ view (model, httpRequestValidity, mHttpResponse) =
     ]
 
 urlBuilderView model httpRequestValidity mHttpResponse =
-  [ HttpUrl.view (model, httpRequestValidity)
-  , HttpHeader.view httpRequestValidity
-  , HttpBody.view model.httpMethod
-  , HttpResponse.view mHttpResponse
+  [ Builder.Url.view (model, httpRequestValidity)
+  , Builder.Header.view httpRequestValidity
+  , Builder.Body.view model.httpMethod
+  , Builder.Response.view mHttpResponse
   ]

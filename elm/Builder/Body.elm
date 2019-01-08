@@ -1,16 +1,16 @@
-module HttpBody exposing (..)
+module Builder.Body exposing (..)
 
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
 import Html.Events exposing (onInput, onClick, keyCode, on)
 import Html.Attributes exposing (hidden)
 
-import Message exposing (Msg(..))
-import HttpMethod exposing (Model(..))
+import Builder.Method as Method exposing (Model(..))
+import Builder.Message exposing (Msg(..))
 
 type alias Model = String
 
-view : HttpMethod.Model -> Html Msg
+view : Method.Model -> Html Msg
 view method =
   let
     whenGetMethod = method == Get

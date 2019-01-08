@@ -1,10 +1,11 @@
-module HttpResponse exposing (..)
+module Builder.Response exposing (..)
 
 import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
 import Html.Events exposing (onInput, onClick, keyCode, on)
-import Message exposing (Msg)
+
+import Builder.Message exposing (Msg)
 
 type alias Model = Result Http.Error String
 

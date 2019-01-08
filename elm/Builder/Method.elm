@@ -1,9 +1,9 @@
-module HttpMethod exposing (..)
+module Builder.Method exposing (..)
 
 import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
-import Message exposing (Msg(..))
+import Builder.Message exposing (Msg)
 
 type Model = Get | Post | Put | Delete | Patch | Head | Options
 

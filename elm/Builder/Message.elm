@@ -1,4 +1,4 @@
-module Message exposing (..)
+module Builder.Message exposing (..)
 
 import Http
 
