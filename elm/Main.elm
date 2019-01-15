@@ -17,9 +17,12 @@ main =
     , view = view
     }
 
+type alias Builders = List(Builder.Model)
+type Tree = Folder String Tree | Files Builders
+
 type alias Model =
-  { selectedBuilder : Builder.Model
-  , builders : List Builder.Model
+  { selectedNode : Builder.Model
+  , tree : Tree
   }
 
 type Msg
@@ -30,8 +33,8 @@ init : () -> (Model, Cmd Msg)
 init _ =
   let
     model =
-      { selectedBuilder = Builder.defaultModel1
-      , builders = [Builder.defaultModel1, Builder.defaultModel2]
+      { selectedNode = Builder.defaultModel1
+      , tree = Folder "ibbu" (Files [Builder.defaultModel1, Builder.defaultModel2])
       }
   in
     (model, Cmd.none)
@@ -40,12 +43,12 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     SetBuilder builder ->
-      ( { model | selectedBuilder = builder }, Cmd.none )
+      ( { model | selectedNode = builder }, Cmd.none )
     BuilderMsg subMsg ->
       let
-        (updatedBuilder, builderCmd) = Builder.update subMsg model.selectedBuilder
+        (updatedBuilder, builderCmd) = Builder.update subMsg model.selectedNode
       in
-        ( { model | selectedBuilder = updatedBuilder }, Cmd.map BuilderMsg builderCmd )
+        ( { model | selectedNode = updatedBuilder }, Cmd.map BuilderMsg builderCmd )
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -58,7 +61,7 @@ view model =
     builderView =
       div []
         [ div [] [ treeView model ]
-        , div [] [ builderAppView model.selectedBuilder ]
+        , div [] [ builderAppView model.selectedNode ]
         ]
   in
     div [ id "app" ] [ builderView ]
@@ -66,11 +69,22 @@ view model =
 treeView : Model -> Html Msg
 treeView model =
   let
-    entryView : Builder.Model -> Html Msg
-    entryView builder =
-      li [ onClick (SetBuilder builder) ] [ text builder.name ]
+    entryView : Tree -> Html Msg
+    entryView tree =
+      case tree of
+        Folder name content ->
+          div []
+            [ b [] [ text name ]
+            , ol [] [ entryView content ]
+            ]
+
+        Files builders ->
+          let
+            fileView builder = li [ onClick (SetBuilder builder) ] [ text builder.name ]
+          in
+            ol [] (List.map fileView builders)
   in
-    ol [] (List.map entryView model.builders)
+    ol [] [ entryView model.tree ]
 
 builderAppView : Builder.Model -> Html Msg
 builderAppView builder =
