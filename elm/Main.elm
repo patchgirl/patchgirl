@@ -1,14 +1,15 @@
 import Browser
-import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
+import Html exposing (..)
 import Html.Attributes exposing (value, placeholder, href, disabled, class, id)
 import Html.Events exposing (onInput, onClick, keyCode, on)
 import Http
 import Debug
 import Url
 import Json.Decode as Json
+import List.Extra as L
 
 import Builder.Response
-import Builder.Message exposing (Msg(..))
+import Builder.Message as BuilderMsg
 import Builder.Header
 import Builder.Url
 import Builder.Body
@@ -24,31 +25,61 @@ main =
     , view = view
     }
 
-type alias Model = List ((Builder.Model.Model, Bool))
-type Msg = SetBuilder Builder.Model.Model
+type alias Model =
+  { selectedBuilder : Builder.Model.Model
+  , builders : List Builder.Model.Model
+  }
+
+type Msg
+  = SetBuilder Builder.Model.Model
+  | BuilderMsg BuilderMsg.Msg
 
 init : () -> (Model, Cmd Msg)
 init _ =
   let
-    model = [ (BuilderApp.defaultModel, True) ]
-  in (model, Cmd.none)
+    model =
+      { selectedBuilder = BuilderApp.defaultModel1
+      , builders = [BuilderApp.defaultModel1, BuilderApp.defaultModel2]
+      }
+  in
+    (model, Cmd.none)
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg builders =
+update msg model =
   case msg of
-    SetBuilder builder -> (builders, Cmd.none)
+    SetBuilder builder ->
+      ( { model | selectedBuilder = builder }, Cmd.none )
+    BuilderMsg subMsg ->
+      let
+        (updatedBuilder, builderCmd) = BuilderApp.update subMsg model.selectedBuilder
+      in
+        ( { model | selectedBuilder = updatedBuilder }, Cmd.map BuilderMsg builderCmd )
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
 
 view : Model -> Html Msg
-view builders =
+view model =
   let
-    builderView : (Builder.Model.Model, Bool) -> Html Msg
-    builderView (builder, selected) =
+    builderView : Html Msg
+    builderView =
       div []
-        [ div [ onClick (SetBuilder builder) ] [ text builder.name ]
+        [ div [] [ treeView model ]
+        , div [] [ builderAppView model.selectedBuilder ]
         ]
   in
-    div [ id "app" ] (List.map builderView builders)
+    div [ id "app" ] [ builderView ]
+
+treeView : Model -> Html Msg
+treeView model =
+  let
+    entryView : Builder.Model.Model -> Html Msg
+    entryView builder =
+      li [ onClick (SetBuilder builder) ] [ text builder.name ]
+  in
+    ol [] (List.map entryView model.builders)
+
+builderAppView : Builder.Model.Model -> Html Msg
+builderAppView builder =
+  Html.map BuilderMsg (BuilderApp.view builder)

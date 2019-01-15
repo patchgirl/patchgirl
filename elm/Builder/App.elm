@@ -1,5 +1,6 @@
 module Builder.App exposing (..)
 
+import Browser
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled, class, id)
 import Html.Events exposing (onInput, onClick, keyCode, on)
@@ -17,8 +18,7 @@ import Builder.Body
 import Builder.Tree
 import Builder.Method
 
-defaultModel : Model
-defaultModel =
+defaultModel1 =
   { name = "no name"
   , url = "swapi.co/api/people/1"
   , scheme = "HTTP"
@@ -29,8 +29,16 @@ defaultModel =
   , response = Nothing
   }
 
-init : () -> (Model, Cmd Msg)
-init _ = (defaultModel, Cmd.none)
+defaultModel2 =
+  { name = "no name2"
+  , url = "swapi.co/api/people/2"
+  , scheme = "HTTP"
+  , method = Get
+  , headers = []
+  , body = ""
+  , validity = { url = False, headers = True }
+  , response = Nothing
+  }
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =

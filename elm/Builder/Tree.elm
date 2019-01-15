@@ -1,6 +1,7 @@
 module Builder.Tree exposing (..)
 
 import Html exposing (..)
+import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Builder.Message exposing (Msg(..))
 import Builder.Url
@@ -12,5 +13,5 @@ view model =
   let
     a = 1
   in
-    div [ id "tree" ]
+    div [ id "tree", onClick RunHttpRequest ]
       [ text model ]
