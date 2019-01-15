@@ -1,21 +1,13 @@
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (value, placeholder, href, disabled, class, id)
-import Html.Events exposing (onInput, onClick, keyCode, on)
-import Http
-import Debug
-import Url
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Json.Decode as Json
 import List.Extra as L
 
-import Builder.Response
-import Builder.Message as BuilderMsg
-import Builder.Header
-import Builder.Url
-import Builder.Body
-import Builder.Tree
-import Builder.App as BuilderApp
-import Builder.Model
+import Builder.Message as Builder
+import Builder.App as Builder
+import Builder.Model as Builder
 
 main =
   Browser.element
@@ -26,20 +18,20 @@ main =
     }
 
 type alias Model =
-  { selectedBuilder : Builder.Model.Model
-  , builders : List Builder.Model.Model
+  { selectedBuilder : Builder.Model
+  , builders : List Builder.Model
   }
 
 type Msg
-  = SetBuilder Builder.Model.Model
-  | BuilderMsg BuilderMsg.Msg
+  = SetBuilder Builder.Model
+  | BuilderMsg Builder.Msg
 
 init : () -> (Model, Cmd Msg)
 init _ =
   let
     model =
-      { selectedBuilder = BuilderApp.defaultModel1
-      , builders = [BuilderApp.defaultModel1, BuilderApp.defaultModel2]
+      { selectedBuilder = Builder.defaultModel1
+      , builders = [Builder.defaultModel1, Builder.defaultModel2]
       }
   in
     (model, Cmd.none)
@@ -51,7 +43,7 @@ update msg model =
       ( { model | selectedBuilder = builder }, Cmd.none )
     BuilderMsg subMsg ->
       let
-        (updatedBuilder, builderCmd) = BuilderApp.update subMsg model.selectedBuilder
+        (updatedBuilder, builderCmd) = Builder.update subMsg model.selectedBuilder
       in
         ( { model | selectedBuilder = updatedBuilder }, Cmd.map BuilderMsg builderCmd )
 
@@ -74,12 +66,12 @@ view model =
 treeView : Model -> Html Msg
 treeView model =
   let
-    entryView : Builder.Model.Model -> Html Msg
+    entryView : Builder.Model -> Html Msg
     entryView builder =
       li [ onClick (SetBuilder builder) ] [ text builder.name ]
   in
     ol [] (List.map entryView model.builders)
 
-builderAppView : Builder.Model.Model -> Html Msg
+builderAppView : Builder.Model -> Html Msg
 builderAppView builder =
-  Html.map BuilderMsg (BuilderApp.view builder)
+  Html.map BuilderMsg (Builder.view builder)

@@ -7,6 +7,7 @@ import Html.Attributes exposing (hidden)
 
 import Builder.Model exposing (Method(..), Model)
 import Builder.Message exposing (Msg(..))
+import Debug
 
 view : Model -> Html Msg
 view model =
