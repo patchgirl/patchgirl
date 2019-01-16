@@ -20,8 +20,7 @@ main =
 type alias Builders = List(Builder.Model)
 
 type Node = Folder String Tree | File String Builder.Model
-type alias Nodes = List(Node)
-type Tree = Children Nodes | EmptyNode
+type alias Tree = List(Node)
 
 type alias Model =
   { selectedNode : Maybe Node
@@ -40,12 +39,12 @@ init _ =
     model =
       { selectedNode = Nothing
       , displayedBuilder = Nothing
-      , tree = Children [ Folder "folder1" EmptyNode
-                        , Folder "folder2" EmptyNode
-                        , Folder "folder3" <| Children [ File "file1" Builder.defaultModel1
-                                                       , File "file2" Builder.defaultModel2
-                                                       ]
-                        ]
+      , tree = [ Folder "folder1" []
+               , Folder "folder2" [ Folder "folder2.2" [] ]
+               , Folder "folder3" <| [ File "file1" Builder.defaultModel1
+                                     , File "file2" Builder.defaultModel2
+                                     ]
+               ]
       }
   in
     (model, Cmd.none)
@@ -99,11 +98,7 @@ treeView tree =
         File name builder ->
           li [ onClick (SetDisplayedBuilder builder) ] [ text name ]
   in
-    case tree of
-      EmptyNode -> [ div [] [] ]
-
-      Children nodes ->
-        List.map nodeView nodes
+    List.map nodeView tree
 
 builderAppView : Maybe Builder.Model -> Html Msg
 builderAppView mBuilder =
