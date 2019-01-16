@@ -18,23 +18,34 @@ main =
     }
 
 type alias Builders = List(Builder.Model)
-type Tree = Folder String Tree | Files Builders
+
+type Node = Folder String Tree | File String Builder.Model
+type alias Nodes = List(Node)
+type Tree = Children Nodes | EmptyNode
 
 type alias Model =
-  { selectedNode : Builder.Model
+  { selectedNode : Maybe Node
+  , displayedBuilder : Maybe Builder.Model
   , tree : Tree
   }
 
 type Msg
-  = SetBuilder Builder.Model
+  = SetSelectedNode Node
+  | SetDisplayedBuilder Builder.Model
   | BuilderMsg Builder.Msg
 
 init : () -> (Model, Cmd Msg)
 init _ =
   let
     model =
-      { selectedNode = Builder.defaultModel1
-      , tree = Folder "ibbu" (Files [Builder.defaultModel1, Builder.defaultModel2])
+      { selectedNode = Nothing
+      , displayedBuilder = Nothing
+      , tree = Children [ Folder "folder1" EmptyNode
+                        , Folder "folder2" EmptyNode
+                        , Folder "folder3" <| Children [ File "file1" Builder.defaultModel1
+                                                       , File "file2" Builder.defaultModel2
+                                                       ]
+                        ]
       }
   in
     (model, Cmd.none)
@@ -42,13 +53,20 @@ init _ =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    SetBuilder builder ->
-      ( { model | selectedNode = builder }, Cmd.none )
+    SetSelectedNode node ->
+      ( { model | selectedNode = Just node }, Cmd.none )
+
     BuilderMsg subMsg ->
       let
-        (updatedBuilder, builderCmd) = Builder.update subMsg model.selectedNode
+        mUpdatedBuilderToBuilderCmd = Maybe.map (Builder.update subMsg) model.displayedBuilder
       in
-        ( { model | selectedNode = updatedBuilder }, Cmd.map BuilderMsg builderCmd )
+        case mUpdatedBuilderToBuilderCmd of
+          Just(updatedBuilder, builderCmd) ->
+            ( { model | displayedBuilder = Just(updatedBuilder) }, Cmd.map BuilderMsg builderCmd )
+          Nothing -> (model, Cmd.none)
+
+    SetDisplayedBuilder builder ->
+      ( { model | displayedBuilder = Just builder }, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -60,32 +78,35 @@ view model =
     builderView : Html Msg
     builderView =
       div []
-        [ div [] [ treeView model ]
-        , div [] [ builderAppView model.selectedNode ]
+        [ div [] (treeView model.tree)
+        , div [] [ builderAppView model.displayedBuilder ]
         ]
   in
     div [ id "app" ] [ builderView ]
 
-treeView : Model -> Html Msg
-treeView model =
+treeView : Tree -> List(Html Msg)
+treeView tree =
   let
-    entryView : Tree -> Html Msg
-    entryView tree =
-      case tree of
-        Folder name content ->
+    nodeView : Node -> Html Msg
+    nodeView node =
+      case node of
+        Folder name children ->
           div []
             [ b [] [ text name ]
-            , ol [] [ entryView content ]
+            , ol [] (treeView children)
             ]
 
-        Files builders ->
-          let
-            fileView builder = li [ onClick (SetBuilder builder) ] [ text builder.name ]
-          in
-            ol [] (List.map fileView builders)
+        File name builder ->
+          li [ onClick (SetDisplayedBuilder builder) ] [ text name ]
   in
-    ol [] [ entryView model.tree ]
+    case tree of
+      EmptyNode -> [ div [] [] ]
 
-builderAppView : Builder.Model -> Html Msg
-builderAppView builder =
-  Html.map BuilderMsg (Builder.view builder)
+      Children nodes ->
+        List.map nodeView nodes
+
+builderAppView : Maybe Builder.Model -> Html Msg
+builderAppView mBuilder =
+  case mBuilder of
+    Just builder -> Html.map BuilderMsg (Builder.view builder)
+    Nothing -> div [] []
