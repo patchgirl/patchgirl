@@ -24,13 +24,13 @@ type alias Tree = List(Node)
 
 type alias Model =
   { selectedNode : Maybe Node
-  , displayedBuilder : Maybe Builder.Model
+  , displayedBuilderIndex : Maybe Int
   , tree : Tree
   }
 
 type Msg
   = SetSelectedNode Node
-  | SetDisplayedBuilder Builder.Model
+  | SetDisplayedBuilder Int
   | BuilderMsg Builder.Msg
 
 init : () -> (Model, Cmd Msg)
@@ -38,7 +38,7 @@ init _ =
   let
     model =
       { selectedNode = Nothing
-      , displayedBuilder = Nothing
+      , displayedBuilderIndex = Nothing
       , tree = [ Folder "folder1" []
                , Folder "folder2" [ Folder "folder2.2" [] ]
                , Folder "folder3" <| [ File "file1" Builder.defaultModel1
@@ -57,15 +57,17 @@ update msg model =
 
     BuilderMsg subMsg ->
       let
-        mUpdatedBuilderToBuilderCmd = Maybe.map (Builder.update subMsg) model.displayedBuilder
+        mBuilder : Maybe Builder.Model
+        mBuilder = model.displayedBuilderIndex |> Maybe.andThen (findBuilder model.tree)
+        mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
+        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) mBuilder
       in
-        case mUpdatedBuilderToBuilderCmd of
-          Just(updatedBuilder, builderCmd) ->
-            ( { model | displayedBuilder = Just(updatedBuilder) }, Cmd.map BuilderMsg builderCmd )
+        case mUpdatedBuilderToCmd of
+          Just(updatedBuilder, builderCmd) -> ( model, Cmd.map BuilderMsg builderCmd )
           Nothing -> (model, Cmd.none)
 
-    SetDisplayedBuilder builder ->
-      ( { model | displayedBuilder = Just builder }, Cmd.none)
+    SetDisplayedBuilder idx ->
+      ( { model | displayedBuilderIndex = Just idx }, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -77,31 +79,73 @@ view model =
     builderView : Html Msg
     builderView =
       div []
-        [ div [] (treeView model.tree)
-        , div [] [ builderAppView model.displayedBuilder ]
+        [ div [] [ treeView model.tree ]
+        , div [] [ builderAppView model ]
         ]
   in
     div [ id "app" ] [ builderView ]
 
-treeView : Tree -> List(Html Msg)
+builderAppView : Model -> Html Msg
+builderAppView model =
+  model.displayedBuilderIndex
+    |> Maybe.andThen (findBuilder model.tree)
+    |> Maybe.map Builder.view
+    |> Maybe.map (Html.map BuilderMsg)
+    |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(model.displayedBuilderIndex))) ])
+
+treeView : Tree -> Html Msg
 treeView tree =
+  ol [] <| Tuple.second (nodeView 0 tree)
+
+findNode : Tree -> Int -> Maybe Node
+findNode =
   let
-    nodeView : Node -> Html Msg
-    nodeView node =
+    find : Tree -> Int -> (Int, Maybe Node)
+    find tree idx =
+      case (tree, idx) of
+        (node :: tail, 0) -> (0, Just node)
+        ([], _) -> (idx, Nothing)
+        (node :: tail, _) ->
+           case node of
+             Folder _ children  ->
+               let
+                  (newIdx, folderSearch) = find children (idx - 1)
+                  (_, tailSearch) = find tail newIdx
+               in
+                 case (folderSearch, tailSearch) of
+                   (Just n, _) -> (0, Just n)
+                   (_, Just n) -> (0, Just n)
+                   _ -> (newIdx, Nothing)
+
+             _ -> find tail (idx - 1)
+  in
+    \x y -> find x y |> Tuple.second
+
+nodeView : Int -> Tree -> (Int, List (Html Msg))
+nodeView idx tree =
+  case tree of
+    [] -> (idx, [])
+    node :: tail ->
       case node of
         Folder name children ->
-          div []
-            [ b [] [ text name ]
-            , ol [] (treeView children)
-            ]
+          let
+            (folderIdx, folderChildrenView) = nodeView (idx + 1) children
+            (newIdx, tailView) = nodeView folderIdx tail
+            folderView = li [] [ text (name ++ " idx: " ++  String.fromInt(idx))
+                               , ol [] folderChildrenView
+                               ]
+          in
+            (newIdx, folderView :: tailView)
 
-        File name builder ->
-          li [ onClick (SetDisplayedBuilder builder) ] [ text name ]
-  in
-    List.map nodeView tree
+        File name _ ->
+          let
+            (newIdx, tailView) = nodeView (idx + 1) tail
+            fileView = li [ onClick (SetDisplayedBuilder idx) ] [ text(name ++ " idx: " ++  String.fromInt(idx)) ]
+          in
+            (newIdx, fileView :: tailView)
 
-builderAppView : Maybe Builder.Model -> Html Msg
-builderAppView mBuilder =
-  case mBuilder of
-    Just builder -> Html.map BuilderMsg (Builder.view builder)
-    Nothing -> div [] []
+findBuilder : Tree -> Int -> Maybe Builder.Model
+findBuilder tree idx =
+  Debug.log ("searching : " ++ String.fromInt(idx)) <| case findNode tree idx of
+    Just (File _ builder) -> Debug.log "found" (Just builder)
+    _ -> Nothing
