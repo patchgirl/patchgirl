@@ -95,7 +95,7 @@ builderAppView model =
 
 treeView : Tree -> Html Msg
 treeView tree =
-  ol [] <| Tuple.second (nodeView 0 tree)
+  ul [] <| Tuple.second (nodeView 0 tree)
 
 findNode : Tree -> Int -> Maybe Node
 findNode =
@@ -131,8 +131,8 @@ nodeView idx tree =
           let
             (folderIdx, folderChildrenView) = nodeView (idx + 1) children
             (newIdx, tailView) = nodeView folderIdx tail
-            folderView = li [] [ text (name ++ " idx: " ++  String.fromInt(idx))
-                               , ol [] folderChildrenView
+            folderView = li [] [ b [ ] [ text ("- " ++ name ++ "/") ]
+                               , ul [] folderChildrenView
                                ]
           in
             (newIdx, folderView :: tailView)
@@ -140,12 +140,12 @@ nodeView idx tree =
         File name _ ->
           let
             (newIdx, tailView) = nodeView (idx + 1) tail
-            fileView = li [ onClick (SetDisplayedBuilder idx) ] [ text(name ++ " idx: " ++  String.fromInt(idx)) ]
+            fileView = li [ onClick (SetDisplayedBuilder idx) ] [ text name ]
           in
             (newIdx, fileView :: tailView)
 
 findBuilder : Tree -> Int -> Maybe Builder.Model
 findBuilder tree idx =
-  Debug.log ("searching : " ++ String.fromInt(idx)) <| case findNode tree idx of
-    Just (File _ builder) -> Debug.log "found" (Just builder)
+  case findNode tree idx of
+    Just (File _ builder) -> Just builder
     _ -> Nothing
