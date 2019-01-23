@@ -33,6 +33,8 @@ type Msg
   | SetDisplayedBuilder Int
   | ToggleNode Int
   | BuilderMsg Builder.Msg
+  | Mkdir Int
+  | Touch Int
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -80,6 +82,29 @@ update msg model =
               Folder name (not toggleState) children
       in
         ( { model | tree = (modifyNode toggle model.tree idx) }, Cmd.none)
+
+    Mkdir idx ->
+      let
+        mkdir : Node -> Node
+        mkdir node =
+          case node of
+            File _ _ as file -> file
+            Folder name toggleState children as folder ->
+              Folder name (not toggleState) (Folder "newFolder" False [] :: children)
+      in
+        ( { model | tree = (modifyNode mkdir model.tree idx) }, Cmd.none)
+
+    Touch idx ->
+      let
+        newFile = File "newFile" Builder.defaultModel1
+        touch : Node -> Node
+        touch node =
+          case node of
+            File _ _ as file -> file
+            Folder name toggleState children as folder ->
+              Folder name (not toggleState) (newFile :: children)
+      in
+        ( { model | tree = (modifyNode touch model.tree idx) }, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -144,9 +169,12 @@ nodeView idx tree =
             (folderIdx, folderChildrenView) = nodeView (idx + 1) children
             (newIdx, tailView) = nodeView folderIdx tail
             folderToggleView = if open then "-" else "+"
-            folderView = li [] [ b [ onClick (ToggleNode idx) ] [ text (folderToggleView ++ " " ++ name ++ "/") ]
-                               , ul [ hidden (not open) ] folderChildrenView
-                               ]
+            folderView =
+              li [] [ b [ onClick (ToggleNode idx) ] [ text (folderToggleView ++ " " ++ name ++ "/ ") ]
+                    , a [ onClick (Mkdir idx) ] [ text ("new Folder ") ]
+                    , a [ onClick (Touch idx) ] [ text ("new File") ]
+                    , ul [ hidden (not open) ] folderChildrenView
+                    ]
           in
             (newIdx, folderView :: tailView)
 
