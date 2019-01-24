@@ -15,7 +15,6 @@ import Builder.Model exposing (Model, Method(..))
 import Builder.Header
 import Builder.Url
 import Builder.Body
-import Builder.Tree
 import Builder.Method
 
 defaultModel1 =
@@ -100,8 +99,6 @@ update msg model =
 
     SetHttpBody body ->
       ( { model | body = body }, Cmd.none )
-
--- VIEW
 
 view : Model -> Html Msg
 view model =
