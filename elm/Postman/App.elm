@@ -1,12 +1,18 @@
 module Postman.App exposing (..)
 
-import Postman.Model exposing (Model)
+import Postman.Model exposing (..)
 import Postman.Message exposing (Msg(..))
+import Json.Decode
+
+import Debug
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Import -> (imported, Cmd.none)
+    Import ->
+      case decodePostman imported of
+        Ok tree -> (Just tree, Cmd.none)
+        Err error -> (Debug.log (Json.Decode.errorToString error) Nothing, Cmd.none)
 
 imported : String
 imported = """

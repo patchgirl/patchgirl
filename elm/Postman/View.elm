@@ -7,6 +7,6 @@ import Html.Events exposing (..)
 import Postman.Model exposing (Model)
 import Postman.Message exposing (Msg(..))
 
-view : Model -> Html Msg
-view model =
-  div [ onClick Import ] [ text model ]
+view : Html Msg
+view =
+  div [ onClick Import ] [ text "import" ]

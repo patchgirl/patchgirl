@@ -22,3 +22,15 @@ toOption method =
   option
     [ Html.Attributes.value (toString method) ]
     [ text (toString method) ]
+
+fromString : String -> Maybe Method
+fromString method =
+  case method of
+    "GET" -> Just Get
+    "POST" -> Just Post
+    "PUT" -> Just Put
+    "DELETE" -> Just Delete
+    "PATCH" -> Just Patch
+    "HEAD" -> Just Head
+    "OPTIONS" -> Just Options
+    _ -> Nothing

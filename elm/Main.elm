@@ -52,7 +52,7 @@ init _ =
       }
     model =
       { treeModel = treeModel
-      , postmanModel = "init"
+      , postmanModel = Nothing
       }
   in
     (model, Cmd.none)
@@ -66,7 +66,18 @@ update msg model =
 
     PostmanMsg subMsg ->
       case Postman.update subMsg model.postmanModel of
-        (newPostmanModel, newMsg) -> ( { model | postmanModel = newPostmanModel }, Cmd.map PostmanMsg newMsg)
+        (Just newTree, newMsg) ->
+          let
+            newTreeModel =
+              { selectedNode = Nothing
+              , displayedBuilderIndex = Nothing
+              , tree = newTree
+              }
+          in
+            ( { model | treeModel = newTreeModel }, Cmd.map PostmanMsg newMsg)
+
+        (Nothing, newMsg) ->
+          (model, Cmd.none)
 
     BuilderMsg subMsg ->
       let
@@ -89,16 +100,16 @@ view model =
     builderView : Html Msg
     builderView =
       div []
-        [ div [] [ postmanView model.postmanModel ]
+        [ div [] [ postmanView ]
         , div [] [ treeView model ]
         , div [] [ builderAppView model.treeModel ]
         ]
   in
     div [ id "app" ] [ builderView ]
 
-postmanView : Postman.Model -> Html Msg
-postmanView postmanModel =
-  Html.map PostmanMsg (Postman.view postmanModel)
+postmanView : Html Msg
+postmanView =
+  Html.map PostmanMsg Postman.view
 
 builderAppView : Tree.Model -> Html Msg
 builderAppView treeModel =
