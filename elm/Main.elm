@@ -14,6 +14,11 @@ import Tree.Model as Tree
 import Tree.Message as Tree
 import Tree.App as Tree
 
+import Postman.View as Postman
+import Postman.Model as Postman
+import Postman.Message as Postman
+import Postman.App as Postman
+
 main =
   Browser.element
     { init = init
@@ -22,14 +27,20 @@ main =
     , view = view
     }
 
+type alias Model =
+  { treeModel : Tree.Model
+  , postmanModel : Postman.Model
+  }
+
 type Msg
   = TreeMsg Tree.Msg
   | BuilderMsg Builder.Msg
+  | PostmanMsg Postman.Msg
 
-init : () -> (Tree.Model, Cmd Msg)
+init : () -> (Model, Cmd Msg)
 init _ =
   let
-    model =
+    treeModel =
       { selectedNode = Nothing
       , displayedBuilderIndex = Nothing
       , tree = [ Tree.Folder "folder1" False []
@@ -39,20 +50,28 @@ init _ =
                                                ]
                ]
       }
+    model =
+      { treeModel = treeModel
+      , postmanModel = ""
+      }
   in
     (model, Cmd.none)
 
-update : Msg -> Tree.Model -> (Tree.Model, Cmd Msg)
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     TreeMsg subMsg ->
-      case Tree.update subMsg model of
-        (newModel, newMsg) -> ( newModel, Cmd.map TreeMsg newMsg)
+      case Tree.update subMsg model.treeModel of
+        (newTreeModel, newMsg) -> ( { model | treeModel = newTreeModel }, Cmd.map TreeMsg newMsg)
+
+    PostmanMsg subMsg ->
+      case Postman.update subMsg model.postmanModel of
+        _ -> (model, Cmd.none)
 
     BuilderMsg subMsg ->
       let
         mBuilder : Maybe Builder.Model
-        mBuilder = model.displayedBuilderIndex |> Maybe.andThen (Tree.findBuilder model.tree)
+        mBuilder = model.treeModel.displayedBuilderIndex |> Maybe.andThen (Tree.findBuilder model.treeModel.tree)
         mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
         mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) mBuilder
       in
@@ -60,30 +79,35 @@ update msg model =
           Just(updatedBuilder, builderCmd) -> ( model, Cmd.map BuilderMsg builderCmd )
           Nothing -> (model, Cmd.none)
 
-subscriptions : Tree.Model -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
 
-view : Tree.Model -> Html Msg
+view : Model -> Html Msg
 view model =
   let
     builderView : Html Msg
     builderView =
       div []
-        [ div [] [ treeView model ]
-        , div [] [ builderAppView model ]
+        [ div [] [ postmanView ]
+        , div [] [ treeView model ]
+        , div [] [ builderAppView model.treeModel ]
         ]
   in
     div [ id "app" ] [ builderView ]
 
+postmanView : Html Msg
+postmanView =
+  Html.map PostmanMsg Postman.view
+
 builderAppView : Tree.Model -> Html Msg
-builderAppView model =
-  model.displayedBuilderIndex
-    |> Maybe.andThen (Tree.findBuilder model.tree)
+builderAppView treeModel =
+  treeModel.displayedBuilderIndex
+    |> Maybe.andThen (Tree.findBuilder treeModel.tree)
     |> Maybe.map Builder.view
     |> Maybe.map (Html.map BuilderMsg)
-    |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(model.displayedBuilderIndex))) ])
+    |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(treeModel.displayedBuilderIndex))) ])
 
-treeView : Tree.Model -> Html Msg
+treeView : Model -> Html Msg
 treeView model =
-  Html.map TreeMsg (Tree.view model.tree)
+  Html.map TreeMsg (Tree.view model.treeModel.tree)
