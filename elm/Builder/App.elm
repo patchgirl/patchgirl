@@ -15,7 +15,7 @@ import Builder.Model exposing (Model, Method(..))
 import Builder.Header
 import Builder.Url
 import Builder.Body
-import Builder.Method
+import Builder.Method as Builder
 
 defaultModel1 =
   { name = "no name"
@@ -69,6 +69,9 @@ update msg model =
     GetHttpResponse result ->
       ( { model | response = Just result }, Cmd.none)
 
+    GiveResponse result ->
+      ( { model | response = Just result }, Cmd.none)
+
     UpdateHeaders rawHeaders ->
       case Builder.Header.parseHeaders rawHeaders of
         Just headers ->
@@ -84,10 +87,13 @@ update msg model =
           in
             ( { model | validity = newValidity }, Cmd.none )
 
+    AskRun ->
+      (model, Cmd.none)
+
     RunHttpRequest ->
       let
         httpRequest = Http.request
-          { method = Builder.Method.toString model.method
+          { method = Builder.methodToString model.method
           , headers = List.map Builder.Header.mkHeader model.headers
           , url = Builder.Url.fullUrl model
           , body = Http.emptyBody

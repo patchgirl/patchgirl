@@ -10,3 +10,5 @@ type Msg
   | SetHttpScheme String
   | GetHttpResponse (Result Http.Error String)
   | SetHttpBody String
+  | AskRun
+  | GiveResponse (Result Http.Error String)

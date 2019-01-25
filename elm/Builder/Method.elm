@@ -6,8 +6,8 @@ import Html.Attributes exposing (value, placeholder, href, disabled)
 import Builder.Message exposing (Msg)
 import Builder.Model exposing (Method(..), Model)
 
-toString : Method -> String
-toString method =
+methodToString : Method -> String
+methodToString method =
   case method of
     Get -> "GET"
     Post -> "POST"
@@ -20,8 +20,8 @@ toString method =
 toOption : Method -> Html Msg
 toOption method =
   option
-    [ Html.Attributes.value (toString method) ]
-    [ text (toString method) ]
+    [ Html.Attributes.value (methodToString method) ]
+    [ text (methodToString method) ]
 
 fromString : String -> Maybe Method
 fromString method =

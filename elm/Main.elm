@@ -24,6 +24,10 @@ import Env.Model as Env
 import Env.Message as Env
 import Env.App as Env
 
+import Runner.App as Runner
+import Runner.Message as Runner
+import Runner.Model as Runner
+
 main =
   Browser.element
     { init = init
@@ -36,6 +40,7 @@ type alias Model =
   { treeModel : Tree.Model
   , postmanModel : Postman.Model
   , envModel : Env.Model
+  , runnerModel : Runner.Model
   }
 
 type Msg
@@ -43,6 +48,7 @@ type Msg
   | BuilderMsg Builder.Msg
   | PostmanMsg Postman.Msg
   | EnvMsg Env.Msg
+  | RunnerMsg Runner.Msg
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -61,6 +67,7 @@ init _ =
       { treeModel = treeModel
       , postmanModel = Nothing
       , envModel = [("", "")]
+      , runnerModel = Nothing
       }
   in
     (model, Cmd.none)
@@ -89,19 +96,38 @@ update msg model =
 
     BuilderMsg subMsg ->
       let
-        mBuilder : Maybe Builder.Model
-        mBuilder = model.treeModel.displayedBuilderIndex |> Maybe.andThen (Tree.findBuilder model.treeModel.tree)
         mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
-        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) mBuilder
+        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) (mBuilder model.treeModel)
       in
-        case mUpdatedBuilderToCmd of
-          Just(updatedBuilder, builderCmd) -> ( model, Cmd.map BuilderMsg builderCmd )
-          Nothing -> (model, Cmd.none)
+        case (mBuilder model.treeModel, subMsg) of
+          (Nothing, _) -> (model, Cmd.none)
+          (Just builder, Builder.AskRun) ->
+            let
+              (updatedRunner, cmdRunner) = (Runner.update (Runner.Run model.envModel builder) model.runnerModel)
+            in
+              ( { model | runnerModel = updatedRunner }, Cmd.map RunnerMsg cmdRunner)
+          (Just builder, _) ->
+            let
+              (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
+            in
+              (model, Cmd.map BuilderMsg cmdBuilder)
+
+    RunnerMsg subMsg ->
+      case (subMsg, mBuilder model.treeModel) of
+        (Runner.GetResponse response, Just builder) ->
+          let
+            (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
+          in
+            (model, Cmd.map BuilderMsg cmdBuilder)
+        _ -> (model, Cmd.none)
 
     EnvMsg subMsg ->
       case Env.update subMsg model.envModel of
         (newEnv, newMsg) ->
           ( { model | envModel = newEnv }, Cmd.map EnvMsg newMsg)
+
+mBuilder : Tree.Model -> Maybe Builder.Model
+mBuilder treeModel = treeModel.displayedBuilderIndex |> Maybe.andThen (Tree.findBuilder treeModel.tree)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
