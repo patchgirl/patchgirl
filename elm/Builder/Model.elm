@@ -9,16 +9,10 @@ type alias Model =
   , method : Method
   , headers : List(Header)
   , body : String
-  , validity : Validity
   , response : Maybe Response
   }
 
 type Method = Get | Post | Put | Delete | Patch | Head | Options
-
-type alias Validity =
-  { url : Bool,
-    headers : Bool
-  }
 
 type alias Header = (String, String)
 

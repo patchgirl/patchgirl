@@ -26,12 +26,5 @@ mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
 
 view : Model -> Html Msg
 view model =
-  let
-    status = case model.validity.headers of
-      False -> "Invalid Headers"
-      True -> ""
-  in
-    div [ id "headersBuilder" ]
-      [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput Builder.Message.UpdateHeaders ] []
-      , div [] [ text status ]
-      ]
+  div [ id "headersBuilder" ]
+    [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput Builder.Message.UpdateHeaders ] [] ]

@@ -24,7 +24,6 @@ defaultModel1 =
   , method = Get
   , headers = []
   , body = ""
-  , validity = { url = False, headers = True }
   , response = Nothing
   }
 
@@ -35,7 +34,6 @@ defaultModel2 =
   , method = Get
   , headers = []
   , body = ""
-  , validity = { url = False, headers = True }
   , response = Nothing
   }
 
@@ -43,18 +41,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     UpdateUrl url ->
-      case Builder.Url.parseUrl model url of
-        Just u ->
-          let
-            oldValidity = model.validity
-            newValidity = { oldValidity | url = True }
-          in
-            ( { model | url = url, validity = newValidity }, Cmd.none)
-        Nothing ->
-          let
-            oldValidity = model.validity
-            newValidity = { oldValidity | url = False }
-          in ( { model | url = url, validity = newValidity }, Cmd.none)
+      ( { model | url = url }, Cmd.none)
 
     SetHttpMethod newMethod ->
       case newMethod of
@@ -66,8 +53,8 @@ update msg model =
         "HTTP" -> ( { model | scheme = "HTTP" }, Cmd.none)
         _ -> ( { model | scheme = "HTTPS" }, Cmd.none)
 
-    GetHttpResponse result ->
-      ( { model | response = Just result }, Cmd.none)
+    AskRun ->
+      (model, Cmd.none)
 
     GiveResponse result ->
       ( { model | response = Just result }, Cmd.none)
@@ -75,33 +62,9 @@ update msg model =
     UpdateHeaders rawHeaders ->
       case Builder.Header.parseHeaders rawHeaders of
         Just headers ->
-          let
-            oldValidity = model.validity
-            newValidity = { oldValidity | headers = True }
-          in
-            ( { model | validity = newValidity, headers = headers }, Cmd.none )
+          ( { model | headers = headers }, Cmd.none )
         Nothing ->
-          let
-            oldValidity = model.validity
-            newValidity = { oldValidity | headers = False }
-          in
-            ( { model | validity = newValidity }, Cmd.none )
-
-    AskRun ->
-      (model, Cmd.none)
-
-    RunHttpRequest ->
-      let
-        httpRequest = Http.request
-          { method = Builder.methodToString model.method
-          , headers = List.map Builder.Header.mkHeader model.headers
-          , url = Builder.Url.fullUrl model
-          , body = Http.emptyBody
-          , expect = Http.expectString GetHttpResponse
-          , timeout = Nothing
-          , tracker = Nothing
-          }
-      in (model, httpRequest)
+          ( model, Cmd.none )
 
     SetHttpBody body ->
       ( { model | body = body }, Cmd.none )

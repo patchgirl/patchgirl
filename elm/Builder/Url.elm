@@ -33,20 +33,15 @@ parseUrl model url =
 
 view : Model -> Html Msg
 view model =
-  let
-    status = case model.validity.url of
-      False -> "Invalid Url"
-      True -> "Send"
-  in
-    div [ id "urlBuilder" ]
-      [ select [ onInput SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.Method.toOption)
-      , select [ onInput SetHttpScheme ]
-        [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
-        , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
-        ]
-      , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput Builder.Message.UpdateUrl, onEnter Builder.Message.RunHttpRequest ] []
-      , button [onClick RunHttpRequest, disabled <| not model.validity.url] [ text status ]
+  div [ id "urlBuilder" ]
+    [ select [ onInput SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.Method.toOption)
+    , select [ onInput SetHttpScheme ]
+      [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
+      , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
       ]
+    , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput Builder.Message.UpdateUrl, onEnter AskRun ] []
+    , button [ onClick AskRun ] [ text "Send" ]
+    ]
 
 onEnter : Msg -> Attribute Msg
 onEnter msg =

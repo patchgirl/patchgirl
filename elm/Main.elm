@@ -55,7 +55,7 @@ init _ =
   let
     treeModel =
       { selectedNode = Nothing
-      , displayedBuilderIndex = Nothing
+      , displayedBuilderIndex = Just 5
       , tree = [ Tree.Folder "folder1" False []
                , Tree.Folder "folder2" True [ Tree.Folder "folder2.2" True [] ]
                , Tree.Folder "folder3" True <| [ Tree.File "file1" Builder.defaultModel1
@@ -113,12 +113,20 @@ update msg model =
               (model, Cmd.map BuilderMsg cmdBuilder)
 
     RunnerMsg subMsg ->
-      case (subMsg, mBuilder model.treeModel) of
-        (Runner.GetResponse response, Just builder) ->
+      case (subMsg, mBuilder model.treeModel, model.treeModel.displayedBuilderIndex) of
+        (Runner.GetResponse response, Just builder, Just builderIdx) ->
           let
             (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
+            updateNode : Tree.Node -> Tree.Node
+            updateNode oldNode =
+              case oldNode of
+                Tree.File name _ -> Debug.log "test" (Tree.File name updatedBuilder)
+                _ -> oldNode
+            newTree = Tree.modifyNode updateNode model.treeModel.tree builderIdx
+            oldTreeModel = model.treeModel
+            newTreeModel = { oldTreeModel | tree = newTree }
           in
-            (model, Cmd.map BuilderMsg cmdBuilder)
+            ( { model | treeModel = newTreeModel }, Cmd.map BuilderMsg cmdBuilder)
         _ -> (model, Cmd.none)
 
     EnvMsg subMsg ->
