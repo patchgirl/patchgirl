@@ -55,7 +55,7 @@ init _ =
   let
     treeModel =
       { selectedNode = Nothing
-      , displayedBuilderIndex = Just 5
+      , displayedBuilderIndex = Just 4
       , tree = [ Tree.Folder "folder1" False []
                , Tree.Folder "folder2" True [ Tree.Folder "folder2.2" True [] ]
                , Tree.Folder "folder3" True <| [ Tree.File "file1" Builder.defaultModel1
@@ -66,7 +66,7 @@ init _ =
     model =
       { treeModel = treeModel
       , postmanModel = Nothing
-      , envModel = [("", "")]
+      , envModel = [("url", "swapi.co")]
       , runnerModel = Nothing
       }
   in
@@ -120,7 +120,7 @@ update msg model =
             updateNode : Tree.Node -> Tree.Node
             updateNode oldNode =
               case oldNode of
-                Tree.File name _ -> Debug.log "test" (Tree.File name updatedBuilder)
+                Tree.File name _ -> Tree.File name updatedBuilder
                 _ -> oldNode
             newTree = Tree.modifyNode updateNode model.treeModel.tree builderIdx
             oldTreeModel = model.treeModel

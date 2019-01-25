@@ -17,26 +17,6 @@ import Builder.Url
 import Builder.Body
 import Builder.Method as Builder
 
-defaultModel1 =
-  { name = "no name"
-  , url = "swapi.co/api/people/1"
-  , scheme = "HTTP"
-  , method = Get
-  , headers = []
-  , body = ""
-  , response = Nothing
-  }
-
-defaultModel2 =
-  { name = "no name2"
-  , url = "swapi.co/api/people/2"
-  , scheme = "HTTP"
-  , method = Get
-  , headers = []
-  , body = ""
-  , response = Nothing
-  }
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
