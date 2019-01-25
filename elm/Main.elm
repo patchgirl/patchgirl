@@ -19,6 +19,11 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
+import Env.View as Env
+import Env.Model as Env
+import Env.Message as Env
+import Env.App as Env
+
 main =
   Browser.element
     { init = init
@@ -30,12 +35,14 @@ main =
 type alias Model =
   { treeModel : Tree.Model
   , postmanModel : Postman.Model
+  , envModel : Env.Model
   }
 
 type Msg
   = TreeMsg Tree.Msg
   | BuilderMsg Builder.Msg
   | PostmanMsg Postman.Msg
+  | EnvMsg Env.Msg
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -53,6 +60,7 @@ init _ =
     model =
       { treeModel = treeModel
       , postmanModel = Nothing
+      , envModel = [("", "")]
       }
   in
     (model, Cmd.none)
@@ -90,6 +98,11 @@ update msg model =
           Just(updatedBuilder, builderCmd) -> ( model, Cmd.map BuilderMsg builderCmd )
           Nothing -> (model, Cmd.none)
 
+    EnvMsg subMsg ->
+      case Env.update subMsg model.envModel of
+        (newEnv, newMsg) ->
+          ( { model | envModel = newEnv }, Cmd.map EnvMsg newMsg)
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
@@ -103,6 +116,7 @@ view model =
         [ div [] [ postmanView ]
         , div [] [ treeView model ]
         , div [] [ builderAppView model.treeModel ]
+        , div [] [ envView model ]
         ]
   in
     div [ id "app" ] [ builderView ]
@@ -122,3 +136,7 @@ builderAppView treeModel =
 treeView : Model -> Html Msg
 treeView model =
   Html.map TreeMsg (Tree.view model.treeModel.tree)
+
+envView : Model -> Html Msg
+envView model =
+  Html.map EnvMsg (Env.view model.envModel)
