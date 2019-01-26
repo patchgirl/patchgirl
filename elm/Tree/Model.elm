@@ -2,19 +2,20 @@ module Tree.Model exposing (..)
 
 import Builder.Model as Builder
 
-type Node
-  =
-    Folder
-      { name : String
-      , open : Bool
-      , showRenameInput : Bool
-      , children : Tree
-      }
-    | File
-      { name : String
-      , showRenameInput : Bool
-      , builder : Builder.Model
-      }
+type alias Folder2 =
+  { name : String
+  , open : Bool
+  , showRenameInput : Bool
+  , children : Tree
+  }
+
+type alias File2 =
+  { name : String
+  , showRenameInput : Bool
+  , builder : Builder.Model
+  }
+
+type Node = Folder Folder2 | File File2
 
 type alias Tree = List(Node)
 

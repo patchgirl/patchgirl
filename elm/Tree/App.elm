@@ -20,9 +20,9 @@ update msg model =
         toggle : Node -> Node
         toggle node =
           case node of
-            File {} as file -> file
-            Folder { name, open, children } ->
-              Folder { name = name, open = (not open), children = children, showRenameInput = False }
+            File _ as file -> file
+            Folder folder ->
+              Folder { folder | open = (not folder.open), showRenameInput = False }
       in
         ( { model | tree = (modifyNode toggle model.tree idx) }, Cmd.none)
 
@@ -31,20 +31,16 @@ update msg model =
         mkdir : Node -> Node
         mkdir node =
           case node of
-            File {} as file -> file
-            Folder {name, open, children} as folder ->
+            File _ as file -> file
+            Folder folder ->
               let
                 newChild = Folder { name = "newFolder"
                                   , open = False
-                                  , children = children
+                                  , children = []
                                   , showRenameInput = False
                                   }
               in
-                Folder { name = name
-                       , open = (not open)
-                       , children = newChild :: children
-                       , showRenameInput = False
-                       }
+                Folder { folder | children = newChild :: folder.children, showRenameInput = False }
 
       in
         ( { model | tree = (modifyNode mkdir model.tree idx) }, Cmd.none)
@@ -55,9 +51,9 @@ update msg model =
         touch : Node -> Node
         touch node =
           case node of
-            File {} as file -> file
-            Folder { name, open, children } as folder ->
-              Folder { name = name, open = open, children = (newFile :: children), showRenameInput = False }
+            File _ as file -> file
+            Folder folder ->
+              Folder { folder | children = (newFile :: folder.children), showRenameInput = False }
       in
         ( { model | tree = (modifyNode touch model.tree idx) }, Cmd.none)
 
@@ -66,10 +62,8 @@ update msg model =
         showRenameInput : Node -> Node
         showRenameInput node =
           case node of
-            Folder { name, open, children } ->
-              Folder { name = name, open = open, children = children, showRenameInput = True }
-            File { name, builder } ->
-              File { name = name, builder = builder, showRenameInput = True }
+            Folder folder -> Folder { folder | showRenameInput = True }
+            File file -> File { file | showRenameInput = True }
       in
         ( { model | tree = (modifyNode showRenameInput model.tree idx) }, Cmd.none)
 
@@ -78,10 +72,8 @@ update msg model =
         rename : Node -> Node
         rename node =
           case node of
-            Folder { name, open, children } ->
-              Folder { name = newName, open = open, children = children, showRenameInput = False }
-            File { name, builder } ->
-              File { name = newName, builder = builder, showRenameInput = False }
+            Folder folder -> Folder { folder | name = newName, showRenameInput = False }
+            File file -> File { file | name = newName, showRenameInput = False }
       in
         ( { model | tree = (modifyNode rename model.tree idx) }, Cmd.none)
 
