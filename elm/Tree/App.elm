@@ -1,7 +1,7 @@
 module Tree.App exposing (..)
 
-import Tree.Model exposing (Model, Node(..), Tree)
-import Tree.Message exposing (Msg(..))
+import Tree.Model exposing (..)
+import Tree.Message exposing (..)
 
 import Builder.App as Builder
 import Builder.Model as Builder
@@ -21,8 +21,7 @@ update msg model =
         toggle node =
           case node of
             File _ as file -> file
-            Folder folder ->
-              Folder { folder | open = (not folder.open), showRenameInput = False }
+            Folder folder -> Folder { folder | open = (not folder.open), showRenameInput = False }
       in
         ( { model | tree = (modifyNode toggle model.tree idx) }, Cmd.none)
 
@@ -32,28 +31,20 @@ update msg model =
         mkdir node =
           case node of
             File _ as file -> file
-            Folder folder ->
-              let
-                newChild = Folder { name = "newFolder"
-                                  , open = False
-                                  , children = []
-                                  , showRenameInput = False
-                                  }
-              in
-                Folder { folder | children = newChild :: folder.children, showRenameInput = False }
-
+            Folder folder -> Folder { folder | children = defaultFolder :: folder.children
+                                    , showRenameInput = False
+                                    }
       in
         ( { model | tree = (modifyNode mkdir model.tree idx) }, Cmd.none)
 
     Touch idx ->
       let
-        newFile = File { name = "newFile", builder = Builder.defaultModel1, showRenameInput = False }
         touch : Node -> Node
         touch node =
           case node of
             File _ as file -> file
             Folder folder ->
-              Folder { folder | children = (newFile :: folder.children), showRenameInput = False }
+              Folder { folder | children = (defaultFile :: folder.children), showRenameInput = False }
       in
         ( { model | tree = (modifyNode touch model.tree idx) }, Cmd.none)
 

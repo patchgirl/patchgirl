@@ -25,6 +25,18 @@ type alias Model =
   , tree : Tree
   }
 
+defaultFolder =
+  Folder { name = "new folder"
+         , open = False
+         , children = []
+         , showRenameInput = False
+         }
+
+defaultFile =
+  File { name = "new file"
+       , builder = Builder.defaultBuilder
+       , showRenameInput = False
+       }
 
 defaultTree =
   [ Folder { name = "folder1"

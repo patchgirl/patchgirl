@@ -16,6 +16,16 @@ type Method = Get | Post | Put | Delete | Patch | Head | Options
 type alias Header = (String, String)
 type alias Response = Result Http.Error String
 
+defaultBuilder =
+  { name = "new builder"
+  , url = ""
+  , scheme = "HTTP"
+  , method = Get
+  , headers = []
+  , body = ""
+  , response = Nothing
+  }
+
 defaultModel1 =
   { name = "no name"
   , url = "{{url}}/api/people/1"
