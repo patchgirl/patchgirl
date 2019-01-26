@@ -10,3 +10,4 @@ type Msg
   | Touch Int
   | ShowRenameInput Int
   | Rename Int String
+  | Delete Int

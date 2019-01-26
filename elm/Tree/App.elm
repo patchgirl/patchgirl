@@ -85,6 +85,9 @@ update msg model =
       in
         ( { model | tree = (modifyNode rename model.tree idx) }, Cmd.none)
 
+    Delete idx ->
+      ( { model | tree = (deleteNode model.tree idx) }, Cmd.none)
+
 findNode : Tree -> Int -> Maybe Node
 findNode =
   let
@@ -142,3 +145,35 @@ modifyNode f =
                    (newIdx, node :: newTree)
   in
     \x y -> modify x y |> Tuple.second
+
+deleteNode : Tree -> Int -> Tree
+deleteNode =
+  let
+    delete : Tree -> Int -> (Int, Tree)
+    delete tree idx =
+      if idx < 0 then
+        (idx, tree)
+      else
+        case (tree, idx) of
+          (node :: tail, 0) -> (-1, tail)
+          ([], _) -> (idx, [])
+          (node :: tail, _) ->
+             case node of
+               Folder { name, open, showRenameInput, children } ->
+                 let
+                    (newIdx, newChildren) = delete children (idx - 1)
+                    (rIdx, newTail) = delete tail newIdx
+                    newFolder = Folder { name = name
+                                       , open = open
+                                       , showRenameInput = showRenameInput
+                                       , children = newChildren
+                                       }
+                 in (rIdx, newFolder :: newTail)
+
+               _ ->
+                 let
+                   (newIdx, newTree) = (delete tail (idx - 1))
+                 in
+                   (newIdx, node :: newTree)
+  in
+    \x y -> delete x y |> Tuple.second
