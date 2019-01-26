@@ -37,8 +37,8 @@ nodeView idx tree =
         (File { name, showRenameInput }) ->
           let
             editView : Html Msg
-            editView = input [ value name, Util.onEnter (Rename idx "coucou") ] []
-            readView = a [ onClick (SetDisplayedBuilder idx) ] [ text name ]
+            editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
+            readView = a [ onClick (SetDisplayedBuilder idx) ] [ text (" " ++ name) ]
             modeView =
               case showRenameInput of
                 True -> editView
