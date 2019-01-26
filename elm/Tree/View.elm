@@ -19,13 +19,19 @@ nodeView idx tree =
     [] -> (idx, [])
     node :: tail ->
       case node of
-        (Folder { name, open, children }) ->
+        (Folder { name, open, children, showRenameInput }) ->
           let
             (folderIdx, folderChildrenView) = nodeView (idx + 1) children
             (newIdx, tailView) = nodeView folderIdx tail
             folderToggleView = if open then "-" else "+"
+            readView = b [ onClick (ToggleNode idx) ] [ text (folderToggleView ++ " " ++ name ++ "/ ") ]
+            editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
+            modeView =
+              case showRenameInput of
+                True -> editView
+                False -> readView
             folderView =
-              li [] [ b [ onClick (ToggleNode idx) ] [ text (folderToggleView ++ " " ++ name ++ "/ ") ]
+              li [] [ modeView
                     , a [ onClick (Mkdir idx) ] [ text ("new Folder ") ]
                     , a [ onClick (Touch idx) ] [ text ("new File ") ]
                     , a [ onClick (ShowRenameInput idx) ] [ text ("rename") ]
@@ -36,7 +42,6 @@ nodeView idx tree =
 
         (File { name, showRenameInput }) ->
           let
-            editView : Html Msg
             editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
             readView = a [ onClick (SetDisplayedBuilder idx) ] [ text (" " ++ name) ]
             modeView =
