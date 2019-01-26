@@ -15,15 +15,16 @@ decodePostman str =
 postmanCollectionToTreeDecoder : Decoder Tree.Tree
 postmanCollectionToTreeDecoder =
   let
-    root name requests = Tree.Folder name True requests
+    root : String -> Tree.Tree -> Tree.Node
+    root name requests = Tree.Folder { name = name, open = True, children = requests, showRenameInput = False }
     filesDecoder : Decoder (List Tree.Node)
     filesDecoder = field "item" (list fileDecoder)
     fileDecoder : Decoder Tree.Node
-    fileDecoder = map2 Tree.File fileNameDecoder builderDecoder
+    fileDecoder = map2 (\name builder -> Tree.File { name = name, builder = builder, showRenameInput = False }) fileNameDecoder builderDecoder
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
     rootDecoder : Decoder Tree.Node
-    rootDecoder = map3 Tree.Folder collectionNameDecoder (succeed True) filesDecoder
+    rootDecoder = map2 (\name children -> Tree.Folder { name = name, open = True, children = children, showRenameInput = False }) collectionNameDecoder filesDecoder
   in
     map (\folder -> [folder]) rootDecoder
 

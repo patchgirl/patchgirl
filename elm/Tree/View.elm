@@ -17,7 +17,7 @@ nodeView idx tree =
     [] -> (idx, [])
     node :: tail ->
       case node of
-        Folder name open children ->
+        (Folder { name, open, children }) ->
           let
             (folderIdx, folderChildrenView) = nodeView (idx + 1) children
             (newIdx, tailView) = nodeView folderIdx tail
@@ -25,15 +25,18 @@ nodeView idx tree =
             folderView =
               li [] [ b [ onClick (ToggleNode idx) ] [ text (folderToggleView ++ " " ++ name ++ "/ ") ]
                     , a [ onClick (Mkdir idx) ] [ text ("new Folder ") ]
-                    , a [ onClick (Touch idx) ] [ text ("new File") ]
+                    , a [ onClick (Touch idx) ] [ text ("new File ") ]
+                    , a [ onClick (ShowRenameInput idx) ] [ text ("rename") ]
                     , ul [ hidden (not open) ] folderChildrenView
                     ]
           in
             (newIdx, folderView :: tailView)
 
-        File name _ ->
+        (File { name }) ->
           let
             (newIdx, tailView) = nodeView (idx + 1) tail
-            fileView = li [ onClick (SetDisplayedBuilder idx) ] [ text name ]
+            fileView = li [] [ a [ onClick (SetDisplayedBuilder idx) ] [ text name ]
+                             , a [ onClick (ShowRenameInput idx) ] [ text ("rename") ]
+                             ]
           in
             (newIdx, fileView :: tailView)

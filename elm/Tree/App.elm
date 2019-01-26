@@ -20,9 +20,9 @@ update msg model =
         toggle : Node -> Node
         toggle node =
           case node of
-            File _ _ as file -> file
-            Folder name toggleState children as folder ->
-              Folder name (not toggleState) children
+            File {} as file -> file
+            Folder { name, open, children } ->
+              Folder { name = name, open = (not open), children = children, showRenameInput = False }
       in
         ( { model | tree = (modifyNode toggle model.tree idx) }, Cmd.none)
 
@@ -31,23 +31,41 @@ update msg model =
         mkdir : Node -> Node
         mkdir node =
           case node of
-            File _ _ as file -> file
-            Folder name toggleState children as folder ->
-              Folder name (not toggleState) (Folder "newFolder" False [] :: children)
+            File {} as file -> file
+            Folder {name, open, children} as folder ->
+              let
+                newChild = Folder { name = "newFolder"
+                                  , open = False
+                                  , children = children
+                                  , showRenameInput = False
+                                  }
+              in
+                Folder { name = name
+                       , open = (not open)
+                       , children = newChild :: children
+                       , showRenameInput = False
+                       }
+
       in
         ( { model | tree = (modifyNode mkdir model.tree idx) }, Cmd.none)
 
     Touch idx ->
       let
-        newFile = File "newFile" Builder.defaultModel1
+        newFile = File { name = "newFile", builder = Builder.defaultModel1, showRenameInput = False }
         touch : Node -> Node
         touch node =
           case node of
-            File _ _ as file -> file
-            Folder name toggleState children as folder ->
-              Folder name (not toggleState) (newFile :: children)
+            File {} as file -> file
+            Folder { name, open, children } as folder ->
+              Folder { name = name, open = open, children = (newFile :: children), showRenameInput = False }
       in
         ( { model | tree = (modifyNode touch model.tree idx) }, Cmd.none)
+
+    ShowRenameInput idx ->
+      ( model, Cmd.none )
+
+    Rename idx ->
+      ( model, Cmd.none )
 
 findNode : Tree -> Int -> Maybe Node
 findNode =
@@ -59,7 +77,7 @@ findNode =
         ([], _) -> (idx, Nothing)
         (node :: tail, _) ->
            case node of
-             Folder _ _ children  ->
+             Folder { children }  ->
                let
                   (newIdx, folderSearch) = find children (idx - 1)
                   (_, tailSearch) = find tail newIdx
@@ -76,7 +94,7 @@ findNode =
 findBuilder : Tree -> Int -> Maybe Builder.Model
 findBuilder tree idx =
   case findNode tree idx of
-    Just (File _ builder) -> Just builder
+    Just (File { builder }) -> Just builder
     _ -> Nothing
 
 modifyNode : (Node -> Node) -> Tree -> Int -> Tree
@@ -92,11 +110,11 @@ modifyNode f =
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               Folder name open children  ->
+               Folder { name, open, showRenameInput, children } ->
                  let
                     (newIdx, newChildren) = modify children (idx - 1)
                     (rIdx, newTail) = modify tail newIdx
-                    newFolder = Folder name open newChildren
+                    newFolder = Folder { name = name, open = open, showRenameInput = showRenameInput, children = newChildren }
                  in (rIdx, newFolder :: newTail)
 
                _ ->

@@ -8,3 +8,5 @@ type Msg
   | ToggleNode Int
   | Mkdir Int
   | Touch Int
+  | ShowRenameInput Int
+  | Rename Int

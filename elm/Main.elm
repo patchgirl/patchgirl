@@ -56,12 +56,7 @@ init _ =
     treeModel =
       { selectedNode = Nothing
       , displayedBuilderIndex = Just 4
-      , tree = [ Tree.Folder "folder1" False []
-               , Tree.Folder "folder2" True [ Tree.Folder "folder2.2" True [] ]
-               , Tree.Folder "folder3" True <| [ Tree.File "file1" Builder.defaultModel1
-                                               , Tree.File "file2" Builder.defaultModel2
-                                               ]
-               ]
+      , tree = Tree.defaultTree
       }
     model =
       { treeModel = treeModel
@@ -120,7 +115,7 @@ update msg model =
             updateNode : Tree.Node -> Tree.Node
             updateNode oldNode =
               case oldNode of
-                Tree.File name _ -> Tree.File name updatedBuilder
+                Tree.File { name } -> Tree.File { name = name, builder = updatedBuilder, showRenameInput = False }
                 _ -> oldNode
             newTree = Tree.modifyNode updateNode model.treeModel.tree builderIdx
             oldTreeModel = model.treeModel
