@@ -7,6 +7,8 @@ import Html.Events exposing (..)
 import Tree.Model exposing (Model, Node(..), Tree)
 import Tree.Message exposing (Msg(..))
 
+import Util.View as Util
+
 view : Tree -> Html Msg
 view tree =
   ul [] <| Tuple.second (nodeView 0 tree)
@@ -32,10 +34,17 @@ nodeView idx tree =
           in
             (newIdx, folderView :: tailView)
 
-        (File { name }) ->
+        (File { name, showRenameInput }) ->
           let
+            editView : Html Msg
+            editView = input [ value name, Util.onEnter (Rename idx "coucou") ] []
+            readView = a [ onClick (SetDisplayedBuilder idx) ] [ text name ]
+            modeView =
+              case showRenameInput of
+                True -> editView
+                False -> readView
             (newIdx, tailView) = nodeView (idx + 1) tail
-            fileView = li [] [ a [ onClick (SetDisplayedBuilder idx) ] [ text name ]
+            fileView = li [] [ modeView
                              , a [ onClick (ShowRenameInput idx) ] [ text ("rename") ]
                              ]
           in

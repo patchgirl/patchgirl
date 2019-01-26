@@ -9,4 +9,4 @@ type Msg
   | Mkdir Int
   | Touch Int
   | ShowRenameInput Int
-  | Rename Int
+  | Rename Int String

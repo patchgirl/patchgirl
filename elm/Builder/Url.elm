@@ -14,6 +14,8 @@ import Builder.Header
 import Builder.Model exposing (Model, Method(..))
 import Builder.Method
 
+import Util.View as Util
+
 fullUrl : Model -> String
 fullUrl model =
   model.scheme ++ "://" ++ model.url
@@ -39,17 +41,6 @@ view model =
       [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
       , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
       ]
-    , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput Builder.Message.UpdateUrl, onEnter AskRun ] []
+    , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput Builder.Message.UpdateUrl, Util.onEnter AskRun ] []
     , button [ onClick AskRun ] [ text "Send" ]
     ]
-
-onEnter : Msg -> Attribute Msg
-onEnter msg =
-  let
-    isEnter code =
-      if code == 13 then
-        Json.succeed msg
-      else
-        Json.fail "not ENTER"
-    in
-      on "keydown" (Json.andThen isEnter keyCode)

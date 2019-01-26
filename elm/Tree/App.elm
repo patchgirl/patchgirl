@@ -62,10 +62,28 @@ update msg model =
         ( { model | tree = (modifyNode touch model.tree idx) }, Cmd.none)
 
     ShowRenameInput idx ->
-      ( model, Cmd.none )
+      let
+        showRenameInput : Node -> Node
+        showRenameInput node =
+          case node of
+            Folder { name, open, children } ->
+              Folder { name = name, open = open, children = children, showRenameInput = True }
+            File { name, builder } ->
+              File { name = name, builder = builder, showRenameInput = True }
+      in
+        ( { model | tree = (modifyNode showRenameInput model.tree idx) }, Cmd.none)
 
-    Rename idx ->
-      ( model, Cmd.none )
+    Rename idx newName ->
+      let
+        rename : Node -> Node
+        rename node =
+          case node of
+            Folder { name, open, children } ->
+              Folder { name = newName, open = open, children = children, showRenameInput = False }
+            File { name, builder } ->
+              File { name = newName, builder = builder, showRenameInput = False }
+      in
+        ( { model | tree = (modifyNode rename model.tree idx) }, Cmd.none)
 
 findNode : Tree -> Int -> Maybe Node
 findNode =
