@@ -24,6 +24,11 @@ import Env.Model as Env
 import Env.Message as Env
 import Env.App as Env
 
+import EnvNav.View as EnvNav
+import EnvNav.Model as EnvNav
+import EnvNav.Message as EnvNav
+import EnvNav.App as EnvNav
+
 import Runner.App as Runner
 import Runner.Message as Runner
 import Runner.Model as Runner
@@ -40,6 +45,7 @@ type alias Model =
   { treeModel : Tree.Model
   , postmanModel : Postman.Model
   , envModel : Env.Model
+  , envNavModel : EnvNav.Model
   , runnerModel : Runner.Model
   }
 
@@ -48,6 +54,7 @@ type Msg
   | BuilderMsg Builder.Msg
   | PostmanMsg Postman.Msg
   | EnvMsg Env.Msg
+  | EnvNavMsg EnvNav.Msg
   | RunnerMsg Runner.Msg
 
 init : () -> (Model, Cmd Msg)
@@ -62,6 +69,7 @@ init _ =
       { treeModel = treeModel
       , postmanModel = Nothing
       , envModel = [("url", "swapi.co")]
+      , envNavModel = ["env1"]
       , runnerModel = Nothing
       }
   in
@@ -73,6 +81,10 @@ update msg model =
     TreeMsg subMsg ->
       case Tree.update subMsg model.treeModel of
         (newTreeModel, newMsg) -> ( { model | treeModel = newTreeModel }, Cmd.map TreeMsg newMsg)
+
+    EnvNavMsg subMsg ->
+      case EnvNav.update subMsg model.envNavModel of
+        (newEnvNavModel, newMsg) -> ( { model | envNavModel = newEnvNavModel }, Cmd.map EnvNavMsg newMsg)
 
     PostmanMsg subMsg ->
       case Postman.update subMsg model.postmanModel of
@@ -144,6 +156,7 @@ view model =
       div []
         [ div [] [ postmanView ]
         , div [] [ treeView model ]
+        , div [] [ envNavView model ]
         , div [] [ builderAppView model.treeModel ]
         , div [] [ envView model ]
         ]
@@ -165,6 +178,10 @@ builderAppView treeModel =
 treeView : Model -> Html Msg
 treeView model =
   Html.map TreeMsg (Tree.view model.treeModel.tree)
+
+envNavView : Model -> Html Msg
+envNavView model =
+  Html.map EnvNavMsg (EnvNav.view model.envNavModel)
 
 envView : Model -> Html Msg
 envView model =
