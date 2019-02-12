@@ -48,12 +48,3 @@ update msg model =
 
     SetHttpBody body ->
       ( { model | body = body }, Cmd.none )
-
-view : Model -> Html Msg
-view model =
-  div [ id "builder" ]
-    [ Builder.Url.view model
-    , Builder.Header.view model
-    , Builder.Body.view model
-    , Builder.Response.view model
-    ]
