@@ -9,6 +9,7 @@ import Postman.View as Postman
 import Env.View as Env
 import EnvNav.View as EnvNav
 import Tab.View as Tab
+import Tab.Model as Tab
 import Builder.View as Builder
 
 import Tree.Model as Tree
@@ -19,10 +20,16 @@ import Window.Message exposing(..)
 view : Model -> Html Msg
 view model =
   let
+    contentView : Html Msg
+    contentView =
+      case model.tabModel of
+        Tab.EnvTab -> div [] [ text "env" ]
+        Tab.ReqTab -> div [] [ text "req" ]
     builderView : Html Msg
     builderView =
       div []
         [ div [] [ tabView ]
+        , contentView
         ]
 {-        [ div [] [ postmanView ]
         , div [] [ treeView model ]

@@ -34,6 +34,7 @@ import Runner.Model as Runner
 import Tab.Model as Tab
 import Tab.View as Tab
 import Tab.Message as Tab
+import Tab.App as Tab
 
 import Window.View exposing(..)
 import Window.Model exposing(..)
@@ -109,7 +110,8 @@ update msg model =
           ( { model | envModel = newEnv }, Cmd.map EnvMsg newMsg)
 
     TabMsg subMsg ->
-      (model, Cmd.none)
+      case Tab.update subMsg model.tabModel of
+        (newTab, newMsg) -> ( { model | tabModel = newTab }, Cmd.map TabMsg newMsg)
 
 mBuilder : Tree.Model -> Maybe Builder.Model
 mBuilder treeModel = treeModel.displayedBuilderIndex |> Maybe.andThen (Tree.findBuilder treeModel.tree)
