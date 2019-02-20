@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import Tree.View as Tree
+import Tree.Util as Tree
 import Postman.View as Postman
 import Env.View as Env
 import EnvNav.View as EnvNav
@@ -20,11 +21,25 @@ import Window.Message exposing(..)
 view : Model -> Html Msg
 view model =
   let
+    builderAppView : Html Msg
+    builderAppView =
+      model.treeModel.displayedBuilderIndex
+        |> Maybe.andThen (Tree.findBuilder model.treeModel.tree)
+        |> Maybe.map Builder.view
+        |> Maybe.map (Html.map BuilderMsg)
+        |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(model.treeModel.displayedBuilderIndex))) ])
+    treeView : Html Msg
+    treeView =
+      Html.map TreeMsg (Tree.view model.treeModel.tree)
     contentView : Html Msg
     contentView =
       case model.tabModel of
         Tab.EnvTab -> div [] [ text "env" ]
-        Tab.ReqTab -> div [] [ text "req" ]
+        Tab.ReqTab ->
+          div []
+            [ treeView
+            , builderAppView
+            ]
     builderView : Html Msg
     builderView =
       div []
@@ -48,18 +63,6 @@ postmanView : Html Msg
 postmanView =
   Html.map PostmanMsg Postman.view
 
-builderAppView : Tree.Model -> Html Msg
-builderAppView treeModel =
-  div [][]
---  treeModel.displayedBuilderIndex
---    |> Maybe.andThen (Tree.findBuilder treeModel.tree)
----    |> Maybe.map Builder.view
---    |> Maybe.map (Html.map BuilderMsg)
---    |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(treeModel.displayedBuilderIndex))) ])
-
-treeView : Model -> Html Msg
-treeView model =
-  Html.map TreeMsg (Tree.view model.treeModel.tree)
 
 envNavView : Model -> Html Msg
 envNavView model =
