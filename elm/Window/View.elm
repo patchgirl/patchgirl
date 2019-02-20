@@ -13,6 +13,8 @@ import Tab.View as Tab
 import Tab.Model as Tab
 import Builder.View as Builder
 
+import Util.List as List
+
 import Tree.Model as Tree
 
 import Window.Model exposing(..)
@@ -38,22 +40,21 @@ view model =
         , contentView
         ]
 
-
 builderView : Model -> List(Html Msg)
 builderView model =
   let
     treeView : Html Msg
     treeView =
       Html.map TreeMsg (Tree.view model.treeModel.tree)
-    builderAppView : Html Msg
-    builderAppView =
-      model.treeModel.displayedBuilderIndex
-        |> Maybe.andThen (Tree.findBuilder model.treeModel.tree)
+    f idx = Tree.findBuilder model.treeModel.tree idx
         |> Maybe.map Builder.view
         |> Maybe.map (Html.map BuilderMsg)
-        |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(model.treeModel.displayedBuilderIndex))) ])
+    builderAppView : List (Html Msg)
+    builderAppView =
+      List.flatten (List.map f model.treeModel.displayedBuilderIndexes)
   in
-    [ treeView, builderAppView ]
+    [ treeView
+    , div [] builderAppView ]
 
 tabView : Html Msg
 tabView =

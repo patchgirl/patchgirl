@@ -21,7 +21,7 @@ type alias Tree = List(Node)
 
 type alias Model =
   { selectedNode : Maybe Node
-  , displayedBuilderIndex : Maybe Int
+  , displayedBuilderIndexes : List(Int)
   , tree : Tree
   }
 

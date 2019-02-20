@@ -20,7 +20,7 @@ defaultModel =
   let
     treeModel =
       { selectedNode = Nothing
-      , displayedBuilderIndex = Just 4
+      , displayedBuilderIndexes = [4]
       , tree = Tree.defaultTree
       }
   in

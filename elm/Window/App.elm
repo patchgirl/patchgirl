@@ -60,7 +60,7 @@ update msg model =
           let
             newTreeModel =
               { selectedNode = Nothing
-              , displayedBuilderIndex = Nothing
+              , displayedBuilderIndexes = []
               , tree = newTree
               }
           in
@@ -70,9 +70,11 @@ update msg model =
           (model, Cmd.none)
 
     BuilderMsg subMsg ->
+      (model, Cmd.none)
+      {-
       let
         mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
-        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) (mBuilder model.treeModel)
+        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) (builders model.treeModel)
       in
         case (mBuilder model.treeModel, subMsg) of
           (Nothing, _) -> (model, Cmd.none)
@@ -86,10 +88,11 @@ update msg model =
               (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
             in
               (model, Cmd.map BuilderMsg cmdBuilder)
-
+-}
     RunnerMsg subMsg ->
-      case (subMsg, mBuilder model.treeModel, model.treeModel.displayedBuilderIndex) of
-        (Runner.GetResponse response, Just builder, Just builderIdx) ->
+      {-
+      case (subMsg, mBuilder model.treeModel, model.treeModel.displayedBuilderIndexes) of
+        (Runner.GetResponse response, Just builder, builderIndexes) ->
           let
             (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
             updateNode : Tree.Node -> Tree.Node
@@ -97,12 +100,13 @@ update msg model =
               case oldNode of
                 Tree.File { name } -> Tree.File { name = name, builder = updatedBuilder, showRenameInput = False }
                 _ -> oldNode
-            newTree = Tree.modifyNode updateNode model.treeModel.tree builderIdx
+            newTree = Tree.modifyNode updateNode model.treeModel.tree 1 --builderIdx
             oldTreeModel = model.treeModel
             newTreeModel = { oldTreeModel | tree = newTree }
           in
             ( { model | treeModel = newTreeModel }, Cmd.map BuilderMsg cmdBuilder)
-        _ -> (model, Cmd.none)
+        _ -> (model, Cmd.none)-}
+      (model, Cmd.none)
 
     EnvMsg subMsg ->
       case Env.update subMsg model.envModel of
@@ -113,8 +117,8 @@ update msg model =
       case Tab.update subMsg model.tabModel of
         (newTab, newMsg) -> ( { model | tabModel = newTab }, Cmd.map TabMsg newMsg)
 
-mBuilder : Tree.Model -> Maybe Builder.Model
-mBuilder treeModel = treeModel.displayedBuilderIndex |> Maybe.andThen (Tree.findBuilder treeModel.tree)
+builders : Tree.Model -> List (Maybe Builder.Model)
+builders treeModel = List.map (Tree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =

@@ -13,7 +13,7 @@ update msg model =
       ( { model | selectedNode = Just node }, Cmd.none )
 
     SetDisplayedBuilder idx ->
-      ( { model | displayedBuilderIndex = Just idx }, Cmd.none)
+      ( { model | displayedBuilderIndexes = model.displayedBuilderIndexes ++ [idx] }, Cmd.none)
 
     ToggleNode idx ->
       let
