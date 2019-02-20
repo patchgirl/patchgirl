@@ -1,5 +1,32 @@
 body {
-  background-color: black;
+  background-color: #1A1A1A;
   color: white;
   font-size: 2em;
+}
+
+#tab {
+  background-color: black;
+  display: flex;
+  justify-content: center;
+}
+
+.tab {
+  background-color: #1A1A1A;
+  padding: 10px;
+}
+
+.tab:hover {
+  background-color: #222222;
+}
+
+.tab.selected {
+  background-color: #2D2D2D;
+}
+
+#app {
+  background-color: #222222;
+}
+
+#selected {
+  background-color: #2D2D2D;
 }

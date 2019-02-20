@@ -36,7 +36,7 @@ view model =
         ]-}
   in
     div [ id "app" ]
-        [ tabView
+        [ tabView model
         , contentView
         ]
 
@@ -56,9 +56,9 @@ builderView model =
     [ treeView
     , div [] builderAppView ]
 
-tabView : Html Msg
-tabView =
-  Html.map TabMsg Tab.view
+tabView : Model -> Html Msg
+tabView model =
+  Html.map TabMsg (Tab.view model.tabModel)
 
 postmanView : Html Msg
 postmanView =
