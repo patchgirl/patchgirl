@@ -21,31 +21,11 @@ import Window.Message exposing(..)
 view : Model -> Html Msg
 view model =
   let
-    builderAppView : Html Msg
-    builderAppView =
-      model.treeModel.displayedBuilderIndex
-        |> Maybe.andThen (Tree.findBuilder model.treeModel.tree)
-        |> Maybe.map Builder.view
-        |> Maybe.map (Html.map BuilderMsg)
-        |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(model.treeModel.displayedBuilderIndex))) ])
-    treeView : Html Msg
-    treeView =
-      Html.map TreeMsg (Tree.view model.treeModel.tree)
     contentView : Html Msg
     contentView =
       case model.tabModel of
         Tab.EnvTab -> div [] [ text "env" ]
-        Tab.ReqTab ->
-          div []
-            [ treeView
-            , builderAppView
-            ]
-    builderView : Html Msg
-    builderView =
-      div []
-        [ div [] [ tabView ]
-        , contentView
-        ]
+        Tab.ReqTab -> div [] (builderView model)
 {-        [ div [] [ postmanView ]
         , div [] [ treeView model ]
         , div [] [ envNavView model ]
@@ -53,7 +33,27 @@ view model =
         , div [] [ envView model ]
         ]-}
   in
-    div [ id "app" ] [ builderView ]
+    div [ id "app" ]
+        [ tabView
+        , contentView
+        ]
+
+
+builderView : Model -> List(Html Msg)
+builderView model =
+  let
+    treeView : Html Msg
+    treeView =
+      Html.map TreeMsg (Tree.view model.treeModel.tree)
+    builderAppView : Html Msg
+    builderAppView =
+      model.treeModel.displayedBuilderIndex
+        |> Maybe.andThen (Tree.findBuilder model.treeModel.tree)
+        |> Maybe.map Builder.view
+        |> Maybe.map (Html.map BuilderMsg)
+        |> Maybe.withDefault (div [] [ text (Maybe.withDefault "nope" (Maybe.map String.fromInt(model.treeModel.displayedBuilderIndex))) ])
+  in
+    [ treeView, builderAppView ]
 
 tabView : Html Msg
 tabView =
@@ -62,7 +62,6 @@ tabView =
 postmanView : Html Msg
 postmanView =
   Html.map PostmanMsg Postman.view
-
 
 envNavView : Model -> Html Msg
 envNavView model =
