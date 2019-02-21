@@ -13,6 +13,8 @@ import Tab.View as Tab
 import Tab.Model as Tab
 import Builder.View as Builder
 
+import Builders.View as Builders
+
 import Util.List as List
 
 import Tree.Model as Tree
@@ -47,15 +49,10 @@ builderView model =
     treeView : Html Msg
     treeView =
       Html.map TreeMsg (Tree.view model.treeModel.tree)
-    f idx = Tree.findBuilder model.treeModel.tree idx
-        |> Maybe.map Builder.view
-        |> Maybe.map (Html.map BuilderMsg)
-    builderAppView : List (Html Msg)
-    builderAppView =
-      List.flatten (List.map f model.treeModel.displayedBuilderIndexes)
   in
     [ treeView
-    , div [] builderAppView ]
+    , (Html.map BuildersMsg (Builders.view model.treeModel))
+    ]
 
 tabView : Model -> Html Msg
 tabView model =

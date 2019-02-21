@@ -20,7 +20,7 @@ type Node = Folder Folder2 | File File2
 type alias Tree = List(Node)
 
 type alias Model =
-  { selectedNode : Maybe Node
+  { selectedBuilderIndex : Maybe Int
   , displayedBuilderIndexes : List(Int)
   , tree : Tree
   }

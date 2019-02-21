@@ -7,6 +7,10 @@ import Builder.App as Builder
 import Builder.Model as Builder
 import Builder.Message as Builder
 
+--import Builders.App as Builders
+--import Builders.Model as Builders
+import Builders.Message as Builders
+
 import Tree.View as Tree
 import Tree.Model as Tree
 import Tree.Message as Tree
@@ -59,7 +63,7 @@ update msg model =
         (Just newTree, newMsg) ->
           let
             newTreeModel =
-              { selectedNode = Nothing
+              { selectedBuilderIndex = Nothing
               , displayedBuilderIndexes = []
               , tree = newTree
               }
@@ -116,6 +120,9 @@ update msg model =
     TabMsg subMsg ->
       case Tab.update subMsg model.tabModel of
         (newTab, newMsg) -> ( { model | tabModel = newTab }, Cmd.map TabMsg newMsg)
+
+    BuildersMsg subMsg ->
+      (model, Cmd.none)
 
 builders : Tree.Model -> List (Maybe Builder.Model)
 builders treeModel = List.map (Tree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes

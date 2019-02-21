@@ -9,11 +9,13 @@ import Builder.Model as Builder
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    SetSelectedNode node ->
-      ( { model | selectedNode = Just node }, Cmd.none )
-
     SetDisplayedBuilder idx ->
-      ( { model | displayedBuilderIndexes = model.displayedBuilderIndexes ++ [idx] }, Cmd.none)
+      let
+        newModel = { model | displayedBuilderIndexes = model.displayedBuilderIndexes ++ [idx]
+                   , selectedBuilderIndex = Just idx
+                   }
+      in
+        (newModel , Cmd.none)
 
     ToggleNode idx ->
       let

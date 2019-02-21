@@ -19,7 +19,7 @@ type alias Model =
 defaultModel =
   let
     treeModel =
-      { selectedNode = Nothing
+      { selectedBuilderIndex = Nothing
       , displayedBuilderIndexes = [4]
       , tree = Tree.defaultTree
       }
