@@ -25,9 +25,10 @@ view model =
   let
     contentView : Html Msg
     contentView =
-      case model.tabModel of
-        Tab.EnvTab -> div [] [ text "env" ]
-        Tab.ReqTab -> div [] (builderView model)
+      div [ id "content" ] <|
+        case model.tabModel of
+          Tab.EnvTab -> [ text "env" ]
+          Tab.ReqTab -> (builderView model)
 {-        [ div [] [ postmanView ]
         , div [] [ treeView model ]
         , div [] [ envNavView model ]

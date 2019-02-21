@@ -32,10 +32,10 @@ nodeView idx tree =
                 False -> readView
             folderView =
               li [] [ modeView
-                    , a [ onClick (Mkdir idx) ] [ text ("new Folder ") ]
-                    , a [ onClick (Touch idx) ] [ text ("new File ") ]
-                    , a [ onClick (ShowRenameInput idx) ] [ text ("rename ") ]
-                    , a [ onClick (Delete idx) ] [ text ("delete ") ]
+                    , a [ onClick (Mkdir idx) ] [ text ("+/ ") ]
+                    , a [ onClick (Touch idx) ] [ text ("+. ") ]
+                    , a [ onClick (ShowRenameInput idx) ] [ text ("f2 ") ]
+                    , a [ onClick (Delete idx) ] [ text ("- ") ]
                     , ul [ hidden (not open) ] folderChildrenView
                     ]
           in
@@ -51,8 +51,8 @@ nodeView idx tree =
                 False -> readView
             (newIdx, tailView) = nodeView (idx + 1) tail
             fileView = li [] [ modeView
-                             , a [ onClick (ShowRenameInput idx) ] [ text ("rename ") ]
-                             , a [ onClick (Delete idx) ] [ text ("delete ") ]
+                             , a [ onClick (ShowRenameInput idx) ] [ text ("f2 ") ]
+                             , a [ onClick (Delete idx) ] [ text ("- ") ]
                              ]
           in
             (newIdx, fileView :: tailView)
