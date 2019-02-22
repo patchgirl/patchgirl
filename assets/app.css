@@ -36,3 +36,9 @@ body {
 #content {
   display: flex;
 }
+
+/* builders */
+
+#builderTabs {
+  display: flex;
+}
