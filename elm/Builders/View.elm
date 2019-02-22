@@ -9,6 +9,7 @@ import Builders.Model exposing (..)
 
 import Builder.View as Builder
 import Tree.Util as Tree
+import Tree.Model as Tree
 import Util.List as List
 import Util.Maybe as Maybe
 import Builder.Model as Builder
@@ -16,7 +17,7 @@ import Builder.Model as Builder
 view : Model -> Html Msg
 view model =
   let
-    builderTabsView = List.map tabView model.displayedBuilderIndexes
+    builderTabsView = List.map (tabView model) model.displayedBuilderIndexes
     builderAppsView = List.map (builderView model) model.displayedBuilderIndexes
   in
     div [ id "builders" ]
@@ -24,12 +25,15 @@ view model =
       , div [] builderAppsView
       ]
 
-tabView : Int -> Html Msg
-tabView idx =
-  div []
-    [ a [ onClick (SelectTab idx) ] [ text "whatever" ]
-    , a [ onClick (CloseTab idx) ] [ text "X" ]
-    ]
+tabView : Model -> Int -> Html Msg
+tabView model idx =
+    case Tree.findNode model.tree idx of
+      Just (Tree.File file)  ->
+        div []
+          [ a [ onClick (SelectTab idx) ] [ text (file.name) ]
+          , a [ onClick (CloseTab idx) ] [ text "X" ]
+          ]
+      _ -> div [] []
 
 builderView : Model -> Int -> Html Msg
 builderView model idx =
