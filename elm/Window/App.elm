@@ -7,8 +7,7 @@ import Builder.App as Builder
 import Builder.Model as Builder
 import Builder.Message as Builder
 
---import Builders.App as Builders
---import Builders.Model as Builders
+import Builders.App as Builders
 import Builders.Message as Builders
 
 import Tree.View as Tree
@@ -122,7 +121,8 @@ update msg model =
         (newTab, newMsg) -> ( { model | tabModel = newTab }, Cmd.map TabMsg newMsg)
 
     BuildersMsg subMsg ->
-      (model, Cmd.none)
+      case Builders.update subMsg model.treeModel of
+        (newTree, newMsg) -> ( { model | treeModel = newTree }, Cmd.map BuildersMsg newMsg)
 
 builders : Tree.Model -> List (Maybe Builder.Model)
 builders treeModel = List.map (Tree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes

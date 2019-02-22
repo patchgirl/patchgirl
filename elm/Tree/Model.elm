@@ -2,6 +2,12 @@ module Tree.Model exposing (..)
 
 import Builder.Model as Builder
 
+type alias Model =
+  { selectedBuilderIndex : Maybe Int
+  , displayedBuilderIndexes : List(Int)
+  , tree : Tree
+  }
+
 type alias Folder2 =
   { name : String
   , open : Bool
@@ -18,12 +24,6 @@ type alias File2 =
 type Node = Folder Folder2 | File File2
 
 type alias Tree = List(Node)
-
-type alias Model =
-  { selectedBuilderIndex : Maybe Int
-  , displayedBuilderIndexes : List(Int)
-  , tree : Tree
-  }
 
 defaultFolder =
   Folder { name = "new folder"

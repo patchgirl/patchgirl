@@ -11,9 +11,14 @@ update msg model =
   case msg of
     SetDisplayedBuilder idx ->
       let
-        newModel = { model | displayedBuilderIndexes = model.displayedBuilderIndexes ++ [idx]
-                   , selectedBuilderIndex = Just idx
-                   }
+        newModel =
+          case List.member idx model.displayedBuilderIndexes of
+            True ->
+              { model | selectedBuilderIndex = Just idx }
+            False ->
+              { model | displayedBuilderIndexes = model.displayedBuilderIndexes ++ [idx]
+              , selectedBuilderIndex = Just idx
+              }
       in
         (newModel , Cmd.none)
 
