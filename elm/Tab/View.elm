@@ -25,4 +25,4 @@ tabView msg str model =
       False -> "unselected"
       True -> "selected"
   in
-    div [ class ("tab " ++ selectedClass), onClick msg ] [ text str ]
+    a [ href "#", class ("tab " ++ selectedClass), onClick msg ] [ text str ]

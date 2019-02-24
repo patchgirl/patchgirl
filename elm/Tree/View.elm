@@ -44,7 +44,7 @@ nodeView idx tree =
         (File { name, showRenameInput }) ->
           let
             editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
-            readView = a [ onClick (SetDisplayedBuilder idx) ] [ text (" " ++ name) ]
+            readView = a [ href "#", onClick (SetDisplayedBuilder idx) ] [ text (" " ++ name) ]
             modeView =
               case showRenameInput of
                 True -> editView

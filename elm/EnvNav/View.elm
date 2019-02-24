@@ -11,14 +11,14 @@ import Env.View as Env
 
 view : Model -> Html Msg
 view model =
-  div []
+  div [ id "content" ]
     [ (ul [] <| List.indexedMap entryView model.envs)
     , ul [] <| List.indexedMap (envView model) model.envs
     ]
 
 entryView : Int -> EnvInfo -> Html Msg
 entryView idx envInfo =
-  li [ onClick (Select idx) ] [ text envInfo.name ]
+  a [ href "#", onClick (Select idx) ] [ li [] [ text envInfo.name ] ]
 
 envView : Model -> Int -> EnvInfo -> Html Msg
 envView model idx envInfo =

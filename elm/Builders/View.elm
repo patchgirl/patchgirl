@@ -30,8 +30,8 @@ tabView model idx =
     case Tree.findNode model.tree idx of
       Just (Tree.File file)  ->
         div []
-          [ a [ onClick (SelectTab idx) ] [ text (file.name) ]
-          , a [ onClick (CloseTab idx) ] [ text "X" ]
+          [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
+          , a [ href "#", onClick (CloseTab idx) ] [ text " x" ]
           ]
       _ -> div [] []
 
