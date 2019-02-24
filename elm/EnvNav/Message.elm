@@ -1,3 +1,7 @@
 module EnvNav.Message exposing (..)
 
-type Msg = Select
+import Env.Message as Env
+
+type Msg
+  = Select Int
+  | EnvMsg Env.Msg

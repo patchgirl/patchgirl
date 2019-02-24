@@ -23,11 +23,24 @@ defaultModel =
       , displayedBuilderIndexes = [4]
       , tree = Tree.defaultTree
       }
+    envNav1 =
+      { name = "env1"
+      , env = [("url", "swapi.co")]
+      }
+    envNav2 =
+      { name = "env2"
+      , env = [("url2", "swapi.co")]
+      }
+    envNavModel =
+      { selectedEnvIndex = Just 0
+      , displayedEnvIndexes = [ 0, 1 ]
+      , envs = [ envNav1, envNav2 ]
+      }
   in
     { tabModel = Tab.defaultModel
     , treeModel = treeModel
     , postmanModel = Nothing
     , envModel = [("url", "swapi.co")]
-    , envNavModel = ["env1"]
+    , envNavModel = envNavModel
     , runnerModel = Nothing
     }

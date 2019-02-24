@@ -1,3 +1,14 @@
 module EnvNav.Model exposing (..)
 
-type alias Model = List(String)
+import Env.Model as Env
+
+type alias Model =
+  { selectedEnvIndex : Maybe Int
+  , displayedEnvIndexes : List(Int)
+  , envs : List(Env)
+  }
+
+type alias Env =
+  { name : String
+  , env : Env.Model
+  }

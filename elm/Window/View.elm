@@ -29,7 +29,7 @@ view model =
     contentView =
       div [ id "content" ] <|
         case model.tabModel of
-          Tab.EnvTab -> [ text "env" ]
+          Tab.EnvTab -> [ envsView model ]
           Tab.ReqTab -> (builderView model)
 {-        [ div [] [ postmanView ]
         , div [] [ treeView model ]
@@ -42,6 +42,17 @@ view model =
         [ tabView model
         , contentView
         ]
+
+envsView : Model -> Html Msg
+envsView model =
+  div [] [ envNavView model
+         ]
+
+envNavView : Model -> Html Msg
+envNavView model =
+  Html.map EnvNavMsg (EnvNav.view model.envNavModel)
+
+
 
 builderView : Model -> List(Html Msg)
 builderView model =
@@ -61,11 +72,3 @@ tabView model =
 postmanView : Html Msg
 postmanView =
   Html.map PostmanMsg Postman.view
-
-envNavView : Model -> Html Msg
-envNavView model =
-  Html.map EnvNavMsg (EnvNav.view model.envNavModel)
-
-envView : Model -> Html Msg
-envView model =
-  Html.map EnvMsg (Env.view model.envModel)
