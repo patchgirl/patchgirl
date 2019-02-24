@@ -5,10 +5,10 @@ import Env.Model as Env
 type alias Model =
   { selectedEnvIndex : Maybe Int
   , displayedEnvIndexes : List(Int)
-  , envs : List(Env)
+  , envs : List(EnvInfo)
   }
 
-type alias Env =
+type alias EnvInfo =
   { name : String
   , env : Env.Model
   }

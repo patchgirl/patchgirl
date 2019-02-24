@@ -16,15 +16,15 @@ view model =
     , ul [] <| List.indexedMap (envView model) model.envs
     ]
 
-entryView : Int -> Env -> Html Msg
-entryView index env =
-  li [ onClick (Select index) ] [ text env.name ]
+entryView : Int -> EnvInfo -> Html Msg
+entryView idx envInfo =
+  li [ onClick (Select idx) ] [ text envInfo.name ]
 
-envView : Model -> Int -> Env -> Html Msg
-envView model idx env =
+envView : Model -> Int -> EnvInfo -> Html Msg
+envView model idx envInfo =
   case List.member idx model.displayedEnvIndexes of
     False -> div [] []
     True ->
       case model.selectedEnvIndex == Just idx of
         showEnvTab ->
-          div [ hidden (not showEnvTab) ] [ Html.map EnvMsg (Env.view env.env) ]
+          div [ hidden (not showEnvTab) ] [ Html.map (EnvMsg idx) (Env.view envInfo.env) ]
