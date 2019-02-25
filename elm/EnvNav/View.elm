@@ -18,13 +18,13 @@ view model =
 
 entryView : Int -> EnvInfo -> Html Msg
 entryView idx envInfo =
-  a [ href "#", onClick (Select idx) ] [ li [] [ text envInfo.name ] ]
+  div []
+    [ a [ href "#", onClick (Select idx) ] [ li [] [ text envInfo.name ] ]
+    , a [ href "#", onClick (Delete idx)] [ text "-" ]
+    ]
 
 envView : Model -> Int -> EnvInfo -> Html Msg
 envView model idx envInfo =
-  case List.member idx model.displayedEnvIndexes of
-    False -> div [] []
-    True ->
-      case model.selectedEnvIndex == Just idx of
-        showEnvTab ->
-          div [ hidden (not showEnvTab) ] [ Html.map (EnvMsg idx) (Env.view envInfo.env) ]
+  case model.selectedEnvIndex == Just idx of
+    showEnvTab ->
+      div [ hidden (not showEnvTab) ] [ Html.map (EnvMsg idx) (Env.view envInfo.env) ]

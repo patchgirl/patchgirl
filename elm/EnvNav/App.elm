@@ -10,8 +10,21 @@ import Env.App as Env
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Select index ->
-      ( { model | selectedEnvIndex = Just index }, Cmd.none)
+    Select idx ->
+      ( { model | selectedEnvIndex = Just idx }, Cmd.none)
+
+    Delete idx ->
+      let
+        newEnvs = List.removeAt idx model.envs
+        newSelectedEnvIndex =
+          case model.selectedEnvIndex == Just idx of
+            True -> Nothing
+            False -> model.selectedEnvIndex
+
+        newModel = { model | selectedEnvIndex = Debug.log "sindex" newSelectedEnvIndex
+                   , envs = newEnvs }
+      in
+        (newModel, Cmd.none)
 
     EnvMsg idx subMsg ->
       case List.getAt idx model.envs of

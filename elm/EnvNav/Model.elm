@@ -4,7 +4,6 @@ import Env.Model as Env
 
 type alias Model =
   { selectedEnvIndex : Maybe Int
-  , displayedEnvIndexes : List(Int)
   , envs : List(EnvInfo)
   }
 
