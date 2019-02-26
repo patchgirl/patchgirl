@@ -33,6 +33,7 @@ defaultModel =
       }
     envNavModel =
       { selectedEnvIndex = Just 0
+      , renameEnvIdx = Nothing
       , envs = [ envNav1, envNav2 ]
       }
   in

@@ -26,6 +26,21 @@ update msg model =
       in
         (newModel, Cmd.none)
 
+    Add ->
+      ( { model | envs = model.envs ++ [ defaultEnvInfo ] }, Cmd.none)
+
+    ShowRenameInput idx ->
+      ( { model | renameEnvIdx = Just idx }, Cmd.none)
+
+    Rename idx newName ->
+      let
+        updateEnv old = { old | name = newName }
+        mNewEnvs = List.updateAt idx updateEnv model.envs
+      in
+        case mNewEnvs of
+          newEnvs -> ( { model | renameEnvIdx = Nothing, envs = newEnvs }, Cmd.none)
+
+
     EnvMsg idx subMsg ->
       case List.getAt idx model.envs of
         Nothing -> (model, Cmd.none)
