@@ -11,25 +11,27 @@ import Env.View as Env
 
 view : Model -> Html Msg
 view model =
-  div [ id "content" ]
-    [ div [] <| (List.indexedMap (entryView model.renameEnvIdx) model.envs) ++ [ div [ onClick Add ] [ text "+" ] ]
+  div [ id "navEnv", class "flexRow" ]
+    [ ul [ class "flexColumn" ] <| (List.indexedMap (entryView model.renameEnvIdx) model.envs) ++ [
+           div [ onClick Add, class "centerHorizontal align-self-center" ] [ span [ class "icono-plusCircle" ] [] ]
+          ]
     , ul [] <| List.indexedMap (envView model) model.envs
     ]
 
 entryView : Maybe Int -> Int -> EnvInfo -> Html Msg
 entryView renameEnvIdx idx envInfo =
   let
-    readView = a [ href "#", onClick (Select idx) ] [ li [] [ text envInfo.name ] ]
+    readView = a [ href "#", onClick (Select idx) ] [ span [] [ text envInfo.name ] ]
     editView = input [ value envInfo.name, Util.onEnterWithInput (Rename idx) ] []
     modeView =
       case renameEnvIdx == Just idx of
         True -> editView
         False -> readView
   in
-    div []
+    li []
       [ modeView
-      , a [ href "#", onClick (ShowRenameInput idx)] [ text "f2" ]
-      , a [ href "#", onClick (Delete idx)] [ text "-" ]
+      , a [ href "#", onClick (ShowRenameInput idx)] [ span [class "icono-hamburger"][] ]
+      , a [ href "#", class "icono-cross", onClick (Delete idx)] [ text "-" ]
       ]
 
 envView : Model -> Int -> EnvInfo -> Html Msg
