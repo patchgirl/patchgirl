@@ -9,13 +9,16 @@ import Env.Model exposing (..)
 
 view : Model -> Html Msg
 view model =
-  div [ ] (List.indexedMap viewKeyValue model)
+  div [ class "flexColumn" ] ((List.indexedMap viewKeyValue model) ++ [defaultView])
 
 viewKeyValue : Int -> (String, String) -> Html Msg
 viewKeyValue idx (key, envValue) =
-  div []
+  div [ class "flexRow" ]
     [ input [ placeholder "key", onInput (PromptKey idx), value key ] []
     , input [ placeholder "value", onInput (PromptValue idx), value envValue ] []
-    , button [ onClick (AddNewInput idx) ] [ text "new" ]
-    , button [ onClick (DeleteInput idx) ] [ text "delete" ]
+    , a [ href "#", class "icono-cross", onClick (DeleteInput idx)] [ text "-" ]
     ]
+
+defaultView : Html Msg
+defaultView =
+  div [ onClick AddNewInput, class "centerHorizontal align-self-center" ] [ span [ class "icono-plusCircle" ] [] ]

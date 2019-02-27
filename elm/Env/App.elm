@@ -12,8 +12,8 @@ update msg model =
     PromptValue idx str ->
       (modify (changeValue str) idx model, Cmd.none)
 
-    AddNewInput idx ->
-      (create idx model, Cmd.none)
+    AddNewInput ->
+      (model ++ emptyModel, Cmd.none)
 
     DeleteInput idx ->
       (delete idx model, Cmd.none)
@@ -39,10 +39,3 @@ delete idx model =
     (0, elem :: tail) -> tail
     (_, []) -> model
     (_, elem :: tail) -> elem :: (delete (idx - 1) tail)
-
-create : Int -> Model -> Model
-create idx model =
-  case (idx, model) of
-    (0, elem :: tail) -> [elem, ("", "")] ++ tail
-    (_, []) -> model
-    (_, elem :: tail) -> elem :: (create (idx - 1) tail)
