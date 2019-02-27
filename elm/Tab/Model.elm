@@ -2,4 +2,4 @@ module Tab.Model exposing (..)
 
 type Model = EnvTab | ReqTab
 
-defaultModel = EnvTab
+defaultModel = ReqTab
