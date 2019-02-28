@@ -8,6 +8,7 @@ import Env.Message as Env
 import EnvNav.Message as EnvNav
 import Runner.Message as Runner
 import Tab.Message as Tab
+import EnvSelection.Message as EnvSelection
 
 
 type Msg
@@ -19,3 +20,4 @@ type Msg
   | EnvNavMsg EnvNav.Msg
   | RunnerMsg Runner.Msg
   | TabMsg Tab.Msg
+  | EnvSelectionMsg EnvSelection.Msg

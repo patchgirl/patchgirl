@@ -9,6 +9,7 @@ import Tree.Util as Tree
 import Postman.View as Postman
 import Env.View as Env
 import EnvNav.View as EnvNav
+import EnvSelection.View as EnvSelection
 import Tab.View as Tab
 import Tab.Model as Tab
 import Builder.View as Builder
@@ -52,17 +53,19 @@ envNavView : Model -> Html Msg
 envNavView model =
   Html.map EnvNavMsg (EnvNav.view model.envNavModel)
 
-
-
 builderView : Model -> List(Html Msg)
 builderView model =
   let
     treeView : Html Msg
     treeView =
       Html.map TreeMsg (Tree.view model.treeModel.tree)
+    envSelectionView : Html Msg
+    envSelectionView =
+      Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
   in
     [ treeView
     , (Html.map BuildersMsg (Builders.view model.treeModel))
+    , envSelectionView
     ]
 
 tabView : Model -> Html Msg

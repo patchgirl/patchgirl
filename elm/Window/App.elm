@@ -30,6 +30,11 @@ import EnvNav.Model as EnvNav
 import EnvNav.Message as EnvNav
 import EnvNav.App as EnvNav
 
+import EnvSelection.View as EnvSelection
+import EnvSelection.Model as EnvSelection
+import EnvSelection.Message as EnvSelection
+import EnvSelection.App as EnvSelection
+
 import Runner.App as Runner
 import Runner.Message as Runner
 import Runner.Model as Runner
@@ -55,7 +60,19 @@ update msg model =
 
     EnvNavMsg subMsg ->
       case EnvNav.update subMsg model.envNavModel of
-        (newEnvNavModel, newMsg) -> ( { model | envNavModel = newEnvNavModel }, Cmd.map EnvNavMsg newMsg)
+        (newEnvNavModel, newMsg) ->
+          let
+            selectedEnvModel = model.selectedEnvModel
+            newSelectedEnvModel = { selectedEnvModel | envs = List.map .name newEnvNavModel.envs }
+          in
+            ( { model | envNavModel = newEnvNavModel, selectedEnvModel = newSelectedEnvModel }
+            , Cmd.map EnvNavMsg newMsg
+            )
+
+    EnvSelectionMsg subMsg ->
+      case EnvSelection.update subMsg model.selectedEnvModel of
+        (newSelectedEnvModel, newMsg) ->
+          ( { model | selectedEnvModel = newSelectedEnvModel }, Cmd.map EnvSelectionMsg newMsg)
 
     PostmanMsg subMsg ->
       case Postman.update subMsg model.postmanModel of
