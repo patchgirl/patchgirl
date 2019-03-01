@@ -31,7 +31,7 @@ tabView model idx =
       Just (Tree.File file)  ->
         div []
           [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
-          , a [ href "#", onClick (CloseTab idx) ] [ text " x" ]
+          , a [ href "#", onClick (CloseTab idx) ] [ span [ class "icono-cross" ] [] ]
           ]
       _ -> div [] []
 

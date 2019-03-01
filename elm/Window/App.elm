@@ -82,6 +82,7 @@ update msg model =
               { selectedBuilderIndex = Nothing
               , displayedBuilderIndexes = []
               , tree = newTree
+              , displayedNodeMenuIndex = Nothing
               }
           in
             ( { model | treeModel = newTreeModel }, Cmd.map PostmanMsg newMsg)
@@ -91,6 +92,29 @@ update msg model =
 
     BuilderMsg subMsg ->
       (model, Cmd.none)
+        {-
+      let
+        mBuilder = Maybe.map (findBuilder model.treeModel.tree) model.treeModel.selectedBuilderIndex
+      in
+        case (subMsg, mBuilder) of
+          (Builder.AskRun, Just builder) ->
+            let
+              (updatedRunner, cmdRunner) =
+                (Runner.update (Runner.Run model.envModel builder) model.runnerModel)
+            in
+              ( { model | runnerModel = updatedRunner }, Cmd.map RunnerMsg cmdRunner)
+            (Just builder, _) ->
+              let
+                (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
+              in
+                (model, Cmd.map BuilderMsg cmdBuilder)
+          (_, Just builder) ->
+            let
+              (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
+            in
+              (model, Cmd.map BuilderMsg cmdBuilder)
+          _ ->
+            (model, Cmd.none)-}
       {-
       let
         mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)

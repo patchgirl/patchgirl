@@ -22,6 +22,15 @@ update msg model =
       in
         (newModel , Cmd.none)
 
+    ToggleMenu idx ->
+      let
+        newDisplayedNodeMenuIndex =
+          case model.displayedNodeMenuIndex == Just idx of
+            True -> Nothing
+            False -> Debug.log "menu" (Just idx)
+      in
+        ( { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }, Cmd.none)
+
     ToggleNode idx ->
       let
         toggle : Node -> Node

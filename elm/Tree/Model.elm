@@ -6,6 +6,7 @@ type alias Model =
   { selectedBuilderIndex : Maybe Int
   , displayedBuilderIndexes : List(Int)
   , tree : Tree
+  , displayedNodeMenuIndex : Maybe Int
   }
 
 type alias Folder2 =

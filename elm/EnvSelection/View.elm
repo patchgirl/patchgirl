@@ -11,7 +11,8 @@ import EnvSelection.Model exposing (..)
 
 view : Model -> Html Msg
 view model =
-  select [ on "change" (Json.map Select targetValueIntParse) ] (List.indexedMap entryView model.envs)
+  select [ style "align-self" "flex-start", on "change" (Json.map Select targetValueIntParse) ]
+    (List.indexedMap entryView model.envs)
 
 entryView : Int -> String -> Html Msg
 entryView idx envName =

@@ -25,6 +25,7 @@ defaultModel =
       { selectedBuilderIndex = Just 4
       , displayedBuilderIndexes = [4]
       , tree = Tree.defaultTree
+      , displayedNodeMenuIndex = Nothing
       }
     envModel : Env.Model
     envModel = [("url", "swapi.co")]
