@@ -41,6 +41,10 @@ view model =
       [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
       , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]
       ]
-    , input [ id "urlInput", placeholder "myApi.com/path?arg=someArg", value model.url, onInput Builder.Message.UpdateUrl, Util.onEnter AskRun ] []
-    , button [ onClick AskRun ] [ text "Send" ]
+    , input [ id "urlInput"
+            , placeholder "myApi.com/path?arg=someArg"
+            , value model.url
+            , onInput Builder.Message.UpdateUrl
+            , Util.onEnter (AskRun model) ] []
+    , button [ onClick (AskRun model) ] [ text "Send" ]
     ]

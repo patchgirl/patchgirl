@@ -33,7 +33,7 @@ update msg model =
         "HTTP" -> ( { model | scheme = "HTTP" }, Cmd.none)
         _ -> ( { model | scheme = "HTTPS" }, Cmd.none)
 
-    AskRun ->
+    AskRun foo ->
       (model, Cmd.none)
 
     GiveResponse result ->

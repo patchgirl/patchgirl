@@ -29,6 +29,7 @@ import EnvNav.View as EnvNav
 import EnvNav.Model as EnvNav
 import EnvNav.Message as EnvNav
 import EnvNav.App as EnvNav
+import EnvNav.Util as EnvNav
 
 import EnvSelection.View as EnvSelection
 import EnvSelection.Model as EnvSelection
@@ -162,8 +163,19 @@ update msg model =
         (newTab, newMsg) -> ( { model | tabModel = newTab }, Cmd.map TabMsg newMsg)
 
     BuildersMsg subMsg ->
-      case Builders.update subMsg model.treeModel of
-        (newTree, newMsg) -> ( { model | treeModel = newTree }, Cmd.map BuildersMsg newMsg)
+      case subMsg of
+        Builders.BuilderMsg (Builder.AskRun builder) ->
+          case EnvNav.getSelectedEnvInfo model.envNavModel of
+            Just envInfo ->
+              case Runner.update (Runner.Run envInfo.env builder) Nothing of
+                (_, runnerSubMsg) -> (model, Cmd.map RunnerMsg runnerSubMsg)
+
+            Nothing ->
+              (model, Cmd.none)
+        _ ->
+          case Builders.update subMsg model.treeModel of
+            (newTree, newMsg) -> ( { model | treeModel = newTree }, Cmd.map BuildersMsg newMsg)
+
 
 builders : Tree.Model -> List (Maybe Builder.Model)
 builders treeModel = List.map (Tree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
