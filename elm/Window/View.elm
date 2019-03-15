@@ -4,6 +4,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import Bulma.Columns as Bulma
+import Bulma.Modifiers as Bulma
+import Util.Bulma as Bulma
+
 import Tree.View as Tree
 import Tree.Util as Tree
 import Postman.View as Postman
@@ -26,23 +30,21 @@ import Window.Message exposing(..)
 view : Model -> Html Msg
 view model =
   let
+    columnModifiers = Bulma.columnsModifiers
     contentView : Html Msg
     contentView =
       div [ id "content" ] <|
         case model.tabModel of
           Tab.EnvTab -> [ envsView model ]
-          Tab.ReqTab -> (builderView model)
+          Tab.ReqTab -> [ builderView model ]
+  in
+    div [] [ tabView model, contentView ]
 {-        [ div [] [ postmanView ]
         , div [] [ treeView model ]
         , div [] [ envNavView model ]
         , div [] [ builderAppView model.treeModel ]
         , div [] [ envView model ]
         ]-}
-  in
-    div [ id "app" ]
-        [ tabView model
-        , contentView
-        ]
 
 envsView : Model -> Html Msg
 envsView model =
@@ -53,9 +55,10 @@ envNavView : Model -> Html Msg
 envNavView model =
   Html.map EnvNavMsg (EnvNav.view model.envNavModel)
 
-builderView : Model -> List(Html Msg)
+builderView : Model -> Html Msg
 builderView model =
   let
+    columnModifiers = Bulma.columnModifiers
     treeView : Html Msg
     treeView =
       Html.map TreeMsg (Tree.view model.treeModel)
@@ -63,10 +66,11 @@ builderView model =
     envSelectionView =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
   in
-    [ treeView
-    , (Html.map BuildersMsg (Builders.view model.treeModel))
-    , envSelectionView
-    ]
+    Bulma.columns Bulma.columnsModifiers []
+      [ Bulma.column (Bulma.modifyColumn Bulma.Auto (Just Bulma.Width2)) [] [ treeView ]
+      , Bulma.column (Bulma.modifyColumn Bulma.Auto (Just Bulma.Width9)) [] [ (Html.map BuildersMsg (Builders.view model.treeModel)) ]
+      , Bulma.column (Bulma.modifyColumn Bulma.Auto (Just Bulma.Width1)) [] [ envSelectionView ]
+      ]
 
 tabView : Model -> Html Msg
 tabView model =
