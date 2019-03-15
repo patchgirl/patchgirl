@@ -4,15 +4,22 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import Bulma.Components as Bulma
+import Bulma.Modifiers as Bulma
+
 import Tab.Model exposing(..)
 import Tab.Message exposing(..)
 
 view : Model -> Html Msg
 view model =
-  div [ id "tab" ]
-    [ tabView OpenReqWindow "Req" model
-    , tabView OpenEnvWindow "Env" model
-    ]
+  let
+    modifiers = Bulma.tabsModifiers
+    tabsModifiers = { modifiers | alignment = Bulma.Centered, size = Bulma.Medium }
+  in
+    Bulma.tabs tabsModifiers [] []
+      [ tabView OpenReqWindow "Req" model
+      , tabView OpenEnvWindow "Env" model
+      ]
 
 tabView : Msg -> String -> Model -> Html Msg
 tabView msg str model =
@@ -21,8 +28,5 @@ tabView msg str model =
       (EnvTab, OpenEnvWindow) -> True
       (ReqTab, OpenReqWindow) -> True
       _ -> False
-    selectedClass = case isSelected of
-      False -> "unselected"
-      True -> "selected"
   in
-    a [ href "#", class ("tab " ++ selectedClass), onClick msg ] [ text str ]
+    Bulma.tab isSelected [ onClick msg ] [] [ text str ]
