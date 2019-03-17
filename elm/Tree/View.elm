@@ -11,7 +11,13 @@ import Util.View as Util
 
 view : Model -> Html Msg
 view model =
-  ul [] <| Tuple.second (nodeView 0 model.displayedNodeMenuIndex model.tree)
+  let
+    treeView = Tuple.second (nodeView 0 model.displayedNodeMenuIndex model.tree)
+  in
+    div [ class "columns" ]
+      [ div [ class "column is-offset-1" ]
+        treeView
+      ]
 
 nodeView : Int -> Maybe Int -> Tree -> (Int, List (Html Msg))
 nodeView idx mDisplayedNodeMenuIndex tree =
@@ -26,11 +32,10 @@ nodeView idx mDisplayedNodeMenuIndex tree =
             let
               (folderIdx, folderChildrenView) = nodeView (idx + 1) mDisplayedNodeMenuIndex children
               (newIdx, tailView) = nodeView folderIdx mDisplayedNodeMenuIndex tail
-              folderIcon = if open then "icono-caretDown" else "icono-caretRight"
+              folderIcon = if open then "fas fa-folder-open fa-fw" else "fas fa-folder fa-fw"
               readView =
                 a [ onClick (ToggleNode idx) ]
                   [ span [ class folderIcon ] []
-                  , span [ class "icono-folder" ] []
                   , text name
                   ]
               editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
@@ -39,10 +44,10 @@ nodeView idx mDisplayedNodeMenuIndex tree =
                   True -> editView
                   False -> readView
               folderView =
-                li []
+                div []
                   [ span []
                     [ modeView
-                    , a [ onClick (ToggleMenu idx) ] [ span [ class "icono-hamburger" ] []]
+                    , a [ onClick (ToggleMenu idx) ] [ span [] []]
                     , span [ hidden (not showMenu) ]
                       [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] [ text ("f2 ") ]
                       , a [ class "icono-folder", onClick (Mkdir idx) ] [ text ("+/ ") ]
@@ -50,7 +55,10 @@ nodeView idx mDisplayedNodeMenuIndex tree =
                       , a [ class "icono-cross", onClick (Delete idx) ] [ ]
                       ]
                     ]
-                  , ul [ hidden (not open) ] folderChildrenView
+                  , div [ class "columns" ]
+                    [ div [ class "column is-offset-1"]
+                      [ div [ hidden (not open) ] folderChildrenView ]
+                    ]
                   ]
             in
               (newIdx, folderView :: tailView)
@@ -60,7 +68,7 @@ nodeView idx mDisplayedNodeMenuIndex tree =
               editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
               readView =
                 a [ href "#", onClick (SetDisplayedBuilder idx) ]
-                  [ span [ class "icono-file" ] []
+                  [ span [ class "fas fa-file fa-fw" ] []
                   , text name
                   ]
               modeView =
@@ -68,9 +76,9 @@ nodeView idx mDisplayedNodeMenuIndex tree =
                   True -> editView
                   False -> readView
               (newIdx, tailView) = nodeView (idx + 1) mDisplayedNodeMenuIndex tail
-              fileView = li [ ]
+              fileView = div [ ]
                            [ modeView
-                           , a [ onClick (ToggleMenu idx) ] [ span [ class "icono-hamburger" ] []]
+                           , a [ onClick (ToggleMenu idx) ] [ span [] []]
                            , span [ hidden (not showMenu) ]
                              [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] []
                              , a [ class "icono-cross", onClick (Delete idx) ] []
