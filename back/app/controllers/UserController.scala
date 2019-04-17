@@ -8,21 +8,17 @@ import play.api.cache._
 
 class UserController @Inject()(cc: ControllerComponents, cache: SyncCacheApi) extends AbstractController(cc) {
 
-  def AuthenticatedAction(f: Request[AnyContent] => Result): Action[AnyContent] = {
-    Action { request =>
-      (request.session.get("id").flatMap { id =>
-        cache.get[JsValue](id + "profile")
-      } map { profile =>
-        f(request)
-      }).orElse {
-        Some(Redirect(routes.ApplicationController.index()))
-      }.get
+  def AuthenticatedAction(f: (Request[AnyContent], JsValue) => Result): Action[AnyContent] = Action { request =>
+    (for {
+      id <- request.session.get("id")
+      profile <- cache.get[JsValue](id + "profile")
+    } yield f(request, profile)).getOrElse {
+      Redirect(routes.ApplicationController.index())
     }
   }
 
-  def index = AuthenticatedAction { request =>
+  def index = AuthenticatedAction { case (request, profile) =>
     val id = request.session.get("id").get
-    val profile = cache.get[JsValue](id + "profile").get
     Ok(views.html.user(profile))
   }
 }
