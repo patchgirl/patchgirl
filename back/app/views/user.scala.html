@@ -1,0 +1,17 @@
+@import play.api.libs.json.JsValue
+
+@(profile: JsValue)
+
+@main("Auth0 Play2 Scala Sample","home") {
+
+<div class="container">
+ <div class="login-page clearfix">
+   <div class="logged-in-box auth0-box logged-in">
+     <h1 id="logo"><img src="//cdn.auth0.com/samples/auth0_logo_final_blue_RGB.png" /></h1>
+     <img class="avatar" src='@((profile \ "picture").as[String])'/>
+     <h2>Welcome @((profile \ "name").as[String])</h2>
+     <a href="/logout" id="qsLogoutBtn" class="btn btn-lg">Logout</a>
+   </div>
+ </div>
+</div>
+}
