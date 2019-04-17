@@ -50,10 +50,11 @@ class Auth0Service @Inject()(
 
     val loginUrl = String.format("https://%s/%s", auth0Config.domain, query)
     val logoutUrl = String.format(
-      "https://%s/v2/logout?client_id=%s&returnTo=http://localhost:3000",
+      "https://%s/v2/logout?client_id=%s&returnTo=http://localhost:9000",
       auth0Config.domain,
       auth0Config.clientId
     )
+    println(logoutUrl)
 
     Auth0Info(state, audience, loginUrl, logoutUrl)
   }
