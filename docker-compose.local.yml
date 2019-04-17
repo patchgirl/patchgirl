@@ -1,0 +1,14 @@
+version: '3'
+services:
+  postgres:
+      image: postgres:11.2
+      env_file: back/.env
+      ports:
+        - 5433:5432
+      volumes:
+        - back-service-postgres:/var/lib/postgresql/data
+      restart: unless-stopped
+
+volumes:
+  back-service-postgres:
+    driver: local

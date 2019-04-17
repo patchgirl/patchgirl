@@ -10,16 +10,11 @@
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("css/fontawesome-5.7.2/css/all.css")" >
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("css/bulma-0.7.4/css/bulma.css")">
     <script type='text/javascript' src="@routes.Assets.versioned("js/app.js")"></script>
-
   </head>
   <body class="@bodyClass">
 
     <div id="app-anchor"></div>
-    <script>
-      var app = Elm.Main.init({
-      node: document.getElementById("app-anchor")
-      })
-    </script>
+    <script> Elm.Main.init({ node: document.getElementById("app-anchor") }) </script>
 
     @content
   </body>
