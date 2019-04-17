@@ -1,19 +1,26 @@
-@(title: String, bodyClass : String = "", scripts : Html = play.twirl.api.Html(""))(content: Html)
+@(title: String, bodyClass : String = "")(content: Html)
 
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <title>@title</title>
-        <script src="http://code.jquery.com/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <head>
+    <title>@title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("css/app.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("css/fontawesome-5.7.2/css/all.css")" >
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("css/bulma-0.7.4/css/bulma.css")">
+    <script type='text/javascript' src="@routes.Assets.versioned("js/app.js")"></script>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
-        @scripts
-    </head>
-    <body class="@bodyClass">
-        @content
-    </body>
+  </head>
+  <body class="@bodyClass">
+
+    <div id="app-anchor"></div>
+    <script>
+      var app = Elm.Main.init({
+      node: document.getElementById("app-anchor")
+      })
+    </script>
+
+    @content
+  </body>
 </html>
