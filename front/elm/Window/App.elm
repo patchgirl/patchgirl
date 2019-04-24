@@ -1,9 +1,8 @@
 module Window.App exposing (..)
 
-import Http
-
 import Window.Model exposing (..)
 import Window.Message exposing (..)
+import Window.StateHandler exposing (..)
 
 import Builder.App as Builder
 import Builder.Model as Builder
@@ -178,26 +177,9 @@ update msg model =
           case Builders.update subMsg model.treeModel of
             (newTree, newMsg) ->
               ( { model | treeModel = newTree }, sendSaveTabRequest newTree)
---              ( { model | treeModel = newTree }, Cmd.map BuildersMsg newMsg)
 
     SaveTreeResponse foo ->
       (model, Cmd.none)
-
-
-sendSaveTabRequest : Tree.Model -> Cmd Msg
-sendSaveTabRequest model =
-  let
-    httpRequest = Http.request
-      { method = "PUT"
-      , headers = []
-      , url = "localhost:9000"
-      , body = Http.emptyBody
-      , expect = Http.expectString SaveTreeResponse
-      , timeout = Nothing
-      , tracker = Nothing
-      }
-  in
-    httpRequest
 
 builders : Tree.Model -> List (Maybe Builder.Model)
 builders treeModel = List.map (Tree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
