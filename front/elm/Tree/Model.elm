@@ -19,6 +19,7 @@ type alias Folder2 =
 type alias File2 =
   { name : String
   , showRenameInput : Bool
+  , isSaved : Bool
   , builder : Builder.Model
   }
 
@@ -37,6 +38,7 @@ defaultFile =
   File { name = "new file"
        , builder = Builder.defaultBuilder
        , showRenameInput = False
+       , isSaved = False
        }
 
 defaultTree =
@@ -59,10 +61,12 @@ defaultTree =
                                  , children = [ File { name = "file1"
                                                      , builder = Builder.defaultModel1
                                                      , showRenameInput = False
+                                                     , isSaved = False
                                                      }
                                               , File { name = "file2"
                                                      , builder = Builder.defaultModel2
                                                      , showRenameInput = False
+                                                     , isSaved = True
                                                      }
                                               ]
                                  }

@@ -27,11 +27,20 @@ view model =
 
 tabView : Model -> Int -> Html Msg
 tabView model idx =
+  let
+    savedView = a [ href "#" ] [ ]
+    unsavedView file = a [ href "#", onClick (SaveTab idx) ] [ text "*" ]
+    savingView file =
+      case file.isSaved of
+        True -> savedView
+        False -> unsavedView file
+  in
     case Tree.findNode model.tree idx of
       Just (Tree.File file)  ->
         div []
           [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
-          , a [ href "#", onClick (CloseTab idx) ] [ span [ class "icono-cross" ] [] ]
+          , savingView file
+          , a [ href "#", onClick (CloseTab idx) ] [ span [ class "fas fa-times" ] [] ]
           ]
       _ -> div [] []
 

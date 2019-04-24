@@ -6,3 +6,4 @@ type Msg
   = SelectTab Int
   | BuilderMsg Builder.Msg
   | CloseTab Int
+  | SaveTab Int

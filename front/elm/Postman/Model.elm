@@ -20,7 +20,7 @@ postmanCollectionToTreeDecoder =
     filesDecoder : Decoder (List Tree.Node)
     filesDecoder = field "item" (list fileDecoder)
     fileDecoder : Decoder Tree.Node
-    fileDecoder = map2 (\name builder -> Tree.File { name = name, builder = builder, showRenameInput = False }) fileNameDecoder builderDecoder
+    fileDecoder = map2 (\name builder -> Tree.File { name = name, builder = builder, showRenameInput = False, isSaved = True }) fileNameDecoder builderDecoder
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
     rootDecoder : Decoder Tree.Node

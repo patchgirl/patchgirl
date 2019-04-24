@@ -33,5 +33,8 @@ update msg model =
         ( { model | displayedBuilderIndexes = newDisplayedBuilderIndexes,
           selectedBuilderIndex = newSelectedBuilderIndex }, Cmd.none)
 
+    SaveTab idx ->
+      (model, Debug.log "t" Cmd.none)
+
     _ ->
       (model, Cmd.none)
