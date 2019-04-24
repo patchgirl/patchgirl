@@ -42,7 +42,7 @@ update msg model =
     UpdateHeaders rawHeaders ->
       case Builder.Header.parseHeaders rawHeaders of
         Just headers ->
-          ( { model | headers = headers }, Cmd.none )
+          ( { model | headers = Debug.log "headers" headers }, Cmd.none )
         Nothing ->
           ( model, Cmd.none )
 

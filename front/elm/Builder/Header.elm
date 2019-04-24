@@ -27,4 +27,5 @@ mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
 view : Model -> Html Msg
 view model =
   div [ id "headersBuilder" ]
-    [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2", onInput Builder.Message.UpdateHeaders ] [] ]
+    [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2"
+               , onInput Builder.Message.UpdateHeaders ] [] ]
