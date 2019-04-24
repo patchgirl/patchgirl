@@ -30,7 +30,7 @@ fileView name idx showMenu showRenameInput =
   in
     div [ ]
       [ modeView
-      , a [ onClick (ToggleMenu idx) ] [ span [] []]
+      , a [ onClick (ToggleMenu idx) ] [ span [ class "fas fa-ellipsis-h" ] []]
       , span [ hidden (not showMenu) ]
         [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] []
         , a [ class "icono-cross", onClick (Delete idx) ] []

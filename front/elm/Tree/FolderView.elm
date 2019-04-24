@@ -34,7 +34,7 @@ folderView name idx folderChildrenView open showMenu showRenameInput =
     div []
       [ span []
         [ modeView
-        , a [ onClick (ToggleMenu idx) ] [ span [] []]
+        , a [ onClick (ToggleMenu idx) ] [ span [ class "fas fa-ellipsis-h" ] []]
         , span [ hidden (not showMenu) ]
           [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] [ text ("f2 ") ]
           , a [ class "icono-folder", onClick (Mkdir idx) ] [ text ("+/ ") ]

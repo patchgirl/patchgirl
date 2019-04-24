@@ -27,7 +27,7 @@ update msg model =
         newDisplayedNodeMenuIndex =
           case model.displayedNodeMenuIndex == Just idx of
             True -> Nothing
-            False -> Debug.log "menu" (Just idx)
+            False -> Just idx
       in
         ( { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }, Cmd.none)
 
