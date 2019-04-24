@@ -35,6 +35,10 @@ fileEncoder file =
     , ("builder", builderEncoder file.builder)
     ]
 
+headerEncoder : Builder.Header -> Json.Value
+headerEncoder (key, value) =
+  Json.object [ (key, Json.string value) ]
+
 builderEncoder : Builder.Model -> Json.Value
 builderEncoder builder =
   Json.object
@@ -42,9 +46,8 @@ builderEncoder builder =
     , ("url", Json.string builder.url)
     , ("scheme", Json.string builder.scheme)
     , ("method", Json.string (Builder.methodToString builder.method))
---    , ("headers": Json.string builder.scheme)
+    , ("headers", List.map headerEncoder builder.headers |> toArray)
     , ("body", Json.string builder.body)
---    , ("response": Json.string builder.response)
     ]
 
 folderEncoder : Tree.Folder2 -> Json.Value
