@@ -1,5 +1,7 @@
 module Window.Message exposing (..)
 
+import Http
+
 import Builder.Message as Builder
 import Builders.Message as Builders
 import Tree.Message as Tree
@@ -9,7 +11,6 @@ import EnvNav.Message as EnvNav
 import Runner.Message as Runner
 import Tab.Message as Tab
 import EnvSelection.Message as EnvSelection
-
 
 type Msg
   = TreeMsg Tree.Msg
@@ -21,3 +22,4 @@ type Msg
   | RunnerMsg Runner.Msg
   | TabMsg Tab.Msg
   | EnvSelectionMsg EnvSelection.Msg
+  | SaveTreeResponse (Result Http.Error String)

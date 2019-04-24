@@ -3,6 +3,9 @@ module Builders.App exposing (..)
 import Builders.Model exposing (..)
 import Builders.Message exposing (..)
 
+import Tree.Model as Tree
+import Tree.Util as Tree
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -34,7 +37,15 @@ update msg model =
           selectedBuilderIndex = newSelectedBuilderIndex }, Cmd.none)
 
     SaveTab idx ->
-      (model, Debug.log "t" Cmd.none)
+      let
+        markFileAsSaved : Tree.Node -> Tree.Node
+        markFileAsSaved node =
+          case node of
+            Tree.Folder f -> Tree.Folder f
+            Tree.File f -> Tree.File { f | isSaved = True }
+        newTree = Tree.modifyNode markFileAsSaved model.tree idx
+      in
+        ({ model | tree = newTree }, Cmd.none)
 
     _ ->
       (model, Cmd.none)
