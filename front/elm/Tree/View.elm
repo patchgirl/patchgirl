@@ -6,6 +6,7 @@ import Html.Events exposing (..)
 
 import Tree.Model exposing (Model, Node(..), Tree)
 import Tree.Message exposing (Msg(..))
+import Tree.FolderView exposing (..)
 
 import Util.View as Util
 
@@ -18,6 +19,17 @@ view model =
       [ div [ class "column is-offset-1" ]
         treeView
       ]
+
+fileReadView : String -> Int -> Html Msg
+fileReadView name idx =
+  a [ href "#", onClick (SetDisplayedBuilder idx) ]
+    [ span [ class "fas fa-file fa-fw" ] []
+    , text name
+    ]
+
+fileEditView : String -> Int -> Html Msg
+fileEditView name idx =
+  input [ value name, Util.onEnterWithInput (Rename idx) ] []
 
 nodeView : Int -> Maybe Int -> Tree -> (Int, List (Html Msg))
 nodeView idx mDisplayedNodeMenuIndex tree =
@@ -32,49 +44,16 @@ nodeView idx mDisplayedNodeMenuIndex tree =
             let
               (folderIdx, folderChildrenView) = nodeView (idx + 1) mDisplayedNodeMenuIndex children
               (newIdx, tailView) = nodeView folderIdx mDisplayedNodeMenuIndex tail
-              folderIcon = if open then "fas fa-folder-open fa-fw" else "fas fa-folder fa-fw"
-              readView =
-                a [ onClick (ToggleNode idx) ]
-                  [ span [ class folderIcon ] []
-                  , text name
-                  ]
-              editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
-              modeView =
-                case showRenameInput of
-                  True -> editView
-                  False -> readView
-              folderView =
-                div []
-                  [ span []
-                    [ modeView
-                    , a [ onClick (ToggleMenu idx) ] [ span [] []]
-                    , span [ hidden (not showMenu) ]
-                      [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] [ text ("f2 ") ]
-                      , a [ class "icono-folder", onClick (Mkdir idx) ] [ text ("+/ ") ]
-                      , a [ class "icono-file", onClick (Touch idx) ] [ text ("+. ") ]
-                      , a [ class "icono-cross", onClick (Delete idx) ] [ ]
-                      ]
-                    ]
-                  , div [ class "columns" ]
-                    [ div [ class "column is-offset-1"]
-                      [ div [ hidden (not open) ] folderChildrenView ]
-                    ]
-                  ]
+              currentFolderView = folderView name idx folderChildrenView open showMenu showRenameInput
             in
-              (newIdx, folderView :: tailView)
+              (newIdx, currentFolderView :: tailView)
 
           (File { name, showRenameInput }) ->
             let
-              editView = input [ value name, Util.onEnterWithInput (Rename idx) ] []
-              readView =
-                a [ href "#", onClick (SetDisplayedBuilder idx) ]
-                  [ span [ class "fas fa-file fa-fw" ] []
-                  , text name
-                  ]
               modeView =
                 case showRenameInput of
-                  True -> editView
-                  False -> readView
+                  True -> fileEditView name idx
+                  False -> fileReadView name idx
               (newIdx, tailView) = nodeView (idx + 1) mDisplayedNodeMenuIndex tail
               fileView = div [ ]
                            [ modeView
