@@ -7,6 +7,7 @@ import Html.Events exposing (..)
 import Tree.Model exposing (Model, Node(..), Tree)
 import Tree.Message exposing (Msg(..))
 import Tree.FolderView exposing (..)
+import Tree.FileView exposing (..)
 
 import Util.View as Util
 
@@ -19,17 +20,6 @@ view model =
       [ div [ class "column is-offset-1" ]
         treeView
       ]
-
-fileReadView : String -> Int -> Html Msg
-fileReadView name idx =
-  a [ href "#", onClick (SetDisplayedBuilder idx) ]
-    [ span [ class "fas fa-file fa-fw" ] []
-    , text name
-    ]
-
-fileEditView : String -> Int -> Html Msg
-fileEditView name idx =
-  input [ value name, Util.onEnterWithInput (Rename idx) ] []
 
 nodeView : Int -> Maybe Int -> Tree -> (Int, List (Html Msg))
 nodeView idx mDisplayedNodeMenuIndex tree =
@@ -50,18 +40,7 @@ nodeView idx mDisplayedNodeMenuIndex tree =
 
           (File { name, showRenameInput }) ->
             let
-              modeView =
-                case showRenameInput of
-                  True -> fileEditView name idx
-                  False -> fileReadView name idx
               (newIdx, tailView) = nodeView (idx + 1) mDisplayedNodeMenuIndex tail
-              fileView = div [ ]
-                           [ modeView
-                           , a [ onClick (ToggleMenu idx) ] [ span [] []]
-                           , span [ hidden (not showMenu) ]
-                             [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] []
-                             , a [ class "icono-cross", onClick (Delete idx) ] []
-                             ]
-                           ]
+              currentFileView = fileView name idx showMenu showRenameInput
             in
-              (newIdx, fileView :: tailView)
+              (newIdx, currentFileView :: tailView)
