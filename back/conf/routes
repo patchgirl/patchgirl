@@ -5,6 +5,8 @@ GET     /logout                     controllers.ApplicationController.logout
 GET     /callback                   controllers.Callback.callback(code: Option[String], state: Option[String])
 GET     /user                       controllers.UserController.index
 
+PUT /requests controllers.RequestController.update
+
 # An example controller showing a sample home page
 GET / controllers.HomeController.index
 
