@@ -5,11 +5,17 @@ import play.api.mvc._
 import play.api.mvc.{Action, Controller}
 import play.api.libs.json._
 import play.api.cache._
+import model._
 
 class RequestController @Inject()(cc: ControllerComponents, cache: SyncCacheApi) extends AbstractController(cc) {
 
-  def update = Action { implicit request =>
-    val json = Json.toJson("coucou")
-    Ok(json)
- }
+  def update = Action(parse.json) { request =>
+    request.body.validate[RequestBuilder].map { case requestBuilder =>
+      val json = Json.toJson("coucou")
+      Ok(json)
+    }.recoverTotal { e =>
+      val error = "Detected error:" + e
+      BadRequest(error)
+    }
+  }
 }
