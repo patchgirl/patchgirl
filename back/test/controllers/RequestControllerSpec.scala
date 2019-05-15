@@ -13,9 +13,17 @@ class RequestControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inject
     "render the index page from the router" in {
       val body = """
           {
-            "name": "myName",
-            "url": "myUrl",
-            "body": "myBody"
+            "root" : [
+              {
+                "type": "file",
+                "name": "file2",
+                "requestBuilder": {
+                  "name": "myName",
+                  "url": "myUrl",
+                  "body": "myBody"
+                }
+              }
+            ]
           }
         """
       val request = FakeRequest(
