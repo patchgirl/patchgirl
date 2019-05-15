@@ -24,8 +24,8 @@ toArray values = Json.list (\a -> a) values
 nodeEncoder : Tree.Node -> Json.Value
 nodeEncoder node =
   case node of
-    Tree.Folder f -> Json.object [ ("folder", folderEncoder f) ]
-    Tree.File f -> Json.object [ ("file", fileEncoder f) ]
+    Tree.Folder f -> folderEncoder f
+    Tree.File f -> fileEncoder f
 
 fileEncoder : Tree.File2 -> Json.Value
 fileEncoder file =
