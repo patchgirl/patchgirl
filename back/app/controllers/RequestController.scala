@@ -11,7 +11,6 @@ class RequestController @Inject()(cc: ControllerComponents, cache: SyncCacheApi)
 
   def update = Action(parse.json) { request =>
     request.body.validate[Tree].map { case node =>
-      println(node)
       val json = Json.toJson("coucou")
       Ok(json)
     }.recoverTotal { e =>

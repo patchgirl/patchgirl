@@ -12,3 +12,4 @@ scalaVersion := "2.12.8"
 libraryDependencies += guice
 libraryDependencies ++= apiTest
 libraryDependencies ++= api
+libraryDependencies ++= db
