@@ -5,12 +5,15 @@ import org.scalatestplus.play.guice._
 import play.api.test._
 import play.api.test.Helpers._
 import play.api.mvc.Headers
+import util.App._
+import fixture._
+import model._
 
 class RequestControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
-  "RequestController GET" should {
+  "PUT /requests/:id" should {
 
-    "render the index page from the router" in {
+    "update a tree" in withApp { case (_, db) =>
       val body = """
           {
             "root" : [
@@ -26,9 +29,11 @@ class RequestControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inject
             ]
           }
         """
+      database.createTree(db, 1, TreeInput(Seq()))
+
       val request = FakeRequest(
         method = PUT,
-        uri = controllers.routes.RequestController.update().url,
+        uri = controllers.routes.RequestController.update(1).url,
         headers = FakeHeaders(Seq(("Content-type", "application/json"))),
         body = body
       )
@@ -37,6 +42,23 @@ class RequestControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inject
       status(response) mustBe OK
       contentType(response) mustBe Some("application/json")
       contentAsString(response) must include ("coucou")
+    }
+  }
+
+  "POST /requests" should {
+
+    "create a tree" in withApp { case (_, _) =>
+      val request = FakeRequest(
+        method = POST,
+        uri = controllers.routes.RequestController.create().url,
+        headers = FakeHeaders(Seq(("Content-type", "application/json"))),
+        body = "{}",
+      )
+      val response = route(app, request).get
+
+      status(response) mustBe OK
+      contentType(response) mustBe Some("application/json")
+      contentAsString(response) mustBe """{"id":1,"root":[]}"""
     }
   }
 }

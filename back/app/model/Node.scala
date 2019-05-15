@@ -35,11 +35,11 @@ object Node {
     }
 
     def writes(node: Node): JsValue = {
-      val (prod: Product, sub) = node match {
-        case b: FileNode => (b, Json.toJson(b))
-        case b: FolderNode => (b, Json.toJson(b))
+      val (kind: String, prod: Product, sub: JsObject) = node match {
+        case b: FileNode => ("file", b, Json.toJson(b)(FileNode.format))
+        case b: FolderNode => ("folder", b, Json.toJson(b)(FolderNode.format))
       }
-      JsObject(Seq("class" -> JsString(prod.productPrefix), "data" -> sub))
+      sub.deepMerge(JsObject(Seq("type" -> JsString(kind))))
     }
   }
 }

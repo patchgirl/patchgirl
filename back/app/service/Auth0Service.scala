@@ -54,7 +54,6 @@ class Auth0Service @Inject()(
       auth0Config.domain,
       auth0Config.clientId
     )
-    println(logoutUrl)
 
     Auth0Info(state, audience, loginUrl, logoutUrl)
   }

@@ -13,3 +13,5 @@ libraryDependencies += guice
 libraryDependencies ++= apiTest
 libraryDependencies ++= api
 libraryDependencies ++= db
+
+javaOptions in Test += "-Dconfig.resource=application.test.conf",
