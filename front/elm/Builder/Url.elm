@@ -1,7 +1,7 @@
 module Builder.Url exposing (..)
 
-import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
-import Html.Attributes exposing (value, placeholder, href, disabled, id)
+import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick, keyCode, on)
 
 import Json.Decode as Json
@@ -36,7 +36,7 @@ parseUrl model url =
 view : Model -> Html Msg
 view model =
   div [ id "urlBuilder" ]
-    [ select [ onInput SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.Method.toOption)
+    [ select [ class "urlOption", onInput SetHttpMethod ] ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.Method.toOption)
     , select [ onInput SetHttpScheme ]
       [ option [ Html.Attributes.value "HTTP" ] [ text "HTTP" ]
       , option [ Html.Attributes.value "HTTPS" ] [ text "HTTPS" ]

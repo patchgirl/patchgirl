@@ -12,21 +12,25 @@ import Tab.Message exposing(..)
 
 view : Model -> Html Msg
 view model =
-  let
-    modifiers = Bulma.tabsModifiers
-    tabsModifiers = { modifiers | alignment = Bulma.Centered, size = Bulma.Medium }
-  in
-    Bulma.tabs tabsModifiers [] []
-      [ tabView OpenReqWindow "Req" model
-      , tabView OpenEnvWindow "Env" model
+  div [ id "mainNavBar" ] [
+    ul []
+      [ li [ onClick OpenReqWindow, class (tabClass2 model ReqTab) ] [ a [] [ text "Req" ] ]
+      , li [ onClick OpenEnvWindow, class (tabClass2 model EnvTab) ] [ a [] [ text "Env" ] ]
       ]
+  ]
 
-tabView : Msg -> String -> Model -> Html Msg
-tabView msg str model =
+tabClass2 : Model -> Model -> String
+tabClass2 m1 m2 =
+  case m1 == m2 of
+    True -> "is-active"
+    False -> ""
+
+tabClass : Msg -> Model -> Model -> Html Msg
+tabClass msg model1 model2 =
   let
-    isSelected = case (model, msg) of
+    isSelected = case (model1, msg) of
       (EnvTab, OpenEnvWindow) -> True
       (ReqTab, OpenReqWindow) -> True
       _ -> False
   in
-    Bulma.tab isSelected [ onClick msg ] [] [ text str ]
+    Bulma.tab isSelected [ onClick msg ] [] [ ]

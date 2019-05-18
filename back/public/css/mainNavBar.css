@@ -1,0 +1,32 @@
+#mainNavBar {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+#mainNavBar ul {
+  display: flex;
+  justify-content: center;
+  border-bottom-color: #dbdbdb;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
+#mainNavBar ul li {
+  display: block;
+}
+
+#mainNavBar li a {
+  display: flex;
+  padding: 0.5em 1em;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #dbdbdb;
+  margin-bottom: -1px;
+  color: #4a4a4a;
+}
+
+#mainNavBar li.is-active a {
+  border-bottom-color: #3273dc;
+  color: #3273dc;
+}

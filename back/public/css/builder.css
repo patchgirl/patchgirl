@@ -1,0 +1,11 @@
+#builder #urlBuilder {
+  display: flex;
+}
+
+#builder #urlBuilder .urlOption {
+  padding: 0.5em 1em;
+}
+
+#builder #urlBuilder #urlInput {
+  flex-grow:1;
+}
