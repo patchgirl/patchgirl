@@ -17,17 +17,21 @@ import Builder.Model as Builder
 view : Model -> Html Msg
 view model =
   let
-    builderTabsView = List.map (tabView model) model.displayedBuilderIndexes
+    builderTabsView = List.map (tabView model model.selectedBuilderIndex) model.displayedBuilderIndexes
     builderAppsView = List.map (builderView model) model.displayedBuilderIndexes
   in
-    div [ id "builders" ]
-      [ div [ id "builderTabs" ] builderTabsView
+    div [ id "builderPanel" ]
+      [ ul [ id "buildersNavbar" ] builderTabsView
       , div [] builderAppsView
       ]
 
-tabView : Model -> Int -> Html Msg
-tabView model idx =
+tabView : Model -> Maybe Int -> Int ->Html Msg
+tabView model mSelectedIdx idx =
   let
+    activeClass =
+      case mSelectedIdx == Just idx of
+        True -> "isActive"
+        False -> ""
     savedView = a [ href "#" ] [ ]
     unsavedView file = a [ href "#", onClick (SaveTab idx) ] [ text "*" ]
     savingView file =
@@ -37,12 +41,12 @@ tabView model idx =
   in
     case Tree.findNode model.tree idx of
       Just (Tree.File file)  ->
-        div []
+        li [ class activeClass ]
           [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
           , savingView file
-          , a [ href "#", onClick (CloseTab idx) ] [ span [ class "fas fa-times" ] [] ]
+          , a [ href "#", onClick (CloseTab idx), class "closeBuilder" ] [ span [ class "fas fa-times" ] [] ]
           ]
-      _ -> div [] []
+      _ -> li [] []
 
 builderView : Model -> Int -> Html Msg
 builderView model idx =

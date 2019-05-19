@@ -23,7 +23,7 @@ defaultModel =
   let
     treeModel =
       { selectedBuilderIndex = Just 4
-      , displayedBuilderIndexes = [4]
+      , displayedBuilderIndexes = [4, 5]
       , tree = Tree.defaultTree
       , displayedNodeMenuIndex = Nothing
       }
