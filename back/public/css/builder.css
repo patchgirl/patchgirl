@@ -9,3 +9,15 @@
 #builder #urlBuilder #urlInput {
   flex-grow:1;
 }
+
+#builder #headersBuilder textarea {
+  width: 100%;
+}
+
+#builder #bodyBuilder textarea {
+  width: 100%;
+}
+
+#builder #responseBody textarea {
+  width: 100%;
+}

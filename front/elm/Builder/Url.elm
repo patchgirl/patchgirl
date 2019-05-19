@@ -2,7 +2,7 @@ module Builder.Url exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onClick, keyCode, on)
+import Html.Events exposing (..)
 
 import Json.Decode as Json
 import Regex

@@ -17,6 +17,6 @@ view model =
   div [ id "builder" ]
     [ Builder.Url.view model
     , Builder.Header.view model
-    , Builder.Body.view model
+    , Builder.Body.view
     , Builder.Response.view model
     ]

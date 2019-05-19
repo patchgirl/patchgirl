@@ -1,9 +1,9 @@
 module Builder.Response exposing (..)
 
 import Http
-import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
-import Html.Attributes exposing (value, placeholder, href, disabled)
-import Html.Events exposing (onInput, onClick, keyCode, on)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 
 import Builder.Model exposing (Model)
 import Builder.Message exposing (Msg)
@@ -24,7 +24,7 @@ view model =
       Just (Ok responseBody) -> responseBody
       _ -> ""
   in
-    div []
+    div [ id "responseBody" ]
       [ div [] [ text status ]
       , textarea [ placeholder "response" ] [ text response ]
       ]
