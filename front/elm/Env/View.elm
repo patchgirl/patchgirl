@@ -9,11 +9,11 @@ import Env.Model exposing (..)
 
 view : Model -> Html Msg
 view model =
-  div [ class "flexColumn" ] ((List.indexedMap viewKeyValue model) ++ [defaultView])
+  div [ class "foo" ] ((List.indexedMap viewKeyValue model) ++ [defaultView])
 
 viewKeyValue : Int -> (String, String) -> Html Msg
 viewKeyValue idx (key, envValue) =
-  div [ class "flexRow" ]
+  div [ ]
     [ input [ placeholder "key", onInput (PromptKey idx), value key ] []
     , input [ placeholder "value", onInput (PromptValue idx), value envValue ] []
     , a [ href "#", class "icono-cross", onClick (DeleteInput idx)] [ text "-" ]

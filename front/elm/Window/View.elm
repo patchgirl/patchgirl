@@ -35,7 +35,7 @@ view model =
     contentView =
       div [ id "content" ] <|
         case model.tabModel of
-          Tab.EnvTab -> [ envsView model ]
+          Tab.EnvTab -> [ envView model ]
           Tab.ReqTab -> [ builderView model ]
   in
     div [] [ tabView model, contentView ]
@@ -46,13 +46,8 @@ view model =
         , div [] [ envView model ]
         ]-}
 
-envsView : Model -> Html Msg
-envsView model =
-  div [] [ envNavView model
-         ]
-
-envNavView : Model -> Html Msg
-envNavView model =
+envView : Model -> Html Msg
+envView model =
   Html.map EnvNavMsg (EnvNav.view model.envNavModel)
 
 builderView : Model -> Html Msg

@@ -11,15 +11,15 @@ import Env.View as Env
 
 view : Model -> Html Msg
 view model =
-  div [ id "navEnv", class "flexRow" ]
-    [ ul [ class "flexColumn" ] <| (List.indexedMap (entryView model.renameEnvIdx) model.envs) ++ [
+  div [ id "envApp", class "columns" ]
+    [ ul [ class "column is-offset-1 is-1" ] <| (List.indexedMap (entryView model.renameEnvIdx model.selectedEnvIndex) model.envs) ++ [
            div [ onClick Add, class "centerHorizontal align-self-center" ] [ span [ class "icono-plusCircle" ] [] ]
           ]
-    , ul [] <| List.indexedMap (envView model) model.envs
+    , ul [ class "column" ] <| List.indexedMap (envView model) model.envs
     ]
 
-entryView : Maybe Int -> Int -> EnvInfo -> Html Msg
-entryView renameEnvIdx idx envInfo =
+entryView : Maybe Int -> Maybe Int -> Int -> EnvInfo -> Html Msg
+entryView renameEnvIdx mSelectedEnvIdx idx envInfo =
   let
     readView = a [ href "#", onClick (Select idx) ] [ span [] [ text envInfo.name ] ]
     editView = input [ value envInfo.name, Util.onEnterWithInput (Rename idx) ] []
@@ -27,8 +27,12 @@ entryView renameEnvIdx idx envInfo =
       case renameEnvIdx == Just idx of
         True -> editView
         False -> readView
+    active =
+        case mSelectedEnvIdx == Just idx of
+            True -> "active"
+            False -> ""
   in
-    li []
+    li [ class active ]
       [ modeView
       , a [ href "#", onClick (ShowRenameInput idx)] [ span [class "icono-hamburger"][] ]
       , a [ href "#", class "icono-cross", onClick (Delete idx)] [ text "-" ]
