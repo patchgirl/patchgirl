@@ -1,7 +1,7 @@
-module Env.App exposing (..)
+module EnvApp.App exposing (..)
 
-import Env.Model exposing (..)
-import Env.Message exposing (Msg(..))
+import EnvApp.Model exposing (..)
+import EnvApp.Message exposing (Msg(..))
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =

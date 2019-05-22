@@ -12,10 +12,10 @@ import Builder.Header as Builder
 import Builder.Url as Builder
 
 import Builder.Model as Builder
-import Env.Model as Env
+import EnvApp.Model as EnvApp
 import VarApp.Model as VarApp
 
-buildRequest : Env.Model -> VarApp.Model -> Builder.Model -> Cmd Msg
+buildRequest : EnvApp.Model -> VarApp.Model -> Builder.Model -> Cmd Msg
 buildRequest env var builder =
   let
     httpRequest = Http.request
@@ -30,7 +30,7 @@ buildRequest env var builder =
   in
     httpRequest
 
-interpolate : Env.Model -> VarApp.Model -> String -> String
+interpolate : EnvApp.Model -> VarApp.Model -> String -> String
 interpolate env var str =
   let
     build : TemplatedString -> String

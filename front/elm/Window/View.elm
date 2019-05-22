@@ -7,7 +7,7 @@ import Html.Events exposing (..)
 import BuilderTree.View as BuilderTree
 import BuilderTree.Util as BuilderTree
 import Postman.View as Postman
-import Env.View as Env
+import EnvApp.View as EnvApp
 import EnvNav.View as EnvNav
 import EnvSelection.View as EnvSelection
 import MainNavBar.View as MainNavBar

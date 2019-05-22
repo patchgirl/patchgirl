@@ -4,7 +4,7 @@ import BuilderTree.Model as BuilderTree
 import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
-import Env.Model as Env
+import EnvApp.Model as EnvApp
 import EnvNav.Model as EnvNav
 import VarApp.Model as VarApp
 import EnvSelection.Model as EnvSelection
@@ -13,7 +13,7 @@ type alias Model =
   { mainNavBarModel : MainNavBar.Model
   , treeModel : BuilderTree.Model
   , postmanModel : Postman.Model
-  , envModel : Env.Model
+  , envModel : EnvApp.Model
   , selectedEnvModel : EnvSelection.Model
   , envNavModel : EnvNav.Model
   , varAppModel : VarApp.Model
@@ -29,7 +29,7 @@ defaultModel =
       , tree = BuilderTree.defaultBuilderTree
       , displayedNodeMenuIndex = Nothing
       }
-    envModel : Env.Model
+    envModel : EnvApp.Model
     envModel = [("url", "swapi.co")]
     envNav1 : EnvNav.EnvInfo
     envNav1 =

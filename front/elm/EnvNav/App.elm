@@ -5,7 +5,7 @@ import List.Extra as List
 import EnvNav.Model exposing (..)
 import EnvNav.Message exposing (Msg(..))
 
-import Env.App as Env
+import EnvApp.App as EnvApp
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -41,13 +41,13 @@ update msg model =
           newEnvs -> ( { model | renameEnvIdx = Nothing, envs = newEnvs }, Cmd.none)
 
 
-    EnvMsg idx subMsg ->
+    EnvAppMsg idx subMsg ->
       case List.getAt idx model.envs of
         Nothing -> (model, Cmd.none)
         Just { name, env } ->
-          case Env.update subMsg env of
-            (newEnv, newSubMsg) ->
+          case EnvApp.update subMsg env of
+            (newEnvApp, newSubMsg) ->
               let
-                newEnvs = List.setAt idx { name = name, env = newEnv } model.envs
+                newEnvApps = List.setAt idx { name = name, env = newEnvApp } model.envs
               in
-                ( { model | envs = newEnvs }, Cmd.map (EnvMsg idx) newSubMsg )
+                ( { model | envs = newEnvApps }, Cmd.map (EnvAppMsg idx) newSubMsg )

@@ -1,6 +1,6 @@
 module EnvNav.Model exposing (..)
 
-import Env.Model as Env
+import EnvApp.Model as EnvApp
 
 type alias Model =
   { selectedEnvIndex : Maybe Int
@@ -10,10 +10,10 @@ type alias Model =
 
 type alias EnvInfo =
   { name : String
-  , env : Env.Model
+  , env : EnvApp.Model
   }
 
 defaultEnvInfo =
   { name = "no name"
-  , env = Env.defaultModel
+  , env = EnvApp.defaultModel
   }

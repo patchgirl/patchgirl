@@ -21,10 +21,10 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import Env.View as Env
-import Env.Model as Env
-import Env.Message as Env
-import Env.App as Env
+import EnvApp.View as EnvApp
+import EnvApp.Model as EnvApp
+import EnvApp.Message as EnvApp
+import EnvApp.App as EnvApp
 
 import EnvNav.View as EnvNav
 import EnvNav.Model as EnvNav
@@ -154,10 +154,10 @@ update msg model =
         _ -> (model, Cmd.none)-}
       (model, Cmd.none)
 
-    EnvMsg subMsg ->
-      case Env.update subMsg model.envModel of
-        (newEnv, newMsg) ->
-          ( { model | envModel = newEnv }, Cmd.map EnvMsg newMsg)
+    EnvAppMsg subMsg ->
+      case EnvApp.update subMsg model.envModel of
+        (newEnvApp, newMsg) ->
+          ( { model | envModel = newEnvApp }, Cmd.map EnvAppMsg newMsg)
 
     MainNavBarMsg subMsg ->
         case MainNavBar.update subMsg model.mainNavBarModel of

@@ -1,10 +1,10 @@
 module EnvNav.Message exposing (..)
 
-import Env.Message as Env
+import EnvApp.Message as EnvApp
 
 type Msg
   = Select Int
-  | EnvMsg Int Env.Msg
+  | EnvAppMsg Int EnvApp.Msg
   | Delete Int
   | Add
   | ShowRenameInput Int

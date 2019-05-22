@@ -7,7 +7,7 @@ import Html.Events exposing (..)
 import EnvNav.Message exposing (..)
 import EnvNav.Model exposing (..)
 import Util.View as Util
-import Env.View as Env
+import EnvApp.View as EnvApp
 
 view : Model -> Html Msg
 view model =
@@ -42,4 +42,4 @@ envView : Model -> Int -> EnvInfo -> Html Msg
 envView model idx envInfo =
   case model.selectedEnvIndex == Just idx of
     showEnvTab ->
-      div [ hidden (not showEnvTab) ] [ Html.map (EnvMsg idx) (Env.view envInfo.env) ]
+      div [ hidden (not showEnvTab) ] [ Html.map (EnvAppMsg idx) (EnvApp.view envInfo.env) ]
