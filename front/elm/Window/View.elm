@@ -13,6 +13,7 @@ import EnvSelection.View as EnvSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
 import Builder.View as Builder
+import VarApp.View as VarApp
 
 import Builders.View as Builders
 
@@ -32,6 +33,7 @@ view model =
                 case model.mainNavBarModel of
                     MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model.envNavModel) ]
                     MainNavBar.ReqTab -> [ builderView model ]
+                    MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
     in
         div []
             [ Html.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)

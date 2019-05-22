@@ -12,25 +12,17 @@ import MainNavBar.Message exposing(..)
 
 view : Model -> Html Msg
 view model =
-  div [ id "mainNavBar" ] [
-    ul []
-      [ li [ onClick OpenReqWindow, class (tabClass2 model ReqTab) ] [ a [] [ text "Req" ] ]
-      , li [ onClick OpenEnvWindow, class (tabClass2 model EnvTab) ] [ a [] [ text "Env" ] ]
-      ]
-  ]
-
-tabClass2 : Model -> Model -> String
-tabClass2 m1 m2 =
-  case m1 == m2 of
-    True -> "is-active"
-    False -> ""
-
-tabClass : Msg -> Model -> Model -> Html Msg
-tabClass msg model1 model2 =
-  let
-    isSelected = case (model1, msg) of
-      (EnvTab, OpenEnvWindow) -> True
-      (ReqTab, OpenReqWindow) -> True
-      _ -> False
-  in
-    Bulma.tab isSelected [ onClick msg ] [] [ ]
+    let
+        isActive : Model -> Model -> String
+        isActive m1 m2 =
+            case m1 == m2 of
+                True -> "is-active"
+                False -> ""
+    in
+        div [ id "mainNavBar" ] [
+             ul []
+                 [ li [ onClick OpenReqTab, class (isActive model ReqTab) ] [ a [] [ text "Req" ] ]
+                 , li [ onClick OpenEnvTab, class (isActive model EnvTab) ] [ a [] [ text "Env" ] ]
+                 , li [ onClick OpenVarTab, class (isActive model VarTab) ] [ a [] [ text "Var" ] ]
+                 ]
+            ]

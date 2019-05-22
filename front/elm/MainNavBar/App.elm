@@ -5,6 +5,7 @@ import MainNavBar.Model exposing (..)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
-    OpenReqWindow -> (ReqTab, Cmd.none)
-    OpenEnvWindow -> (EnvTab, Cmd.none)
+    case msg of
+        OpenReqTab -> (ReqTab, Cmd.none)
+        OpenEnvTab -> (EnvTab, Cmd.none)
+        OpenVarTab -> (VarTab, Cmd.none)

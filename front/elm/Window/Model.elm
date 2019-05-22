@@ -6,6 +6,7 @@ import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
 import Env.Model as Env
 import EnvNav.Model as EnvNav
+import VarApp.Model as VarApp
 import EnvSelection.Model as EnvSelection
 
 type alias Model =
@@ -15,6 +16,7 @@ type alias Model =
   , envModel : Env.Model
   , selectedEnvModel : EnvSelection.Model
   , envNavModel : EnvNav.Model
+  , varAppModel : VarApp.Model
   , runnerModel : RequestRunner.Model
   }
 
@@ -50,6 +52,7 @@ defaultModel =
       { envs = [ envNav1.name, envNav2.name ]
       , selectedEnvIdx = Nothing
       }
+    varAppModel = [ ("test1", "value1"), ("key2", "value2") ]
   in
     { mainNavBarModel = MainNavBar.defaultModel
     , treeModel = treeModel
@@ -58,4 +61,5 @@ defaultModel =
     , selectedEnvModel = selectedEnvModel
     , envNavModel = envNavModel
     , runnerModel = Nothing
+    , varAppModel = varAppModel
     }

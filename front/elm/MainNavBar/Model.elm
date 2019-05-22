@@ -1,5 +1,5 @@
 module MainNavBar.Model exposing (..)
 
-type Model = ReqTab | EnvTab
+type Model = ReqTab | EnvTab | VarTab
 
-defaultModel = ReqTab
+defaultModel = VarTab

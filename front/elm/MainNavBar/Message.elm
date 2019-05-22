@@ -1,5 +1,6 @@
 module MainNavBar.Message exposing (..)
 
 type Msg
-    = OpenReqWindow
-    | OpenEnvWindow
+    = OpenReqTab
+    | OpenEnvTab
+    | OpenVarTab

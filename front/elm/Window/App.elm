@@ -46,6 +46,11 @@ import MainNavBar.View as MainNavBar
 import MainNavBar.Message as MainNavBar
 import MainNavBar.App as MainNavBar
 
+import VarApp.Model as VarApp
+import VarApp.View as VarApp
+import VarApp.Message as VarApp
+import VarApp.App as VarApp
+
 import Window.View exposing(..)
 import Window.Model exposing(..)
 
@@ -158,6 +163,13 @@ update msg model =
             (newMainNavBarModel, newMsg) ->
                 ( { model | mainNavBarModel = newMainNavBarModel }
                 , Cmd.map MainNavBarMsg newMsg
+                )
+
+    VarAppMsg subMsg ->
+        case VarApp.update subMsg model.varAppModel of
+            (newVarAppModel, newMsg) ->
+                ( { model | varAppModel = newVarAppModel }
+                , Cmd.map VarAppMsg newMsg
                 )
 
     BuildersMsg subMsg ->
