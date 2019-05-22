@@ -1,5 +1,5 @@
 module Builders.Model exposing (..)
 
-import Tree.Model as Tree
+import BuilderTree.Model as BuilderTree
 
-type alias Model = Tree.Model
+type alias Model = BuilderTree.Model

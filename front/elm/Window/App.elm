@@ -11,10 +11,10 @@ import Builder.Message as Builder
 import Builders.App as Builders
 import Builders.Message as Builders
 
-import Tree.View as Tree
-import Tree.Model as Tree
-import Tree.Message as Tree
-import Tree.App as Tree
+import BuilderTree.View as BuilderTree
+import BuilderTree.Model as BuilderTree
+import BuilderTree.Message as BuilderTree
+import BuilderTree.App as BuilderTree
 
 import Postman.View as Postman
 import Postman.Model as Postman
@@ -56,9 +56,9 @@ init _ =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    TreeMsg subMsg ->
-      case Tree.update subMsg model.treeModel of
-        (newTreeModel, newMsg) -> ( { model | treeModel = newTreeModel }, Cmd.map TreeMsg newMsg)
+    BuilderTreeMsg subMsg ->
+      case BuilderTree.update subMsg model.treeModel of
+        (newBuilderTreeModel, newMsg) -> ( { model | treeModel = newBuilderTreeModel }, Cmd.map BuilderTreeMsg newMsg)
 
     EnvNavMsg subMsg ->
       case EnvNav.update subMsg model.envNavModel of
@@ -78,23 +78,23 @@ update msg model =
 
     PostmanMsg subMsg ->
       case Postman.update subMsg model.postmanModel of
-        (Just newTree, newMsg) ->
+        (Just newBuilderTree, newMsg) ->
           let
-            newTreeModel =
+            newBuilderTreeModel =
               { selectedBuilderIndex = Nothing
               , displayedBuilderIndexes = []
-              , tree = newTree
+              , tree = newBuilderTree
               , displayedNodeMenuIndex = Nothing
               }
           in
-            ( { model | treeModel = newTreeModel }, Cmd.map PostmanMsg newMsg)
+            ( { model | treeModel = newBuilderTreeModel }, Cmd.map PostmanMsg newMsg)
 
         (Nothing, newMsg) ->
           (model, Cmd.none)
 
     BuilderMsg subMsg ->
       let
-        mBuilder = Debug.log "mbuilder" Maybe.andThen (Tree.findBuilder model.treeModel.tree) model.treeModel.selectedBuilderIndex
+        mBuilder = Debug.log "mbuilder" Maybe.andThen (BuilderTree.findBuilder model.treeModel.tree) model.treeModel.selectedBuilderIndex
       in
         case (subMsg, mBuilder) of
           (Builder.AskRun b, Just builder) ->
@@ -135,16 +135,16 @@ update msg model =
         (RequestRunner.GetResponse response, Just builder, builderIndexes) ->
           let
             (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
-            updateNode : Tree.Node -> Tree.Node
+            updateNode : BuilderTree.Node -> BuilderTree.Node
             updateNode oldNode =
               case oldNode of
-                Tree.File { name } -> Tree.File { name = name, builder = updatedBuilder, showRenameInput = False }
+                BuilderTree.File { name } -> BuilderTree.File { name = name, builder = updatedBuilder, showRenameInput = False }
                 _ -> oldNode
-            newTree = Tree.modifyNode updateNode model.treeModel.tree 1 --builderIdx
-            oldTreeModel = model.treeModel
-            newTreeModel = { oldTreeModel | tree = newTree }
+            newBuilderTree = BuilderTree.modifyNode updateNode model.treeModel.tree 1 --builderIdx
+            oldBuilderTreeModel = model.treeModel
+            newBuilderTreeModel = { oldBuilderTreeModel | tree = newBuilderTree }
           in
-            ( { model | treeModel = newTreeModel }, Cmd.map BuilderMsg cmdBuilder)
+            ( { model | treeModel = newBuilderTreeModel }, Cmd.map BuilderMsg cmdBuilder)
         _ -> (model, Cmd.none)-}
       (model, Cmd.none)
 
@@ -172,14 +172,14 @@ update msg model =
               (model, Cmd.none)
         _ ->
           case Builders.update subMsg model.treeModel of
-            (newTree, newMsg) ->
-              ( { model | treeModel = newTree }, sendSaveTabRequest newTree)
+            (newBuilderTree, newMsg) ->
+              ( { model | treeModel = newBuilderTree }, sendSaveTabRequest newBuilderTree)
 
-    SaveTreeResponse foo ->
+    SaveBuilderTreeResponse foo ->
       (model, Cmd.none)
 
-builders : Tree.Model -> List (Maybe Builder.Model)
-builders treeModel = List.map (Tree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
+builders : BuilderTree.Model -> List (Maybe Builder.Model)
+builders treeModel = List.map (BuilderTree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =

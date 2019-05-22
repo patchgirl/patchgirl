@@ -1,11 +1,11 @@
-module Tree.Model exposing (..)
+module BuilderTree.Model exposing (..)
 
 import Builder.Model as Builder
 
 type alias Model =
   { selectedBuilderIndex : Maybe Int
   , displayedBuilderIndexes : List(Int)
-  , tree : Tree
+  , tree : BuilderTree
   , displayedNodeMenuIndex : Maybe Int
   }
 
@@ -13,7 +13,7 @@ type alias Folder2 =
   { name : String
   , open : Bool
   , showRenameInput : Bool
-  , children : Tree
+  , children : BuilderTree
   }
 
 type alias File2 =
@@ -25,7 +25,7 @@ type alias File2 =
 
 type Node = Folder Folder2 | File File2
 
-type alias Tree = List(Node)
+type alias BuilderTree = List(Node)
 
 defaultFolder =
   Folder { name = "new folder"
@@ -41,7 +41,7 @@ defaultFile =
        , isSaved = False
        }
 
-defaultTree =
+defaultBuilderTree =
   [ Folder { name = "folder1"
            , open = False
            , children = []

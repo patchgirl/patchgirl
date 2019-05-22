@@ -6,11 +6,11 @@ import Json.Encode as Json
 import Window.Model exposing (..)
 import Window.Message exposing (..)
 
-import Tree.Model as Tree
+import BuilderTree.Model as BuilderTree
 import Builder.Model as Builder
 import Builder.Method as Builder
 
-stateEncoder : Tree.Model -> Json.Value
+stateEncoder : BuilderTree.Model -> Json.Value
 stateEncoder model =
   let
     nodes : Json.Value
@@ -21,13 +21,13 @@ stateEncoder model =
 toArray : List Json.Value -> Json.Value
 toArray values = Json.list (\a -> a) values
 
-nodeEncoder : Tree.Node -> Json.Value
+nodeEncoder : BuilderTree.Node -> Json.Value
 nodeEncoder node =
   case node of
-    Tree.Folder f -> folderEncoder f
-    Tree.File f -> fileEncoder f
+    BuilderTree.Folder f -> folderEncoder f
+    BuilderTree.File f -> fileEncoder f
 
-fileEncoder : Tree.File2 -> Json.Value
+fileEncoder : BuilderTree.File2 -> Json.Value
 fileEncoder file =
   Json.object
     [ ("type", Json.string "file")
@@ -50,7 +50,7 @@ builderEncoder builder =
     , ("body", Json.string builder.body)
     ]
 
-folderEncoder : Tree.Folder2 -> Json.Value
+folderEncoder : BuilderTree.Folder2 -> Json.Value
 folderEncoder folder =
   Json.object
     [ ("type", Json.string "folder")
@@ -59,7 +59,7 @@ folderEncoder folder =
     , ("children", List.map nodeEncoder folder.children |> toArray)
     ]
 
-sendSaveTabRequest : Tree.Model -> Cmd Msg
+sendSaveTabRequest : BuilderTree.Model -> Cmd Msg
 sendSaveTabRequest model =
   let
     httpRequest = Http.request
@@ -67,7 +67,7 @@ sendSaveTabRequest model =
       , headers = []
       , url = "http://localhost:9000/requests"
       , body = stateEncoder model |> Http.jsonBody
-      , expect = Http.expectString SaveTreeResponse
+      , expect = Http.expectString SaveBuilderTreeResponse
       , timeout = Nothing
       , tracker = Nothing
       }

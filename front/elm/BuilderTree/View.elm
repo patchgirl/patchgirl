@@ -1,13 +1,13 @@
-module Tree.View exposing (..)
+module BuilderTree.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Tree.Model exposing (Model, Node(..), Tree)
-import Tree.Message exposing (Msg(..))
-import Tree.FolderView exposing (..)
-import Tree.FileView exposing (..)
+import BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+import BuilderTree.Message exposing (Msg(..))
+import BuilderTree.FolderView exposing (..)
+import BuilderTree.FileView exposing (..)
 
 import Util.View as Util
 
@@ -21,7 +21,7 @@ view model =
         treeView
       ]
 
-nodeView : Int -> Maybe Int -> Tree -> (Int, List (Html Msg))
+nodeView : Int -> Maybe Int -> BuilderTree -> (Int, List (Html Msg))
 nodeView idx mDisplayedNodeMenuIndex tree =
   let
     showMenu = mDisplayedNodeMenuIndex == Just idx

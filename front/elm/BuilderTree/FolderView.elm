@@ -1,11 +1,11 @@
-module Tree.FolderView exposing (..)
+module BuilderTree.FolderView exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Tree.Model exposing (Model, Node(..), Tree)
-import Tree.Message exposing (Msg(..))
+import BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+import BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util
 

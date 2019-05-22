@@ -4,7 +4,7 @@ import Http
 
 import Builder.Message as Builder
 import Builders.Message as Builders
-import Tree.Message as Tree
+import BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
 import Env.Message as Env
 import EnvNav.Message as EnvNav
@@ -13,7 +13,7 @@ import MainNavBar.Message as MainNavBar
 import EnvSelection.Message as EnvSelection
 
 type Msg
-  = TreeMsg Tree.Msg
+  = BuilderTreeMsg BuilderTree.Msg
   | BuilderMsg Builder.Msg
   | BuildersMsg Builders.Msg
   | PostmanMsg Postman.Msg
@@ -22,4 +22,4 @@ type Msg
   | RequestRunnerMsg RequestRunner.Msg
   | MainNavBarMsg MainNavBar.Msg
   | EnvSelectionMsg EnvSelection.Msg
-  | SaveTreeResponse (Result Http.Error String)
+  | SaveBuilderTreeResponse (Result Http.Error String)

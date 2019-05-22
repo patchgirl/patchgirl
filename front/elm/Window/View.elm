@@ -4,8 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Tree.View as Tree
-import Tree.Util as Tree
+import BuilderTree.View as BuilderTree
+import BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import Env.View as Env
 import EnvNav.View as EnvNav
@@ -18,7 +18,7 @@ import Builders.View as Builders
 
 import Util.List as List
 
-import Tree.Model as Tree
+import BuilderTree.Model as BuilderTree
 
 import Window.Model exposing(..)
 import Window.Message exposing(..)
@@ -47,7 +47,7 @@ builderView model =
   let
     treeView : Html Msg
     treeView =
-      Html.map TreeMsg (Tree.view model.treeModel)
+      Html.map BuilderTreeMsg (BuilderTree.view model.treeModel)
     envSelectionView : Html Msg
     envSelectionView =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)

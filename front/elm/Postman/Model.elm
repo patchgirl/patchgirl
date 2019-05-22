@@ -4,27 +4,27 @@ import Json.Decode exposing (..)
 
 import Builder.Model as Builder
 import Builder.Method as Builder
-import Tree.Model as Tree
+import BuilderTree.Model as BuilderTree
 
-type alias Model = Maybe Tree.Tree
+type alias Model = Maybe BuilderTree.BuilderTree
 
-decodePostman : String -> Result Error Tree.Tree
+decodePostman : String -> Result Error BuilderTree.BuilderTree
 decodePostman str =
-  decodeString postmanCollectionToTreeDecoder str
+  decodeString postmanCollectionToBuilderTreeDecoder str
 
-postmanCollectionToTreeDecoder : Decoder Tree.Tree
-postmanCollectionToTreeDecoder =
+postmanCollectionToBuilderTreeDecoder : Decoder BuilderTree.BuilderTree
+postmanCollectionToBuilderTreeDecoder =
   let
-    root : String -> Tree.Tree -> Tree.Node
-    root name requests = Tree.Folder { name = name, open = True, children = requests, showRenameInput = False }
-    filesDecoder : Decoder (List Tree.Node)
+    root : String -> BuilderTree.BuilderTree -> BuilderTree.Node
+    root name requests = BuilderTree.Folder { name = name, open = True, children = requests, showRenameInput = False }
+    filesDecoder : Decoder (List BuilderTree.Node)
     filesDecoder = field "item" (list fileDecoder)
-    fileDecoder : Decoder Tree.Node
-    fileDecoder = map2 (\name builder -> Tree.File { name = name, builder = builder, showRenameInput = False, isSaved = True }) fileNameDecoder builderDecoder
+    fileDecoder : Decoder BuilderTree.Node
+    fileDecoder = map2 (\name builder -> BuilderTree.File { name = name, builder = builder, showRenameInput = False, isSaved = True }) fileNameDecoder builderDecoder
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
-    rootDecoder : Decoder Tree.Node
-    rootDecoder = map2 (\name children -> Tree.Folder { name = name, open = True, children = children, showRenameInput = False }) collectionNameDecoder filesDecoder
+    rootDecoder : Decoder BuilderTree.Node
+    rootDecoder = map2 (\name children -> BuilderTree.Folder { name = name, open = True, children = children, showRenameInput = False }) collectionNameDecoder filesDecoder
   in
     map (\folder -> [folder]) rootDecoder
 

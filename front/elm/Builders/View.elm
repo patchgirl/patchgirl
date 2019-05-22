@@ -8,8 +8,8 @@ import Builders.Message exposing (..)
 import Builders.Model exposing (..)
 
 import Builder.View as Builder
-import Tree.Util as Tree
-import Tree.Model as Tree
+import BuilderTree.Util as BuilderTree
+import BuilderTree.Model as BuilderTree
 import Util.List as List
 import Util.Maybe as Maybe
 import Builder.Model as Builder
@@ -39,8 +39,8 @@ tabView model mSelectedIdx idx =
         True -> savedView
         False -> unsavedView file
   in
-    case Tree.findNode model.tree idx of
-      Just (Tree.File file)  ->
+    case BuilderTree.findNode model.tree idx of
+      Just (BuilderTree.File file)  ->
         li [ class activeClass ]
           [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
           , savingView file
@@ -51,7 +51,7 @@ tabView model mSelectedIdx idx =
 builderView : Model -> Int -> Html Msg
 builderView model idx =
   let
-    mBuilder = Tree.findBuilder model.tree idx
+    mBuilder = BuilderTree.findBuilder model.tree idx
   in
     case mBuilder of
       Just builder ->

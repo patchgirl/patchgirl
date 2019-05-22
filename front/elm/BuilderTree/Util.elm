@@ -1,15 +1,15 @@
-module Tree.Util exposing (..)
+module BuilderTree.Util exposing (..)
 
-import Tree.Model exposing (..)
-import Tree.Message exposing (..)
+import BuilderTree.Model exposing (..)
+import BuilderTree.Message exposing (..)
 
 import Builder.App as Builder
 import Builder.Model as Builder
 
-findNode : Tree -> Int -> Maybe Node
+findNode : BuilderTree -> Int -> Maybe Node
 findNode =
   let
-    find : Tree -> Int -> (Int, Maybe Node)
+    find : BuilderTree -> Int -> (Int, Maybe Node)
     find tree idx =
       case (tree, idx) of
         (node :: tail, 0) -> (0, Just node)
@@ -30,16 +30,16 @@ findNode =
   in
     \x y -> find x y |> Tuple.second
 
-findBuilder : Tree -> Int -> Maybe Builder.Model
+findBuilder : BuilderTree -> Int -> Maybe Builder.Model
 findBuilder tree idx =
   case findNode tree idx of
     Just (File { builder }) -> Just builder
     _ -> Nothing
 
-modifyNode : (Node -> Node) -> Tree -> Int -> Tree
+modifyNode : (Node -> Node) -> BuilderTree -> Int -> BuilderTree
 modifyNode f =
   let
-    modify : Tree -> Int -> (Int, Tree)
+    modify : BuilderTree -> Int -> (Int, BuilderTree)
     modify tree idx =
       if idx < 0 then
         (idx, tree)
@@ -58,16 +58,16 @@ modifyNode f =
 
                _ ->
                  let
-                   (newIdx, newTree) = (modify tail (idx - 1))
+                   (newIdx, newBuilderTree) = (modify tail (idx - 1))
                  in
-                   (newIdx, node :: newTree)
+                   (newIdx, node :: newBuilderTree)
   in
     \x y -> modify x y |> Tuple.second
 
-deleteNode : Tree -> Int -> Tree
+deleteNode : BuilderTree -> Int -> BuilderTree
 deleteNode =
   let
-    delete : Tree -> Int -> (Int, Tree)
+    delete : BuilderTree -> Int -> (Int, BuilderTree)
     delete tree idx =
       if idx < 0 then
         (idx, tree)
@@ -90,8 +90,8 @@ deleteNode =
 
                _ ->
                  let
-                   (newIdx, newTree) = (delete tail (idx - 1))
+                   (newIdx, newBuilderTree) = (delete tail (idx - 1))
                  in
-                   (newIdx, node :: newTree)
+                   (newIdx, node :: newBuilderTree)
   in
     \x y -> delete x y |> Tuple.second

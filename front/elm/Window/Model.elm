@@ -1,6 +1,6 @@
 module Window.Model exposing (..)
 
-import Tree.Model as Tree
+import BuilderTree.Model as BuilderTree
 import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
@@ -10,7 +10,7 @@ import EnvSelection.Model as EnvSelection
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
-  , treeModel : Tree.Model
+  , treeModel : BuilderTree.Model
   , postmanModel : Postman.Model
   , envModel : Env.Model
   , selectedEnvModel : EnvSelection.Model
@@ -24,7 +24,7 @@ defaultModel =
     treeModel =
       { selectedBuilderIndex = Just 4
       , displayedBuilderIndexes = [4, 5]
-      , tree = Tree.defaultTree
+      , tree = BuilderTree.defaultBuilderTree
       , displayedNodeMenuIndex = Nothing
       }
     envModel : Env.Model
