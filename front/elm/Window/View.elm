@@ -9,7 +9,7 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvApp.View as EnvApp
 import EnvApp.EnvNav.View as EnvNav
-import EnvSelection.View as EnvSelection
+import BuilderApp.EnvSelection.View as EnvSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
 import VarApp.View as VarApp

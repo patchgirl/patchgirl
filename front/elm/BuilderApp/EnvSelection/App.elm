@@ -1,7 +1,7 @@
-module EnvSelection.App exposing (..)
+module BuilderApp.EnvSelection.App exposing (..)
 
-import EnvSelection.Model exposing (..)
-import EnvSelection.Message exposing (Msg(..))
+import BuilderApp.EnvSelection.Model exposing (..)
+import BuilderApp.EnvSelection.Message exposing (Msg(..))
 
 import List.Extra as List
 

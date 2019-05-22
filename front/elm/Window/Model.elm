@@ -7,7 +7,7 @@ import RequestRunner.Model as RequestRunner
 import EnvApp.Model as EnvApp
 import EnvApp.EnvNav.Model as EnvNav
 import VarApp.Model as VarApp
-import EnvSelection.Model as EnvSelection
+import BuilderApp.EnvSelection.Model as EnvSelection
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model

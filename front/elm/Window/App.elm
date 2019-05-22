@@ -37,10 +37,10 @@ import EnvApp.EnvNav.Message as EnvNav
 import EnvApp.EnvNav.App as EnvNav
 import EnvApp.EnvNav.Util as EnvNav
 
-import EnvSelection.View as EnvSelection
-import EnvSelection.Model as EnvSelection
-import EnvSelection.Message as EnvSelection
-import EnvSelection.App as EnvSelection
+import BuilderApp.EnvSelection.View as EnvSelection
+import BuilderApp.EnvSelection.Model as EnvSelection
+import BuilderApp.EnvSelection.Message as EnvSelection
+import BuilderApp.EnvSelection.App as EnvSelection
 
 import RequestRunner.App as RequestRunner
 import RequestRunner.Message as RequestRunner

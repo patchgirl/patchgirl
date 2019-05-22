@@ -10,7 +10,7 @@ import EnvApp.Message as EnvApp
 import EnvApp.EnvNav.Message as EnvNav
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
-import EnvSelection.Message as EnvSelection
+import BuilderApp.EnvSelection.Message as EnvSelection
 import VarApp.Message as VarApp
 
 type Msg

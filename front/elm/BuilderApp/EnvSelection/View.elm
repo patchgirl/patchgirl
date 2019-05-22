@@ -1,4 +1,4 @@
-module EnvSelection.View exposing (..)
+module BuilderApp.EnvSelection.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -6,8 +6,8 @@ import Html.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
 
-import EnvSelection.Message exposing (..)
-import EnvSelection.Model exposing (..)
+import BuilderApp.EnvSelection.Message exposing (..)
+import BuilderApp.EnvSelection.Model exposing (..)
 
 view : Model -> Html Msg
 view model =

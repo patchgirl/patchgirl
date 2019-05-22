@@ -1,4 +1,4 @@
-module EnvSelection.Model exposing (..)
+module BuilderApp.EnvSelection.Model exposing (..)
 
 type alias Model =
   { envs : List(String)
