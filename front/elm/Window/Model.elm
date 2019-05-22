@@ -3,7 +3,7 @@ module Window.Model exposing (..)
 import Tree.Model as Tree
 import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
-import Runner.Model as Runner
+import RequestRunner.Model as RequestRunner
 import Env.Model as Env
 import EnvNav.Model as EnvNav
 import EnvSelection.Model as EnvSelection
@@ -15,7 +15,7 @@ type alias Model =
   , envModel : Env.Model
   , selectedEnvModel : EnvSelection.Model
   , envNavModel : EnvNav.Model
-  , runnerModel : Runner.Model
+  , runnerModel : RequestRunner.Model
   }
 
 defaultModel : Model

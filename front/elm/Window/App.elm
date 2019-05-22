@@ -37,9 +37,9 @@ import EnvSelection.Model as EnvSelection
 import EnvSelection.Message as EnvSelection
 import EnvSelection.App as EnvSelection
 
-import Runner.App as Runner
-import Runner.Message as Runner
-import Runner.Model as Runner
+import RequestRunner.App as RequestRunner
+import RequestRunner.Message as RequestRunner
+import RequestRunner.Model as RequestRunner
 
 import MainNavBar.Model as MainNavBar
 import MainNavBar.View as MainNavBar
@@ -99,9 +99,9 @@ update msg model =
         case (subMsg, mBuilder) of
           (Builder.AskRun b, Just builder) ->
             let
-              (updatedRunner, cmdRunner) = (Runner.update (Runner.Run model.envModel builder) model.runnerModel)
+              (updatedRequestRunner, cmdRequestRunner) = (RequestRunner.update (RequestRunner.Run model.envModel builder) model.runnerModel)
             in
-              ( { model | runnerModel = updatedRunner }, Cmd.map RunnerMsg cmdRunner)
+              ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
 
           (_, Just builder) ->
             let
@@ -120,19 +120,19 @@ update msg model =
           (Nothing, _) -> (model, Cmd.none)
           (Just builder, Builder.AskRun) ->
             let
-              (updatedRunner, cmdRunner) = (Runner.update (Runner.Run model.envModel builder) model.runnerModel)
+              (updatedRequestRunner, cmdRequestRunner) = (RequestRunner.update (RequestRunner.Run model.envModel builder) model.runnerModel)
             in
-              ( { model | runnerModel = updatedRunner }, Cmd.map RunnerMsg cmdRunner)
+              ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
           (Just builder, _) ->
             let
               (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
             in
               (model, Cmd.map BuilderMsg cmdBuilder)
 -}
-    RunnerMsg subMsg ->
+    RequestRunnerMsg subMsg ->
       {-
       case (subMsg, mBuilder model.treeModel, model.treeModel.displayedBuilderIndexes) of
-        (Runner.GetResponse response, Just builder, builderIndexes) ->
+        (RequestRunner.GetResponse response, Just builder, builderIndexes) ->
           let
             (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
             updateNode : Tree.Node -> Tree.Node
@@ -165,8 +165,8 @@ update msg model =
         Builders.BuilderMsg (Builder.AskRun builder) ->
           case EnvNav.getSelectedEnvInfo model.envNavModel of
             Just envInfo ->
-              case Runner.update (Runner.Run envInfo.env builder) Nothing of
-                (_, runnerSubMsg) -> (model, Cmd.map RunnerMsg runnerSubMsg)
+              case RequestRunner.update (RequestRunner.Run envInfo.env builder) Nothing of
+                (_, runnerSubMsg) -> (model, Cmd.map RequestRunnerMsg runnerSubMsg)
 
             Nothing ->
               (model, Cmd.none)

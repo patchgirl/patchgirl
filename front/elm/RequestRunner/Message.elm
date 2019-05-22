@@ -1,4 +1,4 @@
-module Runner.Message exposing (..)
+module RequestRunner.Message exposing (..)
 
 import Http
 

@@ -1,11 +1,11 @@
-module Runner.Util exposing (..)
+module RequestRunner.Util exposing (..)
 
 import Http
 import Combine exposing (..)
 import List.Extra as List
 
-import Runner.Message exposing (..)
-import Runner.Model exposing (..)
+import RequestRunner.Message exposing (..)
+import RequestRunner.Model exposing (..)
 
 import Builder.Method as Builder
 import Builder.Header as Builder

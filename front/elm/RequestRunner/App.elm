@@ -1,8 +1,8 @@
-module Runner.App exposing (..)
+module RequestRunner.App exposing (..)
 
-import Runner.Message exposing (..)
-import Runner.Model exposing (..)
-import Runner.Util exposing (..)
+import RequestRunner.Message exposing (..)
+import RequestRunner.Model exposing (..)
+import RequestRunner.Util exposing (..)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
