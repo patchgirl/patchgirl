@@ -30,17 +30,13 @@ view model =
         contentView =
             div [ id "content" ] <|
                 case model.mainNavBarModel of
-                    MainNavBar.EnvTab -> [ envView model ]
+                    MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model.envNavModel) ]
                     MainNavBar.ReqTab -> [ builderView model ]
     in
         div []
             [ Html.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
             , contentView
             ]
-
-envView : Model -> Html Msg
-envView model =
-  Html.map EnvNavMsg (EnvNav.view model.envNavModel)
 
 builderView : Model -> Html Msg
 builderView model =
