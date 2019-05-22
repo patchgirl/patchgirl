@@ -1,0 +1,12 @@
+#builderApp {
+  display: flex;
+}
+
+#builderApp #treeView {
+  margin-right: 5rem;
+  margin-left: 1rem;
+}
+
+#builderApp #builderView {
+  flex-grow: 1;
+}
