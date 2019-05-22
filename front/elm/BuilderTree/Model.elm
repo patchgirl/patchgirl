@@ -1,6 +1,6 @@
 module BuilderTree.Model exposing (..)
 
-import Builder.Model as Builder
+import BuilderApp.Builder.Model as Builder
 
 type alias Model =
   { selectedBuilderIndex : Maybe Int

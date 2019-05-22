@@ -2,7 +2,7 @@ module RequestRunner.Message exposing (..)
 
 import Http
 
-import Builder.Model as Builder
+import BuilderApp.Builder.Model as Builder
 import EnvApp.Model as EnvApp
 import VarApp.Model as VarApp
 

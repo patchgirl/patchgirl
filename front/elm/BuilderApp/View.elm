@@ -7,12 +7,12 @@ import Html.Events exposing (..)
 import BuilderApp.Message exposing (..)
 import BuilderApp.Model exposing (..)
 
-import Builder.View as Builder
 import BuilderTree.Util as BuilderTree
 import BuilderTree.Model as BuilderTree
 import Util.List as List
 import Util.Maybe as Maybe
-import Builder.Model as Builder
+import BuilderApp.Builder.View as Builder
+import BuilderApp.Builder.Model as Builder
 
 view : Model -> Html Msg
 view model =

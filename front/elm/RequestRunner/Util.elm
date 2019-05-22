@@ -7,11 +7,11 @@ import List.Extra as List
 import RequestRunner.Message exposing (..)
 import RequestRunner.Model exposing (..)
 
-import Builder.Method as Builder
-import Builder.Header as Builder
-import Builder.Url as Builder
+import BuilderApp.Builder.Method as Builder
+import BuilderApp.Builder.Header as Builder
+import BuilderApp.Builder.Url as Builder
+import BuilderApp.Builder.Model as Builder
 
-import Builder.Model as Builder
 import EnvApp.Model as EnvApp
 import VarApp.Model as VarApp
 

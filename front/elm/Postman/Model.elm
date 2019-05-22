@@ -2,8 +2,8 @@ module Postman.Model exposing (..)
 
 import Json.Decode exposing (..)
 
-import Builder.Model as Builder
-import Builder.Method as Builder
+import BuilderApp.Builder.Model as Builder
+import BuilderApp.Builder.Method as Builder
 import BuilderTree.Model as BuilderTree
 
 type alias Model = Maybe BuilderTree.BuilderTree

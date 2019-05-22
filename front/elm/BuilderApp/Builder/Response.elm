@@ -1,12 +1,12 @@
-module Builder.Response exposing (..)
+module BuilderApp.Builder.Response exposing (..)
 
 import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Builder.Model exposing (Model)
-import Builder.Message exposing (Msg)
+import BuilderApp.Builder.Model exposing (Model)
+import BuilderApp.Builder.Message exposing (Msg)
 
 view : Model -> Html Msg
 view model =

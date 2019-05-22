@@ -1,8 +1,8 @@
-module Builder.Message exposing (..)
+module BuilderApp.Builder.Message exposing (..)
 
 import Http
 
-import Builder.Model exposing (..)
+import BuilderApp.Builder.Model exposing (..)
 
 type Msg
   = UpdateUrl String

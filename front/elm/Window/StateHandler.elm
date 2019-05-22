@@ -7,8 +7,8 @@ import Window.Model exposing (..)
 import Window.Message exposing (..)
 
 import BuilderTree.Model as BuilderTree
-import Builder.Model as Builder
-import Builder.Method as Builder
+import BuilderApp.Builder.Model as Builder
+import BuilderApp.Builder.Method as Builder
 
 stateEncoder : BuilderTree.Model -> Json.Value
 stateEncoder model =

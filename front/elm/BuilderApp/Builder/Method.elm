@@ -1,10 +1,10 @@
-module Builder.Method exposing (..)
+module BuilderApp.Builder.Method exposing (..)
 
 import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled)
-import Builder.Message exposing (Msg)
-import Builder.Model exposing (Method(..), Model)
+import BuilderApp.Builder.Message exposing (Msg)
+import BuilderApp.Builder.Model exposing (Method(..), Model)
 
 methodToString : Method -> String
 methodToString method =

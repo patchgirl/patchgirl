@@ -2,8 +2,8 @@ module Window.Message exposing (..)
 
 import Http
 
-import Builder.Message as Builder
 import BuilderApp.Message as BuilderApp
+import BuilderApp.Builder.Message as BuilderAppBuilder
 import BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
 import EnvApp.Message as EnvApp
@@ -15,7 +15,7 @@ import VarApp.Message as VarApp
 
 type Msg
   = BuilderTreeMsg BuilderTree.Msg
-  | BuilderMsg Builder.Msg
+  | BuilderMsg BuilderAppBuilder.Msg
   | BuilderAppMsg BuilderApp.Msg
   | PostmanMsg Postman.Msg
   | EnvAppMsg EnvApp.Msg

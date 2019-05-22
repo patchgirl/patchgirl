@@ -3,8 +3,8 @@ module BuilderTree.Util exposing (..)
 import BuilderTree.Model exposing (..)
 import BuilderTree.Message exposing (..)
 
-import Builder.App as Builder
-import Builder.Model as Builder
+import BuilderApp.Builder.App as Builder
+import BuilderApp.Builder.Model as Builder
 
 findNode : BuilderTree -> Int -> Maybe Node
 findNode =

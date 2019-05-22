@@ -1,4 +1,4 @@
-module Builder.App exposing (..)
+module BuilderApp.Builder.App exposing (..)
 
 import Browser
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
@@ -9,13 +9,13 @@ import Debug
 import Url
 import Json.Decode as Json
 
-import Builder.Response
-import Builder.Message exposing (Msg(..))
-import Builder.Model exposing (Model, Method(..))
-import Builder.Header
-import Builder.Url
-import Builder.Body
-import Builder.Method as Builder
+import BuilderApp.Builder.Response
+import BuilderApp.Builder.Message exposing (Msg(..))
+import BuilderApp.Builder.Model exposing (Model, Method(..))
+import BuilderApp.Builder.Header as Builder
+import BuilderApp.Builder.Url
+import BuilderApp.Builder.Body
+import BuilderApp.Builder.Method as Builder
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -40,7 +40,7 @@ update msg model =
       ( { model | response = Just result }, Cmd.none)
 
     UpdateHeaders rawHeaders ->
-      case Builder.Header.parseHeaders rawHeaders of
+      case Builder.parseHeaders rawHeaders of
         Just headers ->
           ( { model | headers = Debug.log "headers" headers }, Cmd.none )
         Nothing ->

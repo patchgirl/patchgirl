@@ -1,6 +1,6 @@
 module BuilderApp.Message exposing (..)
 
-import Builder.Message as Builder
+import BuilderApp.Builder.Message as Builder
 
 type Msg
   = SelectTab Int

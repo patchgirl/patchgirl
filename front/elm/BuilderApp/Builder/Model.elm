@@ -1,4 +1,4 @@
-module Builder.Model exposing (..)
+module BuilderApp.Builder.Model exposing (..)
 
 import Http
 

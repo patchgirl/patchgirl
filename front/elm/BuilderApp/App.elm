@@ -5,7 +5,7 @@ import BuilderApp.Message exposing (..)
 
 import BuilderTree.Model as BuilderTree
 import BuilderTree.Util as BuilderTree
-import Builder.App as Builder
+import BuilderApp.Builder.App as Builder
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =

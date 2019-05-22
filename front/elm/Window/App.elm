@@ -4,12 +4,17 @@ import Window.Model exposing (..)
 import Window.Message exposing (..)
 import Window.StateHandler exposing (..)
 
-import Builder.App as Builder
-import Builder.Model as Builder
-import Builder.Message as Builder
-
+import BuilderApp.App as BuilderApp
+import BuilderApp.Model as BuilderApp
+import BuilderApp.Message as BuilderApp
 import BuilderApp.App as BuilderApp
 import BuilderApp.Message as BuilderApp
+
+import BuilderApp.Builder.App as Builder
+import BuilderApp.Builder.Model as Builder
+import BuilderApp.Builder.Message as Builder
+import BuilderApp.Builder.App as Builder
+import BuilderApp.Builder.Message as Builder
 
 import BuilderTree.View as BuilderTree
 import BuilderTree.Model as BuilderTree

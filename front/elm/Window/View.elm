@@ -12,9 +12,9 @@ import EnvNav.View as EnvNav
 import EnvSelection.View as EnvSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
-import Builder.View as Builder
 import VarApp.View as VarApp
 
+import BuilderApp.Builder.View as Builder
 import BuilderApp.View as BuilderApp
 
 import Util.List as List
