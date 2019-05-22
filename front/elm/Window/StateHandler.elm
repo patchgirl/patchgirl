@@ -6,7 +6,7 @@ import Json.Encode as Json
 import Window.Model exposing (..)
 import Window.Message exposing (..)
 
-import BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 

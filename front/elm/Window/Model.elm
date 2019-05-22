@@ -1,6 +1,6 @@
 module Window.Model exposing (..)
 
-import BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
 import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner

@@ -1,11 +1,11 @@
-module BuilderTree.FileView exposing (..)
+module BuilderApp.BuilderTree.FileView exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderTree.Model exposing (Model, Node(..), BuilderTree)
-import BuilderTree.Message exposing (Msg(..))
+import BuilderApp.BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util
 

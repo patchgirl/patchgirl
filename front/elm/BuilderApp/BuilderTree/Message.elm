@@ -1,6 +1,6 @@
-module BuilderTree.Message exposing (..)
+module BuilderApp.BuilderTree.Message exposing (..)
 
-import BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
 
 type Msg
   = SetDisplayedBuilder Int

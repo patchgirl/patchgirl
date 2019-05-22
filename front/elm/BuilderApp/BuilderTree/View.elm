@@ -1,13 +1,13 @@
-module BuilderTree.View exposing (..)
+module BuilderApp.BuilderTree.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderTree.Model exposing (Model, Node(..), BuilderTree)
-import BuilderTree.Message exposing (Msg(..))
-import BuilderTree.FolderView exposing (..)
-import BuilderTree.FileView exposing (..)
+import BuilderApp.BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+import BuilderApp.BuilderTree.Message exposing (Msg(..))
+import BuilderApp.BuilderTree.FolderView exposing (..)
+import BuilderApp.BuilderTree.FileView exposing (..)
 
 import Util.View as Util
 

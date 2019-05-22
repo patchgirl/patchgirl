@@ -4,7 +4,7 @@ import Http
 
 import BuilderApp.Message as BuilderApp
 import BuilderApp.Builder.Message as BuilderAppBuilder
-import BuilderTree.Message as BuilderTree
+import BuilderApp.BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
 import EnvApp.Message as EnvApp
 import EnvNav.Message as EnvNav

@@ -4,7 +4,7 @@ import Json.Decode exposing (..)
 
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
-import BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
 
 type alias Model = Maybe BuilderTree.BuilderTree
 

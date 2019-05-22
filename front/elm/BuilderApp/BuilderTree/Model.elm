@@ -1,4 +1,4 @@
-module BuilderTree.Model exposing (..)
+module BuilderApp.BuilderTree.Model exposing (..)
 
 import BuilderApp.Builder.Model as Builder
 

@@ -4,8 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderTree.View as BuilderTree
-import BuilderTree.Util as BuilderTree
+import BuilderApp.BuilderTree.View as BuilderTree
+import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvApp.View as EnvApp
 import EnvNav.View as EnvNav
@@ -19,7 +19,7 @@ import BuilderApp.View as BuilderApp
 
 import Util.List as List
 
-import BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
 
 import Window.Model exposing(..)
 import Window.Message exposing(..)

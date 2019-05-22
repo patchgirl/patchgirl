@@ -7,8 +7,8 @@ import Html.Events exposing (..)
 import BuilderApp.Message exposing (..)
 import BuilderApp.Model exposing (..)
 
-import BuilderTree.Util as BuilderTree
-import BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Util as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
 import Util.List as List
 import Util.Maybe as Maybe
 import BuilderApp.Builder.View as Builder

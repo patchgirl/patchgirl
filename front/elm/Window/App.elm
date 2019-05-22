@@ -16,10 +16,10 @@ import BuilderApp.Builder.Message as Builder
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Builder.Message as Builder
 
-import BuilderTree.View as BuilderTree
-import BuilderTree.Model as BuilderTree
-import BuilderTree.Message as BuilderTree
-import BuilderTree.App as BuilderTree
+import BuilderApp.BuilderTree.View as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Message as BuilderTree
+import BuilderApp.BuilderTree.App as BuilderTree
 
 import Postman.View as Postman
 import Postman.Model as Postman

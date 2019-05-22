@@ -3,8 +3,8 @@ module BuilderApp.App exposing (..)
 import BuilderApp.Model exposing (..)
 import BuilderApp.Message exposing (..)
 
-import BuilderTree.Model as BuilderTree
-import BuilderTree.Util as BuilderTree
+import BuilderApp.BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Util as BuilderTree
 import BuilderApp.Builder.App as Builder
 
 update : Msg -> Model -> (Model, Cmd Msg)

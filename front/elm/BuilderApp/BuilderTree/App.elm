@@ -1,10 +1,91 @@
-module BuilderTree.Util exposing (..)
+module BuilderApp.BuilderTree.App exposing (..)
 
-import BuilderTree.Model exposing (..)
-import BuilderTree.Message exposing (..)
+import BuilderApp.BuilderTree.Model exposing (..)
+import BuilderApp.BuilderTree.Message exposing (..)
 
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Builder.Model as Builder
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    SetDisplayedBuilder idx ->
+      let
+        newModel =
+          case List.member idx model.displayedBuilderIndexes of
+            True ->
+              { model | selectedBuilderIndex = Just idx }
+            False ->
+              { model | displayedBuilderIndexes = model.displayedBuilderIndexes ++ [idx]
+              , selectedBuilderIndex = Just idx
+              }
+      in
+        (newModel , Cmd.none)
+
+    ToggleMenu idx ->
+      let
+        newDisplayedNodeMenuIndex =
+          case model.displayedNodeMenuIndex == Just idx of
+            True -> Nothing
+            False -> Just idx
+      in
+        ( { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }, Cmd.none)
+
+    ToggleNode idx ->
+      let
+        toggle : Node -> Node
+        toggle node =
+          case node of
+            File _ as file -> file
+            Folder folder -> Folder { folder | open = (not folder.open), showRenameInput = False }
+      in
+        ( { model | tree = (modifyNode toggle model.tree idx) }, Cmd.none)
+
+    Mkdir idx ->
+      let
+        mkdir : Node -> Node
+        mkdir node =
+          case node of
+            File _ as file -> file
+            Folder folder -> Folder { folder | children = defaultFolder :: folder.children
+                                    , showRenameInput = False
+                                    }
+      in
+        ( { model | tree = (modifyNode mkdir model.tree idx) }, Cmd.none)
+
+    Touch idx ->
+      let
+        touch : Node -> Node
+        touch node =
+          case node of
+            File _ as file -> file
+            Folder folder ->
+              Folder { folder | children = (defaultFile :: folder.children), showRenameInput = False }
+      in
+        ( { model | tree = (modifyNode touch model.tree idx) }, Cmd.none)
+
+    ShowRenameInput idx ->
+      let
+        showRenameInput : Node -> Node
+        showRenameInput node =
+          case node of
+            Folder folder -> Folder { folder | showRenameInput = True }
+            File file -> File { file | showRenameInput = True }
+      in
+        ( { model | tree = (modifyNode showRenameInput model.tree idx) }, Cmd.none)
+
+    Rename idx newName ->
+      let
+        rename : Node -> Node
+        rename node =
+          case node of
+            Folder folder -> Folder { folder | name = newName, showRenameInput = False }
+            File file -> File { file | name = newName, showRenameInput = False }
+      in
+        ( { model | tree = (modifyNode rename model.tree idx) }, Cmd.none)
+
+    Delete idx ->
+      ( { model | tree = (deleteNode model.tree idx) }, Cmd.none)
 
 findNode : BuilderTree -> Int -> Maybe Node
 findNode =
