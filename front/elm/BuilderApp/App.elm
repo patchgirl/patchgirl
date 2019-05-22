@@ -1,7 +1,7 @@
-module Builders.App exposing (..)
+module BuilderApp.App exposing (..)
 
-import Builders.Model exposing (..)
-import Builders.Message exposing (..)
+import BuilderApp.Model exposing (..)
+import BuilderApp.Message exposing (..)
 
 import BuilderTree.Model as BuilderTree
 import BuilderTree.Util as BuilderTree

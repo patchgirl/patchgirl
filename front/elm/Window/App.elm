@@ -8,8 +8,8 @@ import Builder.App as Builder
 import Builder.Model as Builder
 import Builder.Message as Builder
 
-import Builders.App as Builders
-import Builders.Message as Builders
+import BuilderApp.App as BuilderApp
+import BuilderApp.Message as BuilderApp
 
 import BuilderTree.View as BuilderTree
 import BuilderTree.Model as BuilderTree
@@ -173,9 +173,9 @@ update msg model =
                 , Cmd.map VarAppMsg newMsg
                 )
 
-    BuildersMsg subMsg ->
+    BuilderAppMsg subMsg ->
       case subMsg of
-        Builders.BuilderMsg (Builder.AskRun builder) ->
+        BuilderApp.BuilderMsg (Builder.AskRun builder) ->
           case EnvNav.getSelectedEnvInfo model.envNavModel of
             Just envInfo ->
               case RequestRunner.update (RequestRunner.Run envInfo.env model.varAppModel builder) Nothing of
@@ -184,7 +184,7 @@ update msg model =
             Nothing ->
               (model, Cmd.none)
         _ ->
-          case Builders.update subMsg model.treeModel of
+          case BuilderApp.update subMsg model.treeModel of
             (newBuilderTree, newMsg) ->
               ( { model | treeModel = newBuilderTree }, sendSaveTabRequest newBuilderTree)
 

@@ -1,11 +1,11 @@
-module Builders.View exposing (..)
+module BuilderApp.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Builders.Message exposing (..)
-import Builders.Model exposing (..)
+import BuilderApp.Message exposing (..)
+import BuilderApp.Model exposing (..)
 
 import Builder.View as Builder
 import BuilderTree.Util as BuilderTree

@@ -1,4 +1,4 @@
-module Builders.Message exposing (..)
+module BuilderApp.Message exposing (..)
 
 import Builder.Message as Builder
 

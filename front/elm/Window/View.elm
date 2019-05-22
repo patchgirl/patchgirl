@@ -15,7 +15,7 @@ import MainNavBar.Model as MainNavBar
 import Builder.View as Builder
 import VarApp.View as VarApp
 
-import Builders.View as Builders
+import BuilderApp.View as BuilderApp
 
 import Util.List as List
 
@@ -52,7 +52,7 @@ builderView model =
   in
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ treeView ]
-      , div [ id "builderView" ] [ (Html.map BuildersMsg (Builders.view model.treeModel)) ]
+      , div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view model.treeModel)) ]
       , div [ class "" ] [ envSelectionView ]
       ]
 
