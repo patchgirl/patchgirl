@@ -7,8 +7,8 @@ import RequestRunner.Util exposing (..)
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Run env builder ->
-      (model, buildRequest env builder)
+    Run envs vars builder ->
+      (model, buildRequest envs vars builder)
 
     GetResponse _ ->
       (model, Cmd.none)

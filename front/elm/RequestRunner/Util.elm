@@ -13,14 +13,15 @@ import Builder.Url as Builder
 
 import Builder.Model as Builder
 import Env.Model as Env
+import VarApp.Model as VarApp
 
-buildRequest : Env.Model -> Builder.Model -> Cmd Msg
-buildRequest env builder =
+buildRequest : Env.Model -> VarApp.Model -> Builder.Model -> Cmd Msg
+buildRequest env var builder =
   let
     httpRequest = Http.request
       { method = Builder.methodToString builder.method
       , headers = List.map Builder.mkHeader builder.headers
-      , url = interpolate env (Builder.fullUrl builder)
+      , url = interpolate env var (Builder.fullUrl builder)
       , body = Http.emptyBody
       , expect = Http.expectString GetResponse
       , timeout = Nothing
@@ -29,45 +30,48 @@ buildRequest env builder =
   in
     httpRequest
 
-interpolate : Env.Model -> String -> String
-interpolate env str =
+interpolate : Env.Model -> VarApp.Model -> String -> String
+interpolate env var str =
   let
-    build : Sentence -> String
-    build sentence =
-      case sentence of
-        Characters c -> c
-        EnvKey envKey ->
-          case List.find (\(key, value) -> key == envKey) env of
+    build : TemplatedString -> String
+    build templatedString =
+      case templatedString of
+        Sentence c -> c
+        Key key ->
+          case List.find (\(k, v) -> k == key) env of
             Just (_, value) -> value
-            Nothing -> envKey
+            Nothing ->
+                case List.find (\(k, v) -> k == key) var of
+                    Just (_, value) -> value
+                    Nothing -> key
   in
     case toRaw str of
       Ok result -> List.map build result |> List.foldr (++) ""
       Err errors -> Debug.log errors str
 
-toRaw : String -> Result String (List Sentence)
+toRaw : String -> Result String (List TemplatedString)
 toRaw str =
-  case parse match str of
+  case parse templatedStringParser str of
     Ok (_, _, result) ->
       Ok result
 
     Err (_, stream, errors) ->
       Err (String.join " or " errors)
 
-type Sentence
-  = Characters String
-  | EnvKey String
+type TemplatedString
+    = Sentence String
+    | Key String
 
-match : Parser s (List Sentence)
-match = many (or envPlaceholder anychar)
+templatedStringParser : Parser s (List TemplatedString)
+templatedStringParser = many (or keyParser anychar)
 
-anychar : Parser s Sentence
-anychar = regex "." |> map Characters
+anychar : Parser s TemplatedString
+anychar = regex "." |> map Sentence
 
-envPlaceholder : Parser s Sentence
-envPlaceholder =
+keyParser : Parser s TemplatedString
+keyParser =
   let
-    envKey : Parser s Sentence
-    envKey = regex "[a-zA-Z]+" |> map EnvKey
+    envKey : Parser s TemplatedString
+    envKey = regex "([a-zA-Z]|[0-9])+" |> map Key
   in
     between (string "{{") (string "}}") envKey

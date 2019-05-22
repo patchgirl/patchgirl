@@ -104,7 +104,8 @@ update msg model =
         case (subMsg, mBuilder) of
           (Builder.AskRun b, Just builder) ->
             let
-              (updatedRequestRunner, cmdRequestRunner) = (RequestRunner.update (RequestRunner.Run model.envModel builder) model.runnerModel)
+              (updatedRequestRunner, cmdRequestRunner) =
+                  (RequestRunner.update (RequestRunner.Run model.envModel model.varAppModel builder) model.runnerModel)
             in
               ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
 
@@ -177,7 +178,7 @@ update msg model =
         Builders.BuilderMsg (Builder.AskRun builder) ->
           case EnvNav.getSelectedEnvInfo model.envNavModel of
             Just envInfo ->
-              case RequestRunner.update (RequestRunner.Run envInfo.env builder) Nothing of
+              case RequestRunner.update (RequestRunner.Run envInfo.env model.varAppModel builder) Nothing of
                 (_, runnerSubMsg) -> (model, Cmd.map RequestRunnerMsg runnerSubMsg)
 
             Nothing ->
