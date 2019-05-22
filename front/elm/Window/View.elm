@@ -8,7 +8,7 @@ import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvApp.View as EnvApp
-import EnvNav.View as EnvNav
+import EnvApp.EnvNav.View as EnvNav
 import EnvSelection.View as EnvSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar

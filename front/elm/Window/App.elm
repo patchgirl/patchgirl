@@ -31,11 +31,11 @@ import EnvApp.Model as EnvApp
 import EnvApp.Message as EnvApp
 import EnvApp.App as EnvApp
 
-import EnvNav.View as EnvNav
-import EnvNav.Model as EnvNav
-import EnvNav.Message as EnvNav
-import EnvNav.App as EnvNav
-import EnvNav.Util as EnvNav
+import EnvApp.EnvNav.View as EnvNav
+import EnvApp.EnvNav.Model as EnvNav
+import EnvApp.EnvNav.Message as EnvNav
+import EnvApp.EnvNav.App as EnvNav
+import EnvApp.EnvNav.Util as EnvNav
 
 import EnvSelection.View as EnvSelection
 import EnvSelection.Model as EnvSelection

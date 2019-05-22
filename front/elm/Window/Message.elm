@@ -7,7 +7,7 @@ import BuilderApp.Builder.Message as BuilderAppBuilder
 import BuilderApp.BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
 import EnvApp.Message as EnvApp
-import EnvNav.Message as EnvNav
+import EnvApp.EnvNav.Message as EnvNav
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
 import EnvSelection.Message as EnvSelection

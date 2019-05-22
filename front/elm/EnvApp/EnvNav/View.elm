@@ -1,11 +1,11 @@
-module EnvNav.View exposing (..)
+module EnvApp.EnvNav.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import EnvNav.Message exposing (..)
-import EnvNav.Model exposing (..)
+import EnvApp.EnvNav.Message exposing (..)
+import EnvApp.EnvNav.Model exposing (..)
 import Util.View as Util
 import EnvApp.View as EnvApp
 

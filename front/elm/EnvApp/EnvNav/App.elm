@@ -1,9 +1,9 @@
-module EnvNav.App exposing (..)
+module EnvApp.EnvNav.App exposing (..)
 
 import List.Extra as List
 
-import EnvNav.Model exposing (..)
-import EnvNav.Message exposing (Msg(..))
+import EnvApp.EnvNav.Model exposing (..)
+import EnvApp.EnvNav.Message exposing (Msg(..))
 
 import EnvApp.App as EnvApp
 

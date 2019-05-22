@@ -5,7 +5,7 @@ import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
 import EnvApp.Model as EnvApp
-import EnvNav.Model as EnvNav
+import EnvApp.EnvNav.Model as EnvNav
 import VarApp.Model as VarApp
 import EnvSelection.Model as EnvSelection
 

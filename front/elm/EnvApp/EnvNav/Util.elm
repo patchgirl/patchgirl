@@ -1,8 +1,8 @@
-module EnvNav.Util exposing (..)
+module EnvApp.EnvNav.Util exposing (..)
 
 import List.Extra as List
 
-import EnvNav.Model exposing (..)
+import EnvApp.EnvNav.Model exposing (..)
 
 getSelectedEnvInfo : Model -> Maybe EnvInfo
 getSelectedEnvInfo model =

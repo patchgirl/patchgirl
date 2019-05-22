@@ -1,4 +1,4 @@
-module EnvNav.Model exposing (..)
+module EnvApp.EnvNav.Model exposing (..)
 
 import EnvApp.Model as EnvApp
 

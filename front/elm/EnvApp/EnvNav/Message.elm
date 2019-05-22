@@ -1,4 +1,4 @@
-module EnvNav.Message exposing (..)
+module EnvApp.EnvNav.Message exposing (..)
 
 import EnvApp.Message as EnvApp
 
