@@ -1,7 +1,7 @@
-module Tab.App exposing (..)
+module MainNavBar.App exposing (..)
 
-import Tab.Message exposing (..)
-import Tab.Model exposing (..)
+import MainNavBar.Message exposing (..)
+import MainNavBar.Model exposing (..)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =

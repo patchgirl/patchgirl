@@ -10,8 +10,8 @@ import Postman.View as Postman
 import Env.View as Env
 import EnvNav.View as EnvNav
 import EnvSelection.View as EnvSelection
-import Tab.View as Tab
-import Tab.Model as Tab
+import MainNavBar.View as MainNavBar
+import MainNavBar.Model as MainNavBar
 import Builder.View as Builder
 
 import Builders.View as Builders
@@ -25,21 +25,18 @@ import Window.Message exposing(..)
 
 view : Model -> Html Msg
 view model =
-  let
-    contentView : Html Msg
-    contentView =
-      div [ id "content" ] <|
-        case model.tabModel of
-          Tab.EnvTab -> [ envView model ]
-          Tab.ReqTab -> [ builderView model ]
-  in
-    div [] [ tabView model, contentView ]
-{-        [ div [] [ postmanView ]
-        , div [] [ treeView model ]
-        , div [] [ envNavView model ]
-        , div [] [ builderAppView model.treeModel ]
-        , div [] [ envView model ]
-        ]-}
+    let
+        contentView : Html Msg
+        contentView =
+            div [ id "content" ] <|
+                case model.mainNavBarModel of
+                    MainNavBar.EnvTab -> [ envView model ]
+                    MainNavBar.ReqTab -> [ builderView model ]
+    in
+        div []
+            [ Html.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
+            , contentView
+            ]
 
 envView : Model -> Html Msg
 envView model =
@@ -60,10 +57,6 @@ builderView model =
       , div [ id "builderView" ] [ (Html.map BuildersMsg (Builders.view model.treeModel)) ]
       , div [ class "" ] [ envSelectionView ]
       ]
-
-tabView : Model -> Html Msg
-tabView model =
-  Html.map TabMsg (Tab.view model.tabModel)
 
 postmanView : Html Msg
 postmanView =

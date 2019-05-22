@@ -1,4 +1,4 @@
-module Tab.View exposing (..)
+module MainNavBar.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -7,8 +7,8 @@ import Html.Events exposing (..)
 import Bulma.Components as Bulma
 import Bulma.Modifiers as Bulma
 
-import Tab.Model exposing(..)
-import Tab.Message exposing(..)
+import MainNavBar.Model exposing(..)
+import MainNavBar.Message exposing(..)
 
 view : Model -> Html Msg
 view model =

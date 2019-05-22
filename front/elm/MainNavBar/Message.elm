@@ -1,4 +1,4 @@
-module Tab.Message exposing (..)
+module MainNavBar.Message exposing (..)
 
 type Msg
     = OpenReqWindow

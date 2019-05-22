@@ -9,7 +9,7 @@ import Postman.Message as Postman
 import Env.Message as Env
 import EnvNav.Message as EnvNav
 import Runner.Message as Runner
-import Tab.Message as Tab
+import MainNavBar.Message as MainNavBar
 import EnvSelection.Message as EnvSelection
 
 type Msg
@@ -20,6 +20,6 @@ type Msg
   | EnvMsg Env.Msg
   | EnvNavMsg EnvNav.Msg
   | RunnerMsg Runner.Msg
-  | TabMsg Tab.Msg
+  | MainNavBarMsg MainNavBar.Msg
   | EnvSelectionMsg EnvSelection.Msg
   | SaveTreeResponse (Result Http.Error String)

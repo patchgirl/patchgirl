@@ -41,10 +41,10 @@ import Runner.App as Runner
 import Runner.Message as Runner
 import Runner.Model as Runner
 
-import Tab.Model as Tab
-import Tab.View as Tab
-import Tab.Message as Tab
-import Tab.App as Tab
+import MainNavBar.Model as MainNavBar
+import MainNavBar.View as MainNavBar
+import MainNavBar.Message as MainNavBar
+import MainNavBar.App as MainNavBar
 
 import Window.View exposing(..)
 import Window.Model exposing(..)
@@ -153,9 +153,12 @@ update msg model =
         (newEnv, newMsg) ->
           ( { model | envModel = newEnv }, Cmd.map EnvMsg newMsg)
 
-    TabMsg subMsg ->
-      case Tab.update subMsg model.tabModel of
-        (newTab, newMsg) -> ( { model | tabModel = newTab }, Cmd.map TabMsg newMsg)
+    MainNavBarMsg subMsg ->
+        case MainNavBar.update subMsg model.mainNavBarModel of
+            (newMainNavBarModel, newMsg) ->
+                ( { model | mainNavBarModel = newMainNavBarModel }
+                , Cmd.map MainNavBarMsg newMsg
+                )
 
     BuildersMsg subMsg ->
       case subMsg of

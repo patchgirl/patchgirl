@@ -1,4 +1,4 @@
-module Tab.Model exposing (..)
+module MainNavBar.Model exposing (..)
 
 type Model = ReqTab | EnvTab
 

@@ -1,7 +1,7 @@
 module Window.Model exposing (..)
 
 import Tree.Model as Tree
-import Tab.Model as Tab
+import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import Runner.Model as Runner
 import Env.Model as Env
@@ -9,7 +9,7 @@ import EnvNav.Model as EnvNav
 import EnvSelection.Model as EnvSelection
 
 type alias Model =
-  { tabModel : Tab.Model
+  { mainNavBarModel : MainNavBar.Model
   , treeModel : Tree.Model
   , postmanModel : Postman.Model
   , envModel : Env.Model
@@ -51,7 +51,7 @@ defaultModel =
       , selectedEnvIdx = Nothing
       }
   in
-    { tabModel = Tab.defaultModel
+    { mainNavBarModel = MainNavBar.defaultModel
     , treeModel = treeModel
     , postmanModel = Nothing
     , envModel = envModel
