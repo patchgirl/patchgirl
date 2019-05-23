@@ -1,4 +1,7 @@
 module VarApp.Message exposing (..)
 
 type Msg
-    = Delete Int
+    = PromptKey Int String
+    | PromptValue Int String
+    | AddNewInput
+    | DeleteInput Int
