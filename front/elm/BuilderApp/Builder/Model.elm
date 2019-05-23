@@ -5,7 +5,6 @@ import Http
 type alias Model =
   { name : String
   , url : String
-  , scheme : String
   , method : Method
   , headers : List(Header)
   , body : String
@@ -19,7 +18,6 @@ type alias Response = Result Http.Error String
 defaultBuilder =
   { name = "new builder"
   , url = ""
-  , scheme = "HTTP"
   , method = Get
   , headers = []
   , body = ""
@@ -29,7 +27,6 @@ defaultBuilder =
 defaultModel1 =
   { name = "no name"
   , url = "{{url}}/api/people/1"
-  , scheme = "HTTP"
   , method = Get
   , headers = []
   , body = ""
@@ -39,7 +36,6 @@ defaultModel1 =
 defaultModel2 =
   { name = "no name2"
   , url = "swapi.co/api/people/2"
-  , scheme = "HTTP"
   , method = Get
   , headers = []
   , body = ""

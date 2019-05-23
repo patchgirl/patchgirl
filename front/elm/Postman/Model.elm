@@ -47,10 +47,9 @@ methodDecoder =
 
 builderDecoder : Decoder Builder.Model
 builderDecoder =
-  map7 Builder.Model
+  map6 Builder.Model
     (field "name" string)
     (at ["request", "url"] string)
-    (succeed "http")
     (at ["request", "method"] methodDecoder)
     (at ["request", "header"] (succeed []))
     (at ["request", "body"] (succeed ""))

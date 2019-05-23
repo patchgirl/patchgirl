@@ -44,7 +44,6 @@ builderEncoder builder =
   Json.object
     [ ("name", Json.string builder.name)
     , ("url", Json.string builder.url)
-    , ("scheme", Json.string builder.scheme)
     , ("method", Json.string (Builder.methodToString builder.method))
     , ("headers", List.map headerEncoder builder.headers |> toArray)
     , ("body", Json.string builder.body)

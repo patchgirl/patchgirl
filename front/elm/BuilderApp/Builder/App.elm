@@ -28,11 +28,6 @@ update msg model =
         "GET" -> ( { model | method = Get }, Cmd.none)
         _ -> ( { model | method = Post }, Cmd.none)
 
-    SetHttpScheme scheme ->
-      case scheme of
-        "HTTP" -> ( { model | scheme = "HTTP" }, Cmd.none)
-        _ -> ( { model | scheme = "HTTPS" }, Cmd.none)
-
     AskRun foo ->
       (model, Cmd.none)
 
