@@ -11,7 +11,11 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     SelectTab idx ->
-      ( { model | selectedBuilderIndex = Just idx }, Cmd.none)
+        let
+            formerTree = model.tree
+            newTree = { formerTree | selectedBuilderIndex = Just idx }
+        in
+            ( { model | tree = newTree }, Cmd.none)
 
     CloseTab idx ->
       let
@@ -28,14 +32,15 @@ update msg model =
             x :: xs -> findPrevious xs a
             [] -> Nothing
 
-        newDisplayedBuilderIndexes = List.filter (\x -> x /= idx) model.displayedBuilderIndexes
+        newDisplayedBuilderIndexes = List.filter (\x -> x /= idx) model.tree.displayedBuilderIndexes
         newSelectedBuilderIndex =
-          case Just idx == model.selectedBuilderIndex of
-            False -> model.selectedBuilderIndex
-            True -> findPrevious model.displayedBuilderIndexes idx
+          case Just idx == model.tree.selectedBuilderIndex of
+            False -> model.tree.selectedBuilderIndex
+            True -> findPrevious model.tree.displayedBuilderIndexes idx
+        formerTree = model.tree
+        newTree = { formerTree | displayedBuilderIndexes = newDisplayedBuilderIndexes, selectedBuilderIndex = newSelectedBuilderIndex }
       in
-        ( { model | displayedBuilderIndexes = newDisplayedBuilderIndexes,
-          selectedBuilderIndex = newSelectedBuilderIndex }, Cmd.none)
+        ( { model | tree = newTree }, Cmd.none)
 
     SaveTab idx ->
       let
@@ -44,15 +49,17 @@ update msg model =
           case node of
             BuilderTree.Folder f -> BuilderTree.Folder f
             BuilderTree.File f -> BuilderTree.File { f | isSaved = True }
-        newBuilderTree = BuilderTree.modifyNode markFileAsSaved model.tree idx
+        newBuilderTree = BuilderTree.modifyNode markFileAsSaved model.tree.tree idx
+        formerTree = model.tree
+        newTree = { formerTree | tree = newBuilderTree }
       in
-        ({ model | tree = newBuilderTree }, Cmd.none)
+        ({ model | tree = newTree }, Cmd.none)
 
     BuilderMsg subMsg ->
       let
-        mBuilder = Debug.log "mbuilder" (Maybe.andThen (BuilderTree.findBuilder model.tree) model.selectedBuilderIndex)
+        mBuilder = Debug.log "mbuilder" (Maybe.andThen (BuilderTree.findBuilder model.tree.tree) model.tree.selectedBuilderIndex)
       in
-        case (model.selectedBuilderIndex, mBuilder) of
+        case (model.tree.selectedBuilderIndex, mBuilder) of
           (Just idx, Just builder) ->
             let
               (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
@@ -61,9 +68,14 @@ update msg model =
                 case formerNode of
                   BuilderTree.Folder f -> BuilderTree.Folder f
                   BuilderTree.File f -> BuilderTree.File { f | builder = updatedBuilder }
-              newBuilderTree = BuilderTree.modifyNode action model.tree idx
+              newBuilderTree = BuilderTree.modifyNode action model.tree.tree idx
+              formerTree = model.tree
+              newTree = { formerTree | tree = newBuilderTree }
             in
-              ( { model | tree = newBuilderTree }, Cmd.map BuilderMsg cmdBuilder)
+              ( { model | tree = newTree }, Cmd.map BuilderMsg cmdBuilder)
 
           _ ->
             (model, Cmd.none)
+
+    EnvSelectionMsg subMsg ->
+      (model, Cmd.none)

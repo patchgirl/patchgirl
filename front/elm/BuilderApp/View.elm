@@ -16,14 +16,14 @@ import BuilderApp.Builder.Model as Builder
 
 view : Model -> Html Msg
 view model =
-  let
-    builderTabsView = List.map (tabView model model.selectedBuilderIndex) model.displayedBuilderIndexes
-    builderAppsView = List.map (builderView model) model.displayedBuilderIndexes
-  in
-    div [ id "builderPanel" ]
-      [ ul [ id "buildersNavbar" ] builderTabsView
-      , div [] builderAppsView
-      ]
+    let
+        builderTabsView = List.map (tabView model model.tree.selectedBuilderIndex) model.tree.displayedBuilderIndexes
+        builderAppsView = List.map (builderView model) model.tree.displayedBuilderIndexes
+    in
+        div [ id "builderPanel" ]
+            [ ul [ id "buildersNavbar" ] builderTabsView
+            , div [] builderAppsView
+            ]
 
 tabView : Model -> Maybe Int -> Int ->Html Msg
 tabView model mSelectedIdx idx =
@@ -39,7 +39,7 @@ tabView model mSelectedIdx idx =
         True -> savedView
         False -> unsavedView file
   in
-    case BuilderTree.findNode model.tree idx of
+    case BuilderTree.findNode model.tree.tree idx of
       Just (BuilderTree.File file)  ->
         li [ class activeClass ]
           [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
@@ -51,10 +51,10 @@ tabView model mSelectedIdx idx =
 builderView : Model -> Int -> Html Msg
 builderView model idx =
   let
-    mBuilder = BuilderTree.findBuilder model.tree idx
+    mBuilder = Debug.log "test" <| BuilderTree.findBuilder model.tree.tree idx
   in
     case mBuilder of
       Just builder ->
-        div [ hidden (not (model.selectedBuilderIndex == Just idx)) ]
+        div [ hidden (not (model.tree.selectedBuilderIndex == Just idx)) ]
             [ Html.map BuilderMsg (Builder.view builder) ]
       Nothing -> div [] []

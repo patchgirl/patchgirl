@@ -8,10 +8,11 @@ import EnvApp.Model as EnvApp
 import EnvApp.EnvNav.Model as EnvNav
 import VarApp.Model as VarApp
 import BuilderApp.EnvSelection.Model as EnvSelection
+import BuilderApp.Model as BuilderApp
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
-  , treeModel : BuilderTree.Model
+  , treeModel : BuilderApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
   , selectedEnvModel : EnvSelection.Model
@@ -24,11 +25,13 @@ defaultModel : Model
 defaultModel =
   let
     treeModel =
-      { selectedBuilderIndex = Just 4
-      , displayedBuilderIndexes = [4, 5]
-      , tree = BuilderTree.defaultBuilderTree
-      , displayedNodeMenuIndex = Nothing
-      }
+        { tree =
+              { selectedBuilderIndex = Just 4
+              , displayedBuilderIndexes = [4, 5]
+              , tree = BuilderTree.defaultBuilderTree
+              , displayedNodeMenuIndex = Nothing
+              }
+        }
     envModel : EnvApp.Model
     envModel = [("url", "swapi.co")]
     envNav1 : EnvNav.EnvInfo

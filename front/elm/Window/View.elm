@@ -45,7 +45,7 @@ builderView model =
   let
     treeView : Html Msg
     treeView =
-      Html.map BuilderTreeMsg (BuilderTree.view model.treeModel)
+      Html.map BuilderTreeMsg (BuilderTree.view model.treeModel.tree)
     envSelectionView : Html Msg
     envSelectionView =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)

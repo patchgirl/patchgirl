@@ -2,4 +2,6 @@ module BuilderApp.Model exposing (..)
 
 import BuilderApp.BuilderTree.Model as BuilderTree
 
-type alias Model = BuilderTree.Model
+type alias Model =
+    { tree : BuilderTree.Model
+    }

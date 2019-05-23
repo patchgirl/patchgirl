@@ -67,11 +67,15 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            case BuilderTree.update subMsg model.treeModel of
+            case BuilderTree.update subMsg model.treeModel.tree of
                 (newBuilderTreeModel, newMsg) ->
-                    ( { model | treeModel = newBuilderTreeModel }
-                    , Cmd.map BuilderTreeMsg newMsg
-                    )
+                    let
+                        formerTree = model.treeModel
+                        newTree = { formerTree | tree = newBuilderTreeModel }
+                    in
+                        ( { model | treeModel = newTree }
+                        , Cmd.map BuilderTreeMsg newMsg
+                        )
 
         EnvSelectionMsg subMsg ->
             case EnvSelection.update subMsg model.selectedEnvModel of
@@ -94,12 +98,12 @@ update msg model =
                    case BuilderApp.update subMsg model.treeModel of
                        (newBuilderTree, newMsg) ->
                            ( { model | treeModel = newBuilderTree }
-                           , sendSaveTabRequest newBuilderTree
+                           , sendSaveTabRequest newBuilderTree.tree
                            )
 
         BuilderMsg subMsg ->
             let
-                mBuilder = Debug.log "mbuilder" Maybe.andThen (BuilderTree.findBuilder model.treeModel.tree) model.treeModel.selectedBuilderIndex
+                mBuilder = Maybe.andThen (BuilderTree.findBuilder model.treeModel.tree.tree) model.treeModel.tree.selectedBuilderIndex
             in
                 case (subMsg, mBuilder) of
                     (Builder.AskRun b, Just builder) ->
@@ -139,8 +143,6 @@ update msg model =
         SaveBuilderTreeResponse foo ->
             (model, Cmd.none)
 
-
-
         EnvNavMsg subMsg ->
             case EnvNav.update subMsg model.envNavModel of
                 (newEnvNavModel, newMsg) ->
@@ -162,8 +164,10 @@ update msg model =
                             , tree = newBuilderTree
                             , displayedNodeMenuIndex = Nothing
                             }
+                        formerTree = model.treeModel
+                        newTree = { formerTree | tree = newBuilderTreeModel }
                     in
-                        ( { model | treeModel = newBuilderTreeModel }, Cmd.map PostmanMsg newMsg)
+                        ( { model | treeModel = newTree }, Cmd.map PostmanMsg newMsg)
 
                 (Nothing, newMsg) -> (model, Cmd.none)
 
