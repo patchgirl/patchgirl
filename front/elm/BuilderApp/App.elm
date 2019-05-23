@@ -12,10 +12,10 @@ update msg model =
   case msg of
     SelectTab idx ->
         let
-            formerBuilderAppModel = model.builderTreeModel
-            newBuilderAppModel = { formerBuilderAppModel | selectedBuilderIndex = Just idx }
+            formerBuilderTreeModel = model.builderTreeModel
+            newBuilderTreeModel = { formerBuilderTreeModel | selectedBuilderIndex = Just idx }
         in
-            ( { model | builderTreeModel = newBuilderAppModel }, Cmd.none)
+            ( { model | builderTreeModel = newBuilderTreeModel }, Cmd.none)
 
     CloseTab idx ->
       let
@@ -37,10 +37,10 @@ update msg model =
           case Just idx == model.builderTreeModel.selectedBuilderIndex of
             False -> model.builderTreeModel.selectedBuilderIndex
             True -> findPrevious model.builderTreeModel.displayedBuilderIndexes idx
-        formerBuilderAppModel = model.builderTreeModel
-        newBuilderAppModel = { formerBuilderAppModel | displayedBuilderIndexes = newDisplayedBuilderIndexes, selectedBuilderIndex = newSelectedBuilderIndex }
+        formerBuilderTreeModel = model.builderTreeModel
+        newBuilderTreeModel = { formerBuilderTreeModel | displayedBuilderIndexes = newDisplayedBuilderIndexes, selectedBuilderIndex = newSelectedBuilderIndex }
       in
-        ( { model | builderTreeModel = newBuilderAppModel }, Cmd.none)
+        ( { model | builderTreeModel = newBuilderTreeModel }, Cmd.none)
 
     SaveTab idx ->
       let
@@ -50,10 +50,10 @@ update msg model =
             BuilderTree.Folder f -> BuilderTree.Folder f
             BuilderTree.File f -> BuilderTree.File { f | isSaved = True }
         newBuilderTree = BuilderTree.modifyNode markFileAsSaved model.builderTreeModel.tree idx
-        formerBuilderAppModel = model.builderTreeModel
-        newBuilderAppModel = { formerBuilderAppModel | tree = newBuilderTree }
+        formerBuilderTreeModel = model.builderTreeModel
+        newBuilderTreeModel = { formerBuilderTreeModel | tree = newBuilderTree }
       in
-        ({ model | builderTreeModel = newBuilderAppModel }, Cmd.none)
+        ({ model | builderTreeModel = newBuilderTreeModel }, Cmd.none)
 
     BuilderMsg subMsg ->
       let
@@ -69,10 +69,10 @@ update msg model =
                   BuilderTree.Folder f -> BuilderTree.Folder f
                   BuilderTree.File f -> BuilderTree.File { f | builder = updatedBuilder }
               newBuilderTree = BuilderTree.modifyNode action model.builderTreeModel.tree idx
-              formerBuilderAppModel = model.builderTreeModel
-              newBuilderAppModel = { formerBuilderAppModel | tree = newBuilderTree }
+              formerBuilderTreeModel = model.builderTreeModel
+              newBuilderTreeModel = { formerBuilderTreeModel | tree = newBuilderTree }
             in
-              ( { model | builderTreeModel = newBuilderAppModel }, Cmd.map BuilderMsg cmdBuilder)
+              ( { model | builderTreeModel = newBuilderTreeModel }, Cmd.map BuilderMsg cmdBuilder)
 
           _ ->
             (model, Cmd.none)
