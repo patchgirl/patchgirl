@@ -65,63 +65,58 @@ init _ =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
-    BuilderTreeMsg subMsg ->
-      case BuilderTree.update subMsg model.treeModel of
-        (newBuilderTreeModel, newMsg) -> ( { model | treeModel = newBuilderTreeModel }, Cmd.map BuilderTreeMsg newMsg)
+    case msg of
+        BuilderTreeMsg subMsg ->
+            case BuilderTree.update subMsg model.treeModel of
+                (newBuilderTreeModel, newMsg) ->
+                    ( { model | treeModel = newBuilderTreeModel }
+                    , Cmd.map BuilderTreeMsg newMsg
+                    )
 
-    EnvNavMsg subMsg ->
-      case EnvNav.update subMsg model.envNavModel of
-        (newEnvNavModel, newMsg) ->
-          let
-            selectedEnvModel = model.selectedEnvModel
-            newSelectedEnvModel = { selectedEnvModel | envs = List.map .name newEnvNavModel.envs }
-          in
-            ( { model | envNavModel = newEnvNavModel, selectedEnvModel = newSelectedEnvModel }
-            , Cmd.map EnvNavMsg newMsg
-            )
+        EnvSelectionMsg subMsg ->
+            case EnvSelection.update subMsg model.selectedEnvModel of
+                (newSelectedEnvModel, newMsg) ->
+                    ( { model | selectedEnvModel = newSelectedEnvModel }
+                    , Cmd.map EnvSelectionMsg newMsg
+                    )
 
-    EnvSelectionMsg subMsg ->
-      case EnvSelection.update subMsg model.selectedEnvModel of
-        (newSelectedEnvModel, newMsg) ->
-          ( { model | selectedEnvModel = newSelectedEnvModel }, Cmd.map EnvSelectionMsg newMsg)
+        BuilderAppMsg subMsg ->
+            case subMsg of
+                BuilderApp.BuilderMsg (Builder.AskRun builder) ->
+                    case EnvNav.getSelectedEnvInfo model.envNavModel of
+                        Just envInfo ->
+                            case RequestRunner.update (RequestRunner.Run envInfo.env model.varAppModel builder) Nothing of
+                              (_, runnerSubMsg) -> (model, Cmd.map RequestRunnerMsg runnerSubMsg)
 
-    PostmanMsg subMsg ->
-      case Postman.update subMsg model.postmanModel of
-        (Just newBuilderTree, newMsg) ->
-          let
-            newBuilderTreeModel =
-              { selectedBuilderIndex = Nothing
-              , displayedBuilderIndexes = []
-              , tree = newBuilderTree
-              , displayedNodeMenuIndex = Nothing
-              }
-          in
-            ( { model | treeModel = newBuilderTreeModel }, Cmd.map PostmanMsg newMsg)
+                        Nothing ->
+                            (model, Cmd.none)
+                _ ->
+                   case BuilderApp.update subMsg model.treeModel of
+                       (newBuilderTree, newMsg) ->
+                           ( { model | treeModel = newBuilderTree }
+                           , sendSaveTabRequest newBuilderTree
+                           )
 
-        (Nothing, newMsg) ->
-          (model, Cmd.none)
-
-    BuilderMsg subMsg ->
-      let
-        mBuilder = Debug.log "mbuilder" Maybe.andThen (BuilderTree.findBuilder model.treeModel.tree) model.treeModel.selectedBuilderIndex
-      in
-        case (subMsg, mBuilder) of
-          (Builder.AskRun b, Just builder) ->
+        BuilderMsg subMsg ->
             let
-              (updatedRequestRunner, cmdRequestRunner) =
-                  (RequestRunner.update (RequestRunner.Run model.envModel model.varAppModel builder) model.runnerModel)
+                mBuilder = Debug.log "mbuilder" Maybe.andThen (BuilderTree.findBuilder model.treeModel.tree) model.treeModel.selectedBuilderIndex
             in
-              ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
+                case (subMsg, mBuilder) of
+                    (Builder.AskRun b, Just builder) ->
+                        let
+                            (updatedRequestRunner, cmdRequestRunner) =
+                                (RequestRunner.update (RequestRunner.Run model.envModel model.varAppModel builder) model.runnerModel)
+                        in
+                            ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
 
-          (_, Just builder) ->
-            let
-              (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
-            in
-              (model, Cmd.map BuilderMsg cmdBuilder)
+                    (_, Just builder) ->
+                        let
+                            (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
+                        in
+                            (model, Cmd.map BuilderMsg cmdBuilder)
 
-          _ ->
-            (model, Cmd.none)
+                    _ ->
+                        (model, Cmd.none)
       {-
       let
         mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
@@ -140,7 +135,41 @@ update msg model =
             in
               (model, Cmd.map BuilderMsg cmdBuilder)
 -}
-    RequestRunnerMsg subMsg ->
+
+        SaveBuilderTreeResponse foo ->
+            (model, Cmd.none)
+
+
+
+        EnvNavMsg subMsg ->
+            case EnvNav.update subMsg model.envNavModel of
+                (newEnvNavModel, newMsg) ->
+                    let
+                        selectedEnvModel = model.selectedEnvModel
+                        newSelectedEnvModel = { selectedEnvModel | envs = List.map .name newEnvNavModel.envs }
+                    in
+                        ( { model | envNavModel = newEnvNavModel, selectedEnvModel = newSelectedEnvModel }
+                        , Cmd.map EnvNavMsg newMsg
+                        )
+
+        PostmanMsg subMsg ->
+            case Postman.update subMsg model.postmanModel of
+                (Just newBuilderTree, newMsg) ->
+                    let
+                        newBuilderTreeModel =
+                            { selectedBuilderIndex = Nothing
+                            , displayedBuilderIndexes = []
+                            , tree = newBuilderTree
+                            , displayedNodeMenuIndex = Nothing
+                            }
+                    in
+                        ( { model | treeModel = newBuilderTreeModel }, Cmd.map PostmanMsg newMsg)
+
+                (Nothing, newMsg) -> (model, Cmd.none)
+
+
+        RequestRunnerMsg subMsg ->
+            (model, Cmd.none)
       {-
       case (subMsg, mBuilder model.treeModel, model.treeModel.displayedBuilderIndexes) of
         (RequestRunner.GetResponse response, Just builder, builderIndexes) ->
@@ -157,44 +186,25 @@ update msg model =
           in
             ( { model | treeModel = newBuilderTreeModel }, Cmd.map BuilderMsg cmdBuilder)
         _ -> (model, Cmd.none)-}
-      (model, Cmd.none)
 
-    EnvAppMsg subMsg ->
-      case EnvApp.update subMsg model.envModel of
-        (newEnvApp, newMsg) ->
-          ( { model | envModel = newEnvApp }, Cmd.map EnvAppMsg newMsg)
+        EnvAppMsg subMsg ->
+            case EnvApp.update subMsg model.envModel of
+                (newEnvApp, newMsg) ->
+                    ( { model | envModel = newEnvApp }, Cmd.map EnvAppMsg newMsg)
 
-    MainNavBarMsg subMsg ->
-        case MainNavBar.update subMsg model.mainNavBarModel of
-            (newMainNavBarModel, newMsg) ->
-                ( { model | mainNavBarModel = newMainNavBarModel }
-                , Cmd.map MainNavBarMsg newMsg
-                )
+        MainNavBarMsg subMsg ->
+            case MainNavBar.update subMsg model.mainNavBarModel of
+                (newMainNavBarModel, newMsg) ->
+                    ( { model | mainNavBarModel = newMainNavBarModel }
+                    , Cmd.map MainNavBarMsg newMsg
+                    )
 
-    VarAppMsg subMsg ->
-        case VarApp.update subMsg model.varAppModel of
-            (newVarAppModel, newMsg) ->
-                ( { model | varAppModel = newVarAppModel }
-                , Cmd.map VarAppMsg newMsg
-                )
-
-    BuilderAppMsg subMsg ->
-      case subMsg of
-        BuilderApp.BuilderMsg (Builder.AskRun builder) ->
-          case EnvNav.getSelectedEnvInfo model.envNavModel of
-            Just envInfo ->
-              case RequestRunner.update (RequestRunner.Run envInfo.env model.varAppModel builder) Nothing of
-                (_, runnerSubMsg) -> (model, Cmd.map RequestRunnerMsg runnerSubMsg)
-
-            Nothing ->
-              (model, Cmd.none)
-        _ ->
-          case BuilderApp.update subMsg model.treeModel of
-            (newBuilderTree, newMsg) ->
-              ( { model | treeModel = newBuilderTree }, sendSaveTabRequest newBuilderTree)
-
-    SaveBuilderTreeResponse foo ->
-      (model, Cmd.none)
+        VarAppMsg subMsg ->
+            case VarApp.update subMsg model.varAppModel of
+                (newVarAppModel, newMsg) ->
+                    ( { model | varAppModel = newVarAppModel }
+                    , Cmd.map VarAppMsg newMsg
+                    )
 
 builders : BuilderTree.Model -> List (Maybe Builder.Model)
 builders treeModel = List.map (BuilderTree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
