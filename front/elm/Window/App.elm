@@ -70,10 +70,10 @@ update msg model =
             case BuilderTree.update subMsg model.builderAppModel.tree of
                 (newBuilderTreeModel, newMsg) ->
                     let
-                        formerTree = model.builderAppModel
-                        newTree = { formerTree | tree = newBuilderTreeModel }
+                        formerBuilderAppModel = model.builderAppModel
+                        newBuilderAppModel = { formerBuilderAppModel | tree = newBuilderTreeModel }
                     in
-                        ( { model | builderAppModel = newTree }
+                        ( { model | builderAppModel = newBuilderAppModel }
                         , Cmd.map BuilderTreeMsg newMsg
                         )
 
@@ -164,10 +164,10 @@ update msg model =
                             , tree = newBuilderTree
                             , displayedNodeMenuIndex = Nothing
                             }
-                        formerTree = model.builderAppModel
-                        newTree = { formerTree | tree = newBuilderTreeModel }
+                        formerBuilderAppModel = model.builderAppModel
+                        newBuilderAppModel = { formerBuilderAppModel | tree = newBuilderTreeModel }
                     in
-                        ( { model | builderAppModel = newTree }, Cmd.map PostmanMsg newMsg)
+                        ( { model | builderAppModel = newBuilderAppModel }, Cmd.map PostmanMsg newMsg)
 
                 (Nothing, newMsg) -> (model, Cmd.none)
 
