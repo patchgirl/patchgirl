@@ -25,7 +25,7 @@ defaultModel : Model
 defaultModel =
   let
     builderAppModel =
-        { tree =
+        { builderTreeModel =
               { selectedBuilderIndex = Just 4
               , displayedBuilderIndexes = [4, 5]
               , tree = BuilderTree.defaultBuilderTree

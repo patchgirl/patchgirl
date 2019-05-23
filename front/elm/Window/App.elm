@@ -67,11 +67,11 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            case BuilderTree.update subMsg model.builderAppModel.tree of
+            case BuilderTree.update subMsg model.builderAppModel.builderTreeModel of
                 (newBuilderTreeModel, newMsg) ->
                     let
                         formerBuilderAppModel = model.builderAppModel
-                        newBuilderAppModel = { formerBuilderAppModel | tree = newBuilderTreeModel }
+                        newBuilderAppModel = { formerBuilderAppModel | builderTreeModel = newBuilderTreeModel }
                     in
                         ( { model | builderAppModel = newBuilderAppModel }
                         , Cmd.map BuilderTreeMsg newMsg
@@ -98,12 +98,14 @@ update msg model =
                    case BuilderApp.update subMsg model.builderAppModel of
                        (newBuilderTree, newMsg) ->
                            ( { model | builderAppModel = newBuilderTree }
-                           , sendSaveTabRequest newBuilderTree.tree
+                           , sendSaveTabRequest newBuilderTree.builderTreeModel
                            )
 
         BuilderMsg subMsg ->
             let
-                mBuilder = Maybe.andThen (BuilderTree.findBuilder model.builderAppModel.tree.tree) model.builderAppModel.tree.selectedBuilderIndex
+                mBuilder =
+                    Maybe.andThen (BuilderTree.findBuilder model.builderAppModel.builderTreeModel.tree)
+                        model.builderAppModel.builderTreeModel.selectedBuilderIndex
             in
                 case (subMsg, mBuilder) of
                     (Builder.AskRun b, Just builder) ->
@@ -165,7 +167,7 @@ update msg model =
                             , displayedNodeMenuIndex = Nothing
                             }
                         formerBuilderAppModel = model.builderAppModel
-                        newBuilderAppModel = { formerBuilderAppModel | tree = newBuilderTreeModel }
+                        newBuilderAppModel = { formerBuilderAppModel | builderTreeModel = newBuilderTreeModel }
                     in
                         ( { model | builderAppModel = newBuilderAppModel }, Cmd.map PostmanMsg newMsg)
 
