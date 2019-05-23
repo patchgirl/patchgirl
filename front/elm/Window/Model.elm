@@ -12,7 +12,7 @@ import BuilderApp.Model as BuilderApp
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
-  , treeModel : BuilderApp.Model
+  , builderAppModel : BuilderApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
   , selectedEnvModel : EnvSelection.Model
@@ -24,7 +24,7 @@ type alias Model =
 defaultModel : Model
 defaultModel =
   let
-    treeModel =
+    builderAppModel =
         { tree =
               { selectedBuilderIndex = Just 4
               , displayedBuilderIndexes = [4, 5]
@@ -58,7 +58,7 @@ defaultModel =
     varAppModel = [ ("test1", "value1"), ("key2", "value2") ]
   in
     { mainNavBarModel = MainNavBar.defaultModel
-    , treeModel = treeModel
+    , builderAppModel = builderAppModel
     , postmanModel = Nothing
     , envModel = envModel
     , selectedEnvModel = selectedEnvModel

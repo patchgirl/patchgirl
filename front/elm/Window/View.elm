@@ -45,14 +45,14 @@ builderView model =
   let
     treeView : Html Msg
     treeView =
-      Html.map BuilderTreeMsg (BuilderTree.view model.treeModel.tree)
+      Html.map BuilderTreeMsg (BuilderTree.view model.builderAppModel.tree)
     envSelectionView : Html Msg
     envSelectionView =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
   in
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ treeView ]
-      , div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view model.treeModel)) ]
+      , div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view model.builderAppModel)) ]
       , div [ class "" ] [ envSelectionView ]
       ]
 

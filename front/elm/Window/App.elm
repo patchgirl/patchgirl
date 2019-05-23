@@ -67,13 +67,13 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            case BuilderTree.update subMsg model.treeModel.tree of
+            case BuilderTree.update subMsg model.builderAppModel.tree of
                 (newBuilderTreeModel, newMsg) ->
                     let
-                        formerTree = model.treeModel
+                        formerTree = model.builderAppModel
                         newTree = { formerTree | tree = newBuilderTreeModel }
                     in
-                        ( { model | treeModel = newTree }
+                        ( { model | builderAppModel = newTree }
                         , Cmd.map BuilderTreeMsg newMsg
                         )
 
@@ -95,15 +95,15 @@ update msg model =
                         Nothing ->
                             (model, Cmd.none)
                 _ ->
-                   case BuilderApp.update subMsg model.treeModel of
+                   case BuilderApp.update subMsg model.builderAppModel of
                        (newBuilderTree, newMsg) ->
-                           ( { model | treeModel = newBuilderTree }
+                           ( { model | builderAppModel = newBuilderTree }
                            , sendSaveTabRequest newBuilderTree.tree
                            )
 
         BuilderMsg subMsg ->
             let
-                mBuilder = Maybe.andThen (BuilderTree.findBuilder model.treeModel.tree.tree) model.treeModel.tree.selectedBuilderIndex
+                mBuilder = Maybe.andThen (BuilderTree.findBuilder model.builderAppModel.tree.tree) model.builderAppModel.tree.selectedBuilderIndex
             in
                 case (subMsg, mBuilder) of
                     (Builder.AskRun b, Just builder) ->
@@ -124,9 +124,9 @@ update msg model =
       {-
       let
         mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
-        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) (builders model.treeModel)
+        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) (builders model.builderAppModel)
       in
-        case (mBuilder model.treeModel, subMsg) of
+        case (mBuilder model.builderAppModel, subMsg) of
           (Nothing, _) -> (model, Cmd.none)
           (Just builder, Builder.AskRun) ->
             let
@@ -164,10 +164,10 @@ update msg model =
                             , tree = newBuilderTree
                             , displayedNodeMenuIndex = Nothing
                             }
-                        formerTree = model.treeModel
+                        formerTree = model.builderAppModel
                         newTree = { formerTree | tree = newBuilderTreeModel }
                     in
-                        ( { model | treeModel = newTree }, Cmd.map PostmanMsg newMsg)
+                        ( { model | builderAppModel = newTree }, Cmd.map PostmanMsg newMsg)
 
                 (Nothing, newMsg) -> (model, Cmd.none)
 
@@ -175,7 +175,7 @@ update msg model =
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
       {-
-      case (subMsg, mBuilder model.treeModel, model.treeModel.displayedBuilderIndexes) of
+      case (subMsg, mBuilder model.builderAppModel, model.builderAppModel.displayedBuilderIndexes) of
         (RequestRunner.GetResponse response, Just builder, builderIndexes) ->
           let
             (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
@@ -184,11 +184,11 @@ update msg model =
               case oldNode of
                 BuilderTree.File { name } -> BuilderTree.File { name = name, builder = updatedBuilder, showRenameInput = False }
                 _ -> oldNode
-            newBuilderTree = BuilderTree.modifyNode updateNode model.treeModel.tree 1 --builderIdx
-            oldBuilderTreeModel = model.treeModel
+            newBuilderTree = BuilderTree.modifyNode updateNode model.builderAppModel.tree 1 --builderIdx
+            oldBuilderTreeModel = model.builderAppModel
             newBuilderTreeModel = { oldBuilderTreeModel | tree = newBuilderTree }
           in
-            ( { model | treeModel = newBuilderTreeModel }, Cmd.map BuilderMsg cmdBuilder)
+            ( { model | builderAppModel = newBuilderTreeModel }, Cmd.map BuilderMsg cmdBuilder)
         _ -> (model, Cmd.none)-}
 
         EnvAppMsg subMsg ->
@@ -211,7 +211,7 @@ update msg model =
                     )
 
 builders : BuilderTree.Model -> List (Maybe Builder.Model)
-builders treeModel = List.map (BuilderTree.findBuilder treeModel.tree) treeModel.displayedBuilderIndexes
+builders builderAppModel = List.map (BuilderTree.findBuilder builderAppModel.tree) builderAppModel.displayedBuilderIndexes
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
