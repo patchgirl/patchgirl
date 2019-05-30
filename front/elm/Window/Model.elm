@@ -55,7 +55,17 @@ defaultModel =
       { envs = [ envNav1.name, envNav2.name ]
       , selectedEnvIdx = Nothing
       }
-    varAppModel = [ ("test1", "value1"), ("key2", "value2") ]
+    varAppModel =
+        { vars =
+              [ ("key0", "value0")
+              , ("key1", "value1")
+              , ("key2", "value2")
+              , ("key3", "value3")
+              , ("key4", "value4")
+              ]
+        , overZoneId = Nothing
+        , draggedId = Nothing
+        }
   in
     { mainNavBarModel = MainNavBar.defaultModel
     , builderAppModel = builderAppModel

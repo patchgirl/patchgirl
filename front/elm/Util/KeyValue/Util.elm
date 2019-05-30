@@ -2,22 +2,22 @@ module Util.KeyValue.Util exposing (..)
 
 import Util.KeyValue.Model exposing (..)
 
-delete : Int -> Model -> Model
-delete idx model =
-  case (idx, model) of
+delete : Int -> List(Model) -> List(Model)
+delete idx models =
+  case (idx, models) of
     (0, elem :: tail) -> tail
-    (_, []) -> model
+    (_, []) -> models
     (_, elem :: tail) -> elem :: (delete (idx - 1) tail)
 
-changeKey : String -> KeyValue -> KeyValue
+changeKey : String -> Model -> Model
 changeKey newKey model =
   (newKey, Tuple.second model)
 
-changeValue : String -> KeyValue -> KeyValue
+changeValue : String -> Model -> Model
 changeValue newValue model =
   (Tuple.first model, newValue)
 
-modify : (KeyValue -> KeyValue) -> Int -> Model -> Model
+modify : (Model -> Model) -> Int -> List(Model) -> List(Model)
 modify f idx elems =
   case (idx, elems) of
     (0, elem :: tail) -> f elem :: tail

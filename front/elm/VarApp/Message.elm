@@ -5,3 +5,8 @@ type Msg
     | PromptValue Int String
     | AddNewInput
     | DeleteInput Int
+    | Drag Int
+    | DragOver Int
+    | DragEnd
+    | DragLeave
+    | Drop Int

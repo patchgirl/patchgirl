@@ -1,0 +1,28 @@
+#varApp {
+  display: flex;
+}
+
+#varApp .varInput {
+  display: flex;
+  height: 2rem;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+#varApp li.dropZone {
+  background-color: lightGrey;
+  height: 2rem;
+}
+
+#varApp li.dropZone.notDroppable {
+  background-color: #F5F5F5;
+  height: 2rem;
+}
+
+#varApp li.dropZone.is-over {
+  background-color: blue;
+}
+
+#builderApp #builderView {
+  flex-grow: 1;
+}

@@ -4,6 +4,8 @@ import Http
 import Combine exposing (..)
 import List.Extra as List
 
+import Util.KeyValue.Model as KeyValue
+
 import RequestRunner.Message exposing (..)
 import RequestRunner.Model exposing (..)
 
@@ -21,7 +23,7 @@ buildRequest env var builder =
     httpRequest = Http.request
       { method = Builder.methodToString builder.method
       , headers = List.map Builder.mkHeader builder.headers
-      , url = interpolate env var builder.url
+      , url = interpolate env var.vars builder.url
       , body = Http.emptyBody
       , expect = Http.expectString GetResponse
       , timeout = Nothing
@@ -30,7 +32,7 @@ buildRequest env var builder =
   in
     httpRequest
 
-interpolate : EnvApp.Model -> VarApp.Model -> String -> String
+interpolate : EnvApp.Model -> List(KeyValue.Model) -> String -> String
 interpolate env var str =
   let
     build : TemplatedString -> String

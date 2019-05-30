@@ -1,8 +1,8 @@
 module EnvApp.Model exposing (..)
 
-import Util.KeyValue.Model exposing (..)
+import Util.KeyValue.Model as KeyValue
 
-type alias Model = List(KeyValue)
+type alias Model = List(KeyValue.Model)
 
 defaultModel = []
 

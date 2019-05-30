@@ -1,8 +1,16 @@
 module VarApp.Model exposing (..)
 
-import Util.KeyValue.Model exposing (..)
+import Util.KeyValue.Model as KeyValue
 
-type alias Model = List(KeyValue)
+type alias Model =
+    { vars : List(KeyValue.Model)
+    , overZoneId : Maybe Int
+    , draggedId : Maybe Int
+    }
 
 emptyModel : Model
-emptyModel = [("", "")]
+emptyModel =
+    { vars = [("", "")]
+    , overZoneId = Nothing
+    , draggedId = Nothing
+    }
