@@ -15,7 +15,6 @@ import VarApp.Message as VarApp
 
 type Msg
   = BuilderTreeMsg BuilderTree.Msg
-  | BuilderMsg BuilderAppBuilder.Msg
   | BuilderAppMsg BuilderApp.Msg
   | PostmanMsg Postman.Msg
   | EnvAppMsg EnvApp.Msg

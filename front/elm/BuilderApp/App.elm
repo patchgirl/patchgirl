@@ -57,7 +57,7 @@ update msg model =
 
     BuilderMsg subMsg ->
       let
-        mBuilder = Debug.log "mbuilder" (Maybe.andThen (BuilderTree.findBuilder model.builderTreeModel.tree) model.builderTreeModel.selectedBuilderIndex)
+        mBuilder = Maybe.andThen (BuilderTree.findBuilder model.builderTreeModel.tree) model.builderTreeModel.selectedBuilderIndex
       in
         case (model.builderTreeModel.selectedBuilderIndex, mBuilder) of
           (Just idx, Just builder) ->

@@ -45,6 +45,7 @@ import BuilderApp.EnvSelection.App as EnvSelection
 import RequestRunner.App as RequestRunner
 import RequestRunner.Message as RequestRunner
 import RequestRunner.Model as RequestRunner
+import RequestRunner.Util as RequestRunner
 
 import MainNavBar.Model as MainNavBar
 import MainNavBar.View as MainNavBar
@@ -55,6 +56,8 @@ import VarApp.Model as VarApp
 import VarApp.View as VarApp
 import VarApp.Message as VarApp
 import VarApp.App as VarApp
+
+import Curl.Util as Curl
 
 import Window.View exposing(..)
 import Window.Model exposing(..)
@@ -94,53 +97,25 @@ update msg model =
 
                         Nothing ->
                             (model, Cmd.none)
+
+                BuilderApp.BuilderMsg (Builder.ShowRequestAsCurl builder) ->
+                    case EnvNav.getSelectedEnvInfo model.envNavModel of
+                        Just envInfo ->
+                            let
+                                request = RequestRunner.buildRequest envInfo.env model.varAppModel builder
+                            in
+                                case Debug.log "request" (Curl.showRequestAsCurl request) of
+                                    (_) -> (model, Cmd.none)
+
+                        Nothing ->
+                            (model, Cmd.none)
+
                 _ ->
-                   case BuilderApp.update subMsg model.builderAppModel of
-                       (newBuilderTree, newMsg) ->
-                           ( { model | builderAppModel = newBuilderTree }
-                           , sendSaveTabRequest newBuilderTree.builderTreeModel
-                           )
-
-        BuilderMsg subMsg ->
-            let
-                mBuilder =
-                    Maybe.andThen (BuilderTree.findBuilder model.builderAppModel.builderTreeModel.tree)
-                        model.builderAppModel.builderTreeModel.selectedBuilderIndex
-            in
-                case (subMsg, mBuilder) of
-                    (Builder.AskRun b, Just builder) ->
-                        let
-                            (updatedRequestRunner, cmdRequestRunner) =
-                                (RequestRunner.update (RequestRunner.Run model.envModel model.varAppModel builder) model.runnerModel)
-                        in
-                            ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
-
-                    (_, Just builder) ->
-                        let
-                            (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
-                        in
-                            (model, Cmd.map BuilderMsg cmdBuilder)
-
-                    _ ->
-                        (model, Cmd.none)
-      {-
-      let
-        mUpdatedBuilderToCmd : Maybe (Builder.Model, Cmd Builder.Msg)
-        mUpdatedBuilderToCmd = Maybe.map (Builder.update subMsg) (builders model.builderAppModel)
-      in
-        case (mBuilder model.builderAppModel, subMsg) of
-          (Nothing, _) -> (model, Cmd.none)
-          (Just builder, Builder.AskRun) ->
-            let
-              (updatedRequestRunner, cmdRequestRunner) = (RequestRunner.update (RequestRunner.Run model.envModel builder) model.runnerModel)
-            in
-              ( { model | runnerModel = updatedRequestRunner }, Cmd.map RequestRunnerMsg cmdRequestRunner)
-          (Just builder, _) ->
-            let
-              (updatedBuilder, cmdBuilder) = (Builder.update subMsg builder)
-            in
-              (model, Cmd.map BuilderMsg cmdBuilder)
--}
+                    case BuilderApp.update subMsg model.builderAppModel of
+                        (newBuilderTree, newMsg) ->
+                            ( { model | builderAppModel = newBuilderTree }
+                            , sendSaveTabRequest newBuilderTree.builderTreeModel
+                            )
 
         SaveBuilderTreeResponse foo ->
             (model, Cmd.none)

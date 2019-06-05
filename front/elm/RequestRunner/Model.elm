@@ -1,3 +1,12 @@
 module RequestRunner.Model exposing (..)
 
-type alias Model = Maybe String
+import Http as Http
+
+type alias Model = Maybe Request
+
+type alias Request =
+    { method : String
+    , headers : List Http.Header
+    , url : String
+    , body : Http.Body
+    }

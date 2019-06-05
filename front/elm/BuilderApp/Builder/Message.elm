@@ -10,4 +10,5 @@ type Msg
   | UpdateHeaders String
   | SetHttpBody String
   | AskRun Model
+  | ShowRequestAsCurl Model
   | GiveResponse (Result Http.Error String)

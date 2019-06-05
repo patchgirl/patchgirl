@@ -37,4 +37,5 @@ view model =
             , onInput UpdateUrl
             , Util.onEnter (AskRun model) ] []
     , button [ onClick (AskRun model) ] [ text "Send" ]
+    , button [ onClick (ShowRequestAsCurl model)] [ text "Curl" ]
     ]

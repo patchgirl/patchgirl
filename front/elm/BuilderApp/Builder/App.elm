@@ -9,6 +9,8 @@ import Debug
 import Url
 import Json.Decode as Json
 
+import Curl.Util as Curl
+
 import BuilderApp.Builder.Response
 import BuilderApp.Builder.Message exposing (Msg(..))
 import BuilderApp.Builder.Model exposing (Model, Method(..))
@@ -28,9 +30,6 @@ update msg model =
         "GET" -> ( { model | method = Get }, Cmd.none)
         _ -> ( { model | method = Post }, Cmd.none)
 
-    AskRun foo ->
-      (model, Cmd.none)
-
     GiveResponse result ->
       ( { model | response = Just result }, Cmd.none)
 
@@ -43,3 +42,6 @@ update msg model =
 
     SetHttpBody body ->
       ( { model | body = body }, Cmd.none )
+
+    _ ->
+      (model, Cmd.none)

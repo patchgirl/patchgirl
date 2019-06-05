@@ -17,20 +17,13 @@ import BuilderApp.Builder.Model as Builder
 import EnvApp.Model as EnvApp
 import VarApp.Model as VarApp
 
-buildRequest : EnvApp.Model -> VarApp.Model -> Builder.Model -> Cmd Msg
+buildRequest : EnvApp.Model -> VarApp.Model -> Builder.Model -> Request
 buildRequest env var builder =
-  let
-    httpRequest = Http.request
-      { method = Builder.methodToString builder.method
-      , headers = List.map Builder.mkHeader builder.headers
-      , url = interpolate env var.vars builder.url
-      , body = Http.emptyBody
-      , expect = Http.expectString GetResponse
-      , timeout = Nothing
-      , tracker = Nothing
-      }
-  in
-    httpRequest
+    { method = Builder.methodToString builder.method
+    , headers = List.map Builder.mkHeader builder.headers
+    , url = interpolate env var.vars builder.url
+    , body = Http.emptyBody
+    }
 
 interpolate : EnvApp.Model -> List(KeyValue.Model) -> String -> String
 interpolate env var str =
