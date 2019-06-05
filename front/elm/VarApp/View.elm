@@ -31,7 +31,8 @@ varView model idx var =
 varDropableView : Model -> Int -> Html Msg
 varDropableView model idx  =
     let
-        isZoneNeighbourOfDragged = Maybe.exists model.draggedId (\draggedId -> draggedId == idx || draggedId + 1 == idx)
+        isZoneNeighbourOfDragged =
+            Maybe.exists model.draggedId (\draggedId -> draggedId == idx || draggedId + 1 == idx)
         isAbove = Maybe.exists model.draggedId (\dId -> idx > dId)
         newIdx =
             case isAbove of

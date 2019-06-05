@@ -7,6 +7,7 @@ import VarApp.Message exposing (Msg(..))
 
 import Util.KeyValue.Model as KeyValue
 import Util.KeyValue.Util as KeyValue
+import Util.List as List
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -56,30 +57,16 @@ update msg model =
 
         Drop newIdx ->
             let
-                flippedGetAt : List a -> Int -> Maybe a
-                flippedGetAt list i = List.getAt i list
                 mModelToMove : Maybe KeyValue.Model
-                mModelToMove = Maybe.andThen (flippedGetAt model.vars) model.draggedId
+                mModelToMove = Maybe.andThen (\i -> List.getAt i model.vars) model.draggedId
             in
                 case (model.draggedId, mModelToMove) of
                     (Just modelToMoveId, Just modelToMove) ->
                         let
-                            f : Int -> KeyValue.Model -> List(KeyValue.Model) -> List(KeyValue.Model)
-                            f id elem acc =
-                                case modelToMoveId == id of
-                                    True -> Debug.log "acc" acc
-                                    False ->
-                                        case newIdx == id of
-                                            True -> Debug.log "replace" <| acc ++ (
-                                                     case id > modelToMoveId of
-                                                         True -> [ elem, modelToMove ]
-                                                         False -> [ modelToMove, elem ]
-                                                    )
-                                            False -> Debug.log "normal" <| acc ++ [ elem ]
                             newModel =
                                 { model
                                     | overZoneId = Nothing
-                                    , vars = Debug.log "newVars" <| List.indexedFoldl f [] model.vars
+                                    , vars = List.changePlace newIdx modelToMoveId modelToMove model.vars
                                     , draggedId = Nothing
                                 }
                         in (newModel, Cmd.none)
