@@ -102,9 +102,9 @@ update msg model =
                     case EnvNav.getSelectedEnvInfo model.envNavModel of
                         Just envInfo ->
                             let
-                                request = RequestRunner.buildRequest envInfo.env model.varAppModel builder
+                                requestInput = RequestRunner.buildRequestInput envInfo.env model.varAppModel builder
                             in
-                                case Debug.log "request" (Curl.showRequestAsCurl request) of
+                                case Debug.log "request" (Curl.showRequestAsCurl requestInput) of
                                     (_) -> (model, Cmd.none)
 
                         Nothing ->

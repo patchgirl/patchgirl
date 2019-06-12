@@ -11,7 +11,7 @@ update msg model =
   case msg of
     Run envs vars builder ->
         let
-            request = buildRequest envs vars builder
+            request = buildRequest <| buildRequestInput envs vars builder
             cmdRequest =
                 { method = request.method
                 , headers = request.headers

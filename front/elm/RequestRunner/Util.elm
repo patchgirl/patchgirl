@@ -1,6 +1,6 @@
 module RequestRunner.Util exposing (..)
 
-import Http
+import Http as Http
 import Combine exposing (..)
 import List.Extra as List
 
@@ -14,14 +14,24 @@ import BuilderApp.Builder.Header as Builder
 import BuilderApp.Builder.Url as Builder
 import BuilderApp.Builder.Model as Builder
 
+import RequestInput.Model as RequestInput
+
 import EnvApp.Model as EnvApp
 import VarApp.Model as VarApp
 
-buildRequest : EnvApp.Model -> VarApp.Model -> Builder.Model -> Request
-buildRequest env var builder =
+buildRequestInput : EnvApp.Model -> VarApp.Model -> Builder.Model -> RequestInput.Model
+buildRequestInput env var builder =
     { method = Builder.methodToString builder.method
-    , headers = List.map Builder.mkHeader builder.headers
+    , headers = builder.headers
     , url = interpolate env var.vars builder.url
+    , body = ""
+    }
+
+buildRequest : RequestInput.Model -> Request
+buildRequest requestInput =
+    { method = requestInput.method
+    , headers = List.map Builder.mkHeader requestInput.headers
+    , url = requestInput.url
     , body = Http.emptyBody
     }
 

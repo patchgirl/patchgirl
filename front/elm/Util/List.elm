@@ -31,3 +31,12 @@ changePlace newIdx modelToMoveId modelToMove list =
                         False -> acc ++ [ elem ]
     in
         List.indexedFoldl move [] list
+
+join : String -> List String -> String
+join empty list =
+    let
+        f : (String -> String -> String)
+        f elem acc =
+            acc ++ elem
+    in
+        List.foldl f empty list
