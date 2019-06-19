@@ -14,5 +14,14 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        _ ->
-            (model, Cmd.none)
+        DeleteWorkspace idx ->
+            let
+                newModel = List.removeAt idx model
+            in
+                (newModel, Cmd.none)
+
+        AddNewInput ->
+            let
+                newModel = model ++ [""]
+            in
+                (newModel, Cmd.none)
