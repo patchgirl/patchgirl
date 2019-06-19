@@ -45,17 +45,22 @@ defaultModel =
       envNav2 : EnvNav.EnvInfo
       envNav2 =
           { name = "env2"
-          , env = [("url2", "swapi.co")]
+          , env = [("url", "url2.com")]
+          }
+      envNav3 : EnvNav.EnvInfo
+      envNav3 =
+          { name = "env3"
+          , env = [("url", "url3.com")]
           }
       envNavModel : EnvNav.Model
       envNavModel =
           { selectedEnvIndex = Just 0
           , renameEnvIdx = Nothing
-          , envs = [ envNav1, envNav2 ]
+          , envs = [ envNav1, envNav2, envNav3 ]
           }
       selectedEnvModel : EnvSelection.Model
       selectedEnvModel =
-          { envs = [ envNav1.name, envNav2.name ]
+          { envs = [ envNav1.name, envNav2.name, envNav3.name ]
           , selectedEnvIdx = Nothing
           }
       varAppModel =
