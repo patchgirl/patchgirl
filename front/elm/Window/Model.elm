@@ -10,10 +10,12 @@ import VarApp.Model as VarApp
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
 import WorkspaceApp.Model as WorkspaceApp
+import BuilderApp.WorkspaceSelection.Model as WorkspaceSelection
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
-  , builderAppModel : BuilderApp.Model
+  , buildersAppModel : List BuilderApp.Model
+  , workspaceSelection : WorkspaceSelection.Model
   , workspaceAppModel : WorkspaceApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
@@ -26,15 +28,12 @@ type alias Model =
 defaultModel : Model
 defaultModel =
   let
-      workspaceAppModel = WorkspaceApp.emptyModel
-      builderAppModel =
-          { builderTreeModel =
-                { selectedBuilderIndex = Just 4
-                , displayedBuilderIndexes = [4, 5]
-                , tree = BuilderTree.defaultBuilderTree
-                , displayedNodeMenuIndex = Nothing
-                }
+      workspaceSelection =
+          { selectedWorkspaceIdx = Just 0
+          , names = workspaceAppModel
           }
+      workspaceAppModel = WorkspaceApp.emptyModel
+      buildersAppModel = [ BuilderApp.defaultModel ]
       envModel : EnvApp.Model
       envModel = [("url", "swapi.co")]
       envNav1 : EnvNav.EnvInfo
@@ -76,7 +75,8 @@ defaultModel =
           }
   in
       { mainNavBarModel = MainNavBar.defaultModel
-      , builderAppModel = builderAppModel
+      , buildersAppModel = buildersAppModel
+      , workspaceSelection = workspaceSelection
       , workspaceAppModel = workspaceAppModel
       , postmanModel = Nothing
       , envModel = envModel

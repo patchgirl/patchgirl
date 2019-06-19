@@ -40,3 +40,7 @@ join empty list =
             acc ++ elem
     in
         List.foldl f empty list
+
+updateListAt : List a -> Int -> (a -> a) -> List a
+updateListAt list index f =
+    List.updateAt index f list

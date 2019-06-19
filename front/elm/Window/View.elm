@@ -10,16 +10,18 @@ import Postman.View as Postman
 import EnvApp.View as EnvApp
 import EnvApp.EnvNav.View as EnvNav
 import BuilderApp.EnvSelection.View as EnvSelection
+import BuilderApp.WorkspaceSelection.View as WorkspaceSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
 import VarApp.View as VarApp
 import WorkspaceApp.View as WorkspaceApp
 
+import BuilderApp.Model as BuilderApp
 import BuilderApp.Builder.View as Builder
 import BuilderApp.View as BuilderApp
 
 import Util.List as List
-
+import List.Extra as List
 import BuilderApp.BuilderTree.Model as BuilderTree
 
 import Window.Model exposing(..)
@@ -45,17 +47,23 @@ view model =
 builderView : Model -> Html Msg
 builderView model =
   let
+    builderApp : BuilderApp.Model
+    builderApp = Maybe.withDefault BuilderApp.defaultModel <| List.getAt (0) model.buildersAppModel
     treeView : Html Msg
     treeView =
-      Html.map BuilderTreeMsg (BuilderTree.view model.builderAppModel.builderTreeModel)
+      Html.map BuilderTreeMsg (BuilderTree.view builderApp.builderTreeModel)
     envSelectionView : Html Msg
     envSelectionView =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
+    workspaceSelectionView : Html Msg
+    workspaceSelectionView =
+      Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model.workspaceSelection)
   in
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ treeView ]
-      , div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view model.builderAppModel)) ]
+      , div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view builderApp)) ]
       , div [ class "" ] [ envSelectionView ]
+      , div [ class "" ] [ workspaceSelectionView ]
       ]
 
 postmanView : Html Msg

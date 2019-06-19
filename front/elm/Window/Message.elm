@@ -11,6 +11,7 @@ import EnvApp.EnvNav.Message as EnvNav
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
 import BuilderApp.EnvSelection.Message as EnvSelection
+import BuilderApp.WorkspaceSelection.Message as WorkspaceSelection
 import VarApp.Message as VarApp
 import WorkspaceApp.Message as WorkspaceApp
 
@@ -26,3 +27,4 @@ type Msg
   | VarAppMsg VarApp.Msg
   | SaveBuilderTreeResponse (Result Http.Error String)
   | WorkspaceAppMsg WorkspaceApp.Msg
+  | WorkspaceSelectionMsg WorkspaceSelection.Msg
