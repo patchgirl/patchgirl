@@ -57,6 +57,12 @@ import VarApp.View as VarApp
 import VarApp.Message as VarApp
 import VarApp.App as VarApp
 
+import WorkspaceApp.Model as WorkspaceApp
+import WorkspaceApp.View as WorkspaceApp
+import WorkspaceApp.Message as WorkspaceApp
+import WorkspaceApp.App as WorkspaceApp
+
+
 import Curl.Util as Curl
 
 import Window.View exposing(..)
@@ -185,6 +191,13 @@ update msg model =
                 (newVarAppModel, newMsg) ->
                     ( { model | varAppModel = newVarAppModel }
                     , Cmd.map VarAppMsg newMsg
+                    )
+
+        WorkspaceAppMsg subMsg ->
+            case WorkspaceApp.update subMsg model.workspaceAppModel of
+                (newWorkspaceAppModel, newMsg) ->
+                    ( { model | workspaceAppModel = newWorkspaceAppModel }
+                    , Cmd.map WorkspaceAppMsg newMsg
                     )
 
 builders : BuilderTree.Model -> List (Maybe Builder.Model)

@@ -9,3 +9,4 @@ update msg model =
         OpenReqTab -> (ReqTab, Cmd.none)
         OpenEnvTab -> (EnvTab, Cmd.none)
         OpenVarTab -> (VarTab, Cmd.none)
+        OpenWorkspaceTab -> (WorkspaceTab, Cmd.none)

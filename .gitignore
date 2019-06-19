@@ -11,3 +11,4 @@ target
 /RUNNING_PID
 logs
 .env
+.#*

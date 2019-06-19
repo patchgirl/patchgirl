@@ -24,5 +24,6 @@ view model =
                  [ li [ onClick OpenReqTab, class (isActive model ReqTab) ] [ a [] [ text "Req" ] ]
                  , li [ onClick OpenEnvTab, class (isActive model EnvTab) ] [ a [] [ text "Env" ] ]
                  , li [ onClick OpenVarTab, class (isActive model VarTab) ] [ a [] [ text "Var" ] ]
+                 , li [ onClick OpenWorkspaceTab, class (isActive model WorkspaceTab) ] [ a [] [ text "Workspace" ] ]
                  ]
             ]
