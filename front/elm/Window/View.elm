@@ -50,7 +50,7 @@ builderView model =
     builderApp : BuilderApp.Model
     builderApp =
         case Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) <| model.workspaceSelection.selectedWorkspaceIdx of
-            Just builder -> Tuple.first (builder, Debug.log "size" <| List.length model.buildersAppModel)
+            Just builder -> builder
             Nothing -> Debug.log "could not find builderApp, this should never happen" BuilderApp.defaultModel
     treeView : Html Msg
     treeView =

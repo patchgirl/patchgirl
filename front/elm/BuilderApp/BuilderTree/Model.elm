@@ -73,3 +73,12 @@ defaultBuilderTree =
                         ]
            }
   ]
+
+emptyBuilderTree =
+    [ Folder
+          { name = "root"
+          , open = False
+          , children = []
+          , showRenameInput = False
+          }
+    ]

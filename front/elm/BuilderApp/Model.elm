@@ -14,3 +14,12 @@ defaultModel =
           , displayedNodeMenuIndex = Nothing
           }
     }
+
+emptyModel =
+    { builderTreeModel =
+          { selectedBuilderIndex = Nothing
+          , displayedBuilderIndexes = []
+          , tree = BuilderTree.emptyBuilderTree
+          , displayedNodeMenuIndex = Nothing
+          }
+    }

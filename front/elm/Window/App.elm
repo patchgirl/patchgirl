@@ -221,7 +221,7 @@ update msg model =
                     )
 
         WorkspaceAppMsg subMsg ->
-            case Debug.log "test" <| WorkspaceApp.update subMsg model.workspaceAppModel of
+            case WorkspaceApp.update subMsg model.workspaceAppModel of
                 (newWorkspaceAppModel, newMsg) ->
                     let
                         formerWorkspaceSelection = model.workspaceSelection

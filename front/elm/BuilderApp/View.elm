@@ -51,7 +51,7 @@ tabView model mSelectedIdx idx =
 builderView : Model -> Int -> Html Msg
 builderView model idx =
   let
-    mBuilder = Debug.log "test" <| BuilderTree.findBuilder model.builderTreeModel.tree idx
+    mBuilder = BuilderTree.findBuilder model.builderTreeModel.tree idx
   in
     case mBuilder of
       Just builder ->
