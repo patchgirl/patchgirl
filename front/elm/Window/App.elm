@@ -235,9 +235,6 @@ update msg model =
                     , Cmd.map WorkspaceAppMsg newMsg
                     )
 
-builders : BuilderTree.Model -> List (Maybe Builder.Model)
-builders builderAppModel = List.map (BuilderTree.findBuilder builderAppModel.tree) builderAppModel.displayedBuilderIndexes
-
 subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
