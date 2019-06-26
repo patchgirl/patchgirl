@@ -8,4 +8,3 @@ type Msg
   | BuilderMsg Builder.Msg
   | CloseTab Int
   | SaveTab Int
-  | EnvSelectionMsg EnvSelection.Msg

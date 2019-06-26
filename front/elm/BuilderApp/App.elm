@@ -76,6 +76,3 @@ update msg model =
 
           _ ->
             (model, Cmd.none)
-
-    EnvSelectionMsg subMsg ->
-      (model, Cmd.none)
