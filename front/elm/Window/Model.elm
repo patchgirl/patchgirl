@@ -33,7 +33,7 @@ defaultModel =
           , names = List.map Tuple.first workspaceAppModel
           }
       workspaceAppModel = WorkspaceApp.defaultModel
-      buildersAppModel = [ BuilderApp.defaultModel, BuilderApp.emptyModel ]
+      buildersAppModel = List.map Tuple.second workspaceAppModel
       envModel : EnvApp.Model
       envModel = [("url", "swapi.co")]
       envNav1 : EnvNav.EnvInfo
