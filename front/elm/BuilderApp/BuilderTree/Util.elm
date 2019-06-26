@@ -95,3 +95,43 @@ deleteNode =
                    (newIdx, node :: newBuilderTree)
   in
     \x y -> delete x y |> Tuple.second
+
+toggleFolder : Node -> Node
+toggleFolder node =
+  case node of
+    File _ as file -> file
+    Folder folder ->
+        Folder { folder
+                   | open = (not folder.open)
+                   , showRenameInput = False
+               }
+
+mkdir : Node -> Node
+mkdir node =
+  case node of
+    File _ as file -> file
+    Folder folder ->
+        Folder { folder | children = defaultFolder :: folder.children
+               , showRenameInput = False
+               }
+
+touch : Node -> Node
+touch node =
+  case node of
+    File _ as file -> file
+    Folder folder ->
+      Folder { folder | children = (defaultFile :: folder.children)
+             , showRenameInput = False
+             }
+
+displayRenameInput : Node -> Node
+displayRenameInput node =
+  case node of
+    Folder folder -> Folder { folder | showRenameInput = True }
+    File file -> File { file | showRenameInput = True }
+
+rename : String -> Node -> Node
+rename newName node =
+  case node of
+    Folder folder -> Folder { folder | name = newName, showRenameInput = False }
+    File file -> File { file | name = newName, showRenameInput = False }

@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderApp.BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+import BuilderApp.BuilderTree.Model exposing (..)
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util
@@ -14,7 +14,7 @@ folderReadView idx name open =
   let
     folderIcon = if open then "fas fa-folder-open fa-fw" else "fas fa-folder fa-fw"
   in
-    a [ onClick (ToggleNode idx) ]
+    a [ onClick (ToggleFolder idx) ]
       [ span [ class folderIcon ] []
       , text name
       ]

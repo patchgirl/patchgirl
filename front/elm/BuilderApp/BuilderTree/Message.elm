@@ -1,10 +1,10 @@
 module BuilderApp.BuilderTree.Message exposing (..)
 
-import BuilderApp.BuilderTree.Model as BuilderTree
+import BuilderApp.BuilderTree.Model exposing (..)
 
 type Msg
   = SetDisplayedBuilder Int
-  | ToggleNode Int
+  | ToggleFolder Int
   | Mkdir Int
   | Touch Int
   | ShowRenameInput Int
