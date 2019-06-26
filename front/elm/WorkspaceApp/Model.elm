@@ -1,6 +1,12 @@
 module WorkspaceApp.Model exposing (..)
 
-type alias Model = List String
+import BuilderApp.Model as BuilderApp
+
+type alias Model = List (String, BuilderApp.Model)
 
 emptyModel : Model
-emptyModel = ["MyWorkspace", "Team1", "Team2"]
+emptyModel =
+    [ ("MyWorkspace", BuilderApp.defaultModel)
+    , ("Team1", BuilderApp.defaultModel)
+    , ("Team2", BuilderApp.defaultModel)
+    ]

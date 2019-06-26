@@ -83,11 +83,10 @@ update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
             let
-                mBuilderApp = List.getAt (0) model.buildersAppModel
                 newBuildersAppModel newBuilderTree =
-                    replaceBuilder 0 model.buildersAppModel newBuilderTree
+                    replaceBuilder model.workspaceSelection.selectedWorkspaceIdx model.buildersAppModel newBuilderTree
             in
-                case mBuilderApp of
+                case getSelectedBuilder model of
                     Just builderApp ->
                         case BuilderTree.update subMsg builderApp.builderTreeModel of
                             (newBuilderTreeModel, newMsg) ->
@@ -138,11 +137,10 @@ update msg model =
 
                 _ ->
                     let
-                        mBuilderApp = List.getAt (0) model.buildersAppModel
                         newBuildersAppModel newBuilder =
-                            replaceBuilder 0 model.buildersAppModel newBuilder
+                            replaceBuilder model.workspaceSelection.selectedWorkspaceIdx model.buildersAppModel newBuilder
                     in
-                        case mBuilderApp of
+                        case getSelectedBuilder model of
                             Just builderApp ->
                                 case BuilderApp.update subMsg builderApp of
                                     (newBuilderTree, newMsg) ->
@@ -227,7 +225,8 @@ update msg model =
                 (newWorkspaceAppModel, newMsg) ->
                     let
                         formerWorkspaceSelection = model.workspaceSelection
-                        newWorkspaceSelection = { formerWorkspaceSelection | names = newWorkspaceAppModel }
+                        newWorkspaceSelection =
+                            { formerWorkspaceSelection | names = List.map Tuple.first newWorkspaceAppModel }
                     in
                     ( { model
                           | workspaceAppModel = newWorkspaceAppModel
