@@ -83,7 +83,7 @@ update msg model =
         BuilderTreeMsg subMsg ->
             let
                 newBuildersAppModel newBuilderTree =
-                    replaceBuilder model.selectedWorkspaceIdx model.buildersAppModel newBuilderTree
+                    replaceBuilder model.selectedWorkspaceIndex model.buildersAppModel newBuilderTree
             in
                 case getSelectedBuilder model of
                     Just builderApp ->
@@ -141,7 +141,7 @@ update msg model =
                 _ ->
                     let
                         newBuildersAppModel newBuilder =
-                            replaceBuilder model.selectedWorkspaceIdx model.buildersAppModel newBuilder
+                            replaceBuilder model.selectedWorkspaceIndex model.buildersAppModel newBuilder
                     in
                         case getSelectedBuilder model of
                             Just builderApp ->

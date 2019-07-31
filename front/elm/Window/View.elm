@@ -49,7 +49,7 @@ builderView model =
   let
     builderApp : BuilderApp.Model
     builderApp =
-        case Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) <| model.selectedWorkspaceIdx of
+        case Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) <| model.selectedWorkspaceIndex of
             Just builder -> builder
             Nothing -> Debug.log "could not find builderApp, this should never happen" BuilderApp.defaultModel
     treeView : Html Msg

@@ -14,11 +14,10 @@ import WorkspaceApp.Model as WorkspaceApp
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
   , buildersAppModel : List BuilderApp.Model
-  , selectedWorkspaceIdx : Maybe Int
+  , selectedWorkspaceIndex : Maybe Int
   , workspaces : List WorkspaceApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
---  , selectedEnvModel : EnvSelection.Model
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
   , envNavModel : EnvNav.Model
@@ -37,7 +36,7 @@ getEnvironmentNames model =
 defaultModel : Model
 defaultModel =
   let
-      selectedWorkspaceIdx = Just 0
+      selectedWorkspaceIndex = Just 0
       workspaces = WorkspaceApp.defaultModel
       buildersAppModel = List.map .builder workspaces
       envModel : EnvApp.Model
@@ -84,7 +83,7 @@ defaultModel =
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , buildersAppModel = buildersAppModel
-      , selectedWorkspaceIdx = selectedWorkspaceIdx
+      , selectedWorkspaceIndex = selectedWorkspaceIndex
       , workspaces = workspaces
       , postmanModel = Nothing
       , envModel = envModel

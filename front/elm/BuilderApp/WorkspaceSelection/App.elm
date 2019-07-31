@@ -10,7 +10,7 @@ import List.Extra as List
 
 type alias Model a =
     { a
-      | selectedWorkspaceIdx : Maybe Int
+      | selectedWorkspaceIndex : Maybe Int
     }
 
 update : Msg -> Model a -> List String -> Model a
@@ -19,9 +19,9 @@ update msg model workspaceNames =
         Select idx ->
             case List.getAt idx workspaceNames of
                 Just _ ->
-                    { model | selectedWorkspaceIdx = Just idx }
+                    { model | selectedWorkspaceIndex = Just idx }
                 Nothing ->
-                    { model | selectedWorkspaceIdx = Nothing }
+                    { model | selectedWorkspaceIndex = Nothing }
 
 view : Model a -> List String -> Html Msg
 view model workspaceNames =
