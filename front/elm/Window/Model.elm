@@ -33,6 +33,17 @@ getEnvironmentNames : Model -> List String
 getEnvironmentNames model =
     List.map .name model.envNavModel.envs
 
+type alias SelectionModel =
+  { environmentNames : List(String)
+  , selectedEnvironmentToRunIndex : Maybe Int
+  }
+
+getSelectionModel : Model -> SelectionModel
+getSelectionModel model =
+    { environmentNames = getEnvironmentNames model
+    , selectedEnvironmentToRunIndex = model.selectedEnvironmentToRunIndex
+    }
+
 defaultModel : Model
 defaultModel =
   let

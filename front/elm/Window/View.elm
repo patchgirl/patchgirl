@@ -57,13 +57,7 @@ builderView model =
       Html.map BuilderTreeMsg (BuilderTree.view builderApp.builderTreeModel)
     envSelectionView : Html Msg
     envSelectionView =
-        let
-            selectionModel =
-                { environmentNames = getEnvironmentNames model
-                , selectedEnvironmentToRunIndex = model.selectedEnvironmentToRunIndex
-                }
-        in
-            Html.map EnvSelectionMsg (EnvSelection.view selectionModel)
+        Html.map EnvSelectionMsg (EnvSelection.view (getSelectionModel model))
     workspaceSelectionView : Html Msg
     workspaceSelectionView =
       Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model (getWorkspaceNames model))

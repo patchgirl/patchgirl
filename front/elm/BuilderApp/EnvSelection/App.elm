@@ -1,6 +1,5 @@
 module BuilderApp.EnvSelection.App exposing (..)
 
---import BuilderApp.EnvSelection.Model exposing (..)
 import BuilderApp.EnvSelection.Message exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)

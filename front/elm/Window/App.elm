@@ -98,13 +98,7 @@ update msg model =
                     Nothing -> (model, Cmd.none)
 
         EnvSelectionMsg subMsg ->
-            let
-                selectionModel =
-                    { environmentNames = getEnvironmentNames model
-                    , selectedEnvironmentToRunIndex = model.selectedEnvironmentToRunIndex
-                    }
-            in
-            case EnvSelection.update subMsg selectionModel of
+            case EnvSelection.update subMsg (getSelectionModel model) of
                 newSelectedEnvModel ->
                     ( { model | selectedEnvironmentToRunIndex = newSelectedEnvModel.selectedEnvironmentToRunIndex }
                     , Cmd.none
