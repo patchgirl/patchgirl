@@ -7,11 +7,11 @@ import EnvApp.EnvNav.Message exposing (Msg(..))
 
 import EnvApp.App as EnvApp
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> Model
 update msg model =
   case msg of
     Select idx ->
-      ( { model | selectedEnvIndex = Just idx }, Cmd.none)
+      { model | selectedEnvIndex = Just idx }
 
     Delete idx ->
       let
@@ -24,13 +24,13 @@ update msg model =
         newModel = { model | selectedEnvIndex = Debug.log "sindex" newSelectedEnvIndex
                    , envs = newEnvs }
       in
-        (newModel, Cmd.none)
+        newModel
 
     Add ->
-      ( { model | envs = model.envs ++ [ defaultEnvInfo ] }, Cmd.none)
+      { model | envs = model.envs ++ [ defaultEnvInfo ] }
 
     ShowRenameInput idx ->
-      ( { model | renameEnvIdx = Just idx }, Cmd.none)
+      { model | renameEnvIdx = Just idx }
 
     Rename idx newName ->
       let
@@ -38,17 +38,18 @@ update msg model =
         mNewEnvs = List.updateAt idx updateEnv model.envs
       in
         case mNewEnvs of
-          newEnvs -> ( { model | renameEnvIdx = Nothing, envs = newEnvs }, Cmd.none)
+          newEnvs ->
+              { model | renameEnvIdx = Nothing, envs = newEnvs }
 
 
     EnvAppMsg idx subMsg ->
       case List.getAt idx model.envs of
-        Nothing -> (model, Cmd.none)
+        Nothing ->
+            model
         Just { name, env } ->
           case EnvApp.update subMsg env of
             newEnvApp ->
               let
                 newEnvApps = List.setAt idx { name = name, env = newEnvApp } model.envs
               in
-                ( { model | envs = newEnvApps }
-                , Cmd.none)
+                { model | envs = newEnvApps }
