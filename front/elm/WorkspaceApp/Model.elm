@@ -2,12 +2,12 @@ module WorkspaceApp.Model exposing (..)
 
 import BuilderApp.Model as BuilderApp
 
-type alias Model = List
+type alias Model =
     { name : String
     , builder : BuilderApp.Model
     }
 
-defaultModel : Model
+defaultModel : List Model
 defaultModel =
     [ { name = "MyWorkspace"
       , builder = BuilderApp.defaultModel

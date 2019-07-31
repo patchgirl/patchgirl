@@ -8,10 +8,10 @@ import WorkspaceApp.Message exposing (..)
 import WorkspaceApp.Model exposing (..)
 import BuilderApp.Model as BuilderApp
 
-view : Model -> Html Msg
-view model =
+view : List Model -> Html Msg
+view models =
     div [ id "workspaceApp", class "columns" ]
-        ((List.indexedMap (viewEntry) model) ++ [ defaultView ])
+        ((List.indexedMap (viewEntry) models) ++ [ defaultView ])
 
 viewEntry : Int -> { name : String, builder : BuilderApp.Model } -> Html Msg
 viewEntry idx { name } =

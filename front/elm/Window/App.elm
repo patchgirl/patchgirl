@@ -219,9 +219,9 @@ update msg model =
                     )
 
         WorkspaceAppMsg subMsg ->
-            case WorkspaceApp.update subMsg model.workspaceAppModel of
+            case WorkspaceApp.update subMsg model.workspaces of
                 newWorkspaceAppModel ->
-                    ( { model | workspaceAppModel = newWorkspaceAppModel }
+                    ( { model | workspaces = newWorkspaceAppModel }
                     , Cmd.none
                     )
 

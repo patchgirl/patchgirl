@@ -6,23 +6,23 @@ import WorkspaceApp.Model exposing (..)
 import WorkspaceApp.Message exposing (Msg(..))
 import BuilderApp.Model as BuilderApp
 
-update : Msg -> Model -> Model
-update msg model =
+update : Msg -> List Model -> List Model
+update msg models =
     case msg of
         RenameWorkspace idx str ->
             let
-                newModel = List.updateAt idx (\m -> { m | name = str }) model
+                newModels = List.updateAt idx (\m -> { m | name = str }) models
             in
-                newModel
+                newModels
 
         DeleteWorkspace idx ->
             let
-                newModel = List.removeAt idx model
+                newModels = List.removeAt idx models
             in
-                newModel
+                newModels
 
         AddNewInput ->
             let
-                newModel = model ++ [ { name = "", builder = BuilderApp.defaultModel } ]
+                newModels = models ++ [ { name = "", builder = BuilderApp.defaultModel } ]
             in
-                newModel
+                newModels

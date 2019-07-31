@@ -37,7 +37,7 @@ view model =
                     MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model.envNavModel) ]
                     MainNavBar.ReqTab -> [ builderView model ]
                     MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
-                    MainNavBar.WorkspaceTab -> [ Html.map WorkspaceAppMsg (WorkspaceApp.view model.workspaceAppModel) ]
+                    MainNavBar.WorkspaceTab -> [ Html.map WorkspaceAppMsg (WorkspaceApp.view model.workspaces) ]
     in
         div []
             [ Html.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
