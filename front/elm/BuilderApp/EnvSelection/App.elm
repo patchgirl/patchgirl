@@ -13,7 +13,7 @@ import List.Extra as List
 
 type alias Model a =
   { a
-    | environmentNames : List(String)
+    | environmentNames : List String
     , selectedEnvironmentToRunIndex : Maybe Int
   }
 
