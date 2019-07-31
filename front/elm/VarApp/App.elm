@@ -9,41 +9,41 @@ import Util.KeyValue.Model as KeyValue
 import Util.KeyValue.Util as KeyValue
 import Util.List as List
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         PromptKey idx str ->
             let
                 newVars = KeyValue.modify (KeyValue.changeKey str) idx model.vars
             in
-                ( { model | vars = newVars }, Cmd.none)
+                { model | vars = newVars }
 
         PromptValue idx str ->
             let
                 newVars = KeyValue.modify (KeyValue.changeValue str) idx model.vars
             in
-                ( { model | vars = newVars }, Cmd.none)
+                { model | vars = newVars }
 
         AddNewInput ->
             let
                 newVars = model.vars ++ emptyModel.vars
             in
-                ( { model | vars = newVars }, Cmd.none)
+                { model | vars = newVars }
 
         DeleteInput idx ->
             let
                 newVars = KeyValue.delete idx model.vars
             in
-                ( { model | vars = newVars }, Cmd.none)
+                { model | vars = newVars }
 
         Drag idx ->
-            ( { model | draggedId = Just idx }, Cmd.none)
+            { model | draggedId = Just idx }
 
         DragOver idx ->
-            ( { model | overZoneId = Just idx }, Cmd.none)
+            { model | overZoneId = Just idx }
 
         DragLeave ->
-            ( { model | overZoneId = Nothing }, Cmd.none)
+            { model | overZoneId = Nothing }
 
         DragEnd ->
             let
@@ -53,7 +53,7 @@ update msg model =
                         , draggedId = Nothing
                     }
             in
-                (newModel, Cmd.none)
+                newModel
 
         Drop newIdx ->
             let
@@ -69,5 +69,6 @@ update msg model =
                                     , vars = List.changePlace newIdx modelToMoveId modelToMove model.vars
                                     , draggedId = Nothing
                                 }
-                        in (newModel, Cmd.none)
-                    _ -> Debug.log "This should never happen" (model, Cmd.none)
+                        in
+                            newModel
+                    _ -> Debug.log "This should never happen" model

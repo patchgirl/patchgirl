@@ -183,9 +183,9 @@ update msg model =
 
         VarAppMsg subMsg ->
             case VarApp.update subMsg model.varAppModel of
-                (newVarAppModel, newMsg) ->
+                newVarAppModel ->
                     ( { model | varAppModel = newVarAppModel }
-                    , Cmd.map VarAppMsg newMsg
+                    , Cmd.none
                     )
 
         WorkspaceAppMsg subMsg ->
