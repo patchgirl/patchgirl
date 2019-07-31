@@ -37,7 +37,6 @@ import EnvApp.EnvNav.Message as EnvNav
 import EnvApp.EnvNav.App as EnvNav
 import EnvApp.EnvNav.Util as EnvNav
 
-import BuilderApp.EnvSelection.View as EnvSelection
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.EnvSelection.Message as EnvSelection
 import BuilderApp.EnvSelection.App as EnvSelection
@@ -99,9 +98,15 @@ update msg model =
                     Nothing -> (model, Cmd.none)
 
         EnvSelectionMsg subMsg ->
-            case EnvSelection.update subMsg model.selectedEnvModel of
+            let
+                selectionModel =
+                    { environmentNames = getEnvironmentNames model
+                    , selectedEnvironmentToRunIndex = model.selectedEnvironmentToRunIndex
+                    }
+            in
+            case EnvSelection.update subMsg selectionModel of
                 newSelectedEnvModel ->
-                    ( { model | selectedEnvModel = newSelectedEnvModel }
+                    ( { model | selectedEnvironmentToRunIndex = newSelectedEnvModel.selectedEnvironmentToRunIndex }
                     , Cmd.none
                     )
 
@@ -151,6 +156,8 @@ update msg model =
             (model, Cmd.none)
 
         EnvNavMsg subMsg ->
+            (model, Cmd.none)
+            {-
             case EnvNav.update subMsg model.envNavModel of
                 (newEnvNavModel, newMsg) ->
                     let
@@ -160,6 +167,7 @@ update msg model =
                         ( { model | envNavModel = newEnvNavModel, selectedEnvModel = newSelectedEnvModel }
                         , Cmd.map EnvNavMsg newMsg
                         )
+                        -}
 
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of

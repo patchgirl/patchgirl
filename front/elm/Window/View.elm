@@ -9,7 +9,7 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvApp.View as EnvApp
 import EnvApp.EnvNav.View as EnvNav
-import BuilderApp.EnvSelection.View as EnvSelection
+import BuilderApp.EnvSelection.App as EnvSelection
 import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
@@ -57,7 +57,13 @@ builderView model =
       Html.map BuilderTreeMsg (BuilderTree.view builderApp.builderTreeModel)
     envSelectionView : Html Msg
     envSelectionView =
-      Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
+        let
+            selectionModel =
+                { environmentNames = getEnvironmentNames model
+                , selectedEnvironmentToRunIndex = model.selectedEnvironmentToRunIndex
+                }
+        in
+            Html.map EnvSelectionMsg (EnvSelection.view selectionModel)
     workspaceSelectionView : Html Msg
     workspaceSelectionView =
       Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model (getWorkspaceNames model))

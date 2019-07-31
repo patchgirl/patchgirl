@@ -18,7 +18,9 @@ type alias Model =
   , workspaces : List WorkspaceApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
-  , selectedEnvModel : EnvSelection.Model
+--  , selectedEnvModel : EnvSelection.Model
+  , selectedEnvironmentToRunIndex : Maybe Int
+  , selectedEnvironmentToEditIndex : Maybe Int
   , envNavModel : EnvNav.Model
   , varAppModel : VarApp.Model
   , runnerModel : RequestRunner.Model
@@ -27,6 +29,10 @@ type alias Model =
 getWorkspaceNames : Model -> List String
 getWorkspaceNames model =
     List.map .name model.workspaces
+
+getEnvironmentNames : Model -> List String
+getEnvironmentNames model =
+    List.map .name model.envNavModel.envs
 
 defaultModel : Model
 defaultModel =
@@ -73,6 +79,8 @@ defaultModel =
           , overZoneId = Nothing
           , draggedId = Nothing
           }
+      selectedEnvironmentToEditIndex = Just 0
+      selectedEnvironmentToRunIndex = Just 0
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , buildersAppModel = buildersAppModel
@@ -80,7 +88,8 @@ defaultModel =
       , workspaces = workspaces
       , postmanModel = Nothing
       , envModel = envModel
-      , selectedEnvModel = selectedEnvModel
+      , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
+      , selectedEnvironmentToEditIndex = selectedEnvironmentToEditIndex
       , envNavModel = envNavModel
       , runnerModel = Nothing
       , varAppModel = varAppModel
