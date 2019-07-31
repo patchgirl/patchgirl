@@ -179,8 +179,9 @@ update msg model =
 
         EnvAppMsg subMsg ->
             case EnvApp.update subMsg model.envModel of
-                (newEnvApp, newMsg) ->
-                    ( { model | envModel = newEnvApp }, Cmd.map EnvAppMsg newMsg)
+                newEnvApp ->
+                    ( { model | envModel = newEnvApp }
+                    , Cmd.none)
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model.mainNavBarModel of

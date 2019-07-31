@@ -46,8 +46,9 @@ update msg model =
         Nothing -> (model, Cmd.none)
         Just { name, env } ->
           case EnvApp.update subMsg env of
-            (newEnvApp, newSubMsg) ->
+            newEnvApp ->
               let
                 newEnvApps = List.setAt idx { name = name, env = newEnvApp } model.envs
               in
-                ( { model | envs = newEnvApps }, Cmd.map (EnvAppMsg idx) newSubMsg )
+                ( { model | envs = newEnvApps }
+                , Cmd.none)
