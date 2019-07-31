@@ -12,7 +12,7 @@ import BuilderApp.WorkspaceSelection.Model exposing (..)
 view : Model -> Html Msg
 view model =
   select [ style "align-self" "flex-start", on "change" (Json.map Select targetValueIntParse) ]
-    (List.indexedMap entryView model.names)
+    (List.indexedMap entryView model.workspaceNames)
 
 entryView : Int -> String -> Html Msg
 entryView idx workspaceName =

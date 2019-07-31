@@ -226,7 +226,7 @@ update msg model =
                     let
                         formerWorkspaceSelection = model.workspaceSelection
                         newWorkspaceSelection =
-                            { formerWorkspaceSelection | names = List.map Tuple.first newWorkspaceAppModel }
+                            { formerWorkspaceSelection | workspaceNames = List.map Tuple.first newWorkspaceAppModel }
                     in
                     ( { model
                           | workspaceAppModel = newWorkspaceAppModel

@@ -9,6 +9,6 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Select idx ->
-      case List.getAt idx model.names of
+      case List.getAt idx model.workspaceNames of
         Just _ -> ( { model | selectedWorkspaceIdx = Just idx }, Cmd.none)
         Nothing -> ( { model | selectedWorkspaceIdx = Nothing }, Cmd.none)

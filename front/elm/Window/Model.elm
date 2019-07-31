@@ -30,7 +30,7 @@ defaultModel =
   let
       workspaceSelection =
           { selectedWorkspaceIdx = Just 0
-          , names = List.map Tuple.first workspaceAppModel
+          , workspaceNames = List.map Tuple.first workspaceAppModel
           }
       workspaceAppModel = WorkspaceApp.defaultModel
       buildersAppModel = List.map Tuple.second workspaceAppModel
