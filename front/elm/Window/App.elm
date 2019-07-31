@@ -106,7 +106,7 @@ update msg model =
                     )
 
         WorkspaceSelectionMsg subMsg ->
-            case WorkspaceSelection.update subMsg model (workspaceNames model) of
+            case WorkspaceSelection.update subMsg model (getWorkspaceNames model) of
                 newModel ->
                     (newModel, Cmd.none)
 

@@ -60,7 +60,7 @@ builderView model =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
     workspaceSelectionView : Html Msg
     workspaceSelectionView =
-      Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model (workspaceNames model))
+      Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model (getWorkspaceNames model))
   in
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ treeView ]

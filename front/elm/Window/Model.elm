@@ -24,8 +24,8 @@ type alias Model =
   , runnerModel : RequestRunner.Model
   }
 
-workspaceNames : Model -> List String
-workspaceNames model =
+getWorkspaceNames : Model -> List String
+getWorkspaceNames model =
     List.map .name model.workspaces
 
 defaultModel : Model
