@@ -12,25 +12,23 @@ import BuilderApp.EnvSelection.Model exposing (..)
 import List.Extra as List
 
 type alias Model a =
-  { a
-    | environmentNames : List String
-    , selectedEnvironmentToRunIndex : Maybe Int
+  { a | selectedEnvironmentToRunIndex : Maybe Int
   }
 
-update : Msg -> Model a -> Model a
-update msg model =
+update : Msg -> List String -> Model a -> Model a
+update msg environmentNames model =
     case msg of
         Select idx ->
-            case List.getAt idx model.environmentNames of
+            case List.getAt idx environmentNames of
                 Just _ ->
                     { model | selectedEnvironmentToRunIndex = Just idx }
                 Nothing ->
                     { model | selectedEnvironmentToRunIndex = Nothing }
 
-view : Model a -> Html Msg
-view model =
+view : List String -> Html Msg
+view environmentNames =
   select [ style "align-self" "flex-start", on "change" (Json.map Select targetValueIntParse) ]
-    (List.indexedMap entryView model.environmentNames)
+    (List.indexedMap entryView environmentNames)
 
 entryView : Int -> String -> Html Msg
 entryView idx envName =
