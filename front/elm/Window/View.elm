@@ -10,7 +10,7 @@ import Postman.View as Postman
 import EnvApp.View as EnvApp
 import EnvApp.EnvNav.View as EnvNav
 import BuilderApp.EnvSelection.View as EnvSelection
-import BuilderApp.WorkspaceSelection.View as WorkspaceSelection
+import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
 import VarApp.View as VarApp
@@ -49,7 +49,7 @@ builderView model =
   let
     builderApp : BuilderApp.Model
     builderApp =
-        case Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) <| model.workspaceSelection.selectedWorkspaceIdx of
+        case Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) <| model.selectedWorkspaceIdx of
             Just builder -> builder
             Nothing -> Debug.log "could not find builderApp, this should never happen" BuilderApp.defaultModel
     treeView : Html Msg
@@ -60,7 +60,7 @@ builderView model =
       Html.map EnvSelectionMsg (EnvSelection.view model.selectedEnvModel)
     workspaceSelectionView : Html Msg
     workspaceSelectionView =
-      Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model.workspaceSelection)
+      Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model)
   in
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ treeView ]

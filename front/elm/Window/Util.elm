@@ -17,4 +17,4 @@ replaceBuilder mIdx list newBuilder =
 
 getSelectedBuilder : Model -> Maybe BuilderApp.Model
 getSelectedBuilder model =
-    Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) model.workspaceSelection.selectedWorkspaceIdx
+    Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) model.selectedWorkspaceIdx

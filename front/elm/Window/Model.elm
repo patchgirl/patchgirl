@@ -10,12 +10,13 @@ import VarApp.Model as VarApp
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
 import WorkspaceApp.Model as WorkspaceApp
-import BuilderApp.WorkspaceSelection.Model as WorkspaceSelection
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
   , buildersAppModel : List BuilderApp.Model
-  , workspaceSelection : WorkspaceSelection.Model
+  , selectedWorkspaceIdx : Maybe Int
+  -- , workspaces
+  , workspaceNames : List String
   , workspaceAppModel : WorkspaceApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
@@ -28,10 +29,8 @@ type alias Model =
 defaultModel : Model
 defaultModel =
   let
-      workspaceSelection =
-          { selectedWorkspaceIdx = Just 0
-          , workspaceNames = List.map Tuple.first workspaceAppModel
-          }
+      selectedWorkspaceIdx = Just 0
+      workspaceNames = List.map Tuple.first workspaceAppModel
       workspaceAppModel = WorkspaceApp.defaultModel
       buildersAppModel = List.map Tuple.second workspaceAppModel
       envModel : EnvApp.Model
@@ -76,7 +75,8 @@ defaultModel =
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , buildersAppModel = buildersAppModel
-      , workspaceSelection = workspaceSelection
+      , selectedWorkspaceIdx = selectedWorkspaceIdx
+      , workspaceNames = workspaceNames
       , workspaceAppModel = workspaceAppModel
       , postmanModel = Nothing
       , envModel = envModel

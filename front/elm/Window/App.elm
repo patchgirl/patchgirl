@@ -84,7 +84,7 @@ update msg model =
         BuilderTreeMsg subMsg ->
             let
                 newBuildersAppModel newBuilderTree =
-                    replaceBuilder model.workspaceSelection.selectedWorkspaceIdx model.buildersAppModel newBuilderTree
+                    replaceBuilder model.selectedWorkspaceIdx model.buildersAppModel newBuilderTree
             in
                 case getSelectedBuilder model of
                     Just builderApp ->
@@ -106,11 +106,9 @@ update msg model =
                     )
 
         WorkspaceSelectionMsg subMsg ->
-            case WorkspaceSelection.update subMsg model.workspaceSelection of
-                (newWorkspaceSelection, newMsg) ->
-                    ( { model | workspaceSelection = newWorkspaceSelection }
-                    , Cmd.map WorkspaceSelectionMsg newMsg
-                    )
+            case WorkspaceSelection.update subMsg model of
+                newModel ->
+                    (newModel, Cmd.none)
 
         BuilderAppMsg subMsg ->
             case subMsg of
@@ -138,7 +136,7 @@ update msg model =
                 _ ->
                     let
                         newBuildersAppModel newBuilder =
-                            replaceBuilder model.workspaceSelection.selectedWorkspaceIdx model.buildersAppModel newBuilder
+                            replaceBuilder model.selectedWorkspaceIdx model.buildersAppModel newBuilder
                     in
                         case getSelectedBuilder model of
                             Just builderApp ->
@@ -222,17 +220,12 @@ update msg model =
 
         WorkspaceAppMsg subMsg ->
             case WorkspaceApp.update subMsg model.workspaceAppModel of
-                (newWorkspaceAppModel, newMsg) ->
+                newWorkspaceAppModel ->
                     let
-                        formerWorkspaceSelection = model.workspaceSelection
-                        newWorkspaceSelection =
-                            { formerWorkspaceSelection | workspaceNames = List.map Tuple.first newWorkspaceAppModel }
+                        newWorkspaceNames = List.map Tuple.first newWorkspaceAppModel
                     in
-                    ( { model
-                          | workspaceAppModel = newWorkspaceAppModel
-                          , workspaceSelection = newWorkspaceSelection
-                      }
-                    , Cmd.map WorkspaceAppMsg newMsg
+                    ( { model | workspaceNames = newWorkspaceNames }
+                    , Cmd.none
                     )
 
 subscriptions : Model -> Sub Msg
