@@ -163,41 +163,11 @@ update msg model =
 
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of
-                {-(Just newBuilderTree, newMsg) ->
-                    let
-                        newBuilderTreeModel =
-                            { selectedBuilderIndex = Nothing
-                            , displayedBuilderIndexes = []
-                            , tree = newBuilderTree
-                            , displayedNodeMenuIndex = Nothing
-                            }
-                        formerBuildersAppModel = model.buildersAppModel
-                        newBuilderAppModel = { formerBuilderAppModel | builderTreeModel = newBuilderTreeModel }
-                    in
-                        ( { model | builderAppModel = newBuilderAppModel }, Cmd.map PostmanMsg newMsg)
--}
                 (_, _) -> (model, Cmd.none)
---                (Nothing, newMsg) -> (model, Cmd.none)
 
 
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
-      {-
-      case (subMsg, mBuilder model.builderAppModel, model.builderAppModel.displayedBuilderIndexes) of
-        (RequestRunner.GetResponse response, Just builder, builderIndexes) ->
-          let
-            (updatedBuilder, cmdBuilder) = (Builder.update (Builder.GiveResponse response) builder)
-            updateNode : BuilderTree.Node -> BuilderTree.Node
-            updateNode oldNode =
-              case oldNode of
-                BuilderTree.File { name } -> BuilderTree.File { name = name, builder = updatedBuilder, showRenameInput = False }
-                _ -> oldNode
-            newBuilderTree = BuilderTree.modifyNode updateNode model.builderAppModel.tree 1 --builderIdx
-            oldBuilderTreeModel = model.builderAppModel
-            newBuilderTreeModel = { oldBuilderTreeModel | tree = newBuilderTree }
-          in
-            ( { model | builderAppModel = newBuilderTreeModel }, Cmd.map BuilderMsg cmdBuilder)
-        _ -> (model, Cmd.none)-}
 
         EnvAppMsg subMsg ->
             case EnvApp.update subMsg model.envModel of
