@@ -100,9 +100,9 @@ update msg model =
 
         EnvSelectionMsg subMsg ->
             case EnvSelection.update subMsg model.selectedEnvModel of
-                (newSelectedEnvModel, newMsg) ->
+                newSelectedEnvModel ->
                     ( { model | selectedEnvModel = newSelectedEnvModel }
-                    , Cmd.map EnvSelectionMsg newMsg
+                    , Cmd.none
                     )
 
         WorkspaceSelectionMsg subMsg ->
