@@ -89,12 +89,12 @@ update msg model =
                 case getSelectedBuilder model of
                     Just builderApp ->
                         case BuilderTree.update subMsg builderApp.builderTreeModel of
-                            (newBuilderTreeModel, newMsg) ->
+                            newBuilderTreeModel ->
                                 let
                                     formerBuildersAppModel = model.buildersAppModel
                                 in
                                     ( { model | buildersAppModel = newBuildersAppModel { builderApp | builderTreeModel = newBuilderTreeModel } }
-                                    , Cmd.map BuilderTreeMsg newMsg
+                                    , Cmd.none
                                     )
                     Nothing -> (model, Cmd.none)
 

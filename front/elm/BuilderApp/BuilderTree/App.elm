@@ -9,12 +9,11 @@ import BuilderApp.Builder.Model as Builder
 
 import Util.Maybe as Maybe
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> Model
 update msg model =
   case msg of
     SetDisplayedBuilder idx ->
-        ({ model | selectedBuilderIndex = Just idx }
-        , Cmd.none)
+        { model | selectedBuilderIndex = Just idx }
 
     ToggleMenu idx ->
       let
@@ -23,28 +22,22 @@ update msg model =
             True -> Nothing
             False -> Just idx
       in
-        ( { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }
-        , Cmd.none)
+        { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }
 
     ToggleFolder idx ->
-        ( { model | tree = (modifyNode toggleFolder model.tree idx) }
-        , Cmd.none)
+        { model | tree = (modifyNode toggleFolder model.tree idx) }
 
     Mkdir idx ->
-        ( { model | tree = (modifyNode mkdir model.tree idx) }
-        , Cmd.none)
+        { model | tree = (modifyNode mkdir model.tree idx) }
 
     Touch idx ->
-        ( { model | tree = (modifyNode touch model.tree idx) }
-        , Cmd.none)
+        { model | tree = (modifyNode touch model.tree idx) }
 
     ShowRenameInput idx ->
-        ( { model | tree = (modifyNode displayRenameInput model.tree idx) }
-        , Cmd.none)
+        { model | tree = (modifyNode displayRenameInput model.tree idx) }
 
     Rename idx newName ->
-        ( { model | tree = (modifyNode (rename newName) model.tree idx) }
-        , Cmd.none)
+        { model | tree = (modifyNode (rename newName) model.tree idx) }
 
     Delete idx ->
-      ( { model | tree = (deleteNode model.tree idx) }, Cmd.none)
+        { model | tree = (deleteNode model.tree idx) }
