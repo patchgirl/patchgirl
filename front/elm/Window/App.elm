@@ -176,9 +176,9 @@ update msg model =
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model.mainNavBarModel of
-                (newMainNavBarModel, newMsg) ->
+                newMainNavBarModel ->
                     ( { model | mainNavBarModel = newMainNavBarModel }
-                    , Cmd.map MainNavBarMsg newMsg
+                    , Cmd.none
                     )
 
         VarAppMsg subMsg ->
