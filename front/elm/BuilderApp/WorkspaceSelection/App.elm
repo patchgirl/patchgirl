@@ -11,23 +11,22 @@ import List.Extra as List
 type alias Model a =
     { a
       | selectedWorkspaceIdx : Maybe Int
-      , workspaceNames : List String
     }
 
-update : Msg -> Model a -> Model a
-update msg model =
+update : Msg -> Model a -> List String -> Model a
+update msg model workspaceNames =
     case msg of
         Select idx ->
-            case List.getAt idx model.workspaceNames of
+            case List.getAt idx workspaceNames of
                 Just _ ->
                     { model | selectedWorkspaceIdx = Just idx }
                 Nothing ->
                     { model | selectedWorkspaceIdx = Nothing }
 
-view : Model a -> Html Msg
-view model =
+view : Model a -> List String -> Html Msg
+view model workspaceNames =
     select [ style "align-self" "flex-start", on "change" (Json.map Select targetValueIntParse) ]
-        (List.indexedMap entryView model.workspaceNames)
+        (List.indexedMap entryView workspaceNames)
 
 entryView : Int -> String -> Html Msg
 entryView idx workspaceName =

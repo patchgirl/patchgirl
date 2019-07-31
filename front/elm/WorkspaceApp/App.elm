@@ -11,7 +11,7 @@ update msg model =
     case msg of
         RenameWorkspace idx str ->
             let
-                newModel = List.updateAt idx (\(_, m) -> (str, m)) model
+                newModel = List.updateAt idx (\m -> { m | name = str }) model
             in
                 newModel
 
@@ -23,6 +23,6 @@ update msg model =
 
         AddNewInput ->
             let
-                newModel = model ++ [("", BuilderApp.defaultModel)]
+                newModel = model ++ [ { name = "", builder = BuilderApp.defaultModel } ]
             in
                 newModel

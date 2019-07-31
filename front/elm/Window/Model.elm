@@ -15,8 +15,6 @@ type alias Model =
   { mainNavBarModel : MainNavBar.Model
   , buildersAppModel : List BuilderApp.Model
   , selectedWorkspaceIdx : Maybe Int
-  -- , workspaces
-  , workspaceNames : List String
   , workspaceAppModel : WorkspaceApp.Model
   , postmanModel : Postman.Model
   , envModel : EnvApp.Model
@@ -26,13 +24,16 @@ type alias Model =
   , runnerModel : RequestRunner.Model
   }
 
+workspaceNames : Model -> List String
+workspaceNames model =
+    List.map .name model.workspaceAppModel
+
 defaultModel : Model
 defaultModel =
   let
       selectedWorkspaceIdx = Just 0
-      workspaceNames = List.map Tuple.first workspaceAppModel
       workspaceAppModel = WorkspaceApp.defaultModel
-      buildersAppModel = List.map Tuple.second workspaceAppModel
+      buildersAppModel = List.map .builder workspaceAppModel
       envModel : EnvApp.Model
       envModel = [("url", "swapi.co")]
       envNav1 : EnvNav.EnvInfo
@@ -76,7 +77,6 @@ defaultModel =
       { mainNavBarModel = MainNavBar.defaultModel
       , buildersAppModel = buildersAppModel
       , selectedWorkspaceIdx = selectedWorkspaceIdx
-      , workspaceNames = workspaceNames
       , workspaceAppModel = workspaceAppModel
       , postmanModel = Nothing
       , envModel = envModel

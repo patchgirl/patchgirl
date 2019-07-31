@@ -106,7 +106,7 @@ update msg model =
                     )
 
         WorkspaceSelectionMsg subMsg ->
-            case WorkspaceSelection.update subMsg model of
+            case WorkspaceSelection.update subMsg model (workspaceNames model) of
                 newModel ->
                     (newModel, Cmd.none)
 
@@ -221,10 +221,7 @@ update msg model =
         WorkspaceAppMsg subMsg ->
             case WorkspaceApp.update subMsg model.workspaceAppModel of
                 newWorkspaceAppModel ->
-                    let
-                        newWorkspaceNames = List.map Tuple.first newWorkspaceAppModel
-                    in
-                    ( { model | workspaceNames = newWorkspaceNames }
+                    ( { model | workspaceAppModel = newWorkspaceAppModel }
                     , Cmd.none
                     )
 

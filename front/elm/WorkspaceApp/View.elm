@@ -13,10 +13,10 @@ view model =
     div [ id "workspaceApp", class "columns" ]
         ((List.indexedMap (viewEntry) model) ++ [ defaultView ])
 
-viewEntry : Int -> (String, BuilderApp.Model) -> Html Msg
-viewEntry idx (workspaceName, _) =
+viewEntry : Int -> { name : String, builder : BuilderApp.Model } -> Html Msg
+viewEntry idx { name } =
     div [ id "workspaceForm" ]
-        [ input [ placeholder "workspace", onInput (RenameWorkspace idx), value workspaceName] []
+        [ input [ placeholder "workspace", onInput (RenameWorkspace idx), value name ] []
         , a [ href "#", onClick (DeleteWorkspace idx)] [ text "-" ]
         ]
 
