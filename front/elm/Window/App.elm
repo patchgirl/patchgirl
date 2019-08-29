@@ -26,15 +26,15 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import EnvToRun.View as EnvToRun
-import EnvToRun.Model as EnvToRun
-import EnvToRun.Message as EnvToRun
-import EnvToRun.App as EnvToRun
+import EnvironmentEdition.View as EnvironmentEdition
+import EnvironmentEdition.Model as EnvironmentEdition
+import EnvironmentEdition.Message as EnvironmentEdition
+import EnvironmentEdition.App as EnvironmentEdition
 
-import EnvToRun.EnvNav.View as EnvNav
-import EnvToRun.EnvNav.Message as EnvNav
-import EnvToRun.EnvNav.App as EnvNav
-import EnvToRun.EnvNav.Util as EnvNav
+import EnvironmentEdition.EnvNav.View as EnvNav
+import EnvironmentEdition.EnvNav.Message as EnvNav
+import EnvironmentEdition.EnvNav.App as EnvNav
+import EnvironmentEdition.EnvNav.Util as EnvNav
 
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -161,13 +161,13 @@ update msg model =
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
 
-        EnvToRunMsg subMsg ->
+        EnvironmentEditionMsg subMsg ->
             case EnvNav.getEnvironmentToEdit model of
                 Just environment ->
-                    case EnvToRun.update subMsg environment of
-                        newEnvToRun ->
+                    case EnvironmentEdition.update subMsg environment of
+                        newEnvironmentEdition ->
                             let
-                                newModel = replaceEnvironmentToEdit model newEnvToRun
+                                newModel = replaceEnvironmentToEdit model newEnvironmentEdition
                             in
                                 (Debug.log "test" newModel, Cmd.none)
 

@@ -1,6 +1,6 @@
-module EnvToRun.EnvNav.Util exposing (..)
+module EnvironmentEdition.EnvNav.Util exposing (..)
 
-import EnvToRun.EnvNav.Model exposing (..)
+import EnvironmentEdition.EnvNav.Model exposing (..)
 import Window.Type as Type
 import List.Extra as List
 

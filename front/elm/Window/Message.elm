@@ -6,8 +6,8 @@ import BuilderApp.Message as BuilderApp
 import BuilderApp.Builder.Message as BuilderAppBuilder
 import BuilderApp.BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
-import EnvToRun.Message as EnvToRun
-import EnvToRun.EnvNav.Message as EnvNav
+import EnvironmentEdition.Message as EnvironmentEdition
+import EnvironmentEdition.EnvNav.Message as EnvNav
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -19,7 +19,7 @@ type Msg
   = BuilderTreeMsg BuilderTree.Msg
   | BuilderAppMsg BuilderApp.Msg
   | PostmanMsg Postman.Msg
-  | EnvToRunMsg EnvToRun.Msg
+  | EnvironmentEditionMsg EnvironmentEdition.Msg
   | EnvNavMsg EnvNav.Msg
   | RequestRunnerMsg RequestRunner.Msg
   | MainNavBarMsg MainNavBar.Msg

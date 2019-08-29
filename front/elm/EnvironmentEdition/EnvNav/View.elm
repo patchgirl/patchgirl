@@ -1,12 +1,12 @@
-module EnvToRun.EnvNav.View exposing (..)
+module EnvironmentEdition.EnvNav.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import EnvToRun.EnvNav.Message exposing (..)
+import EnvironmentEdition.EnvNav.Message exposing (..)
 import Util.View as Util
-import EnvToRun.View as EnvToRun
+import EnvironmentEdition.View as EnvironmentEdition
 import Window.Type as Type
 
 type alias Model a =
@@ -57,4 +57,4 @@ envView model idx environment =
         isEnvSelected = model.selectedEnvironmentToEditIndex == Just idx
     in
         div [ hidden (not isEnvSelected) ]
-            [ Html.map (EnvToRunMsg idx) (EnvToRun.view environment.keyValues) ]
+            [ Html.map (EnvironmentEditionMsg idx) (EnvironmentEdition.view environment.keyValues) ]
