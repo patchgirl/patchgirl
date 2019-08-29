@@ -161,10 +161,15 @@ update msg model =
             (model, Cmd.none)
 
         EnvToRunMsg subMsg ->
-            case EnvToRun.update subMsg model.envModel of
-                newEnvToRun ->
-                    ( { model | envModel = newEnvToRun }
-                    , Cmd.none)
+            case getEnvironmentToEdit model of
+                Just environment ->
+                    case EnvToRun.update subMsg environment of
+                        newEnvToRun ->
+                            ( (replaceEnvironmentToEdit model newEnvToRun)
+                            , Cmd.none)
+
+                Nothing ->
+                    (model, Cmd.none)
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model.mainNavBarModel of

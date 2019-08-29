@@ -18,3 +18,19 @@ replaceBuilder mIdx list newBuilder =
 getSelectedBuilder : Model -> Maybe BuilderApp.Model
 getSelectedBuilder model =
     Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) model.selectedWorkspaceIndex
+
+type alias Environment =
+    { environmentName : String
+    , keyValues : List(String, String)
+    }
+
+replaceEnvironmentToEdit : Model -> Environment -> Model
+replaceEnvironmentToEdit model newEnvironment =
+    let newEnvironments =
+            case model.selectedEnvironmentToEditIndex of
+                Just idx ->
+                    List.updateListAt model.environments idx (\formerEnvironment -> newEnvironment)
+                Nothing ->
+                    model.environments
+    in
+        { model | environments = newEnvironments }

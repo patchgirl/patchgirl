@@ -16,7 +16,7 @@ type alias SelectionModel =
   , selectedEnvironmentToRunIndex : Maybe Int
   }
 
-type alias Enviroment =
+type alias Environment =
     { environmentName : String
     , keyValues : List(String, String)
     }
@@ -30,7 +30,7 @@ type alias Model =
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
   , selectedEnvironmentToRenameIndex : Maybe Int
-  , environments : List Enviroment
+  , environments : List Environment
   , envModel : EnvToRun.Model
   , varAppModel : VarApp.Model
   , runnerModel : RequestRunner.Model
@@ -44,18 +44,18 @@ getEnvironmentNames : Model -> List String
 getEnvironmentNames model =
     List.map .environmentName model.environments
 
-getEnvironmentToEdit : Model -> Maybe Enviroment
+getEnvironmentToEdit : Model -> Maybe Environment
 getEnvironmentToEdit model =
     let
-        selectEnvironment : Int -> Maybe Enviroment
+        selectEnvironment : Int -> Maybe Environment
         selectEnvironment idx = List.getAt idx model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToEditIndex
 
-getEnvironmentToRun : Model -> Maybe Enviroment
+getEnvironmentToRun : Model -> Maybe Environment
 getEnvironmentToRun model =
     let
-        selectEnvironment : Int -> Maybe Enviroment
+        selectEnvironment : Int -> Maybe Environment
         selectEnvironment idx = List.getAt idx model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex

@@ -5,17 +5,31 @@ import EnvToRun.Message exposing (Msg(..))
 
 import Util.KeyValue.Util as KeyValue
 
-update : Msg -> Model -> Model
+type alias Environment =
+    { environmentName : String
+    , keyValues : List(String, String)
+    }
+
+update : Msg -> Environment -> Environment
 update msg model =
     case msg of
         PromptKey idx str ->
-            KeyValue.modify (KeyValue.changeKey str) idx model
+            let
+                newKeyValues = KeyValue.modify (KeyValue.changeKey str) idx model.keyValues
+            in
+                { model | keyValues = newKeyValues }
 
         PromptValue idx str ->
-            KeyValue.modify (KeyValue.changeValue str) idx model
+            let
+                newKeyValues = KeyValue.modify (KeyValue.changeValue str) idx model.keyValues
+            in
+                { model | keyValues = newKeyValues }
 
         AddNewInput ->
-            model ++ emptyModel
+            { model | keyValues = model.keyValues ++ emptyModel }
 
         DeleteInput idx ->
-            KeyValue.delete idx model
+            let
+                newKeyValues = KeyValue.delete idx model.keyValues
+            in
+                { model | keyValues = newKeyValues }
