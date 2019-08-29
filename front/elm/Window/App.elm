@@ -34,6 +34,7 @@ import EnvToRun.App as EnvToRun
 import EnvToRun.EnvNav.View as EnvNav
 import EnvToRun.EnvNav.Message as EnvNav
 import EnvToRun.EnvNav.App as EnvNav
+import EnvToRun.EnvNav.Util as EnvNav
 
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -161,7 +162,7 @@ update msg model =
             (model, Cmd.none)
 
         EnvToRunMsg subMsg ->
-            case getEnvironmentToEdit model of
+            case EnvNav.getEnvironmentToEdit model of
                 Just environment ->
                     case EnvToRun.update subMsg environment of
                         newEnvToRun ->

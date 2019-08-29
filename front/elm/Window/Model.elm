@@ -5,6 +5,7 @@ import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
 import EnvToRun.Model as EnvToRun
+import EnvToRun.EnvNav.Util as EnvNav
 import VarApp.Model as VarApp
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
@@ -35,14 +36,6 @@ getEnvironmentNames : Model -> List String
 getEnvironmentNames model =
     List.map .environmentName model.environments
 
-getEnvironmentToEdit : Model -> Maybe Type.Environment
-getEnvironmentToEdit model =
-    let
-        selectEnvironment : Int -> Maybe Type.Environment
-        selectEnvironment idx = List.getAt idx model.environments
-    in
-        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditIndex
-
 getEnvironmentToRun : Model -> Maybe Type.Environment
 getEnvironmentToRun model =
     let
@@ -57,7 +50,7 @@ getEnvironmentKeyValuesToRun model =
 
 getEnvironmentKeyValuesToEdit : Model -> List(String, String)
 getEnvironmentKeyValuesToEdit model =
-    (getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
+    (EnvNav.getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
 
 defaultModel : Model
 defaultModel =

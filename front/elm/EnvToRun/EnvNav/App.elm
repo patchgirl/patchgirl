@@ -5,29 +5,14 @@ import List.Extra as List
 import EnvToRun.EnvNav.Message exposing (Msg(..))
 
 import EnvToRun.App as EnvToRun
+import EnvToRun.EnvNav.Model exposing (..)
+import EnvToRun.EnvNav.Util exposing (..)
 import Window.Type as Type
 
 defaultEnvironment =
     { environmentName = "new environment"
     , keyValues = []
     }
-
-type alias Model a =
-    { a
-        | environments : List Type.Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
-        , selectedEnvironmentToEditIndex : Maybe Int
-        , selectedEnvironmentToRenameIndex : Maybe Int
-    }
-
-getEnvironmentToEdit : Model a -> Maybe Type.Environment
-getEnvironmentToEdit model =
-    let
-        selectEnvironment : Int -> Maybe Type.Environment
-        selectEnvironment idx = List.getAt idx model.environments
-    in
-        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditIndex
-
 
 update : Msg -> Model a -> Model a
 update msg model =
