@@ -5,20 +5,16 @@ import List.Extra as List
 import EnvToRun.EnvNav.Message exposing (Msg(..))
 
 import EnvToRun.App as EnvToRun
+import Window.Type as Type
 
 defaultEnvironment =
     { environmentName = "new environment"
     , keyValues = []
     }
 
-type alias Environment =
-    { environmentName : String
-    , keyValues : List(String, String)
-    }
-
 type alias Model a =
     { a
-        | environments : List Environment
+        | environments : List Type.Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , selectedEnvironmentToEditIndex : Maybe Int
         , selectedEnvironmentToRenameIndex : Maybe Int
@@ -44,23 +40,25 @@ update msg model =
           }
 
     Add ->
-      { model | environments = model.environments ++ [ defaultEnvironment ] }
+        let
+            newEnvironments = model.environments ++ [ defaultEnvironment ]
+        in
+            { model | environments = newEnvironments }
 
     ShowRenameInput idx ->
-      { model | selectedEnvironmentToRenameIndex = Just idx }
+        { model | selectedEnvironmentToRenameIndex = Just idx }
 
     Rename idx newEnvironmentName ->
-      let
-        updateEnv old = { old | environmentName = newEnvironmentName }
-        mNewEnvs = List.updateAt idx updateEnv model.environments
+        let
+            updateEnv old = { old | environmentName = newEnvironmentName }
+            mNewEnvs = List.updateAt idx updateEnv model.environments
       in
-        case mNewEnvs of
-          newEnvs ->
-              { model
-                  | selectedEnvironmentToRenameIndex = Nothing
-                  , environments = newEnvs
-              }
-
+          case mNewEnvs of
+              newEnvs ->
+                  { model
+                      | selectedEnvironmentToRenameIndex = Nothing
+                      , environments = newEnvs
+                  }
 
     EnvToRunMsg idx subMsg ->
       model

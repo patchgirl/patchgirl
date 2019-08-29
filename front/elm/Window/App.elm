@@ -165,8 +165,10 @@ update msg model =
                 Just environment ->
                     case EnvToRun.update subMsg environment of
                         newEnvToRun ->
-                            ( (replaceEnvironmentToEdit model newEnvToRun)
-                            , Cmd.none)
+                            let
+                                newModel = replaceEnvironmentToEdit model newEnvToRun
+                            in
+                                (Debug.log "test" newModel, Cmd.none)
 
                 Nothing ->
                     (model, Cmd.none)

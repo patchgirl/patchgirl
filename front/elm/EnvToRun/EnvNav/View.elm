@@ -7,15 +7,11 @@ import Html.Events exposing (..)
 import EnvToRun.EnvNav.Message exposing (..)
 import Util.View as Util
 import EnvToRun.View as EnvToRun
-
-type alias Environment =
-    { environmentName : String
-    , keyValues : List(String, String)
-    }
+import Window.Type as Type
 
 type alias Model a =
     { a
-        | environments : List Environment
+        | environments : List Type.Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , selectedEnvironmentToEditIndex : Maybe Int
         , selectedEnvironmentToRenameIndex : Maybe Int
@@ -23,15 +19,19 @@ type alias Model a =
 
 view : Model a -> Html Msg
 view model =
-  div [ id "envApp", class "columns" ]
-    [ ul [ class "column is-offset-1 is-1" ] <|
-          (List.indexedMap (entryView model.selectedEnvironmentToRenameIndex model.selectedEnvironmentToEditIndex) model.environments) ++ [
-               div [ onClick Add, class "centerHorizontal align-self-center" ] [ span [ class "icono-plusCircle" ] [] ]
+    let
+        foo =
+            ul [ class "column" ] <|
+              List.indexedMap (envView model) model.environments
+        bar = (List.indexedMap (entryView model.selectedEnvironmentToRenameIndex model.selectedEnvironmentToEditIndex) model.environments)
+        baz = div [ onClick Add, class "centerHorizontal align-self-center" ] [ text "+" ]
+    in
+        div [ id "envApp", class "columns" ]
+          [ ul [ class "column is-offset-1 is-1" ] (bar ++ [ baz ])
+          , foo
           ]
-    , ul [ class "column" ] <| List.indexedMap (envView model) model.environments
-    ]
 
-entryView : Maybe Int -> Maybe Int -> Int -> Environment -> Html Msg
+entryView : Maybe Int -> Maybe Int -> Int -> Type.Environment -> Html Msg
 entryView renameEnvIdx mSelectedEnvIdx idx environment =
   let
     readView = a [ href "#", onClick (SelectEnvToEdit idx) ] [ span [] [ text environment.environmentName ] ]
@@ -47,12 +47,14 @@ entryView renameEnvIdx mSelectedEnvIdx idx environment =
   in
     li [ class active ]
       [ modeView
-      , a [ href "#", onClick (ShowRenameInput idx)] [ span [class "icono-hamburger"][] ]
-      , a [ href "#", class "icono-cross", onClick (Delete idx)] [ text "-" ]
+      , a [ href "#", onClick (ShowRenameInput idx)] [ text " Rename" ]
+      , a [ href "#", onClick (Delete idx)] [ text " -" ]
       ]
 
-envView : Model a -> Int -> Environment -> Html Msg
+envView : Model a -> Int -> Type.Environment -> Html Msg
 envView model idx environment =
-  case model.selectedEnvironmentToEditIndex == Just idx of
-    showEnvTab ->
-      div [ hidden (not showEnvTab) ] [ Html.map (EnvToRunMsg idx) (EnvToRun.view environment.keyValues) ]
+    let
+        isEnvSelected = model.selectedEnvironmentToEditIndex == Just idx
+    in
+        div [ hidden (not isEnvSelected) ]
+            [ Html.map (EnvToRunMsg idx) (EnvToRun.view environment.keyValues) ]

@@ -21,4 +21,5 @@ viewKeyValue idx (key, envValue) =
 
 defaultView : Html Msg
 defaultView =
-  div [ onClick AddNewInput, class "centerHorizontal align-self-center" ] [ span [ class "icono-plusCircle" ] [ text "test" ] ]
+  div [ onClick AddNewInput, class "centerHorizontal align-self-center" ]
+      [ span [] [ text "+" ] ]

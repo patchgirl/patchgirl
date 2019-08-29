@@ -34,8 +34,8 @@ view model =
         contentView =
             div [ id "content" ] <|
                 case model.mainNavBarModel of
-                    MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model) ]
                     MainNavBar.ReqTab -> [ builderView model ]
+                    MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model) ]
                     MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
                     MainNavBar.WorkspaceTab -> [ Html.map WorkspaceAppMsg (WorkspaceApp.view model.workspaces) ]
     in

@@ -10,16 +10,7 @@ import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
 import WorkspaceApp.Model as WorkspaceApp
 import List.Extra as List
-
-type alias SelectionModel =
-  { environmentNames : List(String)
-  , selectedEnvironmentToRunIndex : Maybe Int
-  }
-
-type alias Environment =
-    { environmentName : String
-    , keyValues : List(String, String)
-    }
+import Window.Type as Type
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
@@ -30,7 +21,7 @@ type alias Model =
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
   , selectedEnvironmentToRenameIndex : Maybe Int
-  , environments : List Environment
+  , environments : List Type.Environment
   , envModel : EnvToRun.Model
   , varAppModel : VarApp.Model
   , runnerModel : RequestRunner.Model
@@ -44,18 +35,18 @@ getEnvironmentNames : Model -> List String
 getEnvironmentNames model =
     List.map .environmentName model.environments
 
-getEnvironmentToEdit : Model -> Maybe Environment
+getEnvironmentToEdit : Model -> Maybe Type.Environment
 getEnvironmentToEdit model =
     let
-        selectEnvironment : Int -> Maybe Environment
+        selectEnvironment : Int -> Maybe Type.Environment
         selectEnvironment idx = List.getAt idx model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToEditIndex
 
-getEnvironmentToRun : Model -> Maybe Environment
+getEnvironmentToRun : Model -> Maybe Type.Environment
 getEnvironmentToRun model =
     let
-        selectEnvironment : Int -> Maybe Environment
+        selectEnvironment : Int -> Maybe Type.Environment
         selectEnvironment idx = List.getAt idx model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
@@ -67,12 +58,6 @@ getEnvironmentKeyValuesToRun model =
 getEnvironmentKeyValuesToEdit : Model -> List(String, String)
 getEnvironmentKeyValuesToEdit model =
     (getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
-
-getSelectionModel : Model -> SelectionModel
-getSelectionModel model =
-    { environmentNames = getEnvironmentNames model
-    , selectedEnvironmentToRunIndex = model.selectedEnvironmentToRunIndex
-    }
 
 defaultModel : Model
 defaultModel =
@@ -96,6 +81,14 @@ defaultModel =
       selectedEnvironmentToEditIndex = Just 0
       selectedEnvironmentToRunIndex = Just 0
       selectedEnvironmentToRenameIndex = Nothing
+      environments =
+          [ { environmentName = "staging1"
+            , keyValues = [("key1", "value1")]
+            }
+          , { environmentName = "staging2"
+            , keyValues = []
+            }
+          ]
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , buildersAppModel = buildersAppModel
@@ -105,7 +98,7 @@ defaultModel =
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditIndex = selectedEnvironmentToEditIndex
       , selectedEnvironmentToRenameIndex = selectedEnvironmentToRenameIndex
-      , environments = []
+      , environments = environments
       , envModel = envModel
       , runnerModel = Nothing
       , varAppModel = varAppModel

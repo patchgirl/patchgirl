@@ -4,13 +4,9 @@ import EnvToRun.Model exposing (..)
 import EnvToRun.Message exposing (Msg(..))
 
 import Util.KeyValue.Util as KeyValue
+import Window.Type as Type
 
-type alias Environment =
-    { environmentName : String
-    , keyValues : List(String, String)
-    }
-
-update : Msg -> Environment -> Environment
+update : Msg -> Type.Environment -> Type.Environment
 update msg model =
     case msg of
         PromptKey idx str ->
@@ -26,7 +22,10 @@ update msg model =
                 { model | keyValues = newKeyValues }
 
         AddNewInput ->
-            { model | keyValues = model.keyValues ++ emptyModel }
+            let
+                newKeyValues = model.keyValues ++ emptyModel
+            in
+                { model | keyValues = newKeyValues }
 
         DeleteInput idx ->
             let
