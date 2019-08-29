@@ -1,4 +1,4 @@
-module EnvApp.Model exposing (..)
+module EnvToRun.Model exposing (..)
 
 import Util.KeyValue.Model as KeyValue
 

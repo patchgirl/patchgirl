@@ -7,8 +7,8 @@ import Html.Events exposing (..)
 import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
-import EnvApp.View as EnvApp
-import EnvApp.EnvNav.View as EnvNav
+import EnvToRun.View as EnvToRun
+import EnvToRun.EnvNav.View as EnvNav
 import BuilderApp.EnvSelection.App as EnvSelection
 import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
@@ -34,7 +34,7 @@ view model =
         contentView =
             div [ id "content" ] <|
                 case model.mainNavBarModel of
-                    MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model.envNavModel) ]
+                    MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model) ]
                     MainNavBar.ReqTab -> [ builderView model ]
                     MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
                     MainNavBar.WorkspaceTab -> [ Html.map WorkspaceAppMsg (WorkspaceApp.view model.workspaces) ]

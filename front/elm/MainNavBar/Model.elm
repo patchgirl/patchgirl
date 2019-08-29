@@ -6,4 +6,4 @@ type Model
     | VarTab
     | WorkspaceTab
 
-defaultModel = ReqTab
+defaultModel = EnvTab

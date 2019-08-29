@@ -26,16 +26,14 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import EnvApp.View as EnvApp
-import EnvApp.Model as EnvApp
-import EnvApp.Message as EnvApp
-import EnvApp.App as EnvApp
+import EnvToRun.View as EnvToRun
+import EnvToRun.Model as EnvToRun
+import EnvToRun.Message as EnvToRun
+import EnvToRun.App as EnvToRun
 
-import EnvApp.EnvNav.View as EnvNav
-import EnvApp.EnvNav.Model as EnvNav
-import EnvApp.EnvNav.Message as EnvNav
-import EnvApp.EnvNav.App as EnvNav
-import EnvApp.EnvNav.Util as EnvNav
+import EnvToRun.EnvNav.View as EnvNav
+import EnvToRun.EnvNav.Message as EnvNav
+import EnvToRun.EnvNav.App as EnvNav
 
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -112,19 +110,19 @@ update msg model =
         BuilderAppMsg subMsg ->
             case subMsg of
                 BuilderApp.BuilderMsg (Builder.AskRun builder) ->
-                    case EnvNav.getSelectedEnvInfo model.envNavModel of
-                        Just envInfo ->
-                            case RequestRunner.update (RequestRunner.Run envInfo.env model.varAppModel builder) Nothing of
+                    case getEnvironmentToRun model of
+                        Just environment ->
+                            case RequestRunner.update (RequestRunner.Run environment.keyValues model.varAppModel builder) Nothing of
                               (_, runnerSubMsg) -> (model, Cmd.map RequestRunnerMsg runnerSubMsg)
 
                         Nothing ->
                             (model, Cmd.none)
 
                 BuilderApp.BuilderMsg (Builder.ShowRequestAsCurl builder) ->
-                    case EnvNav.getSelectedEnvInfo model.envNavModel of
-                        Just envInfo ->
+                    case getEnvironmentToRun model of
+                        Just environment ->
                             let
-                                requestInput = RequestRunner.buildRequestInput envInfo.env model.varAppModel builder
+                                requestInput = RequestRunner.buildRequestInput environment.keyValues model.varAppModel builder
                             in
                                 case Debug.log "request" (Curl.showRequestAsCurl requestInput) of
                                     (_) -> (model, Cmd.none)
@@ -150,18 +148,9 @@ update msg model =
             (model, Cmd.none)
 
         EnvNavMsg subMsg ->
-            (model, Cmd.none)
-            {-
-            case EnvNav.update subMsg model.envNavModel of
-                (newEnvNavModel, newMsg) ->
-                    let
-                        selectedEnvModel = model.selectedEnvModel
-                        newSelectedEnvModel = { selectedEnvModel | envs = List.map .name newEnvNavModel.envs }
-                    in
-                        ( { model | envNavModel = newEnvNavModel, selectedEnvModel = newSelectedEnvModel }
-                        , Cmd.map EnvNavMsg newMsg
-                        )
-                        -}
+            case EnvNav.update subMsg model of
+                newModel ->
+                    (newModel, Cmd.none)
 
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of
@@ -171,10 +160,10 @@ update msg model =
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
 
-        EnvAppMsg subMsg ->
-            case EnvApp.update subMsg model.envModel of
-                newEnvApp ->
-                    ( { model | envModel = newEnvApp }
+        EnvToRunMsg subMsg ->
+            case EnvToRun.update subMsg model.envModel of
+                newEnvToRun ->
+                    ( { model | envModel = newEnvToRun }
                     , Cmd.none)
 
         MainNavBarMsg subMsg ->

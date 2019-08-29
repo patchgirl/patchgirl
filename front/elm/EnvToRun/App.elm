@@ -1,7 +1,7 @@
-module EnvApp.App exposing (..)
+module EnvToRun.App exposing (..)
 
-import EnvApp.Model exposing (..)
-import EnvApp.Message exposing (Msg(..))
+import EnvToRun.Model exposing (..)
+import EnvToRun.Message exposing (Msg(..))
 
 import Util.KeyValue.Util as KeyValue
 

@@ -16,10 +16,10 @@ import BuilderApp.Builder.Model as Builder
 
 import RequestInput.Model as RequestInput
 
-import EnvApp.Model as EnvApp
+import EnvToRun.Model as EnvToRun
 import VarApp.Model as VarApp
 
-buildRequestInput : EnvApp.Model -> VarApp.Model -> Builder.Model -> RequestInput.Model
+buildRequestInput : EnvToRun.Model -> VarApp.Model -> Builder.Model -> RequestInput.Model
 buildRequestInput env var builder =
     { method = Builder.methodToString builder.method
     , headers = builder.headers
@@ -35,7 +35,7 @@ buildRequest requestInput =
     , body = Http.emptyBody
     }
 
-interpolate : EnvApp.Model -> List(KeyValue.Model) -> String -> String
+interpolate : EnvToRun.Model -> List(KeyValue.Model) -> String -> String
 interpolate env var str =
   let
     build : TemplatedString -> String

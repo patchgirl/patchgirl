@@ -1,4 +1,4 @@
-module EnvApp.Message exposing (..)
+module EnvToRun.Message exposing (..)
 
 type Msg
   = PromptKey Int String

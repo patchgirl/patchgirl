@@ -1,11 +1,11 @@
-module EnvApp.View exposing (..)
+module EnvToRun.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import EnvApp.Message exposing (..)
-import EnvApp.Model exposing (..)
+import EnvToRun.Message exposing (..)
+import EnvToRun.Model exposing (..)
 
 view : Model -> Html Msg
 view model =
