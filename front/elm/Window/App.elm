@@ -150,7 +150,7 @@ update msg model =
         EnvNavMsg subMsg ->
             case EnvNav.update subMsg model of
                 newModel ->
-                    (newModel, Cmd.none)
+                    (Debug.log "haha" newModel, Cmd.none)
 
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of

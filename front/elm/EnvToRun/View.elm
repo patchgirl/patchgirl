@@ -16,7 +16,7 @@ viewKeyValue idx (key, envValue) =
   div [ id "envForm" ]
     [ input [ placeholder "key", onInput (PromptKey idx), value key ] []
     , input [ placeholder "value", onInput (PromptValue idx), value envValue ] []
-    , a [ href "#", class "icono-cross", onClick (DeleteInput idx)] [ text "-" ]
+    , a [ href "#", class "icono-cross", onClick (DeleteKeyValue idx)] [ text "chia" ]
     ]
 
 defaultView : Html Msg

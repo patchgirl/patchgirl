@@ -27,8 +27,8 @@ update msg model =
             in
                 { model | keyValues = newKeyValues }
 
-        DeleteInput idx ->
+        DeleteKeyValue idx ->
             let
                 newKeyValues = KeyValue.delete idx model.keyValues
             in
-                { model | keyValues = newKeyValues }
+                { model | keyValues = Debug.log "tai" newKeyValues }

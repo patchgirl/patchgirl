@@ -20,6 +20,15 @@ type alias Model a =
         , selectedEnvironmentToRenameIndex : Maybe Int
     }
 
+getEnvironmentToEdit : Model a -> Maybe Type.Environment
+getEnvironmentToEdit model =
+    let
+        selectEnvironment : Int -> Maybe Type.Environment
+        selectEnvironment idx = List.getAt idx model.environments
+    in
+        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditIndex
+
+
 update : Msg -> Model a -> Model a
 update msg model =
   case msg of
@@ -61,16 +70,13 @@ update msg model =
                   }
 
     EnvToRunMsg idx subMsg ->
-      model
-      {-
-      case List.getAt idx model.environments of
-        Nothing ->
-            model
-        Just { environmentName, env } ->
-          case EnvToRun.update subMsg env of
-            newEnvToRun ->
-              let
-                newEnvToRuns = List.setAt idx { name = name, env = newEnvToRun } model.envs
-              in
-                { model | envs = newEnvToRuns }
--}
+        case getEnvironmentToEdit model of
+            Nothing ->
+                model
+            Just environment ->
+                case EnvToRun.update subMsg environment of
+                    newEnvironment ->
+                        let
+                            newEnvironments = List.setAt idx newEnvironment model.environments
+                        in
+                            { model | environments = newEnvironments }
