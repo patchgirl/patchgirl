@@ -4,8 +4,8 @@ import BuilderApp.BuilderTree.Model as BuilderTree
 import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
-import EnvironmentEdition.Model as EnvironmentEdition
-import EnvironmentEdition.EnvNav.Util as EnvNav
+import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.EnvNav.Util as EnvNav
 import VarApp.Model as VarApp
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
@@ -23,7 +23,7 @@ type alias Model =
   , selectedEnvironmentToEditIndex : Maybe Int
   , selectedEnvironmentToRenameIndex : Maybe Int
   , environments : List Type.Environment
-  , envModel : EnvironmentEdition.Model
+  , envModel : EnvironmentKeyValueEdition.Model
   , varAppModel : VarApp.Model
   , runnerModel : RequestRunner.Model
   }
@@ -58,7 +58,7 @@ defaultModel =
       selectedWorkspaceIndex = Just 0
       workspaces = WorkspaceApp.defaultModel
       buildersAppModel = List.map .builder workspaces
-      envModel : EnvironmentEdition.Model
+      envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
       varAppModel =
           { vars =

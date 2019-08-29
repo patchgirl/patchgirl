@@ -26,15 +26,15 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import EnvironmentEdition.View as EnvironmentEdition
-import EnvironmentEdition.Model as EnvironmentEdition
-import EnvironmentEdition.Message as EnvironmentEdition
-import EnvironmentEdition.App as EnvironmentEdition
+import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 
-import EnvironmentEdition.EnvNav.View as EnvNav
-import EnvironmentEdition.EnvNav.Message as EnvNav
-import EnvironmentEdition.EnvNav.App as EnvNav
-import EnvironmentEdition.EnvNav.Util as EnvNav
+import EnvironmentKeyValueEdition.EnvNav.View as EnvNav
+import EnvironmentKeyValueEdition.EnvNav.Message as EnvNav
+import EnvironmentKeyValueEdition.EnvNav.App as EnvNav
+import EnvironmentKeyValueEdition.EnvNav.Util as EnvNav
 
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -161,13 +161,13 @@ update msg model =
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
 
-        EnvironmentEditionMsg subMsg ->
+        EnvironmentKeyValueEditionMsg subMsg ->
             case EnvNav.getEnvironmentToEdit model of
                 Just environment ->
-                    case EnvironmentEdition.update subMsg environment of
-                        newEnvironmentEdition ->
+                    case EnvironmentKeyValueEdition.update subMsg environment of
+                        newEnvironmentKeyValueEdition ->
                             let
-                                newModel = replaceEnvironmentToEdit model newEnvironmentEdition
+                                newModel = replaceEnvironmentToEdit model newEnvironmentKeyValueEdition
                             in
                                 (Debug.log "test" newModel, Cmd.none)
 

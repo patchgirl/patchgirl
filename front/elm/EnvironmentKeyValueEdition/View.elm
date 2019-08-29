@@ -1,11 +1,11 @@
-module EnvironmentEdition.View exposing (..)
+module EnvironmentKeyValueEdition.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import EnvironmentEdition.Message exposing (..)
-import EnvironmentEdition.Model exposing (..)
+import EnvironmentKeyValueEdition.Message exposing (..)
+import EnvironmentKeyValueEdition.Model exposing (..)
 
 view : Model -> Html Msg
 view model =

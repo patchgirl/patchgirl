@@ -1,7 +1,7 @@
-module EnvironmentEdition.App exposing (..)
+module EnvironmentKeyValueEdition.App exposing (..)
 
-import EnvironmentEdition.Model exposing (..)
-import EnvironmentEdition.Message exposing (Msg(..))
+import EnvironmentKeyValueEdition.Model exposing (..)
+import EnvironmentKeyValueEdition.Message exposing (Msg(..))
 
 import Util.KeyValue.Util as KeyValue
 import Window.Type as Type

@@ -1,4 +1,4 @@
-module EnvironmentEdition.Model exposing (..)
+module EnvironmentKeyValueEdition.Model exposing (..)
 
 import Util.KeyValue.Model as KeyValue
 

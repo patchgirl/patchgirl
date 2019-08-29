@@ -1,12 +1,12 @@
-module EnvironmentEdition.EnvNav.App exposing (..)
+module EnvironmentKeyValueEdition.EnvNav.App exposing (..)
 
 import List.Extra as List
 
-import EnvironmentEdition.EnvNav.Message exposing (Msg(..))
+import EnvironmentKeyValueEdition.EnvNav.Message exposing (Msg(..))
 
-import EnvironmentEdition.App as EnvironmentEdition
-import EnvironmentEdition.EnvNav.Model exposing (..)
-import EnvironmentEdition.EnvNav.Util exposing (..)
+import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.EnvNav.Model exposing (..)
+import EnvironmentKeyValueEdition.EnvNav.Util exposing (..)
 import Window.Type as Type
 
 defaultEnvironment =
@@ -54,12 +54,12 @@ update msg model =
                       , environments = newEnvs
                   }
 
-    EnvironmentEditionMsg idx subMsg ->
+    EnvironmentKeyValueEditionMsg idx subMsg ->
         case getEnvironmentToEdit model of
             Nothing ->
                 model
             Just environment ->
-                case EnvironmentEdition.update subMsg environment of
+                case EnvironmentKeyValueEdition.update subMsg environment of
                     newEnvironment ->
                         let
                             newEnvironments = List.setAt idx newEnvironment model.environments

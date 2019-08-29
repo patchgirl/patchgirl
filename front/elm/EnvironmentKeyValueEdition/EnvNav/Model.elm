@@ -1,4 +1,4 @@
-module EnvironmentEdition.EnvNav.Model exposing (..)
+module EnvironmentKeyValueEdition.EnvNav.Model exposing (..)
 
 import Window.Type as Type
 

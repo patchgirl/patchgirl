@@ -7,8 +7,8 @@ import Html.Events exposing (..)
 import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
-import EnvironmentEdition.View as EnvironmentEdition
-import EnvironmentEdition.EnvNav.View as EnvNav
+import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.EnvNav.View as EnvNav
 import BuilderApp.EnvSelection.App as EnvSelection
 import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar

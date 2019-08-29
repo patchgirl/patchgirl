@@ -1,4 +1,4 @@
-module EnvironmentEdition.Message exposing (..)
+module EnvironmentKeyValueEdition.Message exposing (..)
 
 type Msg
   = PromptKey Int String
