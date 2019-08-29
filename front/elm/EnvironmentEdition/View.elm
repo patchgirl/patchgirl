@@ -1,10 +1,10 @@
-module EnvironmentKeyValueEdition.EnvNav.View exposing (..)
+module EnvironmentEdition.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import EnvironmentKeyValueEdition.EnvNav.Message exposing (..)
+import EnvironmentEdition.Message exposing (..)
 import Util.View as Util
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
 import Window.Type as Type

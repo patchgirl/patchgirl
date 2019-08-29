@@ -8,7 +8,7 @@ import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
-import EnvironmentKeyValueEdition.EnvNav.View as EnvNav
+import EnvironmentEdition.View as EnvironmentEdition
 import BuilderApp.EnvSelection.App as EnvSelection
 import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
@@ -35,7 +35,7 @@ view model =
             div [ id "content" ] <|
                 case model.mainNavBarModel of
                     MainNavBar.ReqTab -> [ builderView model ]
-                    MainNavBar.EnvTab -> [ Html.map EnvNavMsg (EnvNav.view model) ]
+                    MainNavBar.EnvTab -> [ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
                     MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
                     MainNavBar.WorkspaceTab -> [ Html.map WorkspaceAppMsg (WorkspaceApp.view model.workspaces) ]
     in

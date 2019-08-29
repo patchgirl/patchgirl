@@ -7,7 +7,7 @@ import BuilderApp.Builder.Message as BuilderAppBuilder
 import BuilderApp.BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
 import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
-import EnvironmentKeyValueEdition.EnvNav.Message as EnvNav
+import EnvironmentEdition.Message as EnvironmentEdition
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -20,7 +20,7 @@ type Msg
   | BuilderAppMsg BuilderApp.Msg
   | PostmanMsg Postman.Msg
   | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
-  | EnvNavMsg EnvNav.Msg
+  | EnvironmentEditionMsg EnvironmentEdition.Msg
   | RequestRunnerMsg RequestRunner.Msg
   | MainNavBarMsg MainNavBar.Msg
   | EnvSelectionMsg EnvSelection.Msg

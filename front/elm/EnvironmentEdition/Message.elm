@@ -1,4 +1,4 @@
-module EnvironmentKeyValueEdition.EnvNav.Message exposing (..)
+module EnvironmentEdition.Message exposing (..)
 
 import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
 

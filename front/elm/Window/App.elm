@@ -31,10 +31,10 @@ import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
 import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 
-import EnvironmentKeyValueEdition.EnvNav.View as EnvNav
-import EnvironmentKeyValueEdition.EnvNav.Message as EnvNav
-import EnvironmentKeyValueEdition.EnvNav.App as EnvNav
-import EnvironmentKeyValueEdition.EnvNav.Util as EnvNav
+import EnvironmentEdition.View as EnvironmentEdition
+import EnvironmentEdition.Message as EnvironmentEdition
+import EnvironmentEdition.App as EnvironmentEdition
+import EnvironmentEdition.Util as EnvironmentEdition
 
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.EnvSelection.Message as EnvSelection
@@ -148,8 +148,8 @@ update msg model =
         SaveBuilderTreeResponse foo ->
             (model, Cmd.none)
 
-        EnvNavMsg subMsg ->
-            case EnvNav.update subMsg model of
+        EnvironmentEditionMsg subMsg ->
+            case EnvironmentEdition.update subMsg model of
                 newModel ->
                     (Debug.log "haha" newModel, Cmd.none)
 
@@ -162,7 +162,7 @@ update msg model =
             (model, Cmd.none)
 
         EnvironmentKeyValueEditionMsg subMsg ->
-            case EnvNav.getEnvironmentToEdit model of
+            case EnvironmentEdition.getEnvironmentToEdit model of
                 Just environment ->
                     case EnvironmentKeyValueEdition.update subMsg environment of
                         newEnvironmentKeyValueEdition ->

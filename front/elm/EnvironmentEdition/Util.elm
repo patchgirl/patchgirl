@@ -1,6 +1,6 @@
-module EnvironmentKeyValueEdition.EnvNav.Util exposing (..)
+module EnvironmentEdition.Util exposing (..)
 
-import EnvironmentKeyValueEdition.EnvNav.Model exposing (..)
+import EnvironmentEdition.Model exposing (..)
 import Window.Type as Type
 import List.Extra as List
 

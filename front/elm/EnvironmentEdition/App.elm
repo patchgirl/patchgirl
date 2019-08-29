@@ -1,12 +1,12 @@
-module EnvironmentKeyValueEdition.EnvNav.App exposing (..)
+module EnvironmentEdition.App exposing (..)
 
 import List.Extra as List
 
-import EnvironmentKeyValueEdition.EnvNav.Message exposing (Msg(..))
+import EnvironmentEdition.Message exposing (Msg(..))
 
 import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
-import EnvironmentKeyValueEdition.EnvNav.Model exposing (..)
-import EnvironmentKeyValueEdition.EnvNav.Util exposing (..)
+import EnvironmentEdition.Model exposing (..)
+import EnvironmentEdition.Util exposing (..)
 import Window.Type as Type
 
 defaultEnvironment =

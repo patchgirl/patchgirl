@@ -5,7 +5,7 @@ import MainNavBar.Model as MainNavBar
 import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
 import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
-import EnvironmentKeyValueEdition.EnvNav.Util as EnvNav
+import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
 import BuilderApp.EnvSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
@@ -50,7 +50,7 @@ getEnvironmentKeyValuesToRun model =
 
 getEnvironmentKeyValuesToEdit : Model -> List(String, String)
 getEnvironmentKeyValuesToEdit model =
-    (EnvNav.getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
+    (EnvironmentEdition.getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
 
 defaultModel : Model
 defaultModel =
