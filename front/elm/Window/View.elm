@@ -9,7 +9,7 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
 import EnvironmentEdition.View as EnvironmentEdition
-import BuilderApp.EnvSelection.App as EnvSelection
+import EnvironmentToRunSelection.App as EnvSelection
 import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar

@@ -1,22 +1,22 @@
-module BuilderApp.EnvSelection.App exposing (..)
+module EnvironmentToRunSelection.App exposing (..)
 
-import BuilderApp.EnvSelection.Message exposing (Msg(..))
+import EnvironmentToRunSelection.Message exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
 
-import BuilderApp.EnvSelection.Message exposing (..)
-import BuilderApp.EnvSelection.Model exposing (..)
+import EnvironmentToRunSelection.Message exposing (..)
+import EnvironmentToRunSelection.Model exposing (..)
 import List.Extra as List
 import Window.Type as Type
 
 type alias Model a =
-  { a
-      | selectedEnvironmentToRunIndex : Maybe Int
-      , environments : List Type.Environment
-  }
+    { a
+        | selectedEnvironmentToRunIndex : Maybe Int
+        , environments : List Type.Environment
+    }
 
 update : Msg -> Model a -> Model a
 update msg model =

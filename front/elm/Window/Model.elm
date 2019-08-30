@@ -7,7 +7,7 @@ import RequestRunner.Model as RequestRunner
 import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
-import BuilderApp.EnvSelection.Model as EnvSelection
+import EnvironmentToRunSelection.Model as EnvSelection
 import BuilderApp.Model as BuilderApp
 import WorkspaceApp.Model as WorkspaceApp
 import List.Extra as List

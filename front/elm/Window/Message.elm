@@ -10,7 +10,7 @@ import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
 import EnvironmentEdition.Message as EnvironmentEdition
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
-import BuilderApp.EnvSelection.Message as EnvSelection
+import EnvironmentToRunSelection.Message as EnvSelection
 import BuilderApp.WorkspaceSelection.Message as WorkspaceSelection
 import VarApp.Message as VarApp
 import WorkspaceApp.Message as WorkspaceApp

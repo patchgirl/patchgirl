@@ -36,9 +36,9 @@ import EnvironmentEdition.Message as EnvironmentEdition
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentEdition.Util as EnvironmentEdition
 
-import BuilderApp.EnvSelection.Model as EnvSelection
-import BuilderApp.EnvSelection.Message as EnvSelection
-import BuilderApp.EnvSelection.App as EnvSelection
+import EnvironmentToRunSelection.Model as EnvSelection
+import EnvironmentToRunSelection.Message as EnvSelection
+import EnvironmentToRunSelection.App as EnvSelection
 
 import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 
