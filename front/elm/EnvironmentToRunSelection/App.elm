@@ -8,7 +8,6 @@ import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
 
 import EnvironmentToRunSelection.Message exposing (..)
-import EnvironmentToRunSelection.Model exposing (..)
 import List.Extra as List
 import Window.Type as Type
 
