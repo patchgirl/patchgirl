@@ -10,16 +10,19 @@ import Json.Decode as Json
 import BuilderApp.EnvSelection.Message exposing (..)
 import BuilderApp.EnvSelection.Model exposing (..)
 import List.Extra as List
+import Window.Type as Type
 
 type alias Model a =
-  { a | selectedEnvironmentToRunIndex : Maybe Int
+  { a
+      | selectedEnvironmentToRunIndex : Maybe Int
+      , environments : List Type.Environment
   }
 
-update : Msg -> List String -> Model a -> Model a
-update msg environmentNames model =
+update : Msg -> Model a -> Model a
+update msg model =
     case msg of
         Select idx ->
-            case List.getAt idx environmentNames of
+            case List.getAt idx (List.map .name model.environments) of
                 Just _ ->
                     { model | selectedEnvironmentToRunIndex = Just idx }
                 Nothing ->

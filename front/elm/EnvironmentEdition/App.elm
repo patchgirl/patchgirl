@@ -10,7 +10,7 @@ import EnvironmentEdition.Util exposing (..)
 import Window.Type as Type
 
 defaultEnvironment =
-    { environmentName = "new environment"
+    { name = "new environment"
     , keyValues = []
     }
 
@@ -44,7 +44,7 @@ update msg model =
 
     Rename idx newEnvironmentName ->
         let
-            updateEnv old = { old | environmentName = newEnvironmentName }
+            updateEnv old = { old | name = newEnvironmentName }
             mNewEnvs = List.updateAt idx updateEnv model.environments
       in
           case mNewEnvs of

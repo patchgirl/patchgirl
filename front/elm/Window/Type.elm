@@ -1,7 +1,7 @@
 module Window.Type exposing (..)
 
--- TODO s/environmentName/name
+-- TODO s/name/name
 type alias Environment =
-    { environmentName : String
+    { name : String
     , keyValues : List(String, String)
     }

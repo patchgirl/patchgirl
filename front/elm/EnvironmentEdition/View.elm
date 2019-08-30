@@ -34,8 +34,8 @@ view model =
 entryView : Maybe Int -> Maybe Int -> Int -> Type.Environment -> Html Msg
 entryView renameEnvIdx mSelectedEnvIdx idx environment =
   let
-    readView = a [ href "#", onClick (SelectEnvToEdit idx) ] [ span [] [ text environment.environmentName ] ]
-    editView = input [ value environment.environmentName, Util.onEnterWithInput (Rename idx) ] []
+    readView = a [ href "#", onClick (SelectEnvToEdit idx) ] [ span [] [ text environment.name ] ]
+    editView = input [ value environment.name, Util.onEnterWithInput (Rename idx) ] []
     modeView =
       case renameEnvIdx == Just idx of
         True -> editView

@@ -20,7 +20,7 @@ getSelectedBuilder model =
     Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) model.selectedWorkspaceIndex
 
 type alias Environment =
-    { environmentName : String
+    { name : String
     , keyValues : List(String, String)
     }
 

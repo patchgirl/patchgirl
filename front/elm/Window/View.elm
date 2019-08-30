@@ -57,7 +57,7 @@ builderView model =
       Html.map BuilderTreeMsg (BuilderTree.view builderApp.builderTreeModel)
     envSelectionView : Html Msg
     envSelectionView =
-        Html.map EnvSelectionMsg (EnvSelection.view (getEnvironmentNames model))
+        Html.map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
     workspaceSelectionView : Html Msg
     workspaceSelectionView =
       Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model (getWorkspaceNames model))

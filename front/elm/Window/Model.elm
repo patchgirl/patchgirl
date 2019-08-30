@@ -32,10 +32,6 @@ getWorkspaceNames : Model -> List String
 getWorkspaceNames model =
     List.map .name model.workspaces
 
-getEnvironmentNames : Model -> List String
-getEnvironmentNames model =
-    List.map .environmentName model.environments
-
 getEnvironmentToRun : Model -> Maybe Type.Environment
 getEnvironmentToRun model =
     let
@@ -75,10 +71,10 @@ defaultModel =
       selectedEnvironmentToRunIndex = Just 0
       selectedEnvironmentToRenameIndex = Nothing
       environments =
-          [ { environmentName = "staging1"
+          [ { name = "staging1"
             , keyValues = [("key1", "value1")]
             }
-          , { environmentName = "staging2"
+          , { name = "staging2"
             , keyValues = []
             }
           ]
