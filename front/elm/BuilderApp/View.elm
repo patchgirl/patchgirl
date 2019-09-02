@@ -12,12 +12,16 @@ import Util.List as List
 import Util.Maybe as Maybe
 import BuilderApp.Builder.View as Builder
 import BuilderApp.Builder.Model as Builder
+import BuilderApp.BuilderTree.View as BuilderTree
 
 view : Model -> Html Msg
 view model =
-    div [ id "builderPanel" ]
-        [ div [] [ builderView model model.displayedBuilderIndex ]
-        ]
+    div [ id "builderApp" ]
+      [ div [ id "treeView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
+      , div [ id "builderPanel" ]
+          [ div [] [ builderView model model.displayedBuilderIndex ]
+          ]
+      ]
 
 builderView : Model -> Maybe Int -> Html Msg
 builderView model mIdx =

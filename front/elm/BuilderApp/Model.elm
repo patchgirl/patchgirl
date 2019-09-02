@@ -9,6 +9,8 @@ type alias Model =
     , displayedNodeMenuIndex : Maybe Int
     }
 
+type Node = Folder Folder2 | File File2
+
 type alias Folder2 =
   { name : String
   , open : Bool
@@ -22,8 +24,6 @@ type alias File2 =
   , isSaved : Bool
   , builder : Builder.Model
   }
-
-type Node = Folder Folder2 | File File2
 
 defaultModel =
     { selectedBuilderIndex = Just 4

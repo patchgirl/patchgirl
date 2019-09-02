@@ -17,6 +17,10 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+                -- TODO plug treeMsg
+    TreeMsg subMsg ->
+        (model, Cmd.none)
+
     BuilderMsg subMsg ->
       let
         mBuilder = Maybe.andThen (BuilderTree.findBuilder model.tree) model.selectedBuilderIndex
