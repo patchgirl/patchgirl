@@ -39,8 +39,6 @@ import EnvironmentEdition.Util as EnvironmentEdition
 import EnvironmentToRunSelection.Message as EnvSelection
 import EnvironmentToRunSelection.App as EnvSelection
 
-import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
-
 import RequestRunner.App as RequestRunner
 import RequestRunner.Message as RequestRunner
 import RequestRunner.Model as RequestRunner
@@ -55,11 +53,6 @@ import VarApp.Model as VarApp
 import VarApp.View as VarApp
 import VarApp.Message as VarApp
 import VarApp.App as VarApp
-
-import WorkspaceApp.Model as WorkspaceApp
-import WorkspaceApp.View as WorkspaceApp
-import WorkspaceApp.Message as WorkspaceApp
-import WorkspaceApp.App as WorkspaceApp
 
 import Util.Flip exposing (..)
 import Util.List as List
@@ -79,29 +72,18 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            let
-                newBuildersAppModel newBuilderTree =
-                    replaceBuilder model.selectedWorkspaceIndex model.buildersAppModel newBuilderTree
-            in
-                case getSelectedBuilder model of
-                    Just builderApp ->
-                        case BuilderTree.update subMsg builderApp.builderTreeModel of
-                            newBuilderTreeModel ->
-                                let
-                                    formerBuildersAppModel = model.buildersAppModel
-                                in
-                                    ( { model | buildersAppModel = newBuildersAppModel { builderApp | builderTreeModel = newBuilderTreeModel } }
-                                    , Cmd.none
-                                    )
-                    Nothing -> (model, Cmd.none)
+            case BuilderTree.update subMsg model.builderAppModel.builderTreeModel of
+                newBuilderTreeModel ->
+                    let
+                        formerBuildersAppModel = model.builderAppModel
+                        newBuilderAppModel = { formerBuildersAppModel | builderTreeModel = newBuilderTreeModel }
+                    in
+                        ( { model | builderAppModel = newBuilderAppModel }
+                        , Cmd.none
+                        )
 
         EnvSelectionMsg subMsg ->
             case EnvSelection.update subMsg model of
-                newModel ->
-                    (newModel, Cmd.none)
-
-        WorkspaceSelectionMsg subMsg ->
-            case WorkspaceSelection.update subMsg model (getWorkspaceNames model) of
                 newModel ->
                     (newModel, Cmd.none)
 
@@ -129,18 +111,11 @@ update msg model =
                             (model, Cmd.none)
 
                 _ ->
-                    let
-                        newBuildersAppModel newBuilder =
-                            replaceBuilder model.selectedWorkspaceIndex model.buildersAppModel newBuilder
-                    in
-                        case getSelectedBuilder model of
-                            Just builderApp ->
-                                case BuilderApp.update subMsg builderApp of
-                                    (newBuilderTree, newMsg) ->
-                                        ( { model | buildersAppModel = newBuildersAppModel newBuilderTree }
-                                        , sendSaveTabRequest newBuilderTree.builderTreeModel
-                                        )
-                            Nothing -> (model, Cmd.none)
+                    case BuilderApp.update subMsg model.builderAppModel of
+                        (newBuilderApp, newMsg) ->
+                            ( { model | builderAppModel = newBuilderApp }
+                            , sendSaveTabRequest newBuilderApp.builderTreeModel
+                            )
 
         SaveBuilderTreeResponse foo ->
             (model, Cmd.none)
@@ -182,13 +157,6 @@ update msg model =
             case VarApp.update subMsg model.varAppModel of
                 newVarAppModel ->
                     ( { model | varAppModel = newVarAppModel }
-                    , Cmd.none
-                    )
-
-        WorkspaceAppMsg subMsg ->
-            case WorkspaceApp.update subMsg model.workspaces of
-                newWorkspaceAppModel ->
-                    ( { model | workspaces = newWorkspaceAppModel }
                     , Cmd.none
                     )
 

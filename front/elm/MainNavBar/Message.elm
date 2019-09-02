@@ -4,4 +4,3 @@ type Msg
     = OpenReqTab
     | OpenEnvTab
     | OpenVarTab
-    | OpenWorkspaceTab

@@ -8,15 +8,12 @@ import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
-import WorkspaceApp.Model as WorkspaceApp
 import List.Extra as List
 import Window.Type as Type
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
-  , buildersAppModel : List BuilderApp.Model
-  , selectedWorkspaceIndex : Maybe Int
-  , workspaces : List WorkspaceApp.Model
+  , builderAppModel : BuilderApp.Model
   , postmanModel : Postman.Model
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
@@ -26,10 +23,6 @@ type alias Model =
   , varAppModel : VarApp.Model
   , runnerModel : RequestRunner.Model
   }
-
-getWorkspaceNames : Model -> List String
-getWorkspaceNames model =
-    List.map .name model.workspaces
 
 getEnvironmentToRun : Model -> Maybe Type.Environment
 getEnvironmentToRun model =
@@ -50,9 +43,7 @@ getEnvironmentKeyValuesToEdit model =
 defaultModel : Model
 defaultModel =
   let
-      selectedWorkspaceIndex = Just 0
-      workspaces = WorkspaceApp.defaultModel
-      buildersAppModel = List.map .builder workspaces
+      builderAppModel = BuilderApp.defaultModel
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
       varAppModel =
@@ -79,9 +70,7 @@ defaultModel =
           ]
   in
       { mainNavBarModel = MainNavBar.defaultModel
-      , buildersAppModel = buildersAppModel
-      , selectedWorkspaceIndex = selectedWorkspaceIndex
-      , workspaces = workspaces
+      , builderAppModel = builderAppModel
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditIndex = selectedEnvironmentToEditIndex

@@ -12,5 +12,3 @@ update msg model =
             EnvTab
         OpenVarTab ->
             VarTab
-        OpenWorkspaceTab ->
-            WorkspaceTab

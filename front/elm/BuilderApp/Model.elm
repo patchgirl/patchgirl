@@ -2,6 +2,7 @@ module BuilderApp.Model exposing (..)
 
 import BuilderApp.BuilderTree.Model as BuilderTree
 
+-- TODO remove alias and put directly BuilderTree.Model as the Model
 type alias Model =
     { builderTreeModel : BuilderTree.Model
     }
