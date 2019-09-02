@@ -10,7 +10,6 @@ import Postman.View as Postman
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
 import EnvironmentEdition.View as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
-import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
 import VarApp.View as VarApp

@@ -39,8 +39,6 @@ import EnvironmentEdition.Util as EnvironmentEdition
 import EnvironmentToRunSelection.Message as EnvSelection
 import EnvironmentToRunSelection.App as EnvSelection
 
-import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
-
 import RequestRunner.App as RequestRunner
 import RequestRunner.Message as RequestRunner
 import RequestRunner.Model as RequestRunner
