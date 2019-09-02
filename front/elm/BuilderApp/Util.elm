@@ -1,6 +1,5 @@
 module BuilderApp.Util exposing (..)
 
-import BuilderApp.BuilderTree.Model as BuilderTree
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Model exposing (..)
 

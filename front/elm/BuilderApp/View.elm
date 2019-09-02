@@ -8,7 +8,6 @@ import BuilderApp.Message exposing (..)
 import BuilderApp.Model exposing (..)
 
 import BuilderApp.BuilderTree.Util as BuilderTree
-import BuilderApp.BuilderTree.Model as BuilderTree
 import Util.List as List
 import Util.Maybe as Maybe
 import BuilderApp.Builder.View as Builder

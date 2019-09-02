@@ -17,7 +17,6 @@ import BuilderApp.Builder.App as Builder
 import BuilderApp.Builder.Message as Builder
 
 import BuilderApp.BuilderTree.View as BuilderTree
-import BuilderApp.BuilderTree.Model as BuilderTree
 import BuilderApp.BuilderTree.Message as BuilderTree
 import BuilderApp.BuilderTree.App as BuilderTree
 

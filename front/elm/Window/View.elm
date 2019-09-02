@@ -20,7 +20,6 @@ import BuilderApp.View as BuilderApp
 
 import Util.List as List
 import List.Extra as List
-import BuilderApp.BuilderTree.Model as BuilderTree
 
 import Window.Model exposing(..)
 import Window.Message exposing(..)

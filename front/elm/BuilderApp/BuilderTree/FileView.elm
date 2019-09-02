@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderApp.BuilderTree.Model exposing (Model, Node(..), BuilderTree)
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util

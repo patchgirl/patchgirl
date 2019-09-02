@@ -3,7 +3,6 @@ module BuilderApp.App exposing (..)
 import BuilderApp.Model exposing (..)
 import BuilderApp.Message exposing (..)
 
-import BuilderApp.BuilderTree.Model as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)

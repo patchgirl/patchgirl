@@ -1,8 +1,6 @@
 module Window.Model exposing (..)
 
-import BuilderApp.BuilderTree.Model as BuilderTree
 import MainNavBar.Model as MainNavBar
-import Postman.Model as Postman
 import RequestRunner.Model as RequestRunner
 import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import EnvironmentEdition.Util as EnvironmentEdition
@@ -14,7 +12,7 @@ import Window.Type as Type
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
   , builderAppModel : BuilderApp.Model
-  , postmanModel : Postman.Model
+  , postmanModel : Maybe (List BuilderApp.Node)
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
   , selectedEnvironmentToRenameIndex : Maybe Int

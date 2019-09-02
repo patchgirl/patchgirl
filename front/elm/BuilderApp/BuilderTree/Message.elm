@@ -1,7 +1,5 @@
 module BuilderApp.BuilderTree.Message exposing (..)
 
-import BuilderApp.BuilderTree.Model exposing (..)
-
 type Msg
   = SetDisplayedBuilder Int
   | ToggleFolder Int
