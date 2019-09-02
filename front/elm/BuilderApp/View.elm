@@ -16,45 +16,18 @@ import BuilderApp.Builder.Model as Builder
 
 view : Model -> Html Msg
 view model =
-    let
-        builderTabsView = List.map (tabView model model.builderTreeModel.selectedBuilderIndex) model.builderTreeModel.displayedBuilderIndexes
-        builderAppsView = List.map (builderView model) model.builderTreeModel.displayedBuilderIndexes
-    in
-        div [ id "builderPanel" ]
-            [ ul [ id "buildersNavbar" ] builderTabsView
-            , div [] builderAppsView
-            ]
+    div [ id "builderPanel" ]
+        [ div [] [ builderView model model.builderTreeModel.displayedBuilderIndex ]
+        ]
 
-tabView : Model -> Maybe Int -> Int ->Html Msg
-tabView model mSelectedIdx idx =
+builderView : Model -> Maybe Int -> Html Msg
+builderView model mIdx =
   let
-    activeClass =
-      case mSelectedIdx == Just idx of
-        True -> "isActive"
-        False -> ""
-    savedView = a [ href "#" ] [ ]
-    unsavedView file = a [ href "#", onClick (SaveTab idx) ] [ text "*" ]
-    savingView file =
-      case file.isSaved of
-        True -> savedView
-        False -> unsavedView file
+    mBuilder : Int -> Maybe Builder.Model
+    mBuilder idx = BuilderTree.findBuilder model.builderTreeModel.tree idx
   in
-    case BuilderTree.findNode model.builderTreeModel.tree idx of
-      Just (BuilderTree.File file)  ->
-        li [ class activeClass ]
-          [ a [ href "#", onClick (SelectTab idx) ] [ text (file.name) ]
-          , savingView file
-          , a [ href "#", onClick (CloseTab idx), class "closeBuilder" ] [ span [ class "fas fa-times" ] [] ]
-          ]
-      _ -> li [] []
-
-builderView : Model -> Int -> Html Msg
-builderView model idx =
-  let
-    mBuilder = BuilderTree.findBuilder model.builderTreeModel.tree idx
-  in
-    case mBuilder of
+    case Maybe.andThen mBuilder mIdx of
       Just builder ->
-        div [ hidden (not (model.builderTreeModel.selectedBuilderIndex == Just idx)) ]
+        div []
             [ Html.map BuilderMsg (Builder.view builder) ]
       Nothing -> div [] []

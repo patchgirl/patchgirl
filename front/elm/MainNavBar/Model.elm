@@ -5,4 +5,4 @@ type Model
     | EnvTab
     | VarTab
 
-defaultModel = EnvTab
+defaultModel = ReqTab
