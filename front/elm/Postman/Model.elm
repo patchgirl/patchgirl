@@ -14,22 +14,35 @@ decodePostman str =
 
 postmanCollectionToBuilderTreeDecoder : Decoder (List BuilderApp.Node)
 postmanCollectionToBuilderTreeDecoder =
-    Debug.todo "whatever"
-        {--
   let
     root : String -> BuilderApp.Node -> BuilderApp.Node
-    root name requests = BuilderApp.Folder { name = name, open = True, children = requests, showRenameInput = False }
+    root name requests =
+        BuilderApp.Folder
+            { children = [ requests ]
+            , name = name
+            , open = True
+            , showRenameInput = False
+            }
     filesDecoder : Decoder (List BuilderApp.Node)
     filesDecoder = field "item" (list fileDecoder)
     fileDecoder : Decoder BuilderApp.Node
-    fileDecoder = map2 (\name builder -> BuilderApp.File { name = name, builder = builder, showRenameInput = False, isSaved = True }) fileNameDecoder builderDecoder
+    fileDecoder = map2 (\name builder -> BuilderApp.File
+                            { name = name
+                            , builder = builder
+                            , showRenameInput = False
+                            , isSaved = True }
+                       ) fileNameDecoder builderDecoder
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
     rootDecoder : Decoder BuilderApp.Node
-    rootDecoder = map2 (\name children -> BuilderApp.Folder { name = name, open = True, children = children, showRenameInput = False }) collectionNameDecoder filesDecoder
+    rootDecoder = map2 (\name children -> BuilderApp.Folder
+                            { name = name
+                            , open = True
+                            , children = children
+                            , showRenameInput = False }
+                       ) collectionNameDecoder filesDecoder
   in
     map (\folder -> [folder]) rootDecoder
--}
 
 collectionNameDecoder : Decoder String
 collectionNameDecoder =
