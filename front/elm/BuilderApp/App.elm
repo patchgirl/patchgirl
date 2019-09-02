@@ -3,6 +3,7 @@ module BuilderApp.App exposing (..)
 import BuilderApp.Model exposing (..)
 import BuilderApp.Message exposing (..)
 
+import BuilderApp.BuilderTree.App as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)
@@ -17,9 +18,11 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-                -- TODO plug treeMsg
     TreeMsg subMsg ->
-        (model, Cmd.none)
+        let
+            newModel = BuilderTree.update subMsg model
+        in
+            (newModel, Cmd.none)
 
     BuilderMsg subMsg ->
       let
