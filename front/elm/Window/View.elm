@@ -54,15 +54,11 @@ builderView model =
     envSelectionView : Html Msg
     envSelectionView =
         Html.map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
-    workspaceSelectionView : Html Msg
-    workspaceSelectionView =
-      Html.map WorkspaceSelectionMsg (WorkspaceSelection.view model (getWorkspaceNames model))
   in
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ treeView ]
       , div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view builderApp)) ]
       , div [ class "" ] [ envSelectionView ]
-      , div [ class "" ] [ workspaceSelectionView ]
       ]
 
 postmanView : Html Msg

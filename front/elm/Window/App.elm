@@ -94,11 +94,6 @@ update msg model =
                 newModel ->
                     (newModel, Cmd.none)
 
-        WorkspaceSelectionMsg subMsg ->
-            case WorkspaceSelection.update subMsg model (getWorkspaceNames model) of
-                newModel ->
-                    (newModel, Cmd.none)
-
         BuilderAppMsg subMsg ->
             case subMsg of
                 BuilderApp.BuilderMsg (Builder.AskRun builder) ->

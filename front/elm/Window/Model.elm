@@ -15,7 +15,6 @@ import Window.Type as Type
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
   , builderAppModel : BuilderApp.Model
-  , selectedWorkspaceIndex : Maybe Int
   , workspaces : List WorkspaceApp.Model
   , postmanModel : Postman.Model
   , selectedEnvironmentToRunIndex : Maybe Int
@@ -50,7 +49,6 @@ getEnvironmentKeyValuesToEdit model =
 defaultModel : Model
 defaultModel =
   let
-      selectedWorkspaceIndex = Just 0
       workspaces = WorkspaceApp.defaultModel
       builderAppModel = BuilderApp.defaultModel
       envModel : EnvironmentKeyValueEdition.Model
@@ -80,7 +78,6 @@ defaultModel =
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , builderAppModel = builderAppModel
-      , selectedWorkspaceIndex = selectedWorkspaceIndex
       , workspaces = workspaces
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex

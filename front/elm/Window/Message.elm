@@ -27,4 +27,3 @@ type Msg
   | VarAppMsg VarApp.Msg
   | SaveBuilderTreeResponse (Result Http.Error String)
   | WorkspaceAppMsg WorkspaceApp.Msg
-  | WorkspaceSelectionMsg WorkspaceSelection.Msg
