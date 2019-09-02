@@ -21,20 +21,7 @@ update msg model =
             , Cmd.none)
 
     CloseTab idx ->
-      let
-        newDisplayedBuilderIndexes = List.filter (\x -> x /= idx) model.builderTreeModel.displayedBuilderIndex
-        newSelectedBuilderIndex =
-          case Maybe.exists model.builderTreeModel.selectedBuilderIndex ((==) idx) of
-            False -> model.builderTreeModel.selectedBuilderIndex
-            True -> findPrevious model.builderTreeModel.displayedBuilderIndex idx
-        formerBuilderTreeModel = model.builderTreeModel
-        newBuilderTreeModel =
-            { formerBuilderTreeModel
-                | displayedBuilderIndex = newDisplayedBuilderIndexes
-                , selectedBuilderIndex = newSelectedBuilderIndex
-            }
-      in
-        ( { model | builderTreeModel = newBuilderTreeModel }
+        ( model
         , Cmd.none)
 
     SaveTab idx ->

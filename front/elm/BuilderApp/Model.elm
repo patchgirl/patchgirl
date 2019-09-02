@@ -10,7 +10,7 @@ type alias Model =
 defaultModel =
     { builderTreeModel =
           { selectedBuilderIndex = Just 4
-          , displayedBuilderIndex = [4, 5]
+          , displayedBuilderIndex = Just 4
           , tree = BuilderTree.defaultBuilderTree
           , displayedNodeMenuIndex = Nothing
           }

@@ -4,7 +4,7 @@ import BuilderApp.Builder.Model as Builder
 
 type alias Model =
   { selectedBuilderIndex : Maybe Int
-  , displayedBuilderIndex : List Int
+  , displayedBuilderIndex : Maybe Int
   , tree : BuilderTree
   , displayedNodeMenuIndex : Maybe Int
   }

@@ -17,15 +17,28 @@ import BuilderApp.Builder.Model as Builder
 view : Model -> Html Msg
 view model =
     let
-        builderTabsView = List.map (tabView model model.builderTreeModel.selectedBuilderIndex) model.builderTreeModel.displayedBuilderIndex
-        builderAppsView = List.map (builderView model) model.builderTreeModel.displayedBuilderIndex
+        -- TODO rename
+        builderAppsView2 = builderView2 model model.builderTreeModel.displayedBuilderIndex
     in
         div [ id "builderPanel" ]
-            [ ul [ id "buildersNavbar" ] builderTabsView
-            , div [] builderAppsView
+            [ div [] [ builderAppsView2 ]
             ]
 
-tabView : Model -> Maybe Int -> Int ->Html Msg
+builderView2 : Model -> Maybe Int -> Html Msg
+builderView2 model mIdx =
+  let
+    mBuilder : Int -> Maybe Builder.Model
+    mBuilder idx = BuilderTree.findBuilder model.builderTreeModel.tree idx
+  in
+    case Maybe.andThen mBuilder mIdx of
+      Just builder ->
+        div []
+            [ Html.map BuilderMsg (Builder.view builder) ]
+      Nothing -> div [] []
+
+
+-- TODO remove
+tabView : Model -> Maybe Int -> Int -> Html Msg
 tabView model mSelectedIdx idx =
   let
     activeClass =
@@ -48,6 +61,7 @@ tabView model mSelectedIdx idx =
           ]
       _ -> li [] []
 
+-- TODO remove
 builderView : Model -> Int -> Html Msg
 builderView model idx =
   let
