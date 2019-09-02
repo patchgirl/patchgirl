@@ -72,15 +72,11 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            case BuilderTree.update subMsg model.builderAppModel.builderTreeModel of
-                newBuilderTreeModel ->
-                    let
-                        formerBuildersAppModel = model.builderAppModel
-                        newBuilderAppModel = { formerBuildersAppModel | builderTreeModel = newBuilderTreeModel }
-                    in
-                        ( { model | builderAppModel = newBuilderAppModel }
-                        , Cmd.none
-                        )
+            case BuilderTree.update subMsg model.builderAppModel of
+                newBuilderApp ->
+                    ( { model | builderAppModel = newBuilderApp }
+                    , Cmd.none
+                    )
 
         EnvSelectionMsg subMsg ->
             case EnvSelection.update subMsg model of
@@ -114,7 +110,7 @@ update msg model =
                     case BuilderApp.update subMsg model.builderAppModel of
                         (newBuilderApp, newMsg) ->
                             ( { model | builderAppModel = newBuilderApp }
-                            , sendSaveTabRequest newBuilderApp.builderTreeModel
+                            , sendSaveTabRequest newBuilderApp
                             )
 
         SaveBuilderTreeResponse foo ->

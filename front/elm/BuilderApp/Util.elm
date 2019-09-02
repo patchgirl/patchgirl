@@ -2,6 +2,7 @@ module BuilderApp.Util exposing (..)
 
 import BuilderApp.BuilderTree.Model as BuilderTree
 import BuilderApp.Builder.Model as Builder
+import BuilderApp.Model exposing (..)
 
 findPrevious : List a -> a -> Maybe a
 findPrevious l a =
@@ -16,14 +17,14 @@ findPrevious l a =
         x :: xs -> findPrevious xs a
         [] -> Nothing
 
-markFileAsSaved : BuilderTree.Node -> BuilderTree.Node
+markFileAsSaved : Node -> Node
 markFileAsSaved node =
   case node of
-    BuilderTree.Folder f -> BuilderTree.Folder f
-    BuilderTree.File f -> BuilderTree.File { f | isSaved = True }
+    Folder f -> Folder f
+    File f -> File { f | isSaved = True }
 
-changeFileBuilder : Builder.Model -> BuilderTree.Node -> BuilderTree.Node
+changeFileBuilder : Builder.Model -> Node -> Node
 changeFileBuilder newBuilder node =
   case node of
-    BuilderTree.Folder f -> BuilderTree.Folder f
-    BuilderTree.File f -> BuilderTree.File { f | builder = newBuilder }
+    Folder f -> Folder f
+    File f -> File { f | builder = newBuilder }

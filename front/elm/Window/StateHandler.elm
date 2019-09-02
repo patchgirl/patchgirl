@@ -6,11 +6,11 @@ import Json.Encode as Json
 import Window.Model exposing (..)
 import Window.Message exposing (..)
 
-import BuilderApp.BuilderTree.Model as BuilderTree
+import BuilderApp.Model as BuilderApp
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 
-stateEncoder : BuilderTree.Model -> Json.Value
+stateEncoder : BuilderApp.Model -> Json.Value
 stateEncoder model =
   let
     nodes : Json.Value
@@ -21,13 +21,13 @@ stateEncoder model =
 toArray : List Json.Value -> Json.Value
 toArray values = Json.list (\a -> a) values
 
-nodeEncoder : BuilderTree.Node -> Json.Value
+nodeEncoder : BuilderApp.Node -> Json.Value
 nodeEncoder node =
   case node of
-    BuilderTree.Folder f -> folderEncoder f
-    BuilderTree.File f -> fileEncoder f
+    BuilderApp.Folder f -> folderEncoder f
+    BuilderApp.File f -> fileEncoder f
 
-fileEncoder : BuilderTree.File2 -> Json.Value
+fileEncoder : BuilderApp.File2 -> Json.Value
 fileEncoder file =
   Json.object
     [ ("type", Json.string "file")
@@ -49,7 +49,7 @@ builderEncoder builder =
     , ("body", Json.string builder.body)
     ]
 
-folderEncoder : BuilderTree.Folder2 -> Json.Value
+folderEncoder : BuilderApp.Folder2 -> Json.Value
 folderEncoder folder =
   Json.object
     [ ("type", Json.string "folder")
@@ -58,7 +58,7 @@ folderEncoder folder =
     , ("children", List.map nodeEncoder folder.children |> toArray)
     ]
 
-sendSaveTabRequest : BuilderTree.Model -> Cmd Msg
+sendSaveTabRequest : BuilderApp.Model -> Cmd Msg
 sendSaveTabRequest model =
   let
     httpRequest = Http.request

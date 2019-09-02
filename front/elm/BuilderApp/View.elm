@@ -17,14 +17,14 @@ import BuilderApp.Builder.Model as Builder
 view : Model -> Html Msg
 view model =
     div [ id "builderPanel" ]
-        [ div [] [ builderView model model.builderTreeModel.displayedBuilderIndex ]
+        [ div [] [ builderView model model.displayedBuilderIndex ]
         ]
 
 builderView : Model -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
     mBuilder : Int -> Maybe Builder.Model
-    mBuilder idx = BuilderTree.findBuilder model.builderTreeModel.tree idx
+    mBuilder idx = BuilderTree.findBuilder model.tree idx
   in
     case Maybe.andThen mBuilder mIdx of
       Just builder ->
