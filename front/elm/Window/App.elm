@@ -79,21 +79,15 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            let
-                newBuildersAppModel newBuilderTree =
-                    replaceBuilder model.selectedWorkspaceIndex model.buildersAppModel newBuilderTree
-            in
-                case getSelectedBuilder model of
-                    Just builderApp ->
-                        case BuilderTree.update subMsg builderApp.builderTreeModel of
-                            newBuilderTreeModel ->
-                                let
-                                    formerBuildersAppModel = model.buildersAppModel
-                                in
-                                    ( { model | buildersAppModel = newBuildersAppModel { builderApp | builderTreeModel = newBuilderTreeModel } }
-                                    , Cmd.none
-                                    )
-                    Nothing -> (model, Cmd.none)
+            case BuilderTree.update subMsg model.buildersAppModel.builderTreeModel of
+                newBuilderTreeModel ->
+                    let
+                        formerBuildersAppModel = model.buildersAppModel
+                        newBuilderAppModel = { formerBuildersAppModel | builderTreeModel = newBuilderTreeModel }
+                    in
+                        ( { model | buildersAppModel = newBuilderAppModel }
+                        , Cmd.none
+                        )
 
         EnvSelectionMsg subMsg ->
             case EnvSelection.update subMsg model of
@@ -129,18 +123,11 @@ update msg model =
                             (model, Cmd.none)
 
                 _ ->
-                    let
-                        newBuildersAppModel newBuilder =
-                            replaceBuilder model.selectedWorkspaceIndex model.buildersAppModel newBuilder
-                    in
-                        case getSelectedBuilder model of
-                            Just builderApp ->
-                                case BuilderApp.update subMsg builderApp of
-                                    (newBuilderTree, newMsg) ->
-                                        ( { model | buildersAppModel = newBuildersAppModel newBuilderTree }
-                                        , sendSaveTabRequest newBuilderTree.builderTreeModel
-                                        )
-                            Nothing -> (model, Cmd.none)
+                    case BuilderApp.update subMsg model.buildersAppModel of
+                        (newBuilderApp, newMsg) ->
+                            ( { model | buildersAppModel = newBuilderApp }
+                            , sendSaveTabRequest newBuilderApp.builderTreeModel
+                            )
 
         SaveBuilderTreeResponse foo ->
             (model, Cmd.none)

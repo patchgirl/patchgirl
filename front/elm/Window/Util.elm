@@ -9,15 +9,10 @@ updateBuilders : Int -> List BuilderApp.Model -> (BuilderApp.Model -> BuilderApp
 updateBuilders idx list f =
     List.updateListAt list idx f
 
-replaceBuilder : Maybe Int -> List BuilderApp.Model -> BuilderApp.Model -> List BuilderApp.Model
-replaceBuilder mIdx list newBuilder =
-    case mIdx of
-        Just idx -> updateBuilders idx list <| \_ -> newBuilder
-        Nothing -> Debug.log "Could not update builder, this should never happen" list
-
-getSelectedBuilder : Model -> Maybe BuilderApp.Model
+-- TODO remove function
+getSelectedBuilder : Model -> BuilderApp.Model
 getSelectedBuilder model =
-    Maybe.andThen (\idx -> List.getAt idx model.buildersAppModel) model.selectedWorkspaceIndex
+    model.buildersAppModel
 
 type alias Environment =
     { name : String
