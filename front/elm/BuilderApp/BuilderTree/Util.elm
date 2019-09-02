@@ -33,9 +33,9 @@ findNode =
 
 findBuilder : List Node -> Int -> Maybe Builder.Model
 findBuilder tree idx =
-  case findNode tree idx of
-    Just (File { builder }) -> Just builder
-    _ -> Nothing
+    case findNode tree idx of
+        Just (File { builder }) -> Just builder
+        _ -> Nothing
 
 modifyNode : (Node -> Node) -> List Node -> Int -> List Node
 modifyNode f =

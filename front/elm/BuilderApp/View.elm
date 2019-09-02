@@ -19,7 +19,7 @@ view model =
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
       , div [ id "builderPanel" ]
-          [ div [] [ builderView model model.displayedBuilderIndex ]
+          [ div [] [ builderView model model.selectedBuilderIndex ]
           ]
       ]
 
@@ -27,7 +27,7 @@ builderView : Model -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
     mBuilder : Int -> Maybe Builder.Model
-    mBuilder idx = BuilderTree.findBuilder model.tree idx
+    mBuilder idx = BuilderTree.findBuilder model.tree <| Debug.log "builder" idx
   in
     case Maybe.andThen mBuilder mIdx of
       Just builder ->
