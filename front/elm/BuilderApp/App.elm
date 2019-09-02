@@ -12,26 +12,13 @@ import Util.Maybe as Maybe
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    SelectTab idx ->
+    DisplayBuilder idx ->
         let
             formerBuilderTreeModel = model.builderTreeModel
             newBuilderTreeModel = { formerBuilderTreeModel | selectedBuilderIndex = Just idx }
         in
             ( { model | builderTreeModel = newBuilderTreeModel }
             , Cmd.none)
-
-    CloseTab idx ->
-        ( model
-        , Cmd.none)
-
-    SaveTab idx ->
-      let
-        newBuilderTree = BuilderTree.modifyNode markFileAsSaved model.builderTreeModel.tree idx
-        formerBuilderTreeModel = model.builderTreeModel
-        newBuilderTreeModel = { formerBuilderTreeModel | tree = newBuilderTree }
-      in
-        ({ model | builderTreeModel = newBuilderTreeModel }
-        , Cmd.none)
 
     BuilderMsg subMsg ->
       let
