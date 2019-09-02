@@ -4,7 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderApp.BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+--import BuilderApp.BuilderTree.Model exposing (Model, Node(..), BuilderTree)
+import BuilderApp.Model exposing (..)
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 import BuilderApp.BuilderTree.FolderView exposing (..)
 import BuilderApp.BuilderTree.FileView exposing (..)
@@ -21,7 +22,7 @@ view model =
         treeView
       ]
 
-nodeView : Int -> Maybe Int -> BuilderTree -> (Int, List (Html Msg))
+nodeView : Int -> Maybe Int -> List Node -> (Int, List (Html Msg))
 nodeView idx mDisplayedNodeMenuIndex tree =
   let
     showMenu = mDisplayedNodeMenuIndex == Just idx

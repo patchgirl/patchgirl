@@ -1,15 +1,16 @@
 module BuilderApp.BuilderTree.Util exposing (..)
 
-import BuilderApp.BuilderTree.Model exposing (..)
+--import BuilderApp.BuilderTree.Model exposing (..)
 import BuilderApp.BuilderTree.Message exposing (..)
 
-import BuilderApp.Builder.App as Builder
+--import BuilderApp.Builder.App as Builder
+import BuilderApp.Model exposing (..)
 import BuilderApp.Builder.Model as Builder
 
-findNode : BuilderTree -> Int -> Maybe Node
+findNode : List Node -> Int -> Maybe Node
 findNode =
   let
-    find : BuilderTree -> Int -> (Int, Maybe Node)
+    find : List Node -> Int -> (Int, Maybe Node)
     find tree idx =
       case (tree, idx) of
         (node :: tail, 0) -> (0, Just node)
@@ -30,16 +31,16 @@ findNode =
   in
     \x y -> find x y |> Tuple.second
 
-findBuilder : BuilderTree -> Int -> Maybe Builder.Model
+findBuilder : List Node -> Int -> Maybe Builder.Model
 findBuilder tree idx =
-  case findNode tree idx of
-    Just (File { builder }) -> Just builder
-    _ -> Nothing
+    case findNode tree idx of
+        Just (File { builder }) -> Just builder
+        _ -> Nothing
 
-modifyNode : (Node -> Node) -> BuilderTree -> Int -> BuilderTree
+modifyNode : (Node -> Node) -> List Node -> Int -> List Node
 modifyNode f =
   let
-    modify : BuilderTree -> Int -> (Int, BuilderTree)
+    modify : List Node -> Int -> (Int, List Node)
     modify tree idx =
       if idx < 0 then
         (idx, tree)
@@ -64,10 +65,10 @@ modifyNode f =
   in
     \x y -> modify x y |> Tuple.second
 
-deleteNode : BuilderTree -> Int -> BuilderTree
+deleteNode : List Node -> Int -> List Node
 deleteNode =
   let
-    delete : BuilderTree -> Int -> (Int, BuilderTree)
+    delete : List Node -> Int -> (Int, List Node)
     delete tree idx =
       if idx < 0 then
         (idx, tree)

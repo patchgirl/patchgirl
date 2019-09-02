@@ -8,23 +8,26 @@ import BuilderApp.Message exposing (..)
 import BuilderApp.Model exposing (..)
 
 import BuilderApp.BuilderTree.Util as BuilderTree
-import BuilderApp.BuilderTree.Model as BuilderTree
 import Util.List as List
 import Util.Maybe as Maybe
 import BuilderApp.Builder.View as Builder
 import BuilderApp.Builder.Model as Builder
+import BuilderApp.BuilderTree.View as BuilderTree
 
 view : Model -> Html Msg
 view model =
-    div [ id "builderPanel" ]
-        [ div [] [ builderView model model.builderTreeModel.displayedBuilderIndex ]
-        ]
+    div [ id "builderApp" ]
+      [ div [ id "treeView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
+      , div [ id "builderPanel" ]
+          [ div [] [ builderView model model.selectedBuilderIndex ]
+          ]
+      ]
 
 builderView : Model -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
     mBuilder : Int -> Maybe Builder.Model
-    mBuilder idx = BuilderTree.findBuilder model.builderTreeModel.tree idx
+    mBuilder idx = BuilderTree.findBuilder model.tree <| Debug.log "builder" idx
   in
     case Maybe.andThen mBuilder mIdx of
       Just builder ->
