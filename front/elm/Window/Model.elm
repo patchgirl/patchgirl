@@ -14,7 +14,7 @@ import Window.Type as Type
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
-  , buildersAppModel : BuilderApp.Model
+  , builderAppModel : BuilderApp.Model
   , selectedWorkspaceIndex : Maybe Int
   , workspaces : List WorkspaceApp.Model
   , postmanModel : Postman.Model
@@ -52,7 +52,7 @@ defaultModel =
   let
       selectedWorkspaceIndex = Just 0
       workspaces = WorkspaceApp.defaultModel
-      buildersAppModel = BuilderApp.defaultModel
+      builderAppModel = BuilderApp.defaultModel
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
       varAppModel =
@@ -79,7 +79,7 @@ defaultModel =
           ]
   in
       { mainNavBarModel = MainNavBar.defaultModel
-      , buildersAppModel = buildersAppModel
+      , builderAppModel = builderAppModel
       , selectedWorkspaceIndex = selectedWorkspaceIndex
       , workspaces = workspaces
       , postmanModel = Nothing

@@ -47,7 +47,7 @@ builderView : Model -> Html Msg
 builderView model =
   let
     builderApp : BuilderApp.Model
-    builderApp = model.buildersAppModel
+    builderApp = model.builderAppModel
     treeView : Html Msg
     treeView =
       Html.map BuilderTreeMsg (BuilderTree.view builderApp.builderTreeModel)

@@ -12,7 +12,7 @@ updateBuilders idx list f =
 -- TODO remove function
 getSelectedBuilder : Model -> BuilderApp.Model
 getSelectedBuilder model =
-    model.buildersAppModel
+    model.builderAppModel
 
 type alias Environment =
     { name : String

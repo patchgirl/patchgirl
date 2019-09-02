@@ -79,13 +79,13 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
-            case BuilderTree.update subMsg model.buildersAppModel.builderTreeModel of
+            case BuilderTree.update subMsg model.builderAppModel.builderTreeModel of
                 newBuilderTreeModel ->
                     let
-                        formerBuildersAppModel = model.buildersAppModel
+                        formerBuildersAppModel = model.builderAppModel
                         newBuilderAppModel = { formerBuildersAppModel | builderTreeModel = newBuilderTreeModel }
                     in
-                        ( { model | buildersAppModel = newBuilderAppModel }
+                        ( { model | builderAppModel = newBuilderAppModel }
                         , Cmd.none
                         )
 
@@ -123,9 +123,9 @@ update msg model =
                             (model, Cmd.none)
 
                 _ ->
-                    case BuilderApp.update subMsg model.buildersAppModel of
+                    case BuilderApp.update subMsg model.builderAppModel of
                         (newBuilderApp, newMsg) ->
-                            ( { model | buildersAppModel = newBuilderApp }
+                            ( { model | builderAppModel = newBuilderApp }
                             , sendSaveTabRequest newBuilderApp.builderTreeModel
                             )
 
