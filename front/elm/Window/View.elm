@@ -14,7 +14,6 @@ import BuilderApp.WorkspaceSelection.App as WorkspaceSelection
 import MainNavBar.View as MainNavBar
 import MainNavBar.Model as MainNavBar
 import VarApp.View as VarApp
-import WorkspaceApp.View as WorkspaceApp
 
 import BuilderApp.Model as BuilderApp
 import BuilderApp.Builder.View as Builder

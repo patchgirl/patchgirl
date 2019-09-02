@@ -56,11 +56,6 @@ import VarApp.View as VarApp
 import VarApp.Message as VarApp
 import VarApp.App as VarApp
 
-import WorkspaceApp.Model as WorkspaceApp
-import WorkspaceApp.View as WorkspaceApp
-import WorkspaceApp.Message as WorkspaceApp
-import WorkspaceApp.App as WorkspaceApp
-
 import Util.Flip exposing (..)
 import Util.List as List
 import List.Extra as List
@@ -164,13 +159,6 @@ update msg model =
             case VarApp.update subMsg model.varAppModel of
                 newVarAppModel ->
                     ( { model | varAppModel = newVarAppModel }
-                    , Cmd.none
-                    )
-
-        WorkspaceAppMsg subMsg ->
-            case WorkspaceApp.update subMsg model.workspaces of
-                newWorkspaceAppModel ->
-                    ( { model | workspaces = newWorkspaceAppModel }
                     , Cmd.none
                     )
 
