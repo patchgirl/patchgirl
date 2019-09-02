@@ -22,15 +22,15 @@ update msg model =
 
     CloseTab idx ->
       let
-        newDisplayedBuilderIndexes = List.filter (\x -> x /= idx) model.builderTreeModel.displayedBuilderIndexes
+        newDisplayedBuilderIndexes = List.filter (\x -> x /= idx) model.builderTreeModel.displayedBuilderIndex
         newSelectedBuilderIndex =
           case Maybe.exists model.builderTreeModel.selectedBuilderIndex ((==) idx) of
             False -> model.builderTreeModel.selectedBuilderIndex
-            True -> findPrevious model.builderTreeModel.displayedBuilderIndexes idx
+            True -> findPrevious model.builderTreeModel.displayedBuilderIndex idx
         formerBuilderTreeModel = model.builderTreeModel
         newBuilderTreeModel =
             { formerBuilderTreeModel
-                | displayedBuilderIndexes = newDisplayedBuilderIndexes
+                | displayedBuilderIndex = newDisplayedBuilderIndexes
                 , selectedBuilderIndex = newSelectedBuilderIndex
             }
       in

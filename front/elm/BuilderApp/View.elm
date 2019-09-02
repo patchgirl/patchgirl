@@ -17,8 +17,8 @@ import BuilderApp.Builder.Model as Builder
 view : Model -> Html Msg
 view model =
     let
-        builderTabsView = List.map (tabView model model.builderTreeModel.selectedBuilderIndex) model.builderTreeModel.displayedBuilderIndexes
-        builderAppsView = List.map (builderView model) model.builderTreeModel.displayedBuilderIndexes
+        builderTabsView = List.map (tabView model model.builderTreeModel.selectedBuilderIndex) model.builderTreeModel.displayedBuilderIndex
+        builderAppsView = List.map (builderView model) model.builderTreeModel.displayedBuilderIndex
     in
         div [ id "builderPanel" ]
             [ ul [ id "buildersNavbar" ] builderTabsView
