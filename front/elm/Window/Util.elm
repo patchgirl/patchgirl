@@ -5,15 +5,6 @@ import Window.Model exposing (..)
 import Util.List as List
 import List.Extra as List
 
-updateBuilders : Int -> List BuilderApp.Model -> (BuilderApp.Model -> BuilderApp.Model) -> List BuilderApp.Model
-updateBuilders idx list f =
-    List.updateListAt list idx f
-
--- TODO remove function
-getSelectedBuilder : Model -> BuilderApp.Model
-getSelectedBuilder model =
-    model.builderAppModel
-
 type alias Environment =
     { name : String
     , keyValues : List(String, String)
