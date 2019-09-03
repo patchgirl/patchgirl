@@ -20,8 +20,7 @@ update msg model =
 
     TreeMsg subMsg ->
         let
-            -- TODO fix
-            newModel = model --BuilderTree.update subMsg model
+            newModel = BuilderTree.update subMsg model
         in
             (newModel, Cmd.none)
 
