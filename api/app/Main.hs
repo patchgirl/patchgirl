@@ -20,6 +20,7 @@ import           Yesod.Auth
 import           Yesod.Auth.Dummy
 import           Yesod.Auth.OAuth2.Google
 
+import           Health.App               as Health
 import           Lib
 import           Request.App              as Request
 
@@ -33,8 +34,13 @@ instance RenderMessage Api FormMessage where
   renderMessage _ _ = defaultFormMessage
 
 mkYesod "Api" [parseRoutes|
+/health   HealthRoute GET
 /requests RequestsRoute PUT
 |]
+
+getHealthRoute :: Handler Value
+getHealthRoute =
+  sendStatusJSON ok200 Health.getHealth
 
 putRequestsRoute :: Handler Value
 putRequestsRoute =
