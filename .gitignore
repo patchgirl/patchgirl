@@ -12,3 +12,7 @@ target
 logs
 .env
 .#*
+TAGS
+.stack-work/
+api.cabal
+*~
