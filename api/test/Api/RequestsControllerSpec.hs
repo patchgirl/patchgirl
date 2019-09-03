@@ -1,3 +1,5 @@
+module Api.RequestsControllerSpec where
+
 import           Control.Exception (evaluate)
 import           Test.Hspec
 

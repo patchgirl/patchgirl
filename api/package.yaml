@@ -13,9 +13,11 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/api#readme>
 
 dependencies:
+- aeson
 - base >= 4.7 && < 5
 - http-client
 - http-client-tls
+- http-types
 - yesod
 - yesod-auth
 - yesod-auth-oauth2
@@ -45,3 +47,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - api
+    - hspec
