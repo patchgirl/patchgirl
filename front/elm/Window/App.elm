@@ -105,11 +105,16 @@ update msg model =
                         Nothing ->
                             (model, Cmd.none)
 
+                BuilderApp.BuilderMsg (Builder.AskSave) ->
+                    ( model
+                    , sendSaveTabRequest model.builderAppModel
+                    )
+
                 _ ->
                     case BuilderApp.update subMsg model.builderAppModel of
                         (newBuilderApp, newMsg) ->
                             ( { model | builderAppModel = newBuilderApp }
-                            , sendSaveTabRequest newBuilderApp
+                            , Cmd.none
                             )
 
         SaveBuilderTreeResponse foo ->

@@ -12,3 +12,4 @@ type Msg
   | AskRun Model
   | ShowRequestAsCurl Model
   | GiveResponse (Result Http.Error String)
+  | AskSave

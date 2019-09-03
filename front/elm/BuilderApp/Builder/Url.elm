@@ -38,4 +38,5 @@ view model =
             , Util.onEnter (AskRun model) ] []
     , button [ onClick (AskRun model) ] [ text "Send" ]
     , button [ onClick (ShowRequestAsCurl model)] [ text "Curl" ]
+    , button [ onClick AskSave] [ text "Save" ]
     ]
