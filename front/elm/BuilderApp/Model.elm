@@ -2,14 +2,7 @@ module BuilderApp.Model exposing (..)
 
 import BuilderApp.Builder.Model as Builder
 
-type alias Model =
-    { selectedBuilderIndex : Maybe Int
-    , displayedBuilderIndex : Maybe Int
-    , tree : List Node
-    , displayedNodeMenuIndex : Maybe Int
-    }
-
-type alias Model2 a =
+type alias Model a =
     { a
         | selectedBuilderIndex : Maybe Int
         , displayedBuilderIndex : Maybe Int
@@ -84,7 +77,7 @@ defaultBuilderTree =
                                                      , isSaved = False
                                                      }
                                               , File { name = "file2"
-                                                     , builder = Builder.defaultModel2
+                                                     , builder = Builder.defaultModel
                                                      , showRenameInput = False
                                                      , isSaved = True
                                                      }

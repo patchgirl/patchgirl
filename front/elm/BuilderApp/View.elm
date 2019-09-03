@@ -14,7 +14,7 @@ import BuilderApp.Builder.View as Builder
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.View as BuilderTree
 
-view : Model2 a -> Html Msg
+view : Model a -> Html Msg
 view model =
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
@@ -23,7 +23,7 @@ view model =
           ]
       ]
 
-builderView : Model2 a -> Maybe Int -> Html Msg
+builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
     mBuilder : Int -> Maybe Builder.Model
