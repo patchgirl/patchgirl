@@ -111,11 +111,10 @@ update msg model =
                     )
 
                 _ ->
-                    case BuilderApp.update subMsg model.builderAppModel of
-                        (newBuilderApp, newMsg) ->
-                            ( { model | builderAppModel = newBuilderApp }
-                            , Cmd.none
-                            )
+                    let
+                        (newModel, newMsg) = BuilderApp.update subMsg model
+                    in
+                        (newModel, Cmd.map BuilderAppMsg newMsg)
 
         SaveBuilderTreeResponse foo ->
             (model, Cmd.none)
@@ -123,7 +122,7 @@ update msg model =
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
                 newModel ->
-                    (Debug.log "haha" newModel, Cmd.none)
+                    (newModel, Cmd.none)
 
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of

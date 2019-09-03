@@ -9,7 +9,7 @@ import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model2 a -> (Model2 a, Cmd Msg)
 update msg model =
   case msg of
     DisplayBuilder idx ->
@@ -20,7 +20,8 @@ update msg model =
 
     TreeMsg subMsg ->
         let
-            newModel = BuilderTree.update subMsg model
+            -- TODO fix
+            newModel = model --BuilderTree.update subMsg model
         in
             (newModel, Cmd.none)
 

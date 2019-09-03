@@ -11,14 +11,23 @@ import Window.Type as Type
 
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
+  -- BUILDER APP
   , builderAppModel : BuilderApp.Model
+  , selectedBuilderIndex : Maybe Int
+  , displayedBuilderIndex : Maybe Int
+  , displayedNodeMenuIndex : Maybe Int
+  , tree : List BuilderApp.Node
+  -- POSTMAN
   , postmanModel : Maybe (List BuilderApp.Node)
+  -- ENVIRONMENT
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
   , selectedEnvironmentToRenameIndex : Maybe Int
   , environments : List Type.Environment
   , envModel : EnvironmentKeyValueEdition.Model
+  -- VARIABLE APP
   , varAppModel : VarApp.Model
+  -- RUNNER
   , runnerModel : RequestRunner.Model
   }
 
@@ -42,6 +51,10 @@ defaultModel : Model
 defaultModel =
   let
       builderAppModel = BuilderApp.defaultModel
+      selectedBuilderIndex = Just 4
+      displayedBuilderIndex = Just 4
+      displayedNodeMenuIndex = Nothing
+      tree = BuilderApp.defaultBuilderTree
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
       varAppModel =
@@ -69,6 +82,10 @@ defaultModel =
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , builderAppModel = builderAppModel
+      , selectedBuilderIndex = selectedBuilderIndex
+      , displayedBuilderIndex = displayedBuilderIndex
+      , displayedNodeMenuIndex = displayedNodeMenuIndex
+      , tree = tree
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditIndex = selectedEnvironmentToEditIndex

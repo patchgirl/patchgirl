@@ -9,6 +9,14 @@ type alias Model =
     , displayedNodeMenuIndex : Maybe Int
     }
 
+type alias Model2 a =
+    { a
+        | selectedBuilderIndex : Maybe Int
+        , displayedBuilderIndex : Maybe Int
+        , tree : List Node
+        , displayedNodeMenuIndex : Maybe Int
+    }
+
 type Node = Folder Folder2 | File File2
 
 type alias Folder2 =
