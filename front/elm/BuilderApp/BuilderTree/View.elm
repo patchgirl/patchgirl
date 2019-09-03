@@ -12,7 +12,7 @@ import BuilderApp.BuilderTree.FileView exposing (..)
 
 import Util.View as Util
 
-view : Model -> Html Msg
+view : Model2 a -> Html Msg
 view model =
   let
     treeView = Tuple.second (nodeView 0 model.displayedNodeMenuIndex model.tree)

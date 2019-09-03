@@ -10,7 +10,7 @@ import BuilderApp.Model as BuilderApp
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 
-stateEncoder : BuilderApp.Model -> Json.Value
+stateEncoder : BuilderApp.Model2 a -> Json.Value
 stateEncoder model =
   let
     nodes : Json.Value
@@ -58,7 +58,7 @@ folderEncoder folder =
     , ("children", List.map nodeEncoder folder.children |> toArray)
     ]
 
-sendSaveTabRequest : BuilderApp.Model -> Cmd Msg
+sendSaveTabRequest : BuilderApp.Model2 a -> Cmd Msg
 sendSaveTabRequest model =
   let
     httpRequest = Http.request

@@ -12,7 +12,6 @@ import Window.Type as Type
 type alias Model =
   { mainNavBarModel : MainNavBar.Model
   -- BUILDER APP
-  , builderAppModel : BuilderApp.Model
   , selectedBuilderIndex : Maybe Int
   , displayedBuilderIndex : Maybe Int
   , displayedNodeMenuIndex : Maybe Int
@@ -50,7 +49,6 @@ getEnvironmentKeyValuesToEdit model =
 defaultModel : Model
 defaultModel =
   let
-      builderAppModel = BuilderApp.defaultModel
       selectedBuilderIndex = Just 4
       displayedBuilderIndex = Just 4
       displayedNodeMenuIndex = Nothing
@@ -81,7 +79,6 @@ defaultModel =
           ]
   in
       { mainNavBarModel = MainNavBar.defaultModel
-      , builderAppModel = builderAppModel
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedNodeMenuIndex = displayedNodeMenuIndex

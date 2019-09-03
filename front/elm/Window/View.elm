@@ -43,14 +43,12 @@ view model =
 builderView : Model -> Html Msg
 builderView model =
   let
-    builderApp : BuilderApp.Model
-    builderApp = model.builderAppModel
     envSelectionView : Html Msg
     envSelectionView =
         Html.map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
   in
     div [ id "builderApp" ]
-      [ div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view builderApp)) ]
+      [ div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view model)) ]
       , div [ class "" ] [ envSelectionView ]
       ]
 
