@@ -26,11 +26,17 @@ view model =
 builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
-    mBuilder : Int -> Maybe Builder.Model
-    mBuilder idx = BuilderTree.findBuilder model.tree <| Debug.log "builder" idx
+    mFile : Int -> Maybe BuilderApp.Model.File2
+    mFile idx = BuilderTree.findFile model.tree idx
+    title file =
+        case file.isSaved of
+            True -> file.name
+            False -> file.name ++ " *"
   in
-    case Maybe.andThen mBuilder mIdx of
-      Just builder ->
+    case Maybe.andThen mFile mIdx of
+      Just file ->
         div []
-            [ Html.map BuilderMsg (Builder.view builder) ]
+            [ h1 [] [ text (title file) ]
+            , Html.map BuilderMsg (Builder.view file.builder)
+            ]
       Nothing -> div [] []

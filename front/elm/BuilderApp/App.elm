@@ -26,12 +26,12 @@ update msg model =
 
     BuilderMsg subMsg ->
       let
-        mBuilder = Maybe.andThen (BuilderTree.findBuilder model.tree) model.selectedBuilderIndex
+        mFile = Maybe.andThen (BuilderTree.findFile model.tree) model.selectedBuilderIndex
       in
-        case (model.selectedBuilderIndex, mBuilder) of
-          (Just idx, Just builder) ->
+        case (model.selectedBuilderIndex, mFile) of
+          (Just idx, Just file) ->
             let
-                (newBuilder, cmdBuilder) = (Builder.update subMsg builder)
+                (newBuilder, cmdBuilder) = (Builder.update subMsg file.builder)
                 newBuilderTree = BuilderTree.modifyNode (changeFileBuilder newBuilder) model.tree idx
                 newModel = { model | tree = newBuilderTree }
             in

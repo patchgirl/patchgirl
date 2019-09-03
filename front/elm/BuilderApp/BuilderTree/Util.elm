@@ -31,10 +31,10 @@ findNode =
   in
     \x y -> find x y |> Tuple.second
 
-findBuilder : List Node -> Int -> Maybe Builder.Model
-findBuilder tree idx =
+findFile : List Node -> Int -> Maybe BuilderApp.Model.File2
+findFile tree idx =
     case findNode tree idx of
-        Just (File { builder }) -> Just builder
+        Just (File file) -> Just file
         _ -> Nothing
 
 modifyNode : (Node -> Node) -> List Node -> Int -> List Node
