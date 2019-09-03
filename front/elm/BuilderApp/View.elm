@@ -14,7 +14,7 @@ import BuilderApp.Builder.View as Builder
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.View as BuilderTree
 
-view : Model -> Html Msg
+view : Model a -> Html Msg
 view model =
     div [ id "builderApp" ]
       [ div [ id "treeView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
@@ -23,14 +23,20 @@ view model =
           ]
       ]
 
-builderView : Model -> Maybe Int -> Html Msg
+builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
-    mBuilder : Int -> Maybe Builder.Model
-    mBuilder idx = BuilderTree.findBuilder model.tree <| Debug.log "builder" idx
+    mFile : Int -> Maybe BuilderApp.Model.File2
+    mFile idx = BuilderTree.findFile model.tree idx
+    title file =
+        case file.isSaved of
+            True -> file.name
+            False -> file.name ++ " *"
   in
-    case Maybe.andThen mBuilder mIdx of
-      Just builder ->
+    case Maybe.andThen mFile mIdx of
+      Just file ->
         div []
-            [ Html.map BuilderMsg (Builder.view builder) ]
+            [ h1 [] [ text (title file) ]
+            , Html.map BuilderMsg (Builder.view file.builder)
+            ]
       Nothing -> div [] []

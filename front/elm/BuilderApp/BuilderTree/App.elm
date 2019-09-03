@@ -9,7 +9,7 @@ import BuilderApp.Builder.Model as Builder
 
 import Util.Maybe as Maybe
 
-update : Msg -> Model -> Model
+update : Msg -> Model a -> Model a
 update msg model =
   case msg of
     SetDisplayedBuilder idx ->

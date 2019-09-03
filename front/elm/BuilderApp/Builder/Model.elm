@@ -33,7 +33,7 @@ defaultModel1 =
   , response = Nothing
   }
 
-defaultModel2 =
+defaultModel =
   { name = "no name2"
   , url = "swapi.co/api/people/2"
   , method = Get
