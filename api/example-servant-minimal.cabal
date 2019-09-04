@@ -1,0 +1,69 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 710bd38edf18ccdc66248bad402cebfd05bdac37682eee4bd5471f1ff3a268b8
+
+name:           example-servant-minimal
+version:        0.0.0
+build-type:     Simple
+
+library
+  exposed-modules:
+      App
+  other-modules:
+      Paths_example_servant_minimal
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , servant
+    , servant-server
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
+
+executable example-servant-minimal
+  main-is: exe/Main.hs
+  other-modules:
+      Paths_example_servant_minimal
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , example-servant-minimal
+    , servant
+    , servant-server
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      AppSpec
+      Paths_example_servant_minimal
+  hs-source-dirs:
+      test
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , example-servant-minimal
+    , hspec
+    , http-client
+    , http-types
+    , servant
+    , servant-client
+    , servant-server
+    , transformers
+    , wai
+    , warp >=3.2.4
+  default-language: Haskell2010
