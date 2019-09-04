@@ -7,19 +7,19 @@ module App where
 
 import           Data.Aeson
 import           GHC.Generics
-import           Network.Wai
+import           Network.Wai              hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Servant
 import           System.IO
 
 -- * API
 
-type ItemApi =
-  "item" :> Get '[JSON] [Item] :<|>
-  "item" :> Capture "itemId" Integer :> Get '[JSON] Item
+type RequestApi =
+  "request" :> Get '[JSON] [Request] :<|>
+  "request" :> Capture "requestId" Integer :> Get '[JSON] Request
 
-itemApi :: Proxy ItemApi
-itemApi = Proxy
+requestApi :: Proxy RequestApi
+requestApi = Proxy
 
 -- * APP
 
@@ -33,32 +33,32 @@ run = do
   runSettings settings =<< mkApp
 
 mkApp :: IO Application
-mkApp = return $ serve itemApi server
+mkApp = return $ serve requestApi server
 
-server :: Server ItemApi
+server :: Server RequestApi
 server =
-  getItems :<|>
-  getItemById
+  getRequests :<|>
+  getRequestById
 
-getItems :: Handler [Item]
-getItems = return [exampleItem]
+getRequests :: Handler [Request]
+getRequests = return [exampleRequest]
 
-getItemById :: Integer -> Handler Item
-getItemById id = case id of
-  0 -> return exampleItem
+getRequestById :: Integer -> Handler Request
+getRequestById = \case
+  0 -> return exampleRequest
   _ -> throwError err404
 
-exampleItem :: Item
-exampleItem = Item 0 "example item"
+exampleRequest :: Request
+exampleRequest = Request 0 "example request"
 
 -- * MODEL
 
-data Item
-  = Item {
-    itemId   :: Integer,
-    itemText :: String
+data Request
+  = Request {
+    requestId   :: Integer,
+    requestText :: String
   }
   deriving (Eq, Show, Generic)
 
-instance ToJSON Item
-instance FromJSON Item
+instance ToJSON Request
+instance FromJSON Request

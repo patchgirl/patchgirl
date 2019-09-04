@@ -10,24 +10,24 @@ import           Servant
 import           Servant.Client
 import           Test.Hspec
 
-import           App hiding (getItems)
+import           App hiding (getRequests)
 
-getItems :: ClientM [Item]
-getItem :: Integer -> ClientM Item
-getItems :<|> getItem = client itemApi
+getRequests :: ClientM [Request]
+getRequest :: Integer -> ClientM Request
+getRequests :<|> getRequest = client requestApi
 
 spec :: Spec
 spec = do
-  describe "/item" $ do
+  describe "/request" $ do
     withClient mkApp $ do
-      it "lists an example item" $ \ env -> do
-        try env getItems `shouldReturn` [Item 0 "example item"]
+      it "lists an example request" $ \ env -> do
+        try env getRequests `shouldReturn` [Request 0 "example request"]
 
-      it "allows to show items by id" $ \ env -> do
-        try env (getItem 0) `shouldReturn` Item 0 "example item"
+      it "allows to show requests by id" $ \ env -> do
+        try env (getRequest 0) `shouldReturn` Request 0 "example request"
 
-      it "throws a 404 for missing items" $ \ env -> do
-        try env (getItem 42) `shouldThrow` errorsWithStatus notFound404
+      it "throws a 404 for missing requests" $ \ env -> do
+        try env (getRequest 42) `shouldThrow` errorsWithStatus notFound404
 
 errorsWithStatus :: Status -> ServantError -> Bool
 errorsWithStatus status servantError = case servantError of
