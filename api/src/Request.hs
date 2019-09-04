@@ -19,8 +19,7 @@ data Request
 instance ToJSON Request
 instance FromJSON Request
 
-exampleRequest :: Request
-exampleRequest = Request 0 "example request"
+-- * Handler
 
 getRequests :: Handler [Request]
 getRequests = return [exampleRequest]
@@ -29,3 +28,8 @@ getRequestById :: Integer -> Handler Request
 getRequestById = \case
   0 -> return exampleRequest
   _ -> throwError err404
+
+-- * DB
+
+exampleRequest :: Request
+exampleRequest = Request 0 "example request"
