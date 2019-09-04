@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c017a62d7d9517c0f5ea4025d9ef303e2b720c7bc290bdca6a10575ac21a6101
+-- hash: 81acfe1a0d4779694c3fe157327376fb72e8b13ff8e6a7f82b3de6a49b12340b
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -22,6 +22,7 @@ library
   build-depends:
       aeson
     , base
+    , postgresql-simple
     , servant
     , servant-server
     , transformers
@@ -38,6 +39,7 @@ executable example-servant-minimal
       aeson
     , base
     , example-servant-minimal
+    , postgresql-simple
     , servant
     , servant-server
     , transformers
@@ -61,6 +63,7 @@ test-suite spec
     , hspec
     , http-client
     , http-types
+    , postgresql-simple
     , servant
     , servant-client
     , servant-server

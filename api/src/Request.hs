@@ -1,11 +1,21 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase    #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Request where
 
 import           Data.Aeson
+import           Database.PostgreSQL.Simple
 import           GHC.Generics
 import           Servant
+
+foo :: IO ()
+foo = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "test"
+  }
+  putStrLn "2 + 2"
+  mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
 -- * MODEL
 

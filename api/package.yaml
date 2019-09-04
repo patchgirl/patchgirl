@@ -33,3 +33,4 @@ dependencies:
   - aeson
   - wai
   - warp
+  - postgresql-simple
