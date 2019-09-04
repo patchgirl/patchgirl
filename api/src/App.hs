@@ -16,8 +16,8 @@ type Api =
   "request" :> Get '[JSON] [Request] :<|>
   "request" :> Capture "requestId" Integer :> Get '[JSON] Request
 
-requestApi :: Proxy Api
-requestApi = Proxy
+api :: Proxy Api
+api = Proxy
 
 -- * APP
 
@@ -31,7 +31,7 @@ run = do
   runSettings settings =<< mkApp
 
 mkApp :: IO Application
-mkApp = return $ serve requestApi server
+mkApp = return $ serve api server
 
 server :: Server Api
 server =

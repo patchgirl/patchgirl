@@ -16,7 +16,7 @@ import           Request                  hiding (getRequests)
 
 getRequests :: ClientM [Request]
 getRequest :: Integer -> ClientM Request
-getRequests :<|> getRequest = client requestApi
+getRequests :<|> getRequest = client api
 
 spec :: Spec
 spec = do
