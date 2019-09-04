@@ -11,7 +11,8 @@ import           Servant
 import           Servant.Client
 import           Test.Hspec
 
-import           App                      hiding (getRequests)
+import           App
+import           Request                  hiding (getRequests)
 
 getRequests :: ClientM [Request]
 getRequest :: Integer -> ClientM Request

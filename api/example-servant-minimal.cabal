@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 710bd38edf18ccdc66248bad402cebfd05bdac37682eee4bd5471f1ff3a268b8
+-- hash: c017a62d7d9517c0f5ea4025d9ef303e2b720c7bc290bdca6a10575ac21a6101
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -13,6 +13,7 @@ build-type:     Simple
 library
   exposed-modules:
       App
+      Request
   other-modules:
       Paths_example_servant_minimal
   hs-source-dirs:
