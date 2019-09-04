@@ -1,16 +1,17 @@
 
 module AppSpec where
 
-import           Control.Exception (throwIO)
-import           Network.HTTP.Client (Manager, newManager, defaultManagerSettings)
+import           Control.Exception        (throwIO)
+import           Network.HTTP.Client      (Manager, defaultManagerSettings,
+                                           newManager)
 import           Network.HTTP.Types
-import           Network.Wai (Application)
+import           Network.Wai              (Application)
 import           Network.Wai.Handler.Warp
 import           Servant
 import           Servant.Client
 import           Test.Hspec
 
-import           App hiding (getRequests)
+import           App                      hiding (getRequests)
 
 getRequests :: ClientM [Request]
 getRequest :: Integer -> ClientM Request
@@ -29,10 +30,10 @@ spec = do
       it "throws a 404 for missing requests" $ \ env -> do
         try env (getRequest 42) `shouldThrow` errorsWithStatus notFound404
 
-errorsWithStatus :: Status -> ServantError -> Bool
+errorsWithStatus :: Status -> ClientError -> Bool
 errorsWithStatus status servantError = case servantError of
-  FailureResponse response -> responseStatusCode response == status
-  _ -> False
+  FailureResponse _ response -> responseStatusCode response == status
+  _                          -> False
 
 withClient :: IO Application -> SpecWith ClientEnv -> SpecWith ()
 withClient x innerSpec =
