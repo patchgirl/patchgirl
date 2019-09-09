@@ -1,21 +1,33 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module Request where
 
+import           Control.Monad
+import           Control.Monad.IO.Class
 import           Data.Aeson
+import           Data.Text
 import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.SqlQQ
+import           DB
 import           GHC.Generics
 import           Servant
+import           Text.RawString.QQ
 
-foo :: IO ()
-foo = do
-  conn <- connect defaultConnectInfo {
-    connectDatabase = "test"
-  }
-  putStrLn "2 + 2"
-  mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
+-- * DB
+
+getOne :: Connection -> IO String
+getOne connection = do
+  [(age, name)] <- (query_ connection query :: IO [(Int, String)])
+  return name
+  where
+    query = [sql|
+                select id, text
+                from request
+                limit 1
+                |]
 
 -- * MODEL
 
@@ -36,7 +48,11 @@ getRequests = return [exampleRequest]
 
 getRequestById :: Integer -> Handler Request
 getRequestById = \case
-  0 -> return exampleRequest
+  0 -> do
+    connection <- liftIO getDBConnection
+    text <- liftIO (getOne connection)
+    liftIO $ print text
+    return exampleRequest
   _ -> throwError err404
 
 -- * DB

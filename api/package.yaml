@@ -34,3 +34,4 @@ dependencies:
   - wai
   - warp
   - postgresql-simple
+  - text

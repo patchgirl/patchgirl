@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81acfe1a0d4779694c3fe157327376fb72e8b13ff8e6a7f82b3de6a49b12340b
+-- hash: c0932f8fce1903402869b23bfa90a69d7a92461498c56ac5b8651c8eaa2f55a4
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -13,6 +13,7 @@ build-type:     Simple
 library
   exposed-modules:
       App
+      DB
       Request
   other-modules:
       Paths_example_servant_minimal
@@ -23,8 +24,10 @@ library
       aeson
     , base
     , postgresql-simple
+    , raw-strings-qq
     , servant
     , servant-server
+    , text
     , transformers
     , wai
     , warp
@@ -40,8 +43,10 @@ executable example-servant-minimal
     , base
     , example-servant-minimal
     , postgresql-simple
+    , raw-strings-qq
     , servant
     , servant-server
+    , text
     , transformers
     , wai
     , warp
@@ -64,9 +69,11 @@ test-suite spec
     , http-client
     , http-types
     , postgresql-simple
+    , raw-strings-qq
     , servant
     , servant-client
     , servant-server
+    , text
     , transformers
     , wai
     , warp >=3.2.4
