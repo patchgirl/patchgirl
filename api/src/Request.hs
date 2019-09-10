@@ -14,7 +14,6 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
 import           Servant
-import           Text.RawString.QQ
 
 -- * DB
 
