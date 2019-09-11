@@ -25,16 +25,16 @@ getByRequestId requestId connection = do
   listToMaybe <$> query connection rawQuery (Only requestId)
   where
     rawQuery = [sql|
-              select id, text
-              from request
-              where id = ?
-              |] :: Query
+                   SELECT id, text
+                   FROM request
+                   WHERE id = ?
+                   |] :: Query
 
 -- * MODEL
 
 data Request
   = Request {
-    requestId   :: Integer,
+    requestId   :: Int,
     requestText :: String
   }
   deriving (Eq, Show, Generic, FromRow)
