@@ -14,7 +14,7 @@ import           Request
 
 type Api =
   "request" :> Get '[JSON] [Request] :<|>
-  "request" :> Capture "requestId" Integer :> Get '[JSON] Request
+  "request" :> Capture "requestId" Int :> Get '[JSON] Request
 
 api :: Proxy Api
 api = Proxy

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -8,7 +9,10 @@ module Request where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Aeson
+import           Data.Functor
+import           Data.Maybe
 import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
@@ -16,16 +20,10 @@ import           Servant
 
 -- * DB
 
-getOne :: Connection -> IO (Maybe String)
-getOne connection = do
-  mAgeAndNames <- (query connection rawQuery params) :: IO [Maybe (Int, String)]
-  case mAgeAndNames of
-    [Just(_, name)] -> do
-      return $ Just name
-    _ ->
-      return Nothing
+getByRequestId :: Int -> Connection -> IO (Maybe Request)
+getByRequestId requestId connection = do
+  listToMaybe <$> query connection rawQuery (Only requestId)
   where
-    params = Only (2 :: Int)
     rawQuery = [sql|
               select id, text
               from request
@@ -39,7 +37,7 @@ data Request
     requestId   :: Integer,
     requestText :: String
   }
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic, FromRow)
 
 instance ToJSON Request
 instance FromJSON Request
@@ -49,15 +47,11 @@ instance FromJSON Request
 getRequests :: Handler [Request]
 getRequests = return [exampleRequest]
 
-getRequestById :: Integer -> Handler Request
-getRequestById = \case
-  0 -> do
-    connection <- liftIO getDBConnection
-    --text <- liftIO (getOne connection)
-    liftIO (getOne connection)
-    --liftIO $ print text
-    return exampleRequest
-  _ -> throwError err404
+getRequestById :: Int -> Handler Request
+getRequestById requestId = do
+  liftIO (getDBConnection >>= (getByRequestId requestId)) >>= \case
+    Just request -> return request
+    Nothing      -> throwError err404
 
 -- * DB
 
