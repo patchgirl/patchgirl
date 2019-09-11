@@ -8,7 +8,6 @@ module Request where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Aeson
-import           Data.Text
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
@@ -17,16 +16,21 @@ import           Servant
 
 -- * DB
 
-getOne :: Connection -> IO String
+getOne :: Connection -> IO (Maybe String)
 getOne connection = do
-  [(age, name)] <- (query_ connection query :: IO [(Int, String)])
-  return name
+  mAgeAndNames <- (query connection rawQuery params) :: IO [Maybe (Int, String)]
+  case mAgeAndNames of
+    [Just(_, name)] -> do
+      return $ Just name
+    _ ->
+      return Nothing
   where
-    query = [sql|
-                select id, text
-                from request
-                limit 1
-                |]
+    params = Only (2 :: Int)
+    rawQuery = [sql|
+              select id, text
+              from request
+              where id = ?
+              |] :: Query
 
 -- * MODEL
 
@@ -49,8 +53,9 @@ getRequestById :: Integer -> Handler Request
 getRequestById = \case
   0 -> do
     connection <- liftIO getDBConnection
-    text <- liftIO (getOne connection)
-    liftIO $ print text
+    --text <- liftIO (getOne connection)
+    liftIO (getOne connection)
+    --liftIO $ print text
     return exampleRequest
   _ -> throwError err404
 
