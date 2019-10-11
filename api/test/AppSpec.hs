@@ -68,15 +68,31 @@ insertRequest connection requestText = do
 
 spec :: Spec
 spec = do
-  describe "GET /requests" $ do
+  describe "GET /requests/:id" $ do
     withClient mkApp $ do
-      it "return request by id" $ \env ->
+      it "return request by id" $ \clientEnv ->
         withTestTransaction $ \connection -> do
           id <- insertRequest connection "test"
-          try env (getRequest id) `shouldReturn` Request id "test"
+          try clientEnv (getRequest id) `shouldReturn` Request id "test"
 
-      it "return 404 for missing requests" $ \ env -> do
-        try env (getRequest 1) `shouldThrow` errorsWithStatus notFound404
+      it "return 404 for missing requests" $ \clientEnv -> do
+        try clientEnv (getRequest 1) `shouldThrow` errorsWithStatus notFound404
+
+  describe "GET /requests" $ do
+    withClient mkApp $ do
+      it "return all requests" $ \clientEnv ->
+        withTestTransaction $ \connection -> do
+          id1 <- insertRequest connection "test1"
+          id2 <- insertRequest connection "test2"
+          let expectedRes =
+                [ Request id1 "test1"
+                , Request id2 "test2"
+                ]
+          try clientEnv getRequests `shouldReturn` expectedRes
+
+try :: ClientEnv -> ClientM a -> IO a
+try clientEnv action = either throwIO return =<<
+  runClientM action clientEnv
 
 errorsWithStatus :: Status -> ClientError -> Bool
 errorsWithStatus status servantError = case servantError of
@@ -90,7 +106,3 @@ withClient x innerSpec =
       testWithApplication x $ \ port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)
-
-try :: ClientEnv -> ClientM a -> IO a
-try clientEnv action = either throwIO return =<<
-  runClientM action clientEnv

@@ -18,18 +18,6 @@ import           DB
 import           GHC.Generics
 import           Servant
 
--- * DB
-
-getByRequestId :: Int -> Connection -> IO (Maybe Request)
-getByRequestId requestId connection = do
-  listToMaybe <$> query connection rawQuery (Only requestId)
-  where
-    rawQuery = [sql|
-                   SELECT id, text
-                   FROM request
-                   WHERE id = ?
-                   |] :: Query
-
 -- * MODEL
 
 data Request
@@ -42,10 +30,32 @@ data Request
 instance ToJSON Request
 instance FromJSON Request
 
+-- * DB
+
+getByRequestId :: Int -> Connection -> IO (Maybe Request)
+getByRequestId requestId connection = do
+  listToMaybe <$> query connection rawQuery (Only requestId)
+  where
+    rawQuery = [sql|
+                   SELECT id, text
+                   FROM request
+                   WHERE id = ?
+                   |] :: Query
+
+selectRequests :: Connection -> IO [Request]
+selectRequests connection = do
+  query_ connection rawQuery
+  where
+    rawQuery = [sql|
+                   SELECT id, text
+                   FROM request
+                   |] :: Query
+
 -- * Handler
 
 getRequests :: Handler [Request]
-getRequests = return [exampleRequest]
+getRequests = do
+  liftIO (getDBConnection >>= selectRequests)
 
 getRequestById :: Int -> Handler Request
 getRequestById requestId = do
