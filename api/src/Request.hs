@@ -32,8 +32,8 @@ instance FromJSON Request
 
 -- * DB
 
-getByRequestId :: Int -> Connection -> IO (Maybe Request)
-getByRequestId requestId connection = do
+selectRequestById :: Int -> Connection -> IO (Maybe Request)
+selectRequestById requestId connection = do
   listToMaybe <$> query connection rawQuery (Only requestId)
   where
     rawQuery = [sql|
@@ -59,7 +59,7 @@ getRequests = do
 
 getRequestById :: Int -> Handler Request
 getRequestById requestId = do
-  liftIO (getDBConnection >>= (getByRequestId requestId)) >>= \case
+  liftIO (getDBConnection >>= (selectRequestById requestId)) >>= \case
     Just request -> return request
     Nothing      -> throwError err404
 
