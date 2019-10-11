@@ -2,13 +2,9 @@
 
 ## To build the backend API
 
-### install nix
-
-- ```apt-get install -y libgmp-dev```
-- ```nix-env -i stack```
-
 ### build the haskell API
 
+- install `stack`
 - go to the `api/` directory
 - compile with ```stack build```
 
