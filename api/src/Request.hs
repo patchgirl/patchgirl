@@ -18,7 +18,7 @@ import           DB
 import           GHC.Generics
 import           Servant
 
--- * MODEL
+-- * Model
 
 data Request
   = Request {
@@ -36,20 +36,22 @@ selectRequestById :: Int -> Connection -> IO (Maybe Request)
 selectRequestById requestId connection = do
   listToMaybe <$> query connection rawQuery (Only requestId)
   where
-    rawQuery = [sql|
-                   SELECT id, text
-                   FROM request
-                   WHERE id = ?
-                   |] :: Query
+    rawQuery =
+      [sql|
+          SELECT id, text
+          FROM request
+          WHERE id = ?
+          |] :: Query
 
 selectRequests :: Connection -> IO [Request]
 selectRequests connection = do
   query_ connection rawQuery
   where
-    rawQuery = [sql|
-                   SELECT id, text
-                   FROM request
-                   |] :: Query
+    rawQuery =
+      [sql|
+          SELECT id, text
+          FROM request
+          |] :: Query
 
 -- * Handler
 
@@ -62,8 +64,3 @@ getRequestById requestId = do
   liftIO (getDBConnection >>= (selectRequestById requestId)) >>= \case
     Just request -> return request
     Nothing      -> throwError err404
-
--- * DB
-
-exampleRequest :: Request
-exampleRequest = Request 0 "example request"

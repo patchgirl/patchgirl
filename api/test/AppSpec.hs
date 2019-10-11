@@ -53,7 +53,8 @@ truncateTable c =
 
 getRequests :: ClientM [Request]
 getRequest :: Int -> ClientM Request
-getRequests :<|> getRequest = client api
+getRequests :<|> getRequest =
+  client api
 
 insertRequest :: Connection -> String -> IO Int
 insertRequest connection requestText = do
@@ -91,13 +92,14 @@ spec = do
           try clientEnv getRequests `shouldReturn` expectedRes
 
 try :: ClientEnv -> ClientM a -> IO a
-try clientEnv action = either throwIO return =<<
-  runClientM action clientEnv
+try clientEnv action =
+  either throwIO return =<< runClientM action clientEnv
 
 errorsWithStatus :: Status -> ClientError -> Bool
-errorsWithStatus status servantError = case servantError of
-  FailureResponse _ response -> responseStatusCode response == status
-  _                          -> False
+errorsWithStatus status servantError =
+  case servantError of
+    FailureResponse _ response -> responseStatusCode response == status
+    _                          -> False
 
 withClient :: IO Application -> SpecWith ClientEnv -> SpecWith ()
 withClient x innerSpec =
