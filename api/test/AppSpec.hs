@@ -19,7 +19,7 @@ import           Network.HTTP.Client              (Manager,
 import           Network.HTTP.Types
 import           Network.Wai                      (Application)
 import           Network.Wai.Handler.Warp
-import           Request                          hiding (getRequests)
+import           RequestCollection                          hiding (getRequests)
 import           Servant
 import           Servant.Client
 import           Test.Hspec

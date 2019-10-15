@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 979e84f3eccdc6026f09650f7831a7a79aa1fcde775eec09e87821abb73fdfe8
+-- hash: c526d74c125bb1df8a4493fd93b2cf6511d805662cedd3dd99783ced2e34633f
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -14,7 +14,7 @@ library
   exposed-modules:
       App
       DB
-      Request
+      RequestCollection
   other-modules:
       Paths_example_servant_minimal
   hs-source-dirs:
@@ -23,6 +23,7 @@ library
   build-depends:
       aeson
     , base
+    , neat-interpolation
     , postgresql-simple
     , servant
     , servant-server
@@ -41,6 +42,7 @@ executable example-servant-minimal
       aeson
     , base
     , example-servant-minimal
+    , neat-interpolation
     , postgresql-simple
     , servant
     , servant-server
@@ -55,6 +57,8 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       AppSpec
+      RequestCollection.Fixture
+      RequestCollection.ModelSpec
       Paths_example_servant_minimal
   hs-source-dirs:
       test
@@ -66,6 +70,7 @@ test-suite spec
     , hspec
     , http-client
     , http-types
+    , neat-interpolation
     , postgresql-simple
     , servant
     , servant-client

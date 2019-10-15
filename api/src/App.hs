@@ -8,7 +8,7 @@ import           Network.Wai.Handler.Warp
 import           Servant
 import           System.IO
 
-import           Request
+import           RequestCollection
 
 -- * API
 
