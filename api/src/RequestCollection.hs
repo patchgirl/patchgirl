@@ -17,11 +17,13 @@ import           Data.Maybe
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.FromField
+import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.TypeInfo as TI
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
 import           Servant
+import           Data.Aeson (encode)
 
 -- * Model
 
@@ -45,11 +47,14 @@ data RequestNode
 instance ToJSON RequestNode
 instance FromJSON RequestNode
 
+instance ToField [RequestNode] where
+  toField = toField . encode
+
 instance FromField [RequestNode] where
   fromField field mdata = do
-     value <- fromField field mdata
-     let errorOrRequestNodes = parseEither parseJSON value
-     either (returnError ConversionFailed field) return errorOrRequestNodes
+    value <- fromField field mdata :: Conversion Value
+    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
+    either (returnError ConversionFailed field) return errorOrRequestNodes
 
 data Request
   = Request {
@@ -62,6 +67,18 @@ instance ToJSON Request
 instance FromJSON Request
 
 -- * DB
+
+insertRequestNodes :: Connection -> [RequestNode] -> IO RequestCollection
+insertRequestNodes connection requestNodes = do
+  [requestCollection] <- query connection rawQuery $ Only requestNodes
+  return requestCollection
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO request_collection (tree)
+          VALUES (?)
+          RETURNING id, tree
+          |]
 
 selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
 selectRequestCollectionById requestCollectionId connection = do

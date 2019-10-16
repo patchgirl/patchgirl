@@ -4,15 +4,9 @@ import           Test.Hspec
 import RequestCollection
 import           Data.Aeson
 import           Data.Aeson.Text
-import RequestCollection.Fixture
-import Data.Text.Lazy.Encoding
+import qualified RequestCollection.Fixture as Fixture
 
 spec :: Spec
 spec = do
-  describe "RequestCollection model" $ do
-    it "decode & encode" $
-      let
-        expectedRes :: Maybe Value
-        expectedRes = decode $ encodeUtf8 requestCollectionSample1AsText
-      in
-        expectedRes `shouldBe` Just (toJSON requestCollectionSample1)
+  it "decode & encode" $ do
+    Fixture.requestColectionSample1AsValue `shouldBe` toJSON Fixture.requestCollectionSample1

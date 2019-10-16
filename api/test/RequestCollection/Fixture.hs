@@ -7,6 +7,8 @@ import RequestCollection
 import NeatInterpolation
 import Data.Text.Lazy
 import Data.Text.Lazy.Encoding
+import           Data.Aeson (decode, encode, Value)
+import Data.Maybe (fromJust)
 
 requestCollectionSample1 :: RequestCollection
 requestCollectionSample1 =
@@ -22,6 +24,17 @@ requestCollectionSample1 =
       [
         Request2 { name = "someRequest2", url = "someUrl2" }
       ]
+
+requestNodesSample1AsValue :: Value
+requestNodesSample1AsValue =
+  let RequestCollection _ requestNodes = requestCollectionSample1
+  in
+    fromJust $ decode $ encode requestNodes
+
+
+requestColectionSample1AsValue :: Value
+requestColectionSample1AsValue =
+  fromJust $ decode $ encodeUtf8 requestCollectionSample1AsText
 
 requestCollectionSample1AsText :: Text
 requestCollectionSample1AsText =
