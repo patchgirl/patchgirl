@@ -1,8 +1,6 @@
 module RequestCollection.HandlerSpec where
 
 import           App
-import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.SqlQQ
 import           Network.HTTP.Types
 import           RequestCollection                          hiding (getRequestCollectionById, postRequestCollection)
 import           Servant

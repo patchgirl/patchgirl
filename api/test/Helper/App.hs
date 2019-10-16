@@ -5,14 +5,9 @@ import           Servant.Client
 import           Test.Hspec (SpecWith, aroundWith, beforeAll)
 import           Network.HTTP.Types (Status)
 import           Network.Wai.Handler.Warp (testWithApplication)
-import           Network.HTTP.Client              (Manager,
-                                                   defaultManagerSettings,
+import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
 import           Control.Exception                (throwIO)
-
-
---import           Test.Hspec
-
 
 try :: ClientEnv -> ClientM a -> IO a
 try clientEnv action =

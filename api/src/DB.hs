@@ -8,4 +8,5 @@ getDBConnection = PG.connect PG.defaultConnectInfo
   , PG.connectUser = "test"
   , PG.connectPort = 5433
   , PG.connectPassword = "test"
+
   }

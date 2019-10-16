@@ -8,17 +8,13 @@
 
 module RequestCollection where
 
-import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Aeson
-import Data.Aeson.Types
-import           Data.Functor
+import Data.Aeson.Types (parseEither)
 import           Data.Maybe
 import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.FromField
 import           Database.PostgreSQL.Simple.ToField
-import           Database.PostgreSQL.Simple.TypeInfo as TI
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
@@ -97,7 +93,6 @@ postRequestCollection :: [RequestNode] -> Handler RequestCollection
 postRequestCollection requestNodes = do
   -- insertRequestNodes :: Connection -> [RequestNode] -> IO RequestCollection
   liftIO (getDBConnection >>= (insertRequestNodes requestNodes)) >>= return
-
 
 getRequestCollectionById :: Int -> Handler RequestCollection
 getRequestCollectionById requestCollectionId = do

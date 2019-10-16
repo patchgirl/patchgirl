@@ -1,9 +1,7 @@
 module RequestCollection.ModelSpec where
 
 import           Test.Hspec
-import RequestCollection
-import           Data.Aeson
-import           Data.Aeson.Text
+import           Data.Aeson (toJSON)
 import qualified RequestCollection.Fixture as Fixture
 
 spec :: Spec
