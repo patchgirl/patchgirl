@@ -14,7 +14,8 @@ import           RequestCollection
 
 type Api =
   "request" :> Get '[JSON] [Request] :<|>
-  "request" :> Capture "requestId" Int :> Get '[JSON] Request
+  "request" :> Capture "requestId" Int :> Get '[JSON] Request :<|>
+  "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
 
 api :: Proxy Api
 api = Proxy
@@ -36,4 +37,5 @@ mkApp = return $ serve api server
 server :: Server Api
 server =
   getRequests :<|>
-  getRequestById
+  getRequestById :<|>
+  getRequestCollectionById

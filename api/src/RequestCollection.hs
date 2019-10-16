@@ -115,9 +115,11 @@ selectRequests connection = do
 
 -- * Handler
 
-getRequestCollection :: Handler RequestCollection
-getRequestCollection = do
-  undefined
+getRequestCollectionById :: Int -> Handler RequestCollection
+getRequestCollectionById requestCollectionId = do
+  liftIO (getDBConnection >>= (selectRequestCollectionById requestCollectionId)) >>= \case
+    Just request -> return request
+    Nothing      -> throwError err404
 
 getRequests :: Handler [Request]
 getRequests = do
