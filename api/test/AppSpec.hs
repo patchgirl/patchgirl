@@ -4,11 +4,8 @@
 module AppSpec where
 
 import           App
-import           Data.Text                        (Text)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
-import           Database.PostgreSQL.Simple.Types (Identifier (..))
-import           DB
 import           Network.HTTP.Types
 import           RequestCollection                          hiding (getRequests)
 import           Servant
