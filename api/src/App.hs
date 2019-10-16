@@ -13,8 +13,6 @@ import           RequestCollection
 -- * API
 
 type Api =
-  "request" :> Get '[JSON] [Request] :<|>
-  "request" :> Capture "requestId" Int :> Get '[JSON] Request :<|>
   "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
   "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection
 
@@ -37,7 +35,5 @@ mkApp = return $ serve api server
 
 server :: Server Api
 server =
-  getRequests :<|>
-  getRequestById :<|>
   getRequestCollectionById :<|>
   postRequestCollection

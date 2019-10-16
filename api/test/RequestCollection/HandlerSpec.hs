@@ -4,7 +4,7 @@ import           App
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           Network.HTTP.Types
-import           RequestCollection                          hiding (getRequests, getRequest, getRequestCollectionById, postRequestCollection)
+import           RequestCollection                          hiding (getRequestCollectionById, postRequestCollection)
 import           Servant
 import           Servant.Client
 import           Test.Hspec
@@ -12,11 +12,9 @@ import Helper.DB (cleanDBAfter)
 import Helper.App
 import qualified RequestCollection.Fixture as Fixture
 
-getRequests :: ClientM [Request]
-getRequest :: Int -> ClientM Request
 getRequestCollectionById :: Int -> ClientM RequestCollection
 postRequestCollection :: [RequestNode] -> ClientM RequestCollection
-getRequests :<|> getRequest :<|> getRequestCollectionById :<|> postRequestCollection =
+getRequestCollectionById :<|> postRequestCollection =
   client api
 
 spec :: Spec

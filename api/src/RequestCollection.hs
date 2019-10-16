@@ -91,28 +91,6 @@ selectRequestCollectionById requestCollectionId connection = do
           WHERE id = ?
           |] :: Query
 
-
-selectRequestById :: Int -> Connection -> IO (Maybe Request)
-selectRequestById requestId connection = do
-  listToMaybe <$> query connection rawQuery (Only requestId)
-  where
-    rawQuery =
-      [sql|
-          SELECT id, text
-          FROM request
-          WHERE id = ?
-          |] :: Query
-
-selectRequests :: Connection -> IO [Request]
-selectRequests connection = do
-  query_ connection rawQuery
-  where
-    rawQuery =
-      [sql|
-          SELECT id, text
-          FROM request
-          |] :: Query
-
 -- * Handler
 
 postRequestCollection :: [RequestNode] -> Handler RequestCollection
@@ -124,15 +102,5 @@ postRequestCollection requestNodes = do
 getRequestCollectionById :: Int -> Handler RequestCollection
 getRequestCollectionById requestCollectionId = do
   liftIO (getDBConnection >>= (selectRequestCollectionById requestCollectionId)) >>= \case
-    Just request -> return request
-    Nothing      -> throwError err404
-
-getRequests :: Handler [Request]
-getRequests = do
-  liftIO (getDBConnection >>= selectRequests)
-
-getRequestById :: Int -> Handler Request
-getRequestById requestId = do
-  liftIO (getDBConnection >>= (selectRequestById requestId)) >>= \case
     Just request -> return request
     Nothing      -> throwError err404

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4b27680d95f417ed352dd76b74d8de4384add3bed3780a9f913ae54040ed17d1
+-- hash: c1ff909a3fdba094c33d83b40a14ebaf2eda977bc8eaed945f829213754793fe
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -56,7 +56,6 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      AppSpec
       Helper.App
       Helper.DB
       RequestCollection.DBSpec
