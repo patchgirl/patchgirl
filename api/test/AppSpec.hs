@@ -17,7 +17,8 @@ import Helper.App
 getRequests :: ClientM [Request]
 getRequest :: Int -> ClientM Request
 getRequestCollectionById :: Int -> ClientM RequestCollection
-getRequests :<|> getRequest :<|> getRequestCollectionById =
+postRequestCollection :: [RequestNode] -> ClientM RequestCollection
+getRequests :<|> getRequest :<|> getRequestCollectionById :<|> postRequestCollection =
   client api
 
 insertRequest :: Connection -> String -> IO Int

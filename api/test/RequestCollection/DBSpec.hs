@@ -12,12 +12,12 @@ spec = do
   it "select" $ do
     cleanDBAfter $ \connection -> do
       let RequestCollection _ requestNodesToInsert = Fixture.requestCollectionSample1
-      RequestCollection id insertedRequestNodes <- insertRequestNodes connection requestNodesToInsert
+      RequestCollection id insertedRequestNodes <- insertRequestNodes requestNodesToInsert connection
       mSelectedRequestNodes <- selectRequestCollectionById id connection
       mSelectedRequestNodes `shouldBe` (Just $ RequestCollection id insertedRequestNodes)
 
   it "insert" $ do
     cleanDBAfter $ \connection -> do
       let RequestCollection _ requestNodesToInsert = Fixture.requestCollectionSample1
-      RequestCollection _ insertedRequestNodes <- insertRequestNodes connection requestNodesToInsert
+      RequestCollection _ insertedRequestNodes <- insertRequestNodes requestNodesToInsert connection
       insertedRequestNodes `shouldBe` requestNodesToInsert

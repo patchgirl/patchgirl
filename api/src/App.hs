@@ -15,7 +15,8 @@ import           RequestCollection
 type Api =
   "request" :> Get '[JSON] [Request] :<|>
   "request" :> Capture "requestId" Int :> Get '[JSON] Request :<|>
-  "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
+  "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
+  "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection
 
 api :: Proxy Api
 api = Proxy
@@ -38,4 +39,5 @@ server :: Server Api
 server =
   getRequests :<|>
   getRequestById :<|>
-  getRequestCollectionById
+  getRequestCollectionById :<|>
+  postRequestCollection

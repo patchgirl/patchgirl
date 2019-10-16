@@ -68,8 +68,8 @@ instance FromJSON Request
 
 -- * DB
 
-insertRequestNodes :: Connection -> [RequestNode] -> IO RequestCollection
-insertRequestNodes connection requestNodes = do
+insertRequestNodes :: [RequestNode] -> Connection -> IO RequestCollection
+insertRequestNodes requestNodes connection = do
   [requestCollection] <- query connection rawQuery $ Only requestNodes
   return requestCollection
   where
@@ -114,6 +114,12 @@ selectRequests connection = do
           |] :: Query
 
 -- * Handler
+
+postRequestCollection :: [RequestNode] -> Handler RequestCollection
+postRequestCollection requestNodes = do
+  -- insertRequestNodes :: Connection -> [RequestNode] -> IO RequestCollection
+  liftIO (getDBConnection >>= (insertRequestNodes requestNodes)) >>= return
+
 
 getRequestCollectionById :: Int -> Handler RequestCollection
 getRequestCollectionById requestCollectionId = do
