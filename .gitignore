@@ -15,5 +15,5 @@ logs
 TAGS
 .stack-work/
 api.cabal
-front/client
+Client.elm
 *~

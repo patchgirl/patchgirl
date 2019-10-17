@@ -17,8 +17,8 @@ main :: IO ()
 main =
   let
     options = defElmOptions
-    namespace = [ "Api" ]
-    targetFolder = "../front/client"
+    namespace = [ "Client" ]
+    targetFolder = "../front/elm"
     elmDefinitions = [ DefineElm (Proxy :: Proxy RequestCollection)
                      , DefineElm (Proxy :: Proxy RequestNode)
                      ]
