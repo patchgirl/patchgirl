@@ -15,14 +15,17 @@ requestCollectionSample1 =
   RequestCollection 1 requestNodesTopLevel
   where
     requestNodesTopLevel =
-      [ Request2 { name = "someRequest1", url = "someUrl1" }
+      [ RequestFile { name = "someRequest1"
+                    , url = "someUrl1"
+                    }
       , RequestFolder { name = "someFolder1"
                       , children = requestNodesSubLevel
                       }
       ]
     requestNodesSubLevel =
-      [
-        Request2 { name = "someRequest2", url = "someUrl2" }
+      [ RequestFile { name = "someRequest2"
+                    , url = "someUrl2"
+                    }
       ]
 
 requestNodesSample1AsValue :: Value
@@ -43,7 +46,7 @@ requestCollectionSample1AsText =
          1,
          [
            {
-              "tag": "Request2",
+              "tag": "RequestFile",
               "name": "someRequest1",
               "url": "someUrl1"
            },
@@ -52,7 +55,7 @@ requestCollectionSample1AsText =
               "name": "someFolder1",
               "children": [
                  {
-                    "tag": "Request2",
+                    "tag": "RequestFile",
                     "name": "someRequest2",
                     "url": "someUrl2"
                  }

@@ -35,7 +35,7 @@ data RequestNode
   = RequestFolder { name :: String
                   , children :: [RequestNode]
                   }
-  | Request2 { name :: String
+  | RequestFile { name :: String
              , url :: String
              }
   deriving (Eq, Show, Generic)
