@@ -9,12 +9,14 @@ import           Servant
 import           System.IO
 
 import           RequestCollection
+import AppHealth
 
 -- * API
 
 type Api =
   "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
-  "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection
+  "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection :<|>
+  "health" :> Get '[JSON] AppHealth
 
 api :: Proxy Api
 api = Proxy
@@ -36,4 +38,5 @@ mkApp = return $ serve api server
 server :: Server Api
 server =
   getRequestCollectionById :<|>
-  postRequestCollection
+  postRequestCollection :<|>
+  getAppHealth

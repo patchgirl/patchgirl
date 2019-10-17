@@ -9,10 +9,12 @@ import           Test.Hspec
 import Helper.DB (cleanDBAfter)
 import Helper.App
 import qualified RequestCollection.Fixture as Fixture
+import AppHealth
 
 getRequestCollectionById :: Int -> ClientM RequestCollection
 postRequestCollection :: [RequestNode] -> ClientM RequestCollection
-getRequestCollectionById :<|> postRequestCollection =
+getAppHealth :: ClientM AppHealth
+getRequestCollectionById :<|> postRequestCollection :<|> getAppHealth =
   client api
 
 spec :: Spec
