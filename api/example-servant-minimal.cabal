@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c1ff909a3fdba094c33d83b40a14ebaf2eda977bc8eaed945f829213754793fe
+-- hash: 350855fe1e943e0be4f16820427edeec2d52c8bf8d1a88dba016f99dc0e63a94
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -23,9 +23,11 @@ library
   build-depends:
       aeson
     , base
+    , elm-bridge
     , neat-interpolation
     , postgresql-simple
     , servant
+    , servant-elm
     , servant-server
     , text
     , transformers
@@ -41,10 +43,12 @@ executable example-servant-minimal
   build-depends:
       aeson
     , base
+    , elm-bridge
     , example-servant-minimal
     , neat-interpolation
     , postgresql-simple
     , servant
+    , servant-elm
     , servant-server
     , text
     , transformers
@@ -69,6 +73,7 @@ test-suite spec
   build-depends:
       aeson
     , base
+    , elm-bridge
     , example-servant-minimal
     , hspec
     , http-client
@@ -77,6 +82,7 @@ test-suite spec
     , postgresql-simple
     , servant
     , servant-client
+    , servant-elm
     , servant-server
     , text
     , transformers

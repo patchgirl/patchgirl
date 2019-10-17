@@ -36,3 +36,5 @@ dependencies:
   - postgresql-simple
   - text
   - neat-interpolation
+  - servant-elm
+  - elm-bridge
