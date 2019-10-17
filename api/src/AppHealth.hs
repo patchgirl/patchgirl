@@ -34,7 +34,7 @@ selectDBIsRunning connection = do
   where
     rawQuery =
       [sql|
-          SELECT 1
+          SELECT true
           |]
 
 -- * Handler
