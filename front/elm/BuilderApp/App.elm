@@ -9,7 +9,7 @@ import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
 import BuilderApp.Builder.Message as Builder
-import Client as Client
+import Api.Client as Client
 import Http as Http
 
 update : Msg -> Model a -> (Model a, Cmd Msg)

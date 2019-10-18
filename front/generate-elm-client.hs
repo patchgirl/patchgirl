@@ -20,7 +20,10 @@ main =
   let
     options :: ElmOptions
     options = defElmOptions { urlPrefix = Dynamic }
-    namespace = [ "Client" ]
+    namespace =
+      [ "Api"
+      , "Client"
+      ]
     targetFolder = "../front/elm"
     elmDefinitions = [ DefineElm (Proxy :: Proxy RequestCollection)
                      , DefineElm (Proxy :: Proxy RequestNode)
