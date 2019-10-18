@@ -19,29 +19,31 @@ import BuilderApp.Builder.Url
 import BuilderApp.Builder.Body
 import BuilderApp.Builder.Method as Builder
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> Model
 update msg model =
-  case msg of
-    UpdateUrl url ->
-      ( { model | url = url }, Cmd.none)
+    case msg of
+        UpdateUrl url ->
+            { model | url = url }
 
-    SetHttpMethod newMethod ->
-      case newMethod of
-        "GET" -> ( { model | method = Get }, Cmd.none)
-        _ -> ( { model | method = Post }, Cmd.none)
+        SetHttpMethod newMethod ->
+            case newMethod of
+                "GET" ->
+                    { model | method = Get }
+                _ ->
+                    { model | method = Post }
 
-    GiveResponse result ->
-      ( { model | response = Just result }, Cmd.none)
+        GiveResponse result ->
+            { model | response = Just result }
 
-    UpdateHeaders rawHeaders ->
-      case Builder.parseHeaders rawHeaders of
-        Just headers ->
-          ( { model | headers = Debug.log "headers" headers }, Cmd.none )
-        Nothing ->
-          ( model, Cmd.none )
+        UpdateHeaders rawHeaders ->
+            case Builder.parseHeaders rawHeaders of
+                Just headers ->
+                    { model | headers = Debug.log "headers" headers }
+                Nothing ->
+                    model
 
-    SetHttpBody body ->
-      ( { model | body = body }, Cmd.none )
+        SetHttpBody body ->
+            { model | body = body }
 
-    _ ->
-      (model, Cmd.none)
+        _ ->
+            model
