@@ -16,7 +16,8 @@ import AppHealth
 type Api =
   "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
   "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection :<|>
-  "health" :> Get '[JSON] AppHealth
+  "health" :> Get '[JSON] AppHealth :<|>
+  "public" :> Raw
 
 api :: Proxy Api
 api = Proxy
@@ -39,4 +40,5 @@ server :: Server Api
 server =
   getRequestCollectionById :<|>
   postRequestCollection :<|>
-  getAppHealth
+  getAppHealth :<|>
+  serveDirectoryWebApp "../public"
