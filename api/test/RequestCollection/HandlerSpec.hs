@@ -15,7 +15,7 @@ getRequestCollectionById :: Int -> ClientM RequestCollection
 postRequestCollection :: [RequestNode] -> ClientM RequestCollection
 getAppHealth :: ClientM AppHealth
 getRequestCollectionById :<|> postRequestCollection :<|> getAppHealth =
-  client api
+  client apiProxy
 
 spec :: Spec
 spec = do

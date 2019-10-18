@@ -13,14 +13,22 @@ import AppHealth
 
 -- * API
 
+type CombinedApi =
+  Api :<|> Public
+
 type Api =
   "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
   "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection :<|>
-  "health" :> Get '[JSON] AppHealth :<|>
+  "health" :> Get '[JSON] AppHealth
+
+type Public =
   "public" :> Raw
 
-api :: Proxy Api
-api = Proxy
+apiProxy :: Proxy Api
+apiProxy = Proxy
+
+combinedApiProxy :: Proxy CombinedApi
+combinedApiProxy = Proxy
 
 -- * APP
 
@@ -34,11 +42,15 @@ run = do
   runSettings settings =<< mkApp
 
 mkApp :: IO Application
-mkApp = return $ serve api server
+mkApp =
+  return $ serve combinedApiProxy (api :<|> public)
 
-server :: Server Api
-server =
+api :: Server Api
+api =
   getRequestCollectionById :<|>
   postRequestCollection :<|>
-  getAppHealth :<|>
+  getAppHealth
+
+public :: Server Public
+public =
   serveDirectoryWebApp "../public"
