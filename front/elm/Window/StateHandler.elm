@@ -10,14 +10,6 @@ import BuilderApp.Model as BuilderApp
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 
-stateEncoder : BuilderApp.Model a -> Json.Value
-stateEncoder model =
-  let
-    nodes : Json.Value
-    nodes = List.map nodeEncoder model.tree |> toArray
-  in
-    Json.object [ ("root", nodes) ]
-
 toArray : List Json.Value -> Json.Value
 toArray values = Json.list (\a -> a) values
 
@@ -57,18 +49,3 @@ folderEncoder folder =
     , ("open", Json.bool folder.open)
     , ("children", List.map nodeEncoder folder.children |> toArray)
     ]
-
-sendSaveTabRequest : BuilderApp.Model a -> Cmd Msg
-sendSaveTabRequest model =
-  let
-    httpRequest = Http.request
-      { method = "PUT"
-      , headers = []
-      , url = "http://localhost:9000/requests"
-      , body = stateEncoder model |> Http.jsonBody
-      , expect = Http.expectString SaveBuilderTreeResponse
-      , timeout = Nothing
-      , tracker = Nothing
-      }
-  in
-    httpRequest

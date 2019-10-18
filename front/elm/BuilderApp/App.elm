@@ -52,7 +52,7 @@ saveBuilder : Builder.Msg -> Model a -> (Model a , Cmd Msg)
 saveBuilder subMsg model =
     case subMsg of
         Builder.AskSave ->
-            (model, Client.getHealth fromServer)
+            (model, Client.getHealth "/" fromServer)
 
         _ ->
             (model, Cmd.none)

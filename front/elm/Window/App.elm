@@ -104,19 +104,11 @@ update msg model =
                         Nothing ->
                             (model, Cmd.none)
 
-                BuilderApp.BuilderMsg (Builder.AskSave) ->
-                    ( model
-                    , sendSaveTabRequest model
-                    )
-
                 _ ->
                     let
                         (newModel, newMsg) = BuilderApp.update subMsg model
                     in
                         (newModel, Cmd.map BuilderAppMsg newMsg)
-
-        SaveBuilderTreeResponse foo ->
-            (model, Cmd.none)
 
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of

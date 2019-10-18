@@ -6,7 +6,7 @@
 import           Servant.API  ((:>), Capture, Get, JSON)
 import           Servant.Elm  (DefineElm (DefineElm), Proxy (Proxy),
                                defaultOptions, deriveElmDef, defElmImports, defElmOptions,
-                               deriveBoth, generateElmModuleWith)
+                               deriveBoth, generateElmModuleWith, urlPrefix, UrlPrefix(..), ElmOptions)
 import RequestCollection
 import AppHealth
 import App
@@ -18,7 +18,8 @@ deriveElmDef defaultOptions ''AppHealth
 main :: IO ()
 main =
   let
-    options = defElmOptions
+    options :: ElmOptions
+    options = defElmOptions { urlPrefix = Dynamic }
     namespace = [ "Client" ]
     targetFolder = "../front/elm"
     elmDefinitions = [ DefineElm (Proxy :: Proxy RequestCollection)

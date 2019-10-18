@@ -23,4 +23,3 @@ type Msg
   | MainNavBarMsg MainNavBar.Msg
   | EnvSelectionMsg EnvSelection.Msg
   | VarAppMsg VarApp.Msg
-  | SaveBuilderTreeResponse (Result Http.Error String)
