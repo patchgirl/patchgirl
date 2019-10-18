@@ -42,7 +42,6 @@ data RequestNode
 
 instance ToJSON RequestNode
 instance FromJSON RequestNode
-
 instance ToField [RequestNode] where
   toField = toField . encode
 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2d54ecebb7861b95ed2d710faf9a1a2bee826a2f3bd9a17feae4e6a4bca2988d
+-- hash: 7e8d91cb4d8771a363f9bc1a8ca7b1a33521b4d1cf39a386fdf6fcb7e861fa24
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -15,6 +15,7 @@ library
       App
       AppHealth
       DB
+      ElmOption
       RequestCollection
   other-modules:
       Paths_example_servant_minimal

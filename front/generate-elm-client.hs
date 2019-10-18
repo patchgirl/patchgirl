@@ -4,16 +4,16 @@
 {-# LANGUAGE TypeOperators     #-}
 
 import           Servant.API  ((:>), Capture, Get, JSON)
-import           Servant.Elm  (DefineElm (DefineElm), Proxy (Proxy),
-                               defaultOptions, deriveElmDef, defElmImports, defElmOptions,
-                               deriveBoth, generateElmModuleWith, urlPrefix, UrlPrefix(..), ElmOptions)
+import           Servant.Elm
+import qualified Data.Aeson as Aeson
 import RequestCollection
 import AppHealth
 import App
+import ElmOption (deriveElmDefOption)
 
-deriveElmDef defaultOptions ''RequestCollection
-deriveElmDef defaultOptions ''RequestNode
-deriveElmDef defaultOptions ''AppHealth
+deriveElmDef deriveElmDefOption ''RequestCollection
+deriveElmDef deriveElmDefOption ''RequestNode
+deriveElmDef deriveElmDefOption ''AppHealth
 
 main :: IO ()
 main =
@@ -25,10 +25,11 @@ main =
       , "Client"
       ]
     targetFolder = "../front/elm"
-    elmDefinitions = [ DefineElm (Proxy :: Proxy RequestCollection)
-                     , DefineElm (Proxy :: Proxy RequestNode)
-                     , DefineElm (Proxy :: Proxy AppHealth)
-                     ]
+    elmDefinitions =
+      [ DefineElm (Proxy :: Proxy RequestCollection)
+      , DefineElm (Proxy :: Proxy RequestNode)
+      , DefineElm (Proxy :: Proxy AppHealth)
+      ]
     proxyApi = (Proxy :: Proxy Api)
   in
     generateElmModuleWith options namespace defElmImports targetFolder elmDefinitions proxyApi
