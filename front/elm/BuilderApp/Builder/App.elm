@@ -45,5 +45,11 @@ update msg model =
         SetHttpBody body ->
             { model | body = body }
 
-        _ ->
+        AskSave ->
+            model
+
+        AskRun _ ->
+            model
+
+        ShowRequestAsCurl _ ->
             model

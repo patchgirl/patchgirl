@@ -8,6 +8,9 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
+import BuilderApp.Builder.Message as Builder
+import Client as Client
+import Http as Http
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
@@ -35,7 +38,48 @@ update msg model =
                             newBuilderTree = BuilderTree.modifyNode (changeFileBuilder newBuilder) model.tree idx
                             newModel = { model | tree = newBuilderTree }
                         in
-                            (newModel, Cmd.none)
+                            saveBuilder subMsg newModel
 
                     _ ->
                         (model, Cmd.none)
+        ServerOk ->
+            (model, Cmd.none)
+
+        ServerError serverErrorMsg ->
+            (model, Cmd.none)
+
+saveBuilder : Builder.Msg -> Model a -> (Model a , Cmd Msg)
+saveBuilder subMsg model =
+    case subMsg of
+        Builder.AskSave ->
+            (model, Client.getHealth fromServer)
+
+        _ ->
+            (model, Cmd.none)
+
+fromServer : Result Http.Error a -> Msg
+fromServer result =
+    case result of
+        Ok content ->
+            ServerOk
+
+        Err error ->
+            ServerError <| httpErrorToString error
+
+httpErrorToString : Http.Error -> String
+httpErrorToString error =
+    case error of
+        Http.BadUrl s ->
+            "bad url: " ++ s
+
+        Http.Timeout ->
+            "timeout"
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.BadStatus status ->
+            "bad status: " ++ String.fromInt status
+
+        Http.BadBody response ->
+            "bad payload: " ++ response

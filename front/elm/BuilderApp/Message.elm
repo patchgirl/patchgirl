@@ -8,3 +8,5 @@ type Msg
   = DisplayBuilder Int
   | BuilderMsg Builder.Msg
   | TreeMsg BuilderTree.Msg
+  | ServerOk
+  | ServerError String
