@@ -6,11 +6,11 @@ type alias Model a =
     { a
         | selectedBuilderIndex : Maybe Int
         , displayedBuilderIndex : Maybe Int
-        , tree : List Node
-        , displayedNodeMenuIndex : Maybe Int
+        , tree : List RequestNode
+        , displayedRequestNodeMenuIndex : Maybe Int
     }
 
-type Node
+type RequestNode
     = RequestFolder Folder
     | RequestFile File
 
@@ -18,7 +18,7 @@ type alias Folder =
   { name : String
   , open : Bool
   , showRenameInput : Bool
-  , children : List Node
+  , children : List RequestNode
   }
 
 type alias File =
@@ -32,14 +32,14 @@ defaultModel =
     { selectedBuilderIndex = Just 4
     , displayedBuilderIndex = Just 4
     , tree = defaultBuilderTree
-    , displayedNodeMenuIndex = Nothing
+    , displayedRequestNodeMenuIndex = Nothing
     }
 
 emptyModel =
     { selectedBuilderIndex = Nothing
     , displayedBuilderIndex = []
     , tree = []
-    , displayedNodeMenuIndex = Nothing
+    , displayedRequestNodeMenuIndex = Nothing
     }
 
 defaultFolder =

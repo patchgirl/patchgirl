@@ -6,16 +6,16 @@ import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 import BuilderApp.Model as BuilderApp
 
-type alias Model = Maybe (List BuilderApp.Node)
+type alias Model = Maybe (List BuilderApp.RequestNode)
 
-decodePostman : String -> Result Error (List BuilderApp.Node)
+decodePostman : String -> Result Error (List BuilderApp.RequestNode)
 decodePostman str =
   decodeString postmanCollectionToBuilderTreeDecoder str
 
-postmanCollectionToBuilderTreeDecoder : Decoder (List BuilderApp.Node)
+postmanCollectionToBuilderTreeDecoder : Decoder (List BuilderApp.RequestNode)
 postmanCollectionToBuilderTreeDecoder =
   let
-    root : String -> BuilderApp.Node -> BuilderApp.Node
+    root : String -> BuilderApp.RequestNode -> BuilderApp.RequestNode
     root name requests =
         BuilderApp.RequestFolder
             { children = [ requests ]
@@ -23,9 +23,9 @@ postmanCollectionToBuilderTreeDecoder =
             , open = True
             , showRenameInput = False
             }
-    filesDecoder : Decoder (List BuilderApp.Node)
+    filesDecoder : Decoder (List BuilderApp.RequestNode)
     filesDecoder = field "item" (list fileDecoder)
-    fileDecoder : Decoder BuilderApp.Node
+    fileDecoder : Decoder BuilderApp.RequestNode
     fileDecoder = map2 (\name builder -> BuilderApp.RequestFile
                             { name = name
                             , builder = builder
@@ -34,7 +34,7 @@ postmanCollectionToBuilderTreeDecoder =
                        ) fileNameDecoder builderDecoder
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
-    rootDecoder : Decoder BuilderApp.Node
+    rootDecoder : Decoder BuilderApp.RequestNode
     rootDecoder = map2 (\name children -> BuilderApp.RequestFolder
                             { name = name
                             , open = True

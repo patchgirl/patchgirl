@@ -13,7 +13,7 @@ import BuilderApp.Builder.Method as Builder
 toArray : List Json.Value -> Json.Value
 toArray values = Json.list (\a -> a) values
 
-nodeEncoder : BuilderApp.Node -> Json.Value
+nodeEncoder : BuilderApp.RequestNode -> Json.Value
 nodeEncoder node =
   case node of
     BuilderApp.RequestFolder f -> folderEncoder f

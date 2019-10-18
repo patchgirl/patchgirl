@@ -7,10 +7,10 @@ import BuilderApp.BuilderTree.Message exposing (..)
 import BuilderApp.Model exposing (..)
 import BuilderApp.Builder.Model as Builder
 
-findNode : List Node -> Int -> Maybe Node
-findNode =
+findRequestNode : List RequestNode -> Int -> Maybe RequestNode
+findRequestNode =
   let
-    find : List Node -> Int -> (Int, Maybe Node)
+    find : List RequestNode -> Int -> (Int, Maybe RequestNode)
     find tree idx =
       case (tree, idx) of
         (node :: tail, 0) -> (0, Just node)
@@ -31,16 +31,16 @@ findNode =
   in
     \x y -> find x y |> Tuple.second
 
-findFile : List Node -> Int -> Maybe BuilderApp.Model.File
+findFile : List RequestNode -> Int -> Maybe BuilderApp.Model.File
 findFile tree idx =
-    case findNode tree idx of
+    case findRequestNode tree idx of
         Just (RequestFile file) -> Just file
         _ -> Nothing
 
-modifyNode : (Node -> Node) -> List Node -> Int -> List Node
-modifyNode f =
+modifyRequestNode : (RequestNode -> RequestNode) -> List RequestNode -> Int -> List RequestNode
+modifyRequestNode f =
   let
-    modify : List Node -> Int -> (Int, List Node)
+    modify : List RequestNode -> Int -> (Int, List RequestNode)
     modify tree idx =
       if idx < 0 then
         (idx, tree)
@@ -70,10 +70,10 @@ modifyNode f =
   in
     \x y -> modify x y |> Tuple.second
 
-deleteNode : List Node -> Int -> List Node
-deleteNode =
+deleteRequestNode : List RequestNode -> Int -> List RequestNode
+deleteRequestNode =
   let
-    delete : List Node -> Int -> (Int, List Node)
+    delete : List RequestNode -> Int -> (Int, List RequestNode)
     delete tree idx =
       if idx < 0 then
         (idx, tree)
@@ -102,7 +102,7 @@ deleteNode =
   in
     \x y -> delete x y |> Tuple.second
 
-toggleFolder : Node -> Node
+toggleFolder : RequestNode -> RequestNode
 toggleFolder node =
   case node of
     RequestFile _ as file -> file
@@ -112,7 +112,7 @@ toggleFolder node =
                           , showRenameInput = False
                       }
 
-mkdir : Node -> Node
+mkdir : RequestNode -> RequestNode
 mkdir node =
   case node of
     RequestFile _ as file -> file
@@ -122,7 +122,7 @@ mkdir node =
                           , showRenameInput = False
                       }
 
-touch : Node -> Node
+touch : RequestNode -> RequestNode
 touch node =
   case node of
     RequestFile _ as file -> file
@@ -132,7 +132,7 @@ touch node =
                         , showRenameInput = False
                     }
 
-displayRenameInput : Node -> Node
+displayRenameInput : RequestNode -> RequestNode
 displayRenameInput node =
   case node of
     RequestFolder folder ->
@@ -140,7 +140,7 @@ displayRenameInput node =
     RequestFile file ->
         RequestFile { file | showRenameInput = True }
 
-rename : String -> Node -> Node
+rename : String -> RequestNode -> RequestNode
 rename newName node =
   case node of
     RequestFolder folder ->

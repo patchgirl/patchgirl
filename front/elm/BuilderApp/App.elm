@@ -35,7 +35,7 @@ update msg model =
                     (Just idx, Just file) ->
                         let
                             newBuilder = Builder.update subMsg file.builder
-                            newBuilderTree = BuilderTree.modifyNode (changeFileBuilder newBuilder) model.tree idx
+                            newBuilderTree = BuilderTree.modifyRequestNode (changeFileBuilder newBuilder) model.tree idx
                             newModel = { model | tree = newBuilderTree }
                         in
                             saveBuilder subMsg newModel

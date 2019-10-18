@@ -16,7 +16,7 @@ findPrevious l a =
         x :: xs -> findPrevious xs a
         [] -> Nothing
 
-markFileAsSaved : Node -> Node
+markFileAsSaved : RequestNode -> RequestNode
 markFileAsSaved node =
   case node of
       RequestFolder f ->
@@ -24,7 +24,7 @@ markFileAsSaved node =
       RequestFile f ->
           RequestFile { f | isSaved = True }
 
-changeFileBuilder : Builder.Model -> Node -> Node
+changeFileBuilder : Builder.Model -> RequestNode -> RequestNode
 changeFileBuilder newBuilder node =
     case node of
         RequestFolder f ->

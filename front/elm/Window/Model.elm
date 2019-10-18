@@ -14,10 +14,10 @@ type alias Model =
   -- BUILDER APP
   , selectedBuilderIndex : Maybe Int
   , displayedBuilderIndex : Maybe Int
-  , displayedNodeMenuIndex : Maybe Int
-  , tree : List BuilderApp.Node
+  , displayedRequestNodeMenuIndex : Maybe Int
+  , tree : List BuilderApp.RequestNode
   -- POSTMAN
-  , postmanModel : Maybe (List BuilderApp.Node)
+  , postmanModel : Maybe (List BuilderApp.RequestNode)
   -- ENVIRONMENT
   , selectedEnvironmentToRunIndex : Maybe Int
   , selectedEnvironmentToEditIndex : Maybe Int
@@ -51,7 +51,7 @@ defaultModel =
   let
       selectedBuilderIndex = Just 4
       displayedBuilderIndex = Just 4
-      displayedNodeMenuIndex = Nothing
+      displayedRequestNodeMenuIndex = Nothing
       tree = BuilderApp.defaultBuilderTree
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
@@ -81,7 +81,7 @@ defaultModel =
       { mainNavBarModel = MainNavBar.defaultModel
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
-      , displayedNodeMenuIndex = displayedNodeMenuIndex
+      , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex
       , tree = tree
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex

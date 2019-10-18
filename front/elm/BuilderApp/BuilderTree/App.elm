@@ -17,27 +17,27 @@ update msg model =
 
     ToggleMenu idx ->
       let
-        newDisplayedNodeMenuIndex =
-          case Maybe.exists model.displayedNodeMenuIndex ((==) idx) of
+        newDisplayedRequestNodeMenuIndex =
+          case Maybe.exists model.displayedRequestNodeMenuIndex ((==) idx) of
             True -> Nothing
             False -> Just idx
       in
-        { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }
+        { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
 
     ToggleFolder idx ->
-        { model | tree = (modifyNode toggleFolder model.tree idx) }
+        { model | tree = (modifyRequestNode toggleFolder model.tree idx) }
 
     Mkdir idx ->
-        { model | tree = (modifyNode mkdir model.tree idx) }
+        { model | tree = (modifyRequestNode mkdir model.tree idx) }
 
     Touch idx ->
-        { model | tree = (modifyNode touch model.tree idx) }
+        { model | tree = (modifyRequestNode touch model.tree idx) }
 
     ShowRenameInput idx ->
-        { model | tree = (modifyNode displayRenameInput model.tree idx) }
+        { model | tree = (modifyRequestNode displayRenameInput model.tree idx) }
 
     Rename idx newName ->
-        { model | tree = (modifyNode (rename newName) model.tree idx) }
+        { model | tree = (modifyRequestNode (rename newName) model.tree idx) }
 
     Delete idx ->
-        { model | tree = (deleteNode model.tree idx) }
+        { model | tree = (deleteRequestNode model.tree idx) }
