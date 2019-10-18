@@ -36,8 +36,8 @@ data RequestNode
                   , children :: [RequestNode]
                   }
   | RequestFile { name :: String
-             , url :: String
-             }
+                , url :: String
+                }
   deriving (Eq, Show, Generic)
 
 instance ToJSON RequestNode
