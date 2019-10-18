@@ -17,7 +17,7 @@ postmanCollectionToBuilderTreeDecoder =
   let
     root : String -> BuilderApp.Node -> BuilderApp.Node
     root name requests =
-        BuilderApp.Folder
+        BuilderApp.RequestFolder
             { children = [ requests ]
             , name = name
             , open = True
@@ -26,7 +26,7 @@ postmanCollectionToBuilderTreeDecoder =
     filesDecoder : Decoder (List BuilderApp.Node)
     filesDecoder = field "item" (list fileDecoder)
     fileDecoder : Decoder BuilderApp.Node
-    fileDecoder = map2 (\name builder -> BuilderApp.File
+    fileDecoder = map2 (\name builder -> BuilderApp.RequestFile
                             { name = name
                             , builder = builder
                             , showRenameInput = False
@@ -35,7 +35,7 @@ postmanCollectionToBuilderTreeDecoder =
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
     rootDecoder : Decoder BuilderApp.Node
-    rootDecoder = map2 (\name children -> BuilderApp.Folder
+    rootDecoder = map2 (\name children -> BuilderApp.RequestFolder
                             { name = name
                             , open = True
                             , children = children

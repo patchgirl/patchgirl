@@ -16,10 +16,10 @@ toArray values = Json.list (\a -> a) values
 nodeEncoder : BuilderApp.Node -> Json.Value
 nodeEncoder node =
   case node of
-    BuilderApp.Folder f -> folderEncoder f
-    BuilderApp.File f -> fileEncoder f
+    BuilderApp.RequestFolder f -> folderEncoder f
+    BuilderApp.RequestFile f -> fileEncoder f
 
-fileEncoder : BuilderApp.File2 -> Json.Value
+fileEncoder : BuilderApp.File -> Json.Value
 fileEncoder file =
   Json.object
     [ ("type", Json.string "file")
@@ -41,7 +41,7 @@ builderEncoder builder =
     , ("body", Json.string builder.body)
     ]
 
-folderEncoder : BuilderApp.Folder2 -> Json.Value
+folderEncoder : BuilderApp.Folder -> Json.Value
 folderEncoder folder =
   Json.object
     [ ("type", Json.string "folder")

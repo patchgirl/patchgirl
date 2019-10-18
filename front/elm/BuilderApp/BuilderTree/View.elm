@@ -31,7 +31,7 @@ nodeView idx mDisplayedNodeMenuIndex tree =
       [] -> (idx, [])
       node :: tail ->
         case node of
-          (Folder { name, open, children, showRenameInput }) ->
+          (RequestFolder { name, open, children, showRenameInput }) ->
             let
               (folderIdx, folderChildrenView) = nodeView (idx + 1) mDisplayedNodeMenuIndex children
               (newIdx, tailView) = nodeView folderIdx mDisplayedNodeMenuIndex tail
@@ -39,7 +39,7 @@ nodeView idx mDisplayedNodeMenuIndex tree =
             in
               (newIdx, currentFolderView :: tailView)
 
-          (File { name, showRenameInput }) ->
+          (RequestFile { name, showRenameInput }) ->
             let
               (newIdx, tailView) = nodeView (idx + 1) mDisplayedNodeMenuIndex tail
               currentFileView = fileView name idx showMenu showRenameInput

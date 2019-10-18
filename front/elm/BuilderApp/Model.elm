@@ -10,16 +10,16 @@ type alias Model a =
         , displayedNodeMenuIndex : Maybe Int
     }
 
-type Node = Folder Folder2 | File File2
+type Node = RequestFolder Folder | RequestFile File
 
-type alias Folder2 =
+type alias Folder =
   { name : String
   , open : Bool
   , showRenameInput : Bool
   , children : List Node
   }
 
-type alias File2 =
+type alias File =
   { name : String
   , showRenameInput : Bool
   , isSaved : Bool
@@ -41,54 +41,62 @@ emptyModel =
     }
 
 defaultFolder =
-  Folder { name = "new folder"
-         , open = False
-         , children = []
-         , showRenameInput = False
-         }
+  RequestFolder { name = "new folder"
+                , open = False
+                , children = []
+                , showRenameInput = False
+                }
 
 defaultFile =
-  File { name = "new file"
-       , builder = Builder.defaultBuilder
-       , showRenameInput = False
-       , isSaved = False
-       }
+  RequestFile { name = "new file"
+              , builder = Builder.defaultBuilder
+              , showRenameInput = False
+              , isSaved = False
+              }
 
 defaultBuilderTree =
-  [ Folder { name = "folder1"
-           , open = False
-           , children = []
-           , showRenameInput = False
-           }
-  , Folder { name = "folder2"
-           , open = True
-           , showRenameInput = False
-           , children = [ Folder { name = "folder2.2"
-                                 , open = True
-                                 , children = []
-                                 , showRenameInput = False
-                                 }
-                        , Folder { name = "folder3"
-                                 , open = True
-                                 , showRenameInput = False
-                                 , children = [ File { name = "file1"
-                                                     , builder = Builder.defaultModel1
-                                                     , showRenameInput = False
-                                                     , isSaved = False
-                                                     }
-                                              , File { name = "file2"
-                                                     , builder = Builder.defaultModel
-                                                     , showRenameInput = False
-                                                     , isSaved = True
-                                                     }
-                                              ]
-                                 }
-                        ]
-           }
+  [ RequestFolder
+        { name = "folder1"
+        , open = False
+        , children = []
+        , showRenameInput = False
+        }
+  , RequestFolder
+        { name = "folder2"
+        , open = True
+        , showRenameInput = False
+        , children =
+              [ RequestFolder
+                    { name = "folder2.2"
+                    , open = True
+                    , children = []
+                    , showRenameInput = False
+                    }
+              , RequestFolder
+                    { name = "folder3"
+                    , open = True
+                    , showRenameInput = False
+                    , children =
+                          [ RequestFile
+                                { name = "file1"
+                                , builder = Builder.defaultModel1
+                                , showRenameInput = False
+                                , isSaved = False
+                                }
+                          , RequestFile
+                                { name = "file2"
+                                , builder = Builder.defaultModel
+                                , showRenameInput = False
+                                , isSaved = True
+                                }
+                          ]
+                    }
+              ]
+        }
   ]
 
 emptyBuilderTree =
-    [ Folder
+    [ RequestFolder
           { name = "root"
           , open = False
           , children = []

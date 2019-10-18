@@ -26,7 +26,7 @@ view model =
 builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
-    mFile : Int -> Maybe BuilderApp.Model.File2
+    mFile : Int -> Maybe BuilderApp.Model.File
     mFile idx = BuilderTree.findFile model.tree idx
     title file =
         case file.isSaved of
