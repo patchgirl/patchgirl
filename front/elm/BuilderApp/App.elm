@@ -10,6 +10,7 @@ import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
 import BuilderApp.Builder.Message as Builder
 import Api.Client as Client
+import Api.Converter as Client
 import Http as Http
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
@@ -52,7 +53,10 @@ saveBuilder : Builder.Msg -> Model a -> (Model a , Cmd Msg)
 saveBuilder subMsg model =
     case subMsg of
         Builder.AskSave ->
-            (model, Client.getHealth "/" fromServer)
+            let
+                backRequestCollection = Client.convertRequestNodesFromFrontToBack model.requestCollection
+            in
+                (model, Client.postRequestCollection "/" backRequestCollection fromServer)
 
         _ ->
             (model, Cmd.none)
