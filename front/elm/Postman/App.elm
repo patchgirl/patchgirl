@@ -11,7 +11,7 @@ update msg model =
   case msg of
     Import ->
       case decodePostman imported of
-        Ok tree -> (Just tree, Cmd.none)
+        Ok requestCollection -> (Just requestCollection, Cmd.none)
         Err error -> (Debug.log (Json.Decode.errorToString error) Nothing, Cmd.none)
 
 imported : String

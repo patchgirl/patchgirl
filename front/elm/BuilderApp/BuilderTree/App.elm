@@ -25,19 +25,19 @@ update msg model =
         { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
 
     ToggleFolder idx ->
-        { model | tree = (modifyRequestNode toggleFolder model.tree idx) }
+        { model | requestCollection = (modifyRequestNode toggleFolder model.requestCollection idx) }
 
     Mkdir idx ->
-        { model | tree = (modifyRequestNode mkdir model.tree idx) }
+        { model | requestCollection = (modifyRequestNode mkdir model.requestCollection idx) }
 
     Touch idx ->
-        { model | tree = (modifyRequestNode touch model.tree idx) }
+        { model | requestCollection = (modifyRequestNode touch model.requestCollection idx) }
 
     ShowRenameInput idx ->
-        { model | tree = (modifyRequestNode displayRenameInput model.tree idx) }
+        { model | requestCollection = (modifyRequestNode displayRenameInput model.requestCollection idx) }
 
     Rename idx newName ->
-        { model | tree = (modifyRequestNode (rename newName) model.tree idx) }
+        { model | requestCollection = (modifyRequestNode (rename newName) model.requestCollection idx) }
 
     Delete idx ->
-        { model | tree = (deleteRequestNode model.tree idx) }
+        { model | requestCollection = (deleteRequestNode model.requestCollection idx) }

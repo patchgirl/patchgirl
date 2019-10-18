@@ -6,7 +6,7 @@ type alias Model a =
     { a
         | selectedBuilderIndex : Maybe Int
         , displayedBuilderIndex : Maybe Int
-        , tree : List RequestNode
+        , requestCollection : List RequestNode
         , displayedRequestNodeMenuIndex : Maybe Int
     }
 
@@ -31,14 +31,14 @@ type alias File =
 defaultModel =
     { selectedBuilderIndex = Just 4
     , displayedBuilderIndex = Just 4
-    , tree = defaultBuilderTree
+    , requestCollection = defaultBuilderTree
     , displayedRequestNodeMenuIndex = Nothing
     }
 
 emptyModel =
     { selectedBuilderIndex = Nothing
     , displayedBuilderIndex = []
-    , tree = []
+    , requestCollection = []
     , displayedRequestNodeMenuIndex = Nothing
     }
 

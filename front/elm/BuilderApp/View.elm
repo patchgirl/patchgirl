@@ -17,7 +17,7 @@ import BuilderApp.BuilderTree.View as BuilderTree
 view : Model a -> Html Msg
 view model =
     div [ id "builderApp" ]
-      [ div [ id "treeView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
+      [ div [ id "requestCollectionView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
       , div [ id "builderPanel" ]
           [ div [] [ builderView model model.selectedBuilderIndex ]
           ]
@@ -27,7 +27,7 @@ builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
     mFile : Int -> Maybe BuilderApp.Model.File
-    mFile idx = BuilderTree.findFile model.tree idx
+    mFile idx = BuilderTree.findFile model.requestCollection idx
     title file =
         case file.isSaved of
             True -> file.name

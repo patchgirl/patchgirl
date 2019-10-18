@@ -11,8 +11,8 @@ findRequestNode : List RequestNode -> Int -> Maybe RequestNode
 findRequestNode =
   let
     find : List RequestNode -> Int -> (Int, Maybe RequestNode)
-    find tree idx =
-      case (tree, idx) of
+    find requestCollection idx =
+      case (requestCollection, idx) of
         (node :: tail, 0) -> (0, Just node)
         ([], _) -> (idx, Nothing)
         (node :: tail, _) ->
@@ -32,8 +32,8 @@ findRequestNode =
     \x y -> find x y |> Tuple.second
 
 findFile : List RequestNode -> Int -> Maybe BuilderApp.Model.File
-findFile tree idx =
-    case findRequestNode tree idx of
+findFile requestCollection idx =
+    case findRequestNode requestCollection idx of
         Just (RequestFile file) -> Just file
         _ -> Nothing
 
@@ -41,11 +41,11 @@ modifyRequestNode : (RequestNode -> RequestNode) -> List RequestNode -> Int -> L
 modifyRequestNode f =
   let
     modify : List RequestNode -> Int -> (Int, List RequestNode)
-    modify tree idx =
+    modify requestCollection idx =
       if idx < 0 then
-        (idx, tree)
+        (idx, requestCollection)
       else
-        case (tree, idx) of
+        case (requestCollection, idx) of
           (node :: tail, 0) -> (-1, (f node) :: tail)
           ([], _) -> (idx, [])
           (node :: tail, _) ->
@@ -74,11 +74,11 @@ deleteRequestNode : List RequestNode -> Int -> List RequestNode
 deleteRequestNode =
   let
     delete : List RequestNode -> Int -> (Int, List RequestNode)
-    delete tree idx =
+    delete requestCollection idx =
       if idx < 0 then
-        (idx, tree)
+        (idx, requestCollection)
       else
-        case (tree, idx) of
+        case (requestCollection, idx) of
           (node :: tail, 0) -> (-1, tail)
           ([], _) -> (idx, [])
           (node :: tail, _) ->

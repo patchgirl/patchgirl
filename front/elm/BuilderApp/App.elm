@@ -29,14 +29,14 @@ update msg model =
 
         BuilderMsg subMsg ->
             let
-                mFile = Maybe.andThen (BuilderTree.findFile model.tree) model.selectedBuilderIndex
+                mFile = Maybe.andThen (BuilderTree.findFile model.requestCollection) model.selectedBuilderIndex
             in
                 case (model.selectedBuilderIndex, mFile) of
                     (Just idx, Just file) ->
                         let
                             newBuilder = Builder.update subMsg file.builder
-                            newBuilderTree = BuilderTree.modifyRequestNode (changeFileBuilder newBuilder) model.tree idx
-                            newModel = { model | tree = newBuilderTree }
+                            newBuilderTree = BuilderTree.modifyRequestNode (changeFileBuilder newBuilder) model.requestCollection idx
+                            newModel = { model | requestCollection = newBuilderTree }
                         in
                             saveBuilder subMsg newModel
 

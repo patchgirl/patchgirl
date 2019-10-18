@@ -15,7 +15,7 @@ type alias Model =
   , selectedBuilderIndex : Maybe Int
   , displayedBuilderIndex : Maybe Int
   , displayedRequestNodeMenuIndex : Maybe Int
-  , tree : List BuilderApp.RequestNode
+  , requestCollection : List BuilderApp.RequestNode
   -- POSTMAN
   , postmanModel : Maybe (List BuilderApp.RequestNode)
   -- ENVIRONMENT
@@ -52,7 +52,7 @@ defaultModel =
       selectedBuilderIndex = Just 4
       displayedBuilderIndex = Just 4
       displayedRequestNodeMenuIndex = Nothing
-      tree = BuilderApp.defaultBuilderTree
+      requestCollection = BuilderApp.defaultBuilderTree
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
       varAppModel =
@@ -82,7 +82,7 @@ defaultModel =
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex
-      , tree = tree
+      , requestCollection = requestCollection
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditIndex = selectedEnvironmentToEditIndex

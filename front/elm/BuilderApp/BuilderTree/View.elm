@@ -15,19 +15,19 @@ import Util.View as Util
 view : Model a -> Html Msg
 view model =
   let
-    treeView = Tuple.second (nodeView 0 model.displayedRequestNodeMenuIndex model.tree)
+    requestCollectionView = Tuple.second (nodeView 0 model.displayedRequestNodeMenuIndex model.requestCollection)
   in
     div [ class "columns" ]
       [ div [ class "column is-offset-1" ]
-        treeView
+        requestCollectionView
       ]
 
 nodeView : Int -> Maybe Int -> List RequestNode -> (Int, List (Html Msg))
-nodeView idx mDisplayedRequestNodeMenuIndex tree =
+nodeView idx mDisplayedRequestNodeMenuIndex requestCollection =
   let
     showMenu = mDisplayedRequestNodeMenuIndex == Just idx
   in
-    case tree of
+    case requestCollection of
       [] -> (idx, [])
       node :: tail ->
         case node of
