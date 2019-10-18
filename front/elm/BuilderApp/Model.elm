@@ -10,7 +10,9 @@ type alias Model a =
         , displayedNodeMenuIndex : Maybe Int
     }
 
-type Node = RequestFolder Folder | RequestFile File
+type Node
+    = RequestFolder Folder
+    | RequestFile File
 
 type alias Folder =
   { name : String

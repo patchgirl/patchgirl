@@ -127,8 +127,9 @@ touch node =
   case node of
     RequestFile _ as file -> file
     RequestFolder folder ->
-      RequestFolder { folder | children = (defaultFile :: folder.children)
-                    , showRenameInput = False
+      RequestFolder { folder
+                        | children = (defaultFile :: folder.children)
+                        , showRenameInput = False
                     }
 
 displayRenameInput : Node -> Node
