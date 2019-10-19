@@ -25,11 +25,7 @@ import           Data.Aeson (encode)
 
 data RequestCollection =
   RequestCollection Int [RequestNode]
-  deriving (Eq, Show, Generic)
-
-instance ToJSON RequestCollection
-instance FromJSON RequestCollection
-instance FromRow RequestCollection
+  deriving (Eq, Show, Generic, ToJSON, FromJSON, FromRow)
 
 data RequestNode
   = RequestFolder { name :: String
@@ -38,10 +34,8 @@ data RequestNode
   | RequestFile { name :: String
                 , url :: String
                 }
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-instance ToJSON RequestNode
-instance FromJSON RequestNode
 instance ToField [RequestNode] where
   toField = toField . encode
 
@@ -50,16 +44,6 @@ instance FromField [RequestNode] where
     value <- fromField field mdata :: Conversion Value
     let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
     either (returnError ConversionFailed field) return errorOrRequestNodes
-
-data Request
-  = Request {
-    requestId   :: Int,
-    requestText :: String
-    }
-  deriving (Eq, Show, Generic, FromRow)
-
-instance ToJSON Request
-instance FromJSON Request
 
 -- * DB
 
@@ -90,7 +74,6 @@ selectRequestCollectionById requestCollectionId connection = do
 
 postRequestCollection :: [RequestNode] -> Handler RequestCollection
 postRequestCollection requestNodes = do
-  -- insertRequestNodes :: Connection -> [RequestNode] -> IO RequestCollection
   liftIO (getDBConnection >>= (insertRequestNodes requestNodes)) >>= return
 
 getRequestCollectionById :: Int -> Handler RequestCollection
