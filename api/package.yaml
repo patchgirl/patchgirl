@@ -35,6 +35,6 @@ dependencies:
   - warp
   - postgresql-simple
   - text
-  - neat-interpolation
   - servant-elm
   - elm-bridge
+  - aeson-qq

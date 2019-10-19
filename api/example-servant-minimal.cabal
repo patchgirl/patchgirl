@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7e8d91cb4d8771a363f9bc1a8ca7b1a33521b4d1cf39a386fdf6fcb7e861fa24
+-- hash: 8a3188ba1aa6672b6ab940be5af09f43f0660660981aec2b6c8d5bef566e3918
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -24,9 +24,9 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
+    , aeson-qq
     , base
     , elm-bridge
-    , neat-interpolation
     , postgresql-simple
     , servant
     , servant-elm
@@ -44,10 +44,10 @@ executable example-servant-minimal
   ghc-options: -Wall
   build-depends:
       aeson
+    , aeson-qq
     , base
     , elm-bridge
     , example-servant-minimal
-    , neat-interpolation
     , postgresql-simple
     , servant
     , servant-elm
@@ -74,13 +74,13 @@ test-suite spec
   ghc-options: -Wall
   build-depends:
       aeson
+    , aeson-qq
     , base
     , elm-bridge
     , example-servant-minimal
     , hspec
     , http-client
     , http-types
-    , neat-interpolation
     , postgresql-simple
     , servant
     , servant-client

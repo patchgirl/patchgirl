@@ -7,4 +7,4 @@ import qualified RequestCollection.Fixture as Fixture
 spec :: Spec
 spec = do
   it "decode & encode" $ do
-    Fixture.requestColectionSample1AsValue `shouldBe` toJSON Fixture.requestCollectionSample1
+    toJSON Fixture.requestCollectionSample1 `shouldBe` Fixture.requestCollectionSample1AsValue
