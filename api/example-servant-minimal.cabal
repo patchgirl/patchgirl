@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8a3188ba1aa6672b6ab940be5af09f43f0660660981aec2b6c8d5bef566e3918
+-- hash: 34e4aaa8ef19a855cbc72701be9ea4ae889f28ecfb34c106df7f7f60abd413ba
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -21,7 +21,7 @@ library
       Paths_example_servant_minimal
   hs-source-dirs:
       src
-  ghc-options: -Wall
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
     , aeson-qq
@@ -41,7 +41,7 @@ executable example-servant-minimal
   main-is: exe/Main.hs
   other-modules:
       Paths_example_servant_minimal
-  ghc-options: -Wall
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
     , aeson-qq
@@ -71,7 +71,7 @@ test-suite spec
       Paths_example_servant_minimal
   hs-source-dirs:
       test
-  ghc-options: -Wall
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
     , aeson-qq

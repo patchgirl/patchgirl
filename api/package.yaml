@@ -1,6 +1,8 @@
 name: example-servant-minimal
 
-ghc-options: -Wall
+ghc-options:
+  - -Wall
+  - -fno-warn-name-shadowing
 
 tests:
   spec:

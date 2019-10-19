@@ -17,3 +17,4 @@ TAGS
 api.cabal
 Client.elm
 *~
+*.tmp
