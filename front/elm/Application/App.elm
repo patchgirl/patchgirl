@@ -24,7 +24,7 @@ httpResultToMsg result =
         Ok requestCollection ->
             let
                 newRequestCollection =
-                    Client.convertRequestCollectionFromBackToFront requestCollection
+                    Debug.log "converted" <| Client.convertRequestCollectionFromBackToFront requestCollection
             in
                 ServerSuccess newRequestCollection
 

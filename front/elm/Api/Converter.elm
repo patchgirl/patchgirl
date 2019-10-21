@@ -3,20 +3,37 @@ module Api.Converter exposing(..)
 import Api.Client as Back
 import BuilderApp.Model as Front
 
+import BuilderApp.Builder.Model as Builder
+
 convertRequestCollectionFromBackToFront : Back.RequestCollection -> Front.RequestCollection
 convertRequestCollectionFromBackToFront backRequestCollection =
     let
         (Back.RequestCollection id backRequestNodes) = backRequestCollection
     in
-        Front.RequestCollection id <|
-            [ Front.RequestFolder
-                  { name = ""
-                  , open = True
-                  , showRenameInput = True
-                  , children = []
-                  }
-            ]
+        Front.RequestCollection id (convertRequestNodesFromBackToFront backRequestNodes)
 
+convertRequestNodesFromBackToFront : List Back.RequestNode -> List Front.RequestNode
+convertRequestNodesFromBackToFront backRequestNodes =
+    let
+        convertRequestNodeFromBackToFront : Back.RequestNode -> Front.RequestNode
+        convertRequestNodeFromBackToFront backRequestNode =
+            case backRequestNode of
+                Back.RequestFolder folder ->
+                    Front.RequestFolder
+                        { name = folder.name
+                        , open = False
+                        , showRenameInput = False
+                        , children = convertRequestNodesFromBackToFront folder.children
+                        }
+                Back.RequestFile file ->
+                    Front.RequestFile
+                        { name = file.name
+                        , showRenameInput = False
+                        , isSaved = True
+                        , builder = Builder.defaultBuilder
+                        }
+    in
+        List.map convertRequestNodeFromBackToFront backRequestNodes
 
 convertRequestNodesFromFrontToBack : List Front.RequestNode -> List Back.RequestNode
 convertRequestNodesFromFrontToBack frontRequestNodes =
