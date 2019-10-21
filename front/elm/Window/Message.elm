@@ -12,9 +12,12 @@ import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
 import EnvironmentToRunSelection.Message as EnvSelection
 import VarApp.Message as VarApp
+import Api.Client as Client
 
 type Msg
-  = BuilderTreeMsg BuilderTree.Msg
+  = ServerSuccess (List Client.RequestNode)
+  | ServerError
+  | BuilderTreeMsg BuilderTree.Msg
   | BuilderAppMsg BuilderApp.Msg
   | PostmanMsg Postman.Msg
   | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg

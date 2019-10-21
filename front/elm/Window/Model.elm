@@ -10,7 +10,8 @@ import List.Extra as List
 import Window.Type as Type
 
 type alias Model =
-  { mainNavBarModel : MainNavBar.Model
+  { appState : AppState
+  , mainNavBarModel : MainNavBar.Model
   -- BUILDER APP
   , selectedBuilderIndex : Maybe Int
   , displayedBuilderIndex : Maybe Int
@@ -29,6 +30,10 @@ type alias Model =
   -- RUNNER
   , runnerModel : RequestRunner.Model
   }
+
+type AppState
+    = Unitialized
+    | Initialized
 
 getEnvironmentToRun : Model -> Maybe Type.Environment
 getEnvironmentToRun model =
@@ -78,7 +83,8 @@ defaultModel =
             }
           ]
   in
-      { mainNavBarModel = MainNavBar.defaultModel
+      { appState = Unitialized
+      , mainNavBarModel = MainNavBar.defaultModel
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex

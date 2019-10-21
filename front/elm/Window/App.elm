@@ -53,23 +53,45 @@ import VarApp.View as VarApp
 import VarApp.Message as VarApp
 import VarApp.App as VarApp
 
+import Api.Client as Client
+
 import Util.Flip exposing (..)
 import Util.List as List
 import List.Extra as List
 
 import Curl.Util as Curl
+import Http as Http
 
 import Window.View exposing(..)
 import Window.Model exposing(..)
 import Window.Util exposing(..)
 
+httpResultToMsg : Result Http.Error Client.RequestCollection -> Msg
+httpResultToMsg result =
+    case result of
+        Ok (Client.RequestCollection id requestNodes) ->
+            ServerSuccess requestNodes
+
+        Err error ->
+            ServerError
+
 init : () -> (Model, Cmd Msg)
 init _ =
-  (defaultModel, Cmd.none)
+    let
+        initializeState =
+            Client.getRequestCollectionByRequestCollectionId "/" 1 httpResultToMsg
+    in
+        (defaultModel, initializeState)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        ServerSuccess requestNodes ->
+            (model, Cmd.none)
+
+        ServerError ->
+            (model, Cmd.none)
+
         BuilderTreeMsg subMsg ->
             let
                 newModel = BuilderTree.update subMsg model
