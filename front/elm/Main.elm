@@ -1,13 +1,13 @@
 import Browser
 
-import Window.App as Window
-import Window.View as Window
-import Window.Model as Window
+import Application.App as Application
+import Application.View as Application
+import Application.Model as Application
 
 main =
   Browser.element
-    { init = Window.init
-    , update = Window.update
-    , subscriptions = Window.subscriptions
-    , view = Window.view
+    { init = Application.init
+    , update = Application.update
+    , subscriptions = Application.subscriptions
+    , view = Application.view
     }

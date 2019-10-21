@@ -1,10 +1,10 @@
-module Window.StateHandler exposing (..)
+module Application.StateHandler exposing (..)
 
 import Http
 import Json.Encode as Json
 
-import Window.Model exposing (..)
-import Window.Message exposing (..)
+import Application.Model exposing (..)
+import Application.Message exposing (..)
 
 import BuilderApp.Model as BuilderApp
 import BuilderApp.Builder.Model as Builder

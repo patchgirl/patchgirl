@@ -9,7 +9,7 @@ import Json.Decode as Json
 
 import EnvironmentToRunSelection.Message exposing (..)
 import List.Extra as List
-import Window.Type as Type
+import Application.Type as Type
 
 type alias Model a =
     { a

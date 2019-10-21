@@ -1,4 +1,4 @@
-module Window.Type exposing (..)
+module Application.Type exposing (..)
 
 type alias Environment =
     { name : String

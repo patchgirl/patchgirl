@@ -1,4 +1,4 @@
-module Window.Model exposing (..)
+module Application.Model exposing (..)
 
 import MainNavBar.Model as MainNavBar
 import RequestRunner.Model as RequestRunner
@@ -7,7 +7,7 @@ import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
 import List.Extra as List
-import Window.Type as Type
+import Application.Type as Type
 
 type alias Model =
   { appState : AppState

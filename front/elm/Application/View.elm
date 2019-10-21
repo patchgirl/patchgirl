@@ -1,4 +1,4 @@
-module Window.View exposing (..)
+module Application.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -21,8 +21,8 @@ import BuilderApp.View as BuilderApp
 import Util.List as List
 import List.Extra as List
 
-import Window.Model exposing(..)
-import Window.Message exposing(..)
+import Application.Model exposing(..)
+import Application.Message exposing(..)
 
 view : Model -> Html Msg
 view model =

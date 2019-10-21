@@ -1,7 +1,7 @@
-module Window.Util exposing (..)
+module Application.Util exposing (..)
 
 import BuilderApp.Model as BuilderApp
-import Window.Model exposing (..)
+import Application.Model exposing (..)
 import Util.List as List
 import List.Extra as List
 

@@ -1,8 +1,8 @@
-module Window.App exposing (..)
+module Application.App exposing (..)
 
-import Window.Model exposing (..)
-import Window.Message exposing (..)
-import Window.StateHandler exposing (..)
+import Application.Model exposing (..)
+import Application.Message exposing (..)
+import Application.StateHandler exposing (..)
 
 import BuilderApp.App as BuilderApp
 import BuilderApp.Model as BuilderApp
@@ -62,9 +62,9 @@ import List.Extra as List
 import Curl.Util as Curl
 import Http as Http
 
-import Window.View exposing(..)
-import Window.Model exposing(..)
-import Window.Util exposing(..)
+import Application.View exposing(..)
+import Application.Model exposing(..)
+import Application.Util exposing(..)
 
 httpResultToMsg : Result Http.Error Client.RequestCollection -> Msg
 httpResultToMsg result =

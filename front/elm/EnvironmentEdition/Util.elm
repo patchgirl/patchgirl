@@ -1,7 +1,7 @@
 module EnvironmentEdition.Util exposing (..)
 
 import EnvironmentEdition.Model exposing (..)
-import Window.Type as Type
+import Application.Type as Type
 import List.Extra as List
 
 getEnvironmentToEdit : Model a -> Maybe Type.Environment
