@@ -3,8 +3,7 @@ module BuilderApp.Builder.Model exposing (..)
 import Http
 
 type alias Model =
-  { name : String
-  , url : String
+  { url : String
   , method : Method
   , headers : List(Header)
   , body : String
@@ -16,8 +15,7 @@ type alias Header = (String, String)
 type alias Response = Result Http.Error String
 
 defaultBuilder =
-  { name = "new builder"
-  , url = ""
+  { url = ""
   , method = Get
   , headers = []
   , body = ""
@@ -25,8 +23,7 @@ defaultBuilder =
   }
 
 defaultModel1 =
-  { name = "no name"
-  , url = "{{url}}/api/people/1"
+  { url = "{{url}}/api/people/1"
   , method = Get
   , headers = []
   , body = ""
@@ -34,8 +31,7 @@ defaultModel1 =
   }
 
 defaultModel =
-  { name = "no name2"
-  , url = "swapi.co/api/people/2"
+  { url = "swapi.co/api/people/2"
   , method = Get
   , headers = []
   , body = ""
