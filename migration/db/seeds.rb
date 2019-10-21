@@ -1,6 +1,29 @@
+request_nodes = %{
+'[
+  {
+    "tag": "RequestFile",
+    "name": "someRequest1",
+    "url": "someUrl1",
+    "method": "Get",
+    "headers": [],
+    "body": ""
+  }, {
+    "tag": "RequestFolder",
+    "name": "someFolder1",
+    "children": [
+      {
+        "tag": "RequestFile",
+        "name": "someRequest2",
+        "url": "someUrl2",
+        "method": "Get",
+        "headers": [],
+        "body": ""
+      }
+    ]
+  }
+]'
+}
+
 ActiveRecord::Migration[5.2].execute %{
-
-INSERT INTO request_collection (id, tree) values
-(1, '[{"tag":"RequestFolder","children":[],"name":"folder1"},{"tag":"RequestFolder","children":[{"tag":"RequestFolder","children":[],"name":"folder2.2"},{"tag":"RequestFolder","children":[{"tag":"RequestFile","url":"{{url}}/api/people/1","name":"file1"},{"tag":"RequestFile","url":"swapi.co/api/people/2","name":"file2"}],"name":"folder3"}],"name":"folder2"}]')
-
+INSERT INTO request_collection (id, tree) values (1, #{request_nodes})
 }
