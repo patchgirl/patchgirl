@@ -11,7 +11,7 @@ import BuilderApp.Builder.Response
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 
-view : Model -> Html Msg
+view : Model a -> Html Msg
 view model =
   div [ id "builder" ]
     [ BuilderApp.Builder.Url.view model

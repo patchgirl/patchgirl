@@ -8,15 +8,16 @@ import Json.Decode as Json
 import Regex
 import Url as ElmUrl
 
-import BuilderApp.Builder.Message exposing (Msg(..))
-import BuilderApp.Builder.Body
-import BuilderApp.Builder.Header
-import BuilderApp.Builder.Model exposing (Model, Method(..))
-import BuilderApp.Builder.Method as Builder
+import BuilderApp.Builder.Message exposing (..)
+import BuilderApp.Builder.Body exposing (..)
+import BuilderApp.Builder.Header exposing (..)
+import BuilderApp.Builder.Method exposing (..)
+import BuilderApp.Builder.Model exposing (..)
+import BuilderApp.Model as BuilderApp
 
 import Util.View as Util
 
-parseUrl : Model -> String -> Maybe ElmUrl.Url
+parseUrl : Model a -> String -> Maybe ElmUrl.Url
 parseUrl model url =
   let
     urlRegex = Maybe.withDefault Regex.never <| Regex.fromString "(\\w+\\.\\w{2,}.*)|(localhost.*)"
@@ -26,17 +27,24 @@ parseUrl model url =
       True -> ElmUrl.fromString url
       False -> Nothing
 
-view : Model -> Html Msg
+view : Model a -> Html Msg
 view model =
   div [ id "urlBuilder" ]
     [ select [ class "urlOption", onInput SetHttpMethod ]
-          ([Get, Post, Put, Delete, Head, Patch, Options] |> List.map Builder.toOption)
+          ([ BuilderApp.Get
+          , BuilderApp.Post
+          , BuilderApp.Put
+          , BuilderApp.Delete
+          , BuilderApp.Head
+          , BuilderApp.Patch
+          , BuilderApp.Options
+          ] |> List.map toOption)
     , input [ id "urlInput"
             , placeholder "myApi.com/path?arg=someArg"
             , value model.url
             , onInput UpdateUrl
-            , Util.onEnter (AskRun model) ] []
-    , button [ onClick (AskRun model) ] [ text "Send" ]
-    , button [ onClick (ShowRequestAsCurl model)] [ text "Curl" ]
+            , Util.onEnter AskRun ] []
+    , button [ onClick AskRun ] [ text "Send" ]
+    , button [ onClick ShowRequestAsCurl] [ text "Curl" ]
     , button [ onClick AskSave] [ text "Save" ]
     ]

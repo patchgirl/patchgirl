@@ -7,5 +7,5 @@ import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import VarApp.Model as VarApp
 
 type Msg
-  = Run EnvironmentKeyValueEdition.Model VarApp.Model Builder.Model
+  = Run EnvironmentKeyValueEdition.Model VarApp.Model
   | GetResponse (Result Http.Error String)

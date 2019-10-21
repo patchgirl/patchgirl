@@ -19,7 +19,7 @@ import BuilderApp.Builder.Url
 import BuilderApp.Builder.Body
 import BuilderApp.Builder.Method as Builder
 
-update : Msg -> Model -> Model
+update : Msg -> Model a -> Model
 update msg model =
     case msg of
         UpdateUrl url ->

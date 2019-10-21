@@ -5,10 +5,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderApp.Builder.Model exposing (Model)
-import BuilderApp.Builder.Message exposing (Msg)
+import BuilderApp.Builder.Model exposing (..)
+import BuilderApp.Builder.Message exposing (..)
 
-view : Model -> Html Msg
+view : Model a -> Html Msg
 view model =
   let
     status = case model.response of

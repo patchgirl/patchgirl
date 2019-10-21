@@ -1,22 +1,20 @@
 module BuilderApp.Builder.Model exposing (..)
 
 import Http
+import BuilderApp.Model as BuilderApp
 
-type alias Model =
-  { url : String
-  , method : Method
-  , headers : List(Header)
-  , body : String
-  , response : Maybe Response
-  }
-
-type Method = Get | Post | Put | Delete | Patch | Head | Options
-type alias Header = (String, String)
-type alias Response = Result Http.Error String
+type alias Model a =
+    { a
+        | url : String
+        , method : BuilderApp.Method
+        , headers : List(BuilderApp.Header)
+        , body : String
+        , response : Maybe BuilderApp.Response
+    }
 
 defaultBuilder =
   { url = ""
-  , method = Get
+  , method = BuilderApp.Get
   , headers = []
   , body = ""
   , response = Nothing
@@ -24,7 +22,7 @@ defaultBuilder =
 
 defaultModel1 =
   { url = "{{url}}/api/people/1"
-  , method = Get
+  , method = BuilderApp.Get
   , headers = []
   , body = ""
   , response = Nothing
@@ -32,7 +30,7 @@ defaultModel1 =
 
 defaultModel =
   { url = "swapi.co/api/people/2"
-  , method = Get
+  , method = BuilderApp.Get
   , headers = []
   , body = ""
   , response = Nothing

@@ -5,8 +5,9 @@ import Http
 import Html exposing (Html, Attribute, div, input, text, a, select, option, button, textarea, p)
 import Html.Attributes exposing (value, placeholder, href, disabled, id)
 import Html.Events exposing (onInput)
-import BuilderApp.Builder.Message exposing (Msg(..))
-import BuilderApp.Builder.Model exposing (Model, Header)
+import BuilderApp.Model as BuilderApp
+import BuilderApp.Builder.Message exposing (..)
+import BuilderApp.Builder.Model exposing (..)
 
 parseHeaders : String -> Maybe (List(String, String))
 parseHeaders headers =
@@ -21,10 +22,10 @@ parseHeaders headers =
       String.lines headers |> List.filter (not << String.isEmpty)
     )
 
-mkHeader : Header -> Http.Header
+mkHeader : BuilderApp.Header -> Http.Header
 mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
 
-view : Model -> Html Msg
+view : Model a -> Html Msg
 view model =
   div [ id "headersBuilder" ]
     [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2"

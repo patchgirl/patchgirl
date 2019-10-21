@@ -38,6 +38,6 @@ builderView model mIdx =
       Just file ->
         div []
             [ h1 [] [ text (title file) ]
-            , Html.map BuilderMsg (Builder.view file.builder)
+            , Html.map BuilderMsg (Builder.view file)
             ]
       Nothing -> div [] []

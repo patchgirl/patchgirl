@@ -5,8 +5,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import BuilderApp.Builder.Model exposing (Method(..), Model)
-import BuilderApp.Builder.Message exposing (Msg(..))
+import BuilderApp.Builder.Model exposing (..)
+import BuilderApp.Builder.Message exposing (..)
 import Debug
 
 view : Html Msg
