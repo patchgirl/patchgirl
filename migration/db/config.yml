@@ -1,0 +1,9 @@
+test:
+  adapter: postgresql
+  port: 5433
+  host: localhost
+  database: test
+  username: test
+  password: test
+  pool: 5
+  timeout: 5000
