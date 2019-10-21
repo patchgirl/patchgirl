@@ -1,4 +1,6 @@
 require "standalone_migrations"
+require 'active_job/railtie'
+
 StandaloneMigrations::Tasks.load_tasks
 
 ActiveRecord::Base.schema_format = :sql
