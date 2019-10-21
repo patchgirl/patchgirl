@@ -13,6 +13,7 @@ import ElmOption (deriveElmDefOption)
 
 deriveElmDef deriveElmDefOption ''RequestCollection
 deriveElmDef deriveElmDefOption ''RequestNode
+deriveElmDef deriveElmDefOption ''Method
 deriveElmDef deriveElmDefOption ''AppHealth
 
 main :: IO ()
@@ -28,6 +29,7 @@ main =
     elmDefinitions =
       [ DefineElm (Proxy :: Proxy RequestCollection)
       , DefineElm (Proxy :: Proxy RequestNode)
+      , DefineElm (Proxy :: Proxy Method)
       , DefineElm (Proxy :: Proxy AppHealth)
       ]
     proxyApi = (Proxy :: Proxy Api)

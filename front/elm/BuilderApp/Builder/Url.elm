@@ -14,6 +14,7 @@ import BuilderApp.Builder.Header exposing (..)
 import BuilderApp.Builder.Method exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Model as BuilderApp
+import Api.Client as Client
 
 import Util.View as Util
 
@@ -31,13 +32,13 @@ view : Model a -> Html Msg
 view model =
   div [ id "urlBuilder" ]
     [ select [ class "urlOption", onInput SetHttpMethod ]
-          ([ BuilderApp.Get
-          , BuilderApp.Post
-          , BuilderApp.Put
-          , BuilderApp.Delete
-          , BuilderApp.Head
-          , BuilderApp.Patch
-          , BuilderApp.Options
+          ([ Client.Get
+          , Client.Post
+          , Client.Put
+          , Client.Delete
+          , Client.Head
+          , Client.Patch
+          , Client.Options
           ] |> List.map toOption)
     , input [ id "urlInput"
             , placeholder "myApi.com/path?arg=someArg"

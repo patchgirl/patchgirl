@@ -1,6 +1,7 @@
 module BuilderApp.Model exposing (..)
 
 import Http as Http
+import Api.Client as Client
 
 type alias Model a =
     { a
@@ -29,14 +30,13 @@ type alias File =
   , showRenameInput : Bool
   , isSaved : Bool
   , url : String
-  , method : Method
+  , method : Client.Method
   , headers : List Header
   , body : String
   , response : Maybe Response
   }
 
 type alias Response = Result Http.Error String
-type Method = Get | Post | Put | Delete | Patch | Head | Options
 type alias Header = (String, String)
 
 defaultFolder =
@@ -51,7 +51,7 @@ defaultFile =
               , showRenameInput = False
               , isSaved = False
               , url = ""
-              , method = Get
+              , method = Client.Get
               , headers = []
               , body = ""
               , response = Nothing

@@ -31,7 +31,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         , showRenameInput = False
                         , isSaved = True
                         , url = ""
-                        , method = Front.Get
+                        , method = Back.Get
                         , headers = []
                         , body = ""
                         , response = Nothing
@@ -54,6 +54,9 @@ convertRequestNodesFromFrontToBack frontRequestNodes =
                     Back.RequestFile
                         { name = file.name
                         , url = file.url
+                        , method = file.method
+                        , headers = file.headers
+                        , body = file.body
                         }
     in
         List.map convertRequestNodeFromFrontToBack frontRequestNodes

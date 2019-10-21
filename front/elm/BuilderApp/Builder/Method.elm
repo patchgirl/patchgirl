@@ -6,32 +6,33 @@ import Html.Attributes exposing (value, placeholder, href, disabled)
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Model as BuilderApp
+import Api.Client as Client
 
-methodToString : BuilderApp.Method -> String
+methodToString : Client.Method -> String
 methodToString method =
   case method of
-    BuilderApp.Get -> "GET"
-    BuilderApp.Post -> "POST"
-    BuilderApp.Put -> "PUT"
-    BuilderApp.Delete -> "DELETE"
-    BuilderApp.Patch -> "PATCH"
-    BuilderApp.Head -> "HEAD"
+    Client.Get -> "GET"
+    Client.Post -> "POST"
+    Client.Put -> "PUT"
+    Client.Delete -> "DELETE"
+    Client.Patch -> "PATCH"
+    Client.Head -> "HEAD"
     _ -> "OPTIONS"
 
-toOption : BuilderApp.Method -> Html Msg
+toOption : Client.Method -> Html Msg
 toOption method =
   option
     [ Html.Attributes.value (methodToString method) ]
     [ text (methodToString method) ]
 
-fromString : String -> Maybe BuilderApp.Method
+fromString : String -> Maybe Client.Method
 fromString method =
   case method of
-    "GET" -> Just BuilderApp.Get
-    "POST" -> Just BuilderApp.Post
-    "PUT" -> Just BuilderApp.Put
-    "DELETE" -> Just BuilderApp.Delete
-    "PATCH" -> Just BuilderApp.Patch
-    "HEAD" -> Just BuilderApp.Head
-    "OPTIONS" -> Just BuilderApp.Options
+    "GET" -> Just Client.Get
+    "POST" -> Just Client.Post
+    "PUT" -> Just Client.Put
+    "DELETE" -> Just Client.Delete
+    "PATCH" -> Just Client.Patch
+    "HEAD" -> Just Client.Head
+    "OPTIONS" -> Just Client.Options
     _ -> Nothing
