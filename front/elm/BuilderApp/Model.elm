@@ -30,7 +30,7 @@ type alias File =
   , isSaved : Bool
   , url : String
   , method : Method
-  , headers : List(Header)
+  , headers : List Header
   , body : String
   , response : Maybe Response
   }

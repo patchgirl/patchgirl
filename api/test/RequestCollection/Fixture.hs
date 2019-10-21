@@ -14,6 +14,9 @@ requestCollectionSample1 =
     requestNodesTopLevel =
       [ RequestFile { name = "someRequest1"
                     , url = "someUrl1"
+                    , method = Get
+                    , headers = []
+                    , body = ""
                     }
       , RequestFolder { name = "someFolder1"
                       , children = requestNodesSubLevel
@@ -22,6 +25,9 @@ requestCollectionSample1 =
     requestNodesSubLevel =
       [ RequestFile { name = "someRequest2"
                     , url = "someUrl2"
+                    , method = Get
+                    , headers = []
+                    , body = ""
                     }
       ]
 
@@ -32,7 +38,10 @@ requestCollectionSample1AsValue =
           , [ {
                 "tag": "RequestFile",
                 "name": "someRequest1",
-                "url": "someUrl1"
+                "url": "someUrl1",
+                "method": "Get",
+                "headers": [],
+                "body": ""
               }
             , {
                 "tag": "RequestFolder",
@@ -41,7 +50,10 @@ requestCollectionSample1AsValue =
                    {
                       "tag": "RequestFile",
                       "name": "someRequest2",
-                      "url": "someUrl2"
+                      "url": "someUrl2",
+                      "method": "Get",
+                      "headers": [],
+                      "body": ""
                    }
                 ]
              }

@@ -33,8 +33,22 @@ data RequestNode
                   }
   | RequestFile { name :: String
                 , url :: String
+                , method :: Method
+                , headers :: [(String, String)]
+                , body :: String
                 }
   deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data Method
+  = Get
+  | Post
+  | Put
+  | Delete
+  | Patch
+  | Head
+  | Options
+  deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
 
 instance ToField [RequestNode] where
   toField = toField . encode
