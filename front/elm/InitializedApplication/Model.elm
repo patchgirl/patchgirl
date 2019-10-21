@@ -44,13 +44,15 @@ getEnvironmentKeyValuesToRun model =
 
 getEnvironmentKeyValuesToEdit : Model -> List(String, String)
 getEnvironmentKeyValuesToEdit model =
-    (EnvironmentEdition.getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
+    EnvironmentEdition.getEnvironmentToEdit model
+        |> Maybe.map .keyValues
+        |> Maybe.withDefault []
 
 createModel : BuilderApp.RequestCollection -> Model
 createModel requestCollection =
   let
-      selectedBuilderIndex = Just 4
-      displayedBuilderIndex = Just 4
+      selectedBuilderIndex = Nothing
+      displayedBuilderIndex = Nothing
       displayedRequestNodeMenuIndex = Nothing
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]

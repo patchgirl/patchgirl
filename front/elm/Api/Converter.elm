@@ -30,10 +30,10 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         { name = file.name
                         , showRenameInput = False
                         , isSaved = True
-                        , url = ""
-                        , method = Back.Get
-                        , headers = []
-                        , body = ""
+                        , url = file.url
+                        , method = file.method
+                        , headers = file.headers
+                        , body = file.body
                         , response = Nothing
                         }
     in
