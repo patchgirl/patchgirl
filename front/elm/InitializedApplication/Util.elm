@@ -1,7 +1,7 @@
-module Application.Util exposing (..)
+module InitializedApplication.Util exposing (..)
 
 import BuilderApp.Model as BuilderApp
-import Application.Model exposing (..)
+import InitializedApplication.Model exposing (..)
 import Util.List as List
 import List.Extra as List
 
@@ -20,3 +20,4 @@ replaceEnvironmentToEdit model newEnvironment =
                     model.environments
     in
         { model | environments = newEnvironments }
+
