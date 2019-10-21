@@ -1,9 +1,29 @@
 # apiTester
 
+## Database
+
+### setup
+
+```bash
+cd migration/
+bundle exec rake db:migrate RAILS_ENV=test|dev
+```
+
+### run
+
+```bash
+docker-compose -f docker-compose.test.yml up
+```
+
+### seed
+
+```bash
+bundle exec rake db:seed RAILS_ENV=dev
+```
+
 ## Backend
 
-``` bash
-docker-compose -f  docker-compose.test.yml up # to run DB
+```bash
 cd api/
 stack setup
 stack test --fast
