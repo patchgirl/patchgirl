@@ -26,8 +26,9 @@ view model =
 builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
+    (RequestCollection _ requestNodes) = model.requestCollection
     mFile : Int -> Maybe BuilderApp.Model.File
-    mFile idx = BuilderTree.findFile model.requestCollection idx
+    mFile idx = BuilderTree.findFile requestNodes idx
     title file =
         case file.isSaved of
             True -> file.name

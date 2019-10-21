@@ -15,7 +15,7 @@ type alias Model =
     , selectedBuilderIndex : Maybe Int
     , displayedBuilderIndex : Maybe Int
     , displayedRequestNodeMenuIndex : Maybe Int
-    , requestCollection : List BuilderApp.RequestNode
+    , requestCollection : BuilderApp.RequestCollection
     -- POSTMAN
     , postmanModel : Maybe (List BuilderApp.RequestNode)
     -- ENVIRONMENT
@@ -46,13 +46,12 @@ getEnvironmentKeyValuesToEdit : Model -> List(String, String)
 getEnvironmentKeyValuesToEdit model =
     (EnvironmentEdition.getEnvironmentToEdit model) |> Maybe.map .keyValues |> Maybe.withDefault []
 
-defaultModel : Model
-defaultModel =
+createModel : BuilderApp.RequestCollection -> Model
+createModel requestCollection =
   let
       selectedBuilderIndex = Just 4
       displayedBuilderIndex = Just 4
       displayedRequestNodeMenuIndex = Nothing
-      requestCollection = BuilderApp.defaultBuilderTree
       envModel : EnvironmentKeyValueEdition.Model
       envModel = [("url", "swapi.co")]
       varAppModel =

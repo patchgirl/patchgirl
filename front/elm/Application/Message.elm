@@ -2,8 +2,9 @@ module Application.Message exposing (..)
 
 import Api.Client as Client
 import InitializedApplication.Message as InitializedApplication
+import BuilderApp.Model as BuilderApp
 
 type Msg
-  = ServerSuccess (List Client.RequestNode)
+  = ServerSuccess BuilderApp.RequestCollection
   | ServerError
   | InitializedApplicationMsg InitializedApplication.Msg

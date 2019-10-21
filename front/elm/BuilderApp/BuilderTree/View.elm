@@ -15,7 +15,9 @@ import Util.View as Util
 view : Model a -> Html Msg
 view model =
   let
-    requestCollectionView = Tuple.second (nodeView 0 model.displayedRequestNodeMenuIndex model.requestCollection)
+    (RequestCollection _ requestNodes) = model.requestCollection
+    requestCollectionView =
+        Tuple.second (nodeView 0 model.displayedRequestNodeMenuIndex requestNodes)
   in
     div [ class "columns" ]
       [ div [ class "column is-offset-1" ]

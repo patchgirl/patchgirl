@@ -2,6 +2,7 @@ module Application.App exposing (..)
 
 import Http as Http
 import Api.Client as Client
+import Api.Converter as Client
 
 import Application.View exposing(..)
 import Application.Model exposing(..)
@@ -20,8 +21,12 @@ init _ =
 httpResultToMsg : Result Http.Error Client.RequestCollection -> Msg
 httpResultToMsg result =
     case result of
-        Ok (Client.RequestCollection id requestNodes) ->
-            ServerSuccess requestNodes
+        Ok requestCollection ->
+            let
+                newRequestCollection =
+                    Client.convertRequestCollectionFromBackToFront requestCollection
+            in
+                ServerSuccess newRequestCollection
 
         Err error ->
             ServerError
@@ -29,13 +34,11 @@ httpResultToMsg result =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ServerSuccess requestNodes ->
+        ServerSuccess requestCollection ->
             let
-                defaultInitializedModel = InitializedApplication.defaultModel
                 newModel =
-                    Initialized { defaultInitializedModel
-                                    | requestCollection = []
-                                }
+                    Initialized <|
+                        InitializedApplication.createModel requestCollection
             in
                 (newModel, Cmd.none)
 

@@ -6,9 +6,12 @@ type alias Model a =
     { a
         | selectedBuilderIndex : Maybe Int
         , displayedBuilderIndex : Maybe Int
-        , requestCollection : List RequestNode
+        , requestCollection : RequestCollection
         , displayedRequestNodeMenuIndex : Maybe Int
     }
+
+type RequestCollection  =
+    RequestCollection Int (List RequestNode)
 
 type RequestNode
     = RequestFolder Folder
