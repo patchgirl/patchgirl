@@ -12,14 +12,15 @@ import Json.Decode as Json
 import Curl.Util as Curl
 
 import BuilderApp.Builder.Response
-import BuilderApp.Builder.Message exposing (Msg(..))
-import BuilderApp.Builder.Model exposing (Model, Method(..))
+import BuilderApp.Builder.Message exposing (..)
+import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Builder.Header as Builder
 import BuilderApp.Builder.Url
 import BuilderApp.Builder.Body
 import BuilderApp.Builder.Method as Builder
+import Api.Client as Client
 
-update : Msg -> Model a -> Model
+update : Msg -> Model a -> Model a
 update msg model =
     case msg of
         UpdateUrl url ->
@@ -28,9 +29,9 @@ update msg model =
         SetHttpMethod newMethod ->
             case newMethod of
                 "GET" ->
-                    { model | method = Get }
+                    { model | method = Client.Get }
                 _ ->
-                    { model | method = Post }
+                    { model | method = Client.Post }
 
         GiveResponse result ->
             { model | response = Just result }
@@ -48,8 +49,8 @@ update msg model =
         AskSave ->
             model
 
-        AskRun _ ->
+        AskRun ->
             model
 
-        ShowRequestAsCurl _ ->
+        ShowRequestAsCurl ->
             model

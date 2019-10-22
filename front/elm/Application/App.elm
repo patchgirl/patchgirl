@@ -9,6 +9,7 @@ import Application.Model exposing(..)
 import Application.Message exposing(..)
 
 import InitializedApplication.Model as InitializedApplication
+import InitializedApplication.App as InitializedApplication
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -46,7 +47,21 @@ update msg model =
             (model, Cmd.none)
 
         InitializedApplicationMsg subMsg ->
-            (model, Cmd.none)
+            case model of
+                Unitialized ->
+                    let
+                        errorMsg = "InitializedApplicationMsg received with unitialized Application - This should never happen"
+                    in
+                        (model, Cmd.none)
+
+                Initialized initializedApplication ->
+                    let
+                        (newInitializedApplication, newMsg) =
+                            InitializedApplication.update subMsg initializedApplication
+                    in
+                        ( Initialized newInitializedApplication
+                        , Cmd.map InitializedApplicationMsg newMsg
+                        )
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =

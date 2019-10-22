@@ -25,19 +25,56 @@ update msg model =
         { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
 
     ToggleFolder idx ->
-        { model | requestCollection = (modifyRequestNode toggleFolder model.requestCollection idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode toggleFolder requestNodes idx)
+            }
 
     Mkdir idx ->
-        { model | requestCollection = (modifyRequestNode mkdir model.requestCollection idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode mkdir requestNodes idx)
+            }
 
     Touch idx ->
-        { model | requestCollection = (modifyRequestNode touch model.requestCollection idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode touch requestNodes idx)
+            }
 
     ShowRenameInput idx ->
-        { model | requestCollection = (modifyRequestNode displayRenameInput model.requestCollection idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode displayRenameInput requestNodes idx)
+            }
 
     Rename idx newName ->
-        { model | requestCollection = (modifyRequestNode (rename newName) model.requestCollection idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
+            }
 
     Delete idx ->
-        { model | requestCollection = (deleteRequestNode model.requestCollection idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+
+        { model
+            | requestCollection =
+              RequestCollection id (deleteRequestNode requestNodes idx)
+        }

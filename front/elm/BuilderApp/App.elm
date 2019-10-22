@@ -30,19 +30,26 @@ update msg model =
 
         BuilderMsg subMsg ->
             let
-                mFile = Maybe.andThen (BuilderTree.findFile model.requestCollection) model.selectedBuilderIndex
+                (RequestCollection id requestNodes) = model.requestCollection
+                mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderIndex
             in
+                (model, Cmd.none)
+                {-
                 case (model.selectedBuilderIndex, mFile) of
                     (Just idx, Just file) ->
                         let
-                            newBuilder = Builder.update subMsg file.builder
-                            newBuilderTree = BuilderTree.modifyRequestNode (changeFileBuilder newBuilder) model.requestCollection idx
-                            newModel = { model | requestCollection = newBuilderTree }
+                            newBuilder = Builder.update subMsg file
+                            newBuilderTree =
+                                BuilderTree.modifyRequestNode (changeFileBuilder newBuilder) requestNodes idx
+                            newModel =
+                                { model
+                                    | requestCollection = RequestCollection id newBuilderTree }
                         in
                             saveBuilder subMsg newModel
 
                     _ ->
-                        (model, Cmd.none)
+                        (model, Cmd.none)-}
+
         ServerOk ->
             (model, Cmd.none)
 
@@ -54,7 +61,8 @@ saveBuilder subMsg model =
     case subMsg of
         Builder.AskSave ->
             let
-                backRequestCollection = Client.convertRequestNodesFromFrontToBack model.requestCollection
+                (RequestCollection id requestNodes) = model.requestCollection
+                backRequestCollection = Client.convertRequestNodesFromFrontToBack requestNodes
             in
                 (model, Client.postRequestCollection "/" backRequestCollection fromServer)
 

@@ -9,7 +9,8 @@ import RequestRunner.Util exposing (..)
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Run envs vars builder ->
+    Run envs vars ->
+        {-
         let
             request = buildRequest <| buildRequestInput envs vars builder
             cmdRequest =
@@ -23,6 +24,8 @@ update msg model =
                 }
         in
             (model, Http.request cmdRequest)
+            -}
+        (model, Cmd.none)
 
     GetResponse _ ->
       (model, Cmd.none)

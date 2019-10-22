@@ -1,3 +1,5 @@
+module Main exposing (..)
+
 import Browser
 
 import Application.App as Application

@@ -20,4 +20,3 @@ replaceEnvironmentToEdit model newEnvironment =
                     model.environments
     in
         { model | environments = newEnvironments }
-

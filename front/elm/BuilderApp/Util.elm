@@ -24,10 +24,10 @@ markFileAsSaved node =
       RequestFile f ->
           RequestFile { f | isSaved = True }
 
-changeFileBuilder : Builder.Model -> RequestNode -> RequestNode
-changeFileBuilder newBuilder node =
+changeFileBuilder : RequestNode -> RequestNode -> RequestNode
+changeFileBuilder newRequestNode node =
     case node of
         RequestFolder f ->
             RequestFolder f
         RequestFile f ->
-            RequestFile { f | builder = newBuilder }
+            newRequestNode

@@ -2,7 +2,7 @@ module InitializedApplication.App exposing (..)
 
 import InitializedApplication.Model exposing (..)
 import InitializedApplication.Message exposing (..)
-import InitializedApplication.StateHandler exposing (..)
+import InitializedApplication.Util exposing (..)
 
 import BuilderApp.App as BuilderApp
 import BuilderApp.Model as BuilderApp
@@ -62,23 +62,9 @@ import List.Extra as List
 import Curl.Util as Curl
 import Http as Http
 
-init : () -> (Model, Cmd Msg)
-init _ =
-    let
-        initializeState =
-            Client.getRequestCollectionByRequestCollectionId "/" 1 httpResultToMsg
-    in
-        (defaultModel, initializeState)
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ServerSuccess requestNodes ->
-            (model, Cmd.none)
-
-        ServerError ->
-            (model, Cmd.none)
-
         BuilderTreeMsg subMsg ->
             let
                 newModel = BuilderTree.update subMsg model
@@ -92,26 +78,19 @@ update msg model =
 
         BuilderAppMsg subMsg ->
             case subMsg of
-                BuilderApp.BuilderMsg (Builder.AskRun builder) ->
-                    case getEnvironmentToRun model of
+                BuilderApp.BuilderMsg Builder.AskRun ->
+                    (model, Cmd.none)
+--                    case getEnvironmentToRun model of
+                        {-
                         Just environment ->
                             case RequestRunner.update (RequestRunner.Run environment.keyValues model.varAppModel builder) Nothing of
                               (_, runnerSubMsg) -> (model, Cmd.map RequestRunnerMsg runnerSubMsg)
 
-                        Nothing ->
-                            (model, Cmd.none)
+                        Nothing ->-}
 
-                BuilderApp.BuilderMsg (Builder.ShowRequestAsCurl builder) ->
-                    case getEnvironmentToRun model of
-                        Just environment ->
-                            let
-                                requestInput = RequestRunner.buildRequestInput environment.keyValues model.varAppModel builder
-                            in
-                                case Debug.log "request" (Curl.showRequestAsCurl requestInput) of
-                                    (_) -> (model, Cmd.none)
 
-                        Nothing ->
-                            (model, Cmd.none)
+                BuilderApp.BuilderMsg (Builder.ShowRequestAsCurl) ->
+                    (model, Cmd.none)
 
                 _ ->
                     let
@@ -140,7 +119,7 @@ update msg model =
                             let
                                 newModel = replaceEnvironmentToEdit model newEnvironmentKeyValueEdition
                             in
-                                (Debug.log "test" newModel, Cmd.none)
+                                (newModel, Cmd.none)
 
                 Nothing ->
                     (model, Cmd.none)
