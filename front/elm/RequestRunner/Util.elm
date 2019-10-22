@@ -10,8 +10,7 @@ import RequestRunner.Message exposing (..)
 import RequestRunner.Model exposing (..)
 
 import BuilderApp.Builder.Method as Builder
-import BuilderApp.Builder.Header as Builder
-import BuilderApp.Builder.Url as Builder
+import BuilderApp.Builder.Util as Builder
 import BuilderApp.Builder.Model as Builder
 
 import RequestInput.Model as RequestInput

@@ -11,14 +11,11 @@ import Json.Decode as Json
 
 import Curl.Util as Curl
 
-import BuilderApp.Builder.Response
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
-import BuilderApp.Builder.Header as Builder
-import BuilderApp.Builder.Url
-import BuilderApp.Builder.Body
 import BuilderApp.Builder.Method as Builder
 import Api.Client as Client
+import Maybe.Extra as Maybe
 
 update : Msg -> Model a -> Model a
 update msg model =
@@ -37,7 +34,7 @@ update msg model =
             { model | response = Just result }
 
         UpdateHeaders rawHeaders ->
-            case Builder.parseHeaders rawHeaders of
+            case parseHeaders rawHeaders of
                 Just headers ->
                     { model | headers = Debug.log "headers" headers }
                 Nothing ->
@@ -54,3 +51,16 @@ update msg model =
 
         ShowRequestAsCurl ->
             model
+
+parseHeaders : String -> Maybe (List(String, String))
+parseHeaders headers =
+  let
+    parseRawHeader : String -> Maybe(String, String)
+    parseRawHeader rawHeader =
+      case String.split ":" rawHeader of
+        [headerKey, headerValue] -> Just (headerKey, headerValue)
+        _ -> Nothing
+  in
+    Maybe.traverse parseRawHeader (
+      String.lines headers |> List.filter (not << String.isEmpty)
+    )
