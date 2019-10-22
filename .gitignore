@@ -18,3 +18,4 @@ api.cabal
 Client.elm
 *~
 *.tmp
+front/bin/elm
