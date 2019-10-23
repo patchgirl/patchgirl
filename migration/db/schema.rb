@@ -9,6 +9,16 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: request_node_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.request_node_type AS ENUM (
+    'RequestFolder',
+    'RequestFile'
+);
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -26,20 +36,23 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
--- Name: request_collection; Type: TABLE; Schema: public; Owner: -
+-- Name: request_node; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.request_collection (
+CREATE TABLE public.request_node (
     id integer NOT NULL,
-    tree json NOT NULL
+    request_collection_id integer,
+    request_node_parent_id integer,
+    tag public.request_node_type,
+    name text
 );
 
 
 --
--- Name: request_collection_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: request_node_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.request_collection_id_seq
+CREATE SEQUENCE public.request_node_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -49,10 +62,10 @@ CREATE SEQUENCE public.request_collection_id_seq
 
 
 --
--- Name: request_collection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: request_node_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.request_collection_id_seq OWNED BY public.request_collection.id;
+ALTER SEQUENCE public.request_node_id_seq OWNED BY public.request_node.id;
 
 
 --
@@ -65,10 +78,10 @@ CREATE TABLE public.schema_migrations (
 
 
 --
--- Name: request_collection id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: request_node id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.request_collection ALTER COLUMN id SET DEFAULT nextval('public.request_collection_id_seq'::regclass);
+ALTER TABLE ONLY public.request_node ALTER COLUMN id SET DEFAULT nextval('public.request_node_id_seq'::regclass);
 
 
 --
@@ -80,11 +93,11 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
--- Name: request_collection request_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: request_node request_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.request_collection
-    ADD CONSTRAINT request_collection_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.request_node
+    ADD CONSTRAINT request_node_pkey PRIMARY KEY (id);
 
 
 --
