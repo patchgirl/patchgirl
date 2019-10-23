@@ -1,0 +1,93 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 34e4aaa8ef19a855cbc72701be9ea4ae889f28ecfb34c106df7f7f60abd413ba
+
+name:           example-servant-minimal
+version:        0.0.0
+build-type:     Simple
+
+library
+  exposed-modules:
+      App
+      AppHealth
+      DB
+      ElmOption
+      RequestCollection
+  other-modules:
+      Paths_example_servant_minimal
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -fno-warn-name-shadowing
+  build-depends:
+      aeson
+    , aeson-qq
+    , base
+    , elm-bridge
+    , postgresql-simple
+    , servant
+    , servant-elm
+    , servant-server
+    , text
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
+
+executable example-servant-minimal
+  main-is: exe/Main.hs
+  other-modules:
+      Paths_example_servant_minimal
+  ghc-options: -Wall -fno-warn-name-shadowing
+  build-depends:
+      aeson
+    , aeson-qq
+    , base
+    , elm-bridge
+    , example-servant-minimal
+    , postgresql-simple
+    , servant
+    , servant-elm
+    , servant-server
+    , text
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Helper.App
+      Helper.DB
+      RequestCollection.DBSpec
+      RequestCollection.Fixture
+      RequestCollection.HandlerSpec
+      RequestCollection.ModelSpec
+      Paths_example_servant_minimal
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -fno-warn-name-shadowing
+  build-depends:
+      aeson
+    , aeson-qq
+    , base
+    , elm-bridge
+    , example-servant-minimal
+    , hspec
+    , http-client
+    , http-types
+    , postgresql-simple
+    , servant
+    , servant-client
+    , servant-elm
+    , servant-server
+    , text
+    , transformers
+    , wai
+    , warp >=3.2.4
+  default-language: Haskell2010

@@ -7,7 +7,7 @@ import EnvironmentEdition.Message exposing (Msg(..))
 import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Model exposing (..)
 import EnvironmentEdition.Util exposing (..)
-import Window.Type as Type
+import Application.Type as Type
 
 defaultEnvironment =
     { name = "new environment"

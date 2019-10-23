@@ -5,28 +5,29 @@ import Json.Decode exposing (..)
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 import BuilderApp.Model as BuilderApp
+import Api.Client as Client
 
-type alias Model = Maybe (List BuilderApp.Node)
+type alias Model = Maybe (List BuilderApp.RequestNode)
 
-decodePostman : String -> Result Error (List BuilderApp.Node)
+{-decodePostman : String -> Result Error (List BuilderApp.RequestNode)
 decodePostman str =
   decodeString postmanCollectionToBuilderTreeDecoder str
-
-postmanCollectionToBuilderTreeDecoder : Decoder (List BuilderApp.Node)
+-}
+{-postmanCollectionToBuilderTreeDecoder : Decoder (List BuilderApp.RequestNode)
 postmanCollectionToBuilderTreeDecoder =
   let
-    root : String -> BuilderApp.Node -> BuilderApp.Node
+    root : String -> BuilderApp.RequestNode -> BuilderApp.RequestNode
     root name requests =
-        BuilderApp.Folder
+        BuilderApp.RequestFolder
             { children = [ requests ]
             , name = name
             , open = True
             , showRenameInput = False
             }
-    filesDecoder : Decoder (List BuilderApp.Node)
+    filesDecoder : Decoder (List BuilderApp.RequestNode)
     filesDecoder = field "item" (list fileDecoder)
-    fileDecoder : Decoder BuilderApp.Node
-    fileDecoder = map2 (\name builder -> BuilderApp.File
+    fileDecoder : Decoder BuilderApp.RequestNode
+    fileDecoder = map2 (\name builder -> BuilderApp.RequestFile
                             { name = name
                             , builder = builder
                             , showRenameInput = False
@@ -34,8 +35,8 @@ postmanCollectionToBuilderTreeDecoder =
                        ) fileNameDecoder builderDecoder
     fileNameDecoder : Decoder String
     fileNameDecoder =  (field "name" string)
-    rootDecoder : Decoder BuilderApp.Node
-    rootDecoder = map2 (\name children -> BuilderApp.Folder
+    rootDecoder : Decoder BuilderApp.RequestNode
+    rootDecoder = map2 (\name children -> BuilderApp.RequestFolder
                             { name = name
                             , open = True
                             , children = children
@@ -48,10 +49,10 @@ collectionNameDecoder : Decoder String
 collectionNameDecoder =
   field "info" (field "name" string)
 
-methodDecoder : Decoder Builder.Method
+methodDecoder : Decoder Client.Method
 methodDecoder =
   let
-    decode : Maybe Builder.Method -> Decoder Builder.Method
+    decode : Maybe Client.Method -> Decoder Client.Method
     decode mMethod =
       case mMethod of
         Nothing -> fail "cannot decode method"
@@ -61,7 +62,7 @@ methodDecoder =
       |> map Builder.fromString
       |> andThen decode
 
-builderDecoder : Decoder Builder.Model
+builderDecoder : Decoder (Builder.Model a)
 builderDecoder =
   map6 Builder.Model
     (field "name" string)
@@ -70,3 +71,4 @@ builderDecoder =
     (at ["request", "header"] (succeed []))
     (at ["request", "body"] (succeed ""))
     (succeed Nothing)
+-}

@@ -4,7 +4,7 @@ import EnvironmentKeyValueEdition.Model exposing (..)
 import EnvironmentKeyValueEdition.Message exposing (Msg(..))
 
 import Util.KeyValue.Util as KeyValue
-import Window.Type as Type
+import Application.Type as Type
 
 update : Msg -> Type.Environment -> Type.Environment
 update msg model =

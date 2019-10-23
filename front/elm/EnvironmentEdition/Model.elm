@@ -1,6 +1,6 @@
 module EnvironmentEdition.Model exposing (..)
 
-import Window.Type as Type
+import Application.Type as Type
 
 type alias Model a =
     { a

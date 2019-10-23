@@ -11,37 +11,56 @@ import Json.Decode as Json
 
 import Curl.Util as Curl
 
-import BuilderApp.Builder.Response
-import BuilderApp.Builder.Message exposing (Msg(..))
-import BuilderApp.Builder.Model exposing (Model, Method(..))
-import BuilderApp.Builder.Header as Builder
-import BuilderApp.Builder.Url
-import BuilderApp.Builder.Body
+import BuilderApp.Builder.Message exposing (..)
+import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Builder.Method as Builder
+import Api.Client as Client
+import Maybe.Extra as Maybe
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model a -> Model a
 update msg model =
-  case msg of
-    UpdateUrl url ->
-      ( { model | url = url }, Cmd.none)
+    case msg of
+        UpdateUrl url ->
+            { model | url = url }
 
-    SetHttpMethod newMethod ->
-      case newMethod of
-        "GET" -> ( { model | method = Get }, Cmd.none)
-        _ -> ( { model | method = Post }, Cmd.none)
+        SetHttpMethod newMethod ->
+            case newMethod of
+                "GET" ->
+                    { model | method = Client.Get }
+                _ ->
+                    { model | method = Client.Post }
 
-    GiveResponse result ->
-      ( { model | response = Just result }, Cmd.none)
+        GiveResponse result ->
+            { model | response = Just result }
 
-    UpdateHeaders rawHeaders ->
-      case Builder.parseHeaders rawHeaders of
-        Just headers ->
-          ( { model | headers = Debug.log "headers" headers }, Cmd.none )
-        Nothing ->
-          ( model, Cmd.none )
+        UpdateHeaders rawHeaders ->
+            case parseHeaders rawHeaders of
+                Just headers ->
+                    { model | headers = Debug.log "headers" headers }
+                Nothing ->
+                    model
 
-    SetHttpBody body ->
-      ( { model | body = body }, Cmd.none )
+        SetHttpBody body ->
+            { model | body = body }
 
-    _ ->
-      (model, Cmd.none)
+        AskSave ->
+            model
+
+        AskRun ->
+            model
+
+        ShowRequestAsCurl ->
+            model
+
+parseHeaders : String -> Maybe (List(String, String))
+parseHeaders headers =
+  let
+    parseRawHeader : String -> Maybe(String, String)
+    parseRawHeader rawHeader =
+      case String.split ":" rawHeader of
+        [headerKey, headerValue] -> Just (headerKey, headerValue)
+        _ -> Nothing
+  in
+    Maybe.traverse parseRawHeader (
+      String.lines headers |> List.filter (not << String.isEmpty)
+    )

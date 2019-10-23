@@ -7,7 +7,7 @@ import Html.Events exposing (..)
 import EnvironmentEdition.Message exposing (..)
 import Util.View as Util
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
-import Window.Type as Type
+import Application.Type as Type
 
 type alias Model a =
     { a

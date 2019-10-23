@@ -10,8 +10,7 @@ import RequestRunner.Message exposing (..)
 import RequestRunner.Model exposing (..)
 
 import BuilderApp.Builder.Method as Builder
-import BuilderApp.Builder.Header as Builder
-import BuilderApp.Builder.Url as Builder
+import BuilderApp.Builder.Util as Builder
 import BuilderApp.Builder.Model as Builder
 
 import RequestInput.Model as RequestInput
@@ -19,7 +18,7 @@ import RequestInput.Model as RequestInput
 import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import VarApp.Model as VarApp
 
-buildRequestInput : EnvironmentKeyValueEdition.Model -> VarApp.Model -> Builder.Model -> RequestInput.Model
+buildRequestInput : EnvironmentKeyValueEdition.Model -> VarApp.Model -> Builder.Model a -> RequestInput.Model
 buildRequestInput env var builder =
     { method = Builder.methodToString builder.method
     , headers = builder.headers

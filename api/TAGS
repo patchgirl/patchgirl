@@ -1,41 +1,0 @@
-
-./src/Lib.hs,42
-module LibLib0,1
-someFunc someFunc4,5
-
-./app/Main.hs,952
-module Main Main8,9
-data Api Api23,24
-data Api = ApiApi23,24
-  { httpManager httpManager24,25
-instance Yesod Yesod Api36,37
-  authRoute authRoute37,38
-  isAuthorized isAuthorized40,41
-isAdmin isAdmin46,47
-instance YesodAuth YesodAuth Api53,54
-  type AuthId AuthId54,55
-  authenticate authenticate55,56
-  loginDest loginDest57,58
-  logoutDest logoutDest58,59
-  authPlugins authPlugins59,60
-  maybeAuthId maybeAuthId60,61
-instance RenderMessage RenderMessage Api FormMessage62,63
-  renderMessage renderMessage63,64
-getHomeR getHomeR65,66
-postHomeR postHomeR83,84
-getAdminR getAdminR88,89
-getHomeRoute getHomeRoute96,97
-getTestRoute getTestRoute99,100
-newtype User User102,103
-instance PathPiece PathPiece User104,105
-  toPathPiece toPathPiece105,106
-  fromPathPiece fromPathPiece106,107
-getTest2Route getTest2Route108,109
-getPermissionDeniedRoute getPermissionDeniedRoute115,116
-main main118,119
-
-./test/Spec.hs,15
-main main0,1
-
-./Setup.hs,15
-main main1,2

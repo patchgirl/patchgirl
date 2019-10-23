@@ -12,3 +12,10 @@ target
 logs
 .env
 .#*
+TAGS
+.stack-work/
+api.cabal
+Client.elm
+*~
+*.tmp
+front/bin/elm

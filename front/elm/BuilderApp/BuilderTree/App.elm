@@ -17,27 +17,64 @@ update msg model =
 
     ToggleMenu idx ->
       let
-        newDisplayedNodeMenuIndex =
-          case Maybe.exists model.displayedNodeMenuIndex ((==) idx) of
+        newDisplayedRequestNodeMenuIndex =
+          case Maybe.exists model.displayedRequestNodeMenuIndex ((==) idx) of
             True -> Nothing
             False -> Just idx
       in
-        { model | displayedNodeMenuIndex = newDisplayedNodeMenuIndex }
+        { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
 
     ToggleFolder idx ->
-        { model | tree = (modifyNode toggleFolder model.tree idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode toggleFolder requestNodes idx)
+            }
 
     Mkdir idx ->
-        { model | tree = (modifyNode mkdir model.tree idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode mkdir requestNodes idx)
+            }
 
     Touch idx ->
-        { model | tree = (modifyNode touch model.tree idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode touch requestNodes idx)
+            }
 
     ShowRenameInput idx ->
-        { model | tree = (modifyNode displayRenameInput model.tree idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode displayRenameInput requestNodes idx)
+            }
 
     Rename idx newName ->
-        { model | tree = (modifyNode (rename newName) model.tree idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
+            }
 
     Delete idx ->
-        { model | tree = (deleteNode model.tree idx) }
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+
+        { model
+            | requestCollection =
+              RequestCollection id (deleteRequestNode requestNodes idx)
+        }

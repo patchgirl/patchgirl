@@ -16,14 +16,18 @@ findPrevious l a =
         x :: xs -> findPrevious xs a
         [] -> Nothing
 
-markFileAsSaved : Node -> Node
+markFileAsSaved : RequestNode -> RequestNode
 markFileAsSaved node =
   case node of
-    Folder f -> Folder f
-    File f -> File { f | isSaved = True }
+      RequestFolder f ->
+          RequestFolder f
+      RequestFile f ->
+          RequestFile { f | isSaved = True }
 
-changeFileBuilder : Builder.Model -> Node -> Node
-changeFileBuilder newBuilder node =
-  case node of
-    Folder f -> Folder f
-    File f -> File { f | builder = newBuilder }
+changeFileBuilder : RequestNode -> RequestNode -> RequestNode
+changeFileBuilder newRequestNode node =
+    case node of
+        RequestFolder f ->
+            RequestFolder f
+        RequestFile f ->
+            newRequestNode

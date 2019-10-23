@@ -10,9 +10,11 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Import ->
-      case decodePostman imported of
-        Ok tree -> (Just tree, Cmd.none)
+      {-case decodePostman imported of
+        Ok requestCollection -> (Just requestCollection, Cmd.none)
         Err error -> (Debug.log (Json.Decode.errorToString error) Nothing, Cmd.none)
+        -}
+      (model, Cmd.none)
 
 imported : String
 imported = """

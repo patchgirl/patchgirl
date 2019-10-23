@@ -7,17 +7,17 @@ import BuilderApp.BuilderTree.Message exposing (..)
 import BuilderApp.Model exposing (..)
 import BuilderApp.Builder.Model as Builder
 
-findNode : List Node -> Int -> Maybe Node
-findNode =
+findRequestNode : List RequestNode -> Int -> Maybe RequestNode
+findRequestNode =
   let
-    find : List Node -> Int -> (Int, Maybe Node)
-    find tree idx =
-      case (tree, idx) of
+    find : List RequestNode -> Int -> (Int, Maybe RequestNode)
+    find requestCollection idx =
+      case (requestCollection, idx) of
         (node :: tail, 0) -> (0, Just node)
         ([], _) -> (idx, Nothing)
         (node :: tail, _) ->
            case node of
-             Folder { children }  ->
+             RequestFolder { children }  ->
                let
                   (newIdx, folderSearch) = find children (idx - 1)
                   (_, tailSearch) = find tail newIdx
@@ -31,30 +31,35 @@ findNode =
   in
     \x y -> find x y |> Tuple.second
 
-findFile : List Node -> Int -> Maybe BuilderApp.Model.File2
-findFile tree idx =
-    case findNode tree idx of
-        Just (File file) -> Just file
+findFile : List RequestNode -> Int -> Maybe BuilderApp.Model.File
+findFile requestCollection idx =
+    case findRequestNode requestCollection idx of
+        Just (RequestFile file) -> Just file
         _ -> Nothing
 
-modifyNode : (Node -> Node) -> List Node -> Int -> List Node
-modifyNode f =
+modifyRequestNode : (RequestNode -> RequestNode) -> List RequestNode -> Int -> List RequestNode
+modifyRequestNode f =
   let
-    modify : List Node -> Int -> (Int, List Node)
-    modify tree idx =
+    modify : List RequestNode -> Int -> (Int, List RequestNode)
+    modify requestCollection idx =
       if idx < 0 then
-        (idx, tree)
+        (idx, requestCollection)
       else
-        case (tree, idx) of
+        case (requestCollection, idx) of
           (node :: tail, 0) -> (-1, (f node) :: tail)
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               Folder { name, open, showRenameInput, children } ->
+               RequestFolder { name, open, showRenameInput, children } ->
                  let
                     (newIdx, newChildren) = modify children (idx - 1)
                     (rIdx, newTail) = modify tail newIdx
-                    newFolder = Folder { name = name, open = open, showRenameInput = showRenameInput, children = newChildren }
+                    newFolder =
+                        RequestFolder { name = name
+                                      , open = open
+                                      , showRenameInput = showRenameInput
+                                      , children = newChildren
+                                      }
                  in (rIdx, newFolder :: newTail)
 
                _ ->
@@ -65,28 +70,28 @@ modifyNode f =
   in
     \x y -> modify x y |> Tuple.second
 
-deleteNode : List Node -> Int -> List Node
-deleteNode =
+deleteRequestNode : List RequestNode -> Int -> List RequestNode
+deleteRequestNode =
   let
-    delete : List Node -> Int -> (Int, List Node)
-    delete tree idx =
+    delete : List RequestNode -> Int -> (Int, List RequestNode)
+    delete requestCollection idx =
       if idx < 0 then
-        (idx, tree)
+        (idx, requestCollection)
       else
-        case (tree, idx) of
+        case (requestCollection, idx) of
           (node :: tail, 0) -> (-1, tail)
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               Folder { name, open, showRenameInput, children } ->
+               RequestFolder { name, open, showRenameInput, children } ->
                  let
                     (newIdx, newChildren) = delete children (idx - 1)
                     (rIdx, newTail) = delete tail newIdx
-                    newFolder = Folder { name = name
-                                       , open = open
-                                       , showRenameInput = showRenameInput
-                                       , children = newChildren
-                                       }
+                    newFolder = RequestFolder { name = name
+                                              , open = open
+                                              , showRenameInput = showRenameInput
+                                              , children = newChildren
+                                              }
                  in (rIdx, newFolder :: newTail)
 
                _ ->
@@ -97,42 +102,54 @@ deleteNode =
   in
     \x y -> delete x y |> Tuple.second
 
-toggleFolder : Node -> Node
+toggleFolder : RequestNode -> RequestNode
 toggleFolder node =
   case node of
-    File _ as file -> file
-    Folder folder ->
-        Folder { folder
-                   | open = (not folder.open)
-                   , showRenameInput = False
-               }
+    RequestFile _ as file -> file
+    RequestFolder folder ->
+        RequestFolder { folder
+                          | open = (not folder.open)
+                          , showRenameInput = False
+                      }
 
-mkdir : Node -> Node
+mkdir : RequestNode -> RequestNode
 mkdir node =
   case node of
-    File _ as file -> file
-    Folder folder ->
-        Folder { folder | children = defaultFolder :: folder.children
-               , showRenameInput = False
-               }
+    RequestFile _ as file -> file
+    RequestFolder folder ->
+        RequestFolder { folder
+                          | children = defaultFolder :: folder.children
+                          , showRenameInput = False
+                      }
 
-touch : Node -> Node
+touch : RequestNode -> RequestNode
 touch node =
   case node of
-    File _ as file -> file
-    Folder folder ->
-      Folder { folder | children = (defaultFile :: folder.children)
-             , showRenameInput = False
-             }
+    RequestFile _ as file -> file
+    RequestFolder folder ->
+      RequestFolder { folder
+                        | children = (defaultFile :: folder.children)
+                        , showRenameInput = False
+                    }
 
-displayRenameInput : Node -> Node
+displayRenameInput : RequestNode -> RequestNode
 displayRenameInput node =
   case node of
-    Folder folder -> Folder { folder | showRenameInput = True }
-    File file -> File { file | showRenameInput = True }
+    RequestFolder folder ->
+        RequestFolder { folder | showRenameInput = True }
+    RequestFile file ->
+        RequestFile { file | showRenameInput = True }
 
-rename : String -> Node -> Node
+rename : String -> RequestNode -> RequestNode
 rename newName node =
   case node of
-    Folder folder -> Folder { folder | name = newName, showRenameInput = False }
-    File file -> File { file | name = newName, showRenameInput = False }
+    RequestFolder folder ->
+        RequestFolder { folder
+                          | name = newName
+                          , showRenameInput = False
+                      }
+    RequestFile file ->
+        RequestFile { file
+                        | name = newName
+                        , showRenameInput = False
+                    }
