@@ -9,6 +9,7 @@ import           Servant
 import           System.IO
 
 import           RequestCollection
+import           RequestNode
 import AppHealth
 
 -- * API
@@ -17,15 +18,56 @@ type CombinedApi =
   Api :<|> Public
 
 type Api =
-  "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
-  "requestCollection" :> ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection :<|>
+  RequestCollectionApi :<|>
+  RequestFileApi :<|>
+  HealthApi
+
+
+type RequestCollectionApi =
+  "requestCollection" :> (
+    Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
+    ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection
+  )
+
+type RequestFileApi =
+  "requestCollection" :> (
+    Capture "requestCollectionId" Int :> "requestFile" :> ReqBody '[JSON] NewRequestFile :> Post '[JSON] CreatedRequestFile :<|>
+    Capture "requestCollectionId" Int :> "requestFile" :> Capture "requestFileId" Int :> Put '[JSON] CreatedRequestFile
+    )
+
+type HealthApi =
   "health" :> Get '[JSON] AppHealth
 
 type Public =
   "public" :> Raw
 
-apiProxy :: Proxy Api
-apiProxy = Proxy
+-- * Server
+
+api :: Server Api
+api =
+  requestCollectionApi :<|>
+  requestFileApi :<|>
+  getAppHealth
+  where
+    requestCollectionApi =
+      getRequestCollectionById :<|> postRequestCollection
+    requestFileApi =
+      createRequestFile :<|> updateRequestFile
+
+public :: Server Public
+public =
+  serveDirectoryWebApp "../public"
+
+-- * Proxy
+
+requestCollectionApiProxy :: Proxy RequestCollectionApi
+requestCollectionApiProxy = Proxy
+
+requestFileApiProxy :: Proxy RequestFileApi
+requestFileApiProxy = Proxy
+
+healthApiProxy :: Proxy HealthApi
+healthApiProxy = Proxy
 
 combinedApiProxy :: Proxy CombinedApi
 combinedApiProxy = Proxy
@@ -44,13 +86,3 @@ run = do
 mkApp :: IO Application
 mkApp =
   return $ serve combinedApiProxy (api :<|> public)
-
-api :: Server Api
-api =
-  getRequestCollectionById :<|>
-  postRequestCollection :<|>
-  getAppHealth
-
-public :: Server Public
-public =
-  serveDirectoryWebApp "../public"

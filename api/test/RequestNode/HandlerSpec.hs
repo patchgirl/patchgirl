@@ -1,8 +1,11 @@
-module RequestCollection.HandlerSpec where
+{-# LANGUAGE DataKinds     #-}
+{-# LANGUAGE TypeOperators #-}
+
+module RequestNode.HandlerSpec where
 
 import           App
 import           Network.HTTP.Types
-import           RequestCollection                          hiding (getRequestCollectionById, postRequestCollection)
+import           RequestNode                          hiding (createRequestFile, updateRequestFile)
 import           Servant
 import           Servant.Client
 import           Test.Hspec
@@ -11,10 +14,10 @@ import Helper.App
 import qualified RequestCollection.Fixture as Fixture
 import AppHealth
 
-getRequestCollectionById :: Int -> ClientM RequestCollection
-postRequestCollection :: [RequestNode] -> ClientM RequestCollection
-getRequestCollectionById :<|> postRequestCollection =
-  client requestCollectionApiProxy
+createRequestFile :: Int -> NewRequestFile -> ClientM CreatedRequestFile
+updateRequestFile :: Int -> Int -> ClientM CreatedRequestFile
+createRequestFile :<|> updateRequestFile =
+  client requestFileApiProxy
 
 spec :: Spec
 spec = do

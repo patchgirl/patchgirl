@@ -5,6 +5,8 @@
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE FlexibleInstances       #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module RequestCollection where
 
@@ -20,6 +22,7 @@ import           DB
 import           GHC.Generics
 import           Servant
 import           Data.Aeson (encode)
+import Http
 
 -- * Model
 
@@ -28,25 +31,17 @@ data RequestCollection =
   deriving (Eq, Show, Generic, ToJSON, FromJSON, FromRow)
 
 data RequestNode
-  = RequestFolder { name :: String
+  = RequestFolder { id :: Int
+                  , name :: String
                   , children :: [RequestNode]
                   }
-  | RequestFile { name :: String
+  | RequestFile { id :: Int
+                , name :: String
                 , url :: String
                 , method :: Method
                 , headers :: [(String, String)]
                 , body :: String
                 }
-  deriving (Eq, Show, Generic, ToJSON, FromJSON)
-
-data Method
-  = Get
-  | Post
-  | Put
-  | Delete
-  | Patch
-  | Head
-  | Options
   deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 

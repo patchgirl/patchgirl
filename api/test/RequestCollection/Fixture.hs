@@ -6,6 +6,7 @@ module RequestCollection.Fixture where
 import RequestCollection
 import Data.Aeson (Value)
 import Data.Aeson.QQ
+import Http
 
 requestCollectionSample1 :: RequestCollection
 requestCollectionSample1 =
