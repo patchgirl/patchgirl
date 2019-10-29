@@ -12,8 +12,7 @@ import qualified RequestCollection.Fixture as Fixture
 import AppHealth
 
 getRequestCollectionById :: Int -> ClientM RequestCollection
-postRequestCollection :: [RequestNode] -> ClientM RequestCollection
-getRequestCollectionById :<|> postRequestCollection =
+getRequestCollectionById =
   client requestCollectionApiProxy
 
 spec :: Spec

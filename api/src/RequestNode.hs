@@ -34,14 +34,6 @@ data NewRequestFile =
                  , newRequestFileMethod :: Method
                  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
-data CreatedRequestFile =
-  CreatedRequestFile { createdRequestFileId :: Int
-                     , createdRequestFileName :: String
-                     , createdRequestFileCollectionId :: Maybe Int
-                     , createdRequestFileParentId :: Maybe Int
-                     , createdRequestFileHttpMethod :: Method
-                     } deriving (Eq, Show, Generic, FromJSON, ToJSON)
-
 instance ToRow NewRequestFile where
   toRow (NewRequestFile { newRequestFileName
                         , newRequestFileParentNodeId
@@ -67,19 +59,10 @@ instance ToRow NewRequestFile where
                 , newRequestFileMethod
                 )
 
-instance FromRow CreatedRequestFile where
-  fromRow = do
-    createdRequestFileId <- field
-    createdRequestFileName <- field
-    createdRequestFileCollectionId <- field
-    createdRequestFileParentId <- field
-    createdRequestFileHttpMethod <- pure Get
-    return CreatedRequestFile {..}
-
-insertRequestFile :: NewRequestFile -> Connection -> IO CreatedRequestFile
+insertRequestFile :: NewRequestFile -> Connection -> IO Int
 insertRequestFile newRequestFile connection = do
-  [createdRequestFile] <- query connection rawQuery $ newRequestFile
-  return createdRequestFile
+  [Only id] <- query connection rawQuery $ newRequestFile
+  return id
   where
     rawQuery =
       [sql|
@@ -91,18 +74,14 @@ insertRequestFile newRequestFile connection = do
             http_method
           )
           VALUES (?, ?, ?, ?, ?)
-          RETURNING
-            id,
-            name,
-            request_collection_id,
-            request_node_parent_id
+          RETURNING id
           |]
 
-createRequestFile :: Int -> NewRequestFile -> Handler CreatedRequestFile
+createRequestFile :: Int -> NewRequestFile -> Handler Int
 createRequestFile requestCollectionId newRequestFile = do
   liftIO (getDBConnection >>= (insertRequestFile newRequestFile)) >>= return
 
-updateRequestFile :: Int -> Int -> Handler CreatedRequestFile
+updateRequestFile :: Int -> Int -> Handler Int
 updateRequestFile requestCollectionId requestFileId =
   undefined
 
@@ -112,13 +91,6 @@ data NewRequestFolder =
   NewRequestFolder { newRequestFolderName :: String
                    , newRequestFolderParentNodeId :: ParentNodeId
                    } deriving (Eq, Show, Generic)
-
-data CreatedRequestFolder =
-  CreatedRequestFolder { requestFolderId :: Int
-                       , requestFolderName :: String
-                       , requestFolderCollectionId :: Maybe Int
-                       , requestFolderParentId :: Maybe Int
-                       }
 
 instance ToRow NewRequestFolder where
   toRow (NewRequestFolder { newRequestFolderName
@@ -142,18 +114,10 @@ instance ToRow NewRequestFolder where
                 , newRequestFolderName
                 )
 
-instance FromRow CreatedRequestFolder where
-  fromRow = do
-    requestFolderId <- field
-    requestFolderName <- field
-    requestFolderCollectionId <- field
-    requestFolderParentId <- field
-    return CreatedRequestFolder {..}
-
-insertRequestFolder :: NewRequestFolder -> Connection -> IO CreatedRequestFolder
+insertRequestFolder :: NewRequestFolder -> Connection -> IO Int
 insertRequestFolder newRequestFolder connection = do
-  [createdRequestFolder] <- query connection rawQuery $ newRequestFolder
-  return createdRequestFolder
+  [Only id] <- query connection rawQuery $ newRequestFolder
+  return id
   where
     rawQuery =
       [sql|
@@ -164,9 +128,5 @@ insertRequestFolder newRequestFolder connection = do
             name
           )
           VALUES (?, ?, ?, ?)
-          RETURNING
-            id,
-            name,
-            request_collection_id,
-            request_node_parent_id
+          RETURNING id
           |]

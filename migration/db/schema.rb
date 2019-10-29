@@ -10,6 +10,21 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: http_method_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.http_method_type AS ENUM (
+    'Get',
+    'Post',
+    'Put',
+    'Delete',
+    'Patch',
+    'Head',
+    'Options'
+);
+
+
+--
 -- Name: request_node_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -44,7 +59,11 @@ CREATE TABLE public.request_node (
     request_collection_id integer,
     request_node_parent_id integer,
     tag public.request_node_type,
-    name text
+    name text,
+    http_url text,
+    http_method public.http_method_type,
+    http_headers text,
+    http_body text
 );
 
 

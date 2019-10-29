@@ -25,14 +25,16 @@ type Api =
 
 type RequestCollectionApi =
   "requestCollection" :> (
-    Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
-    ReqBody '[JSON] [RequestNode] :> Post '[JSON] RequestCollection
+    -- getRequestCollectionById
+    Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
   )
 
 type RequestFileApi =
   "requestCollection" :> (
-    Capture "requestCollectionId" Int :> "requestFile" :> ReqBody '[JSON] NewRequestFile :> Post '[JSON] CreatedRequestFile :<|>
-    Capture "requestCollectionId" Int :> "requestFile" :> Capture "requestFileId" Int :> Put '[JSON] CreatedRequestFile
+    -- createRequestFile
+    Capture "requestCollectionId" Int :> "requestFile" :> ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int :<|>
+    -- updateRequestFile
+    Capture "requestCollectionId" Int :> "requestFile" :> Capture "requestFileId" Int :> Put '[JSON] Int
     )
 
 type HealthApi =
@@ -50,7 +52,7 @@ api =
   getAppHealth
   where
     requestCollectionApi =
-      getRequestCollectionById :<|> postRequestCollection
+      getRequestCollectionById
     requestFileApi =
       createRequestFile :<|> updateRequestFile
 
