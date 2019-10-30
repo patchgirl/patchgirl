@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'standalone_migrations'
-gem 'pg'
+gem 'standalone_migrations', '~> 5.2.7'
+gem 'pg', '~> 1.1.4'
 gem 'activejob'
