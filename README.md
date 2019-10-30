@@ -25,7 +25,7 @@ bundle exec rake db:seed RAILS_ENV=dev
 
 ```bash
 cd api/
-stack setup
+stack --nix setup
 stack test --fast
 ```
 
