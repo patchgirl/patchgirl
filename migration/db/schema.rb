@@ -39,6 +39,49 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: request_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.request_node (
+    id integer NOT NULL,
+    request_node_parent_id integer,
+    tag public.request_node_type,
+    name text,
+    http_url text,
+    http_method public.http_method_type,
+    http_headers text,
+    http_body text
+);
+
+
+--
+-- Name: request_node_as_js(public.request_node); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.request_node_as_js(somerow public.request_node) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        RETURN CASE WHEN someRow.tag = 'RequestFolder' THEN
+          jsonb_build_object(
+            'name', someRow.name,
+            'tag', someRow.tag
+          )
+        ELSE
+          jsonb_build_object(
+            'name', someRow.name,
+            'tag', someRow.tag,
+            'http_url', someRow.http_url,
+            'http_method', someRow.http_method,
+            'http_headers', someRow.http_headers,
+            'http_body', someRow.http_body
+          )
+        END;
+      END;
+      $$;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -51,19 +94,12 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
--- Name: request_node; Type: TABLE; Schema: public; Owner: -
+-- Name: request_collection_to_request_node; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.request_node (
-    id integer NOT NULL,
-    request_collection_id integer,
-    request_node_parent_id integer,
-    tag public.request_node_type,
-    name text,
-    http_url text,
-    http_method public.http_method_type,
-    http_headers text,
-    http_body text
+CREATE TABLE public.request_collection_to_request_node (
+    request_collection_id integer NOT NULL,
+    request_node_id integer NOT NULL
 );
 
 
@@ -112,6 +148,14 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
+-- Name: request_collection_to_request_node request_collection_to_request_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.request_collection_to_request_node
+    ADD CONSTRAINT request_collection_to_request_node_pkey PRIMARY KEY (request_collection_id, request_node_id);
+
+
+--
 -- Name: request_node request_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -125,6 +169,14 @@ ALTER TABLE ONLY public.request_node
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: request_collection_to_request_node request_collection_to_request_node_request_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.request_collection_to_request_node
+    ADD CONSTRAINT request_collection_to_request_node_request_node_id_fkey FOREIGN KEY (request_node_id) REFERENCES public.request_node(id);
 
 
 --
