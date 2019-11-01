@@ -11,6 +11,7 @@ import           System.IO
 import           RequestCollection
 import           RequestNode
 import AppHealth
+import RequestNode.Model
 
 -- * API
 
@@ -21,7 +22,6 @@ type Api =
   RequestCollectionApi :<|>
   RequestFileApi :<|>
   HealthApi
-
 
 type RequestCollectionApi =
   "requestCollection" :> (

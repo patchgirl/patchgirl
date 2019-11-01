@@ -12,15 +12,13 @@ module RequestCollection where
 
 import           Control.Monad.IO.Class
 import           Data.Aeson
-import Data.Aeson.Types (parseEither)
 import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.FromField
 import           Database.PostgreSQL.Simple.FromRow (FromRow(..))
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
 import           Servant
-import Http
+import RequestNode.Model
 
 -- * Model
 
@@ -28,34 +26,13 @@ data RequestCollection =
   RequestCollection Int [RequestNode]
   deriving (Eq, Show, Generic, ToJSON, FromJSON, FromRow)
 
-data RequestNode
-  = RequestFolder { id :: Int
-                  , name :: String
-                  , children :: [RequestNode]
-                  }
-  | RequestFile { id :: Int
-                , name :: String
-                , url :: String
-                , method :: Method
-                , headers :: [(String, String)]
-                , body :: String
-                }
-  deriving (Eq, Show, Generic, ToJSON, FromJSON)
-
-
-instance FromField [RequestNode] where
-  fromField field mdata = do
-    value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
-    either (returnError ConversionFailed field) return errorOrRequestNodes
-
 -- * DB
 
 selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
 selectRequestCollectionById requestCollectionId connection = do
   query connection collectionExistsSql (Only requestCollectionId) >>= \case
     [Only True] -> do
-      [requestCollection] <- query connection rawQuery (requestCollectionId, requestCollectionId)
+      [requestCollection] <- query connection selectRequestCollectionSql (requestCollectionId, requestCollectionId)
       return $ Just requestCollection
     _ ->
       return Nothing
@@ -68,7 +45,7 @@ selectRequestCollectionById requestCollectionId connection = do
             WHERE request_collection_id = ?
           );
           |]
-    rawQuery =
+    selectRequestCollectionSql =
       [sql|
           WITH RECURSIVE request_node_with_its_parent AS (
             SELECT id, '{}'::int[] AS parents, 0 AS level

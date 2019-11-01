@@ -20,44 +20,9 @@ import           Control.Monad.IO.Class (liftIO)
 import           DB
 import Http
 import           Data.Aeson (FromJSON, ToJSON)
+import RequestNode.Model
 
-data ParentNodeId
-  = RequestCollectionId Int
-  | RequestNodeId Int
-  deriving (Eq, Show, Generic, FromJSON, ToJSON)
-
--- * create file
-
-data NewRequestFile =
-  NewRequestFile { newRequestFileName :: String
-                 , newRequestFileParentNodeId :: ParentNodeId
-                 , newRequestFileMethod :: Method
-                 } deriving (Eq, Show, Generic, FromJSON, ToJSON)
-
-instance ToRow NewRequestFile where
-  toRow (NewRequestFile { newRequestFileName
-                        , newRequestFileParentNodeId
-                        , newRequestFileMethod
-                        }) =
-    let
-      tag = "RequestFile" :: String
-      noId = Nothing :: Maybe Int
-    in
-      case newRequestFileParentNodeId of
-        RequestCollectionId requestCollectionId ->
-          toRow ( requestCollectionId
-                , noId
-                , tag
-                , newRequestFileName
-                , newRequestFileMethod
-                )
-        RequestNodeId requestNodeId ->
-          toRow ( noId
-                , requestNodeId
-                , tag
-                , newRequestFileName
-                , newRequestFileMethod
-                )
+-- * file
 
 insertRequestFile :: NewRequestFile -> Connection -> IO Int
 insertRequestFile newRequestFile connection = do
@@ -85,34 +50,7 @@ updateRequestFile :: Int -> Int -> Handler Int
 updateRequestFile requestCollectionId requestFileId =
   undefined
 
--- * create folder
-
-data NewRequestFolder =
-  NewRequestFolder { newRequestFolderName :: String
-                   , newRequestFolderParentNodeId :: ParentNodeId
-                   } deriving (Eq, Show, Generic)
-
-instance ToRow NewRequestFolder where
-  toRow (NewRequestFolder { newRequestFolderName
-                          , newRequestFolderParentNodeId
-                          }) =
-    let
-      tag = "RequestFolder" :: String
-      noId = Nothing :: Maybe Int
-    in
-      case newRequestFolderParentNodeId of
-        RequestCollectionId requestCollectionId ->
-          toRow ( requestCollectionId
-                , noId
-                , tag
-                , newRequestFolderName
-                )
-        RequestNodeId requestNodeId ->
-          toRow ( noId
-                , requestNodeId
-                , tag
-                , newRequestFolderName
-                )
+-- * folder
 
 insertRequestFolder :: NewRequestFolder -> Connection -> IO Int
 insertRequestFolder newRequestFolder connection = do
