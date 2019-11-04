@@ -39,7 +39,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
     in
         List.map convertRequestNodeFromBackToFront backRequestNodes
 
-convertRequestNodesFromFrontToBack : List Front.RequestNode -> List Back.RequestNode
+{-convertRequestNodesFromFrontToBack : List Front.RequestNode -> List Back.RequestNode
 convertRequestNodesFromFrontToBack frontRequestNodes =
     let
         convertRequestNodeFromFrontToBack : Front.RequestNode -> Back.RequestNode
@@ -60,3 +60,4 @@ convertRequestNodesFromFrontToBack frontRequestNodes =
                         }
     in
         List.map convertRequestNodeFromFrontToBack frontRequestNodes
+-}

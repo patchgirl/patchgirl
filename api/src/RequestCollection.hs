@@ -32,8 +32,9 @@ selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
 selectRequestCollectionById requestCollectionId connection = do
   query connection collectionExistsSql (Only requestCollectionId) >>= \case
     [Only True] -> do
-      [requestCollection] <- query connection selectRequestCollectionSql (requestCollectionId, requestCollectionId)
-      return $ Just requestCollection
+      [(_, requestNodesFromPG)] <- query connection selectRequestCollectionSql (requestCollectionId, requestCollectionId) :: IO[(Int, [RequestNodeFromPG])]
+      return . Just $
+        RequestCollection requestCollectionId (fromPgRequestNodeToRequestNode <$> requestNodesFromPG)
     _ ->
       return Nothing
   where
@@ -81,22 +82,30 @@ selectRequestCollectionById requestCollectionId connection = do
               UNION ALL
 
               -- leaves
+
               SELECT c.request_node_parent_id,
               json_agg(request_node_as_js(c))::jsonb AS js
               FROM leave_ids l
               JOIN request_node c USING(id)
               WHERE level > 0
               GROUP BY request_node_parent_id
+
             )
             UNION ALL
             SELECT
               c.request_node_parent_id,
-              request_node_as_js(c) || jsonb_build_object('children', js) AS js
+              request_node_as_js(c) || CASE WHEN jsonb_typeof(js) = 'array' THEN
+                jsonb_build_object('children', js)
+              ELSE
+                jsonb_build_object('children', jsonb_build_array(js))
+              END AS js
             FROM request_node_from_leaves tree
             JOIN request_node c ON c.id = tree.request_node_parent_id
           )
 
-          SELECT ?, jsonb_pretty(jsonb_agg(js))
+          SELECT
+            ? AS request_collection_id,
+            jsonb_agg(js) AS request_nodes
           FROM request_node_from_leaves
           WHERE request_node_parent_id IS NULL;
           |] :: Query

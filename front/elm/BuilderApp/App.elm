@@ -62,9 +62,10 @@ saveBuilder subMsg model =
         Builder.AskSave ->
             let
                 (RequestCollection id requestNodes) = model.requestCollection
-                backRequestCollection = Client.convertRequestNodesFromFrontToBack requestNodes
+                --backRequestCollection = Client.convertRequestNodesFromFrontToBack requestNodes
             in
-                (model, Client.postRequestCollection "/" backRequestCollection fromServer)
+                (model, Cmd.none)
+                --(model, Client.postRequestCollection "/" backRequestCollection fromServer)
 
         _ ->
             (model, Cmd.none)

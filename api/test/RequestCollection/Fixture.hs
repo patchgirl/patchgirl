@@ -32,6 +32,35 @@ requestCollectionSample1 =
                     }
       ]
 
+requestCollectionSample2AsValue :: Value
+requestCollectionSample2AsValue =
+  [aesonQQ|
+          [
+            {
+                "tag": "RequestFolder",
+                "name": "2/"
+            },
+            {
+                "tag": "RequestFolder",
+                "name": "1/",
+                "children": {
+                    "tag": "RequestFolder",
+                    "name": "1.1/",
+                    "children": [
+                        {
+                            "tag": "RequestFile",
+                            "name": "1.1.1",
+                            "http_url": "api.com",
+                            "http_body": "",
+                            "http_method": "Get",
+                            "http_headers": ""
+                        }
+                    ]
+                }
+            }
+          ]
+          |]
+
 requestCollectionSample1AsValue :: Value
 requestCollectionSample1AsValue =
   [aesonQQ|

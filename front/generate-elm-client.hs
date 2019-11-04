@@ -34,6 +34,6 @@ main =
       , DefineElm (Proxy :: Proxy Method)
       , DefineElm (Proxy :: Proxy AppHealth)
       ]
-    proxyApi = (Proxy :: Proxy Api)
+    proxyApi = (Proxy :: Proxy RequestCollectionApi)
   in
     generateElmModuleWith options namespace defElmImports targetFolder elmDefinitions proxyApi

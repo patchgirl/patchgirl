@@ -10,6 +10,16 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: header_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.header_type AS (
+	header_key text,
+	header_value text
+);
+
+
+--
 -- Name: http_method_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -45,12 +55,13 @@ SET default_with_oids = false;
 CREATE TABLE public.request_node (
     id integer NOT NULL,
     request_node_parent_id integer,
-    tag public.request_node_type,
-    name text,
+    tag public.request_node_type NOT NULL,
+    name text NOT NULL,
     http_url text,
     http_method public.http_method_type,
-    http_headers text,
-    http_body text
+    http_headers public.header_type[],
+    http_body text,
+    CONSTRAINT request_node_check CHECK ((((tag = 'RequestFolder'::public.request_node_type) AND (http_url IS NULL) AND (http_method IS NULL) AND (http_headers IS NULL) AND (http_body IS NULL)) OR ((tag = 'RequestFile'::public.request_node_type) AND (http_url IS NOT NULL) AND (http_method IS NOT NULL) AND (http_headers IS NOT NULL) AND (http_body IS NOT NULL))))
 );
 
 
@@ -64,11 +75,14 @@ CREATE FUNCTION public.request_node_as_js(somerow public.request_node) RETURNS j
       BEGIN
         RETURN CASE WHEN someRow.tag = 'RequestFolder' THEN
           jsonb_build_object(
+            'id', someRow.id,
             'name', someRow.name,
-            'tag', someRow.tag
+            'tag', someRow.tag,
+            'children', json_build_array()
           )
         ELSE
           jsonb_build_object(
+            'id', someRow.id,
             'name', someRow.name,
             'tag', someRow.tag,
             'http_url', someRow.http_url,

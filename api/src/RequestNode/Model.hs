@@ -19,10 +19,13 @@ import           Servant (Handler)
 import           Control.Monad.IO.Class (liftIO)
 import           DB
 import Http
-import           Data.Aeson (FromJSON, ToJSON)
-import           Database.PostgreSQL.Simple.FromField
+import           Data.Aeson (withObject, FromJSON(..), ToJSON, (.:))
+import           Data.Aeson.Types (Parser)
+import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Data.Aeson (Value, parseJSON)
 import Data.Aeson.Types (parseEither)
+
+data Header = Header String String
 
 data RequestNode
   = RequestFolder { id :: Int
@@ -31,17 +34,58 @@ data RequestNode
                   }
   | RequestFile { id :: Int
                 , name :: String
-                , url :: String
-                , method :: Method
-                , headers :: [(String, String)]
-                , body :: String
+                , http_url :: String
+                , http_method :: Method
+                , http_headers :: [(String, String)]
+                , http_body :: String
                 }
   deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
+
+data PGHeader = PGHeader { headerKey :: String
+                         , headerValue :: String
+                         } deriving (Eq, Show)
+
+instance FromJSON PGHeader where
+  parseJSON = withObject "PGHeader" $ \o -> do
+    headerKey <- o .: "header_key"
+    headerValue <- o .: "header_value"
+    return PGHeader{..}
+
+instance FromJSON RequestNodeFromPG where
+  parseJSON = withObject "RequestNode" $ \o -> do
+    requestNodeType <- o .: "tag" :: Parser String
+    case requestNodeType of
+      "RequestFile" -> do
+        pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
+        id <- o .: "id"
+        name <- o .: "name"
+        http_url <- o .: "http_url"
+        http_method <- o .: "http_method"
+        http_body <- o .: "http_body"
+        let http_headers = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
+        return $ RequestNodeFromPG $ RequestFile{..}
+      _ -> do
+        pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
+        id <- o .: "id"
+        name <- o .: "name"
+        let children = fromPgRequestNodeToRequestNode <$> pgChildren
+        return $ RequestNodeFromPG $ RequestFolder{..}
+
+fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
+fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode
 
 instance FromField [RequestNode] where
   fromField field mdata = do
     value <- fromField field mdata :: Conversion Value
     let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
+    either (returnError ConversionFailed field) return errorOrRequestNodes
+
+instance FromField [RequestNodeFromPG] where
+  fromField field mdata = do
+    value <- fromField field mdata :: Conversion Value
+    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNodeFromPG]
     either (returnError ConversionFailed field) return errorOrRequestNodes
 
 data ParentNodeId

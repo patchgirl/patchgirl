@@ -4,16 +4,24 @@ class Init < ActiveRecord::Migration[5.2]
 
       CREATE TYPE request_node_type AS ENUM ('RequestFolder', 'RequestFile');
       CREATE TYPE http_method_type AS ENUM ('Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options');
+      CREATE TYPE header_type AS (
+        header_key TEXT,
+        header_value TEXT
+      );
 
       CREATE TABLE request_node(
         id serial PRIMARY KEY,
         request_node_parent_id INTEGER,
-        tag request_node_type,
-        name TEXT,
+        tag request_node_type NOT NULL,
+        name TEXT NOT NULL,
         http_url TEXT,
         http_method http_method_type,
-        http_headers TEXT,
-        http_body TEXT
+        http_headers header_type[],
+        http_body TEXT,
+        CHECK (
+          (tag = 'RequestFolder' AND http_url IS NULL AND http_method IS NULL AND http_headers IS NULL AND http_body IS NULL) OR
+          (tag = 'RequestFile' AND http_url IS NOT NULL AND http_method IS NOT NULL AND http_headers IS NOT NULL AND http_body IS NOT NULL)
+        )
       );
 
       CREATE TABLE request_collection_to_request_node(
@@ -26,11 +34,14 @@ class Init < ActiveRecord::Migration[5.2]
       BEGIN
         RETURN CASE WHEN someRow.tag = 'RequestFolder' THEN
           jsonb_build_object(
+            'id', someRow.id,
             'name', someRow.name,
-            'tag', someRow.tag
+            'tag', someRow.tag,
+            'children', json_build_array()
           )
         ELSE
           jsonb_build_object(
+            'id', someRow.id,
             'name', someRow.name,
             'tag', someRow.tag,
             'http_url', someRow.http_url,
