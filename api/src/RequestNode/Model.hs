@@ -20,7 +20,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           DB
 import Http
 import           Data.Aeson (withObject, FromJSON(..), ToJSON, (.:))
-import           Data.Aeson.Types (Parser)
+import           Data.Aeson.Types (Parser, camelTo2, fieldLabelModifier, genericParseJSON, defaultOptions)
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Data.Aeson (Value, parseJSON)
 import Data.Aeson.Types (parseEither)
@@ -34,12 +34,15 @@ data RequestNode
                   }
   | RequestFile { id :: Int
                 , name :: String
-                , http_url :: String
-                , http_method :: Method
-                , http_headers :: [(String, String)]
-                , http_body :: String
+                , httpUrl :: String
+                , httpMethod :: Method
+                , httpHeaders :: [(String, String)]
+                , httpBody :: String
                 }
-  deriving (Eq, Show, Generic, ToJSON, FromJSON)
+  deriving (Eq, Show, Generic, ToJSON)
+
+instance FromJSON RequestNode where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
 
@@ -61,10 +64,10 @@ instance FromJSON RequestNodeFromPG where
         pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
         id <- o .: "id"
         name <- o .: "name"
-        http_url <- o .: "http_url"
-        http_method <- o .: "http_method"
-        http_body <- o .: "http_body"
-        let http_headers = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
+        httpUrl <- o .: "http_url"
+        httpMethod <- o .: "http_method"
+        httpBody <- o .: "http_body"
+        let httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
         return $ RequestNodeFromPG $ RequestFile{..}
       _ -> do
         pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
