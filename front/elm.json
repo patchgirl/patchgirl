@@ -18,6 +18,7 @@
             "elm-community/html-extra": "3.1.0",
             "elm-community/list-extra": "8.2.0",
             "elm-community/maybe-extra": "5.0.0",
+            "mdgriffith/elm-ui": "1.1.5",
             "rtfeldman/elm-css": "16.0.0",
             "surprisetalk/elm-bulma": "6.1.5"
         },
