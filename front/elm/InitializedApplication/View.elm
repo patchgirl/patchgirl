@@ -36,7 +36,7 @@ view model =
                     MainNavBar.EnvTab -> [ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
                     MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
     in
-        UI.layout [ UI.explain Debug.todo ] <|
+        UI.layout [] <|
             UI.column [ UI.width UI.fill, UI.centerY, UI.spacing 30 ]
                 [ UI.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
                 , UI.html contentView

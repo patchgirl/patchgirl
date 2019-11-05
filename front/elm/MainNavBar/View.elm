@@ -6,6 +6,7 @@ import Element as UI
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
+import Element.Font as Font
 
 import Bulma.Components as Bulma
 import Bulma.Modifiers as Bulma
@@ -20,19 +21,26 @@ view model =
         attributes event model2 =
             let
                 activeAttribute =
+                    [ Background.color <| UI.rgb255 249 227 208
+                    , Font.color <| UI.rgb255 220 118 118
+                    ]
+                passiveAttribute =
+                    [ Font.color <| UI.rgb255 249 227 208
+                    ]
+                activeOrPassiveAttribute =
                     case model == model2 of
-                        True ->
-                            [ Background.color (UI.rgb 0 0.5 0) ]
-                        False ->
-                            []
+                        True -> activeAttribute
+                        False -> passiveAttribute
             in
                 [ Events.onClick event
-                , Border.color (UI.rgb 0 0.7 0)
-                ] ++ activeAttribute
+                , Font.size 21
+                , UI.paddingXY 15 19
+                , UI.mouseOver activeAttribute
+                ] ++ activeOrPassiveAttribute
     in
-        UI.el [ UI.centerX ] <|
-            UI.row [ UI.spacing 30 ]
-                [ UI.el (attributes OpenReqTab ReqTab) (UI.link [] { url = "#", label = UI.text "Req" })
-                , UI.el (attributes OpenEnvTab EnvTab) (UI.link [] { url = "#", label = UI.text "Env" })
-                , UI.el (attributes OpenVarTab VarTab) (UI.link [] { url = "#", label = UI.text "Var" })
+        UI.el [ UI.width UI.fill, Background.color <| UI.rgb255 220 118 118 ] <|
+            UI.row [ UI.centerX, UI.paddingXY 10 0, UI.centerY ]
+                [ UI.link (attributes OpenReqTab ReqTab) { url = "#", label = UI.text "Req" }
+                , UI.link (attributes OpenEnvTab EnvTab) { url = "#", label = UI.text "Env" }
+                , UI.link (attributes OpenVarTab VarTab) { url = "#", label = UI.text "Var" }
                 ]
