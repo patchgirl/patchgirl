@@ -3,6 +3,7 @@ module InitializedApplication.View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Element as UI
 
 import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
@@ -35,10 +36,11 @@ view model =
                     MainNavBar.EnvTab -> [ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
                     MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
     in
-        div []
-            [ Html.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
-            , contentView
-            ]
+        UI.layout [ UI.explain Debug.todo ] <|
+            UI.column [ UI.width UI.fill, UI.centerY, UI.spacing 30 ]
+                [ UI.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
+                , UI.html contentView
+                ]
 
 builderView : Model -> Html Msg
 builderView model =

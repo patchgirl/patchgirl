@@ -1,8 +1,11 @@
 module MainNavBar.View exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Element as UI
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
 
 import Bulma.Components as Bulma
 import Bulma.Modifiers as Bulma
@@ -10,19 +13,26 @@ import Bulma.Modifiers as Bulma
 import MainNavBar.Model exposing(..)
 import MainNavBar.Message exposing(..)
 
-view : Model -> Html Msg
+view : Model -> UI.Element Msg
 view model =
     let
-        isActive : Model -> Model -> String
-        isActive m1 m2 =
-            case m1 == m2 of
-                True -> "is-active"
-                False -> ""
+        attributes : Msg -> Model -> List (UI.Attribute Msg)
+        attributes event model2 =
+            let
+                activeAttribute =
+                    case model == model2 of
+                        True ->
+                            [ Background.color (UI.rgb 0 0.5 0) ]
+                        False ->
+                            []
+            in
+                [ Events.onClick event
+                , Border.color (UI.rgb 0 0.7 0)
+                ] ++ activeAttribute
     in
-        div [ id "mainNavBar" ] [
-             ul []
-                 [ li [ onClick OpenReqTab, class (isActive model ReqTab) ] [ a [] [ text "Req" ] ]
-                 , li [ onClick OpenEnvTab, class (isActive model EnvTab) ] [ a [] [ text "Env" ] ]
-                 , li [ onClick OpenVarTab, class (isActive model VarTab) ] [ a [] [ text "Var" ] ]
-                 ]
-            ]
+        UI.el [ UI.centerX ] <|
+            UI.row [ UI.spacing 30 ]
+                [ UI.el (attributes OpenReqTab ReqTab) (UI.link [] { url = "#", label = UI.text "Req" })
+                , UI.el (attributes OpenEnvTab EnvTab) (UI.link [] { url = "#", label = UI.text "Env" })
+                , UI.el (attributes OpenVarTab VarTab) (UI.link [] { url = "#", label = UI.text "Var" })
+                ]
