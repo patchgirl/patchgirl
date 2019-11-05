@@ -20,9 +20,9 @@ import VarApp.Model as VarApp
 
 buildRequestInput : EnvironmentKeyValueEdition.Model -> VarApp.Model -> Builder.Model a -> RequestInput.Model
 buildRequestInput env var builder =
-    { method = Builder.methodToString builder.method
-    , headers = builder.headers
-    , url = interpolate env var.vars builder.url
+    { method = Builder.methodToString builder.httpMethod
+    , headers = builder.httpHeaders
+    , url = interpolate env var.vars builder.httpUrl
     , body = ""
     }
 

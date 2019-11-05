@@ -30,10 +30,10 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         { name = file.name
                         , showRenameInput = False
                         , isSaved = True
-                        , url = file.url
-                        , method = file.method
-                        , headers = file.headers
-                        , body = file.body
+                        , httpUrl = file.httpUrl
+                        , httpMethod = file.httpMethod
+                        , httpHeaders = file.httpHeaders
+                        , httpBody = file.httpBody
                         , response = Nothing
                         }
     in

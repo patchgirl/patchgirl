@@ -20,28 +20,28 @@ import Maybe.Extra as Maybe
 update : Msg -> Model a -> Model a
 update msg model =
     case msg of
-        UpdateUrl url ->
-            { model | url = url }
+        UpdateUrl httpUrl ->
+            { model | httpUrl = httpUrl }
 
         SetHttpMethod newMethod ->
             case newMethod of
                 "GET" ->
-                    { model | method = Client.Get }
+                    { model | httpMethod = Client.Get }
                 _ ->
-                    { model | method = Client.Post }
+                    { model | httpMethod = Client.Post }
 
         GiveResponse result ->
             { model | response = Just result }
 
         UpdateHeaders rawHeaders ->
             case parseHeaders rawHeaders of
-                Just headers ->
-                    { model | headers = Debug.log "headers" headers }
+                Just httpHeaders ->
+                    { model | httpHeaders = Debug.log "headers" httpHeaders }
                 Nothing ->
                     model
 
-        SetHttpBody body ->
-            { model | body = body }
+        SetHttpBody httpBody ->
+            { model | httpBody = httpBody }
 
         AskSave ->
             model

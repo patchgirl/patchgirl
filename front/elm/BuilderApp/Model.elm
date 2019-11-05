@@ -29,10 +29,10 @@ type alias File =
   { name : String
   , showRenameInput : Bool
   , isSaved : Bool
-  , url : String
-  , method : Client.Method
-  , headers : List Header
-  , body : String
+  , httpUrl : String
+  , httpMethod : Client.Method
+  , httpHeaders : List Header
+  , httpBody : String
   , response : Maybe Response
   }
 
@@ -50,10 +50,10 @@ defaultFile =
   RequestFile { name = "new file"
               , showRenameInput = False
               , isSaved = False
-              , url = ""
-              , method = Client.Get
-              , headers = []
-              , body = ""
+              , httpUrl = ""
+              , httpMethod = Client.Get
+              , httpHeaders = []
+              , httpBody = ""
               , response = Nothing
               }
 

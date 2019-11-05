@@ -6,33 +6,33 @@ import Api.Client as Client
 
 type alias Model a =
     { a
-        | url : String
-        , method : Client.Method
-        , headers : List(BuilderApp.Header)
-        , body : String
+        | httpUrl : String
+        , httpMethod : Client.Method
+        , httpHeaders : List(BuilderApp.Header)
+        , httpBody : String
         , response : Maybe BuilderApp.Response
     }
 
 defaultBuilder =
-  { url = ""
-  , method = Client.Get
-  , headers = []
-  , body = ""
+  { httpUrl = ""
+  , httpMethod = Client.Get
+  , httpHeaders = []
+  , httpBody = ""
   , response = Nothing
   }
 
 defaultModel1 =
-  { url = "{{url}}/api/people/1"
-  , method = Client.Get
-  , headers = []
-  , body = ""
+  { httpUrl = "{{url}}/api/people/1"
+  , httpMethod = Client.Get
+  , httpHeaders = []
+  , httpBody = ""
   , response = Nothing
   }
 
 defaultModel =
-  { url = "swapi.co/api/people/2"
-  , method = Client.Get
-  , headers = []
-  , body = ""
+  { httpUrl = "swapi.co/api/people/2"
+  , httpMethod = Client.Get
+  , httpHeaders = []
+  , httpBody = ""
   , response = Nothing
   }

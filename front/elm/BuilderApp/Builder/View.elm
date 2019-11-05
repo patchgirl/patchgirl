@@ -34,7 +34,7 @@ urlView model =
                ] |> List.map toOption)
         , input [ id "urlInput"
                 , placeholder "myApi.com/path?arg=someArg"
-                , value model.url
+                , value model.httpUrl
                 , onInput UpdateUrl
                 , Util.onEnter AskRun ] []
         , button [ onClick AskRun ] [ text "Send" ]
