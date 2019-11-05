@@ -19,13 +19,11 @@ import           Servant (Handler)
 import           Control.Monad.IO.Class (liftIO)
 import           DB
 import Http
-import           Data.Aeson (withObject, FromJSON(..), ToJSON, (.:))
+import           Data.Aeson (withObject, FromJSON(..), ToJSON, (.:), constructorTagModifier)
 import           Data.Aeson.Types (Parser, camelTo2, fieldLabelModifier, genericParseJSON, defaultOptions)
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Data.Aeson (Value, parseJSON)
 import Data.Aeson.Types (parseEither)
-
-data Header = Header String String
 
 data RequestNode
   = RequestFolder { id :: Int
@@ -56,20 +54,32 @@ instance FromJSON PGHeader where
     headerValue <- o .: "header_value"
     return PGHeader{..}
 
+data RequestNodeType
+  = RequestFileType
+  | RequestFolderType
+  deriving (Eq, Show, Generic)
+
+instance FromJSON RequestNodeType where
+  parseJSON = genericParseJSON defaultOptions
+    { constructorTagModifier = \s ->
+        let suffixToRemove = "Type" :: String
+        in take ((length s) - (length suffixToRemove)) s
+    }
+
 instance FromJSON RequestNodeFromPG where
   parseJSON = withObject "RequestNode" $ \o -> do
-    requestNodeType <- o .: "tag" :: Parser String
+    requestNodeType <- o .: "tag" :: Parser RequestNodeType
     case requestNodeType of
-      "RequestFile" -> do
+      RequestFileType -> do
         pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
+        let httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
         id <- o .: "id"
         name <- o .: "name"
         httpUrl <- o .: "http_url"
         httpMethod <- o .: "http_method"
         httpBody <- o .: "http_body"
-        let httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
         return $ RequestNodeFromPG $ RequestFile{..}
-      _ -> do
+      RequestFolderType -> do
         pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
         id <- o .: "id"
         name <- o .: "name"
