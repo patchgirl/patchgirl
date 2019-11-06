@@ -84,7 +84,7 @@ folderView name idx folderChildrenView open showMenu =
                     }
                 ]
     in
-        column [ width (fill |> maximum 300), padding 10 ]
+        column [ width (fill |> maximum 300) ]
             [ row []
                   [ modeView
                   , Input.button []
@@ -95,8 +95,7 @@ folderView name idx folderChildrenView open showMenu =
                         True -> menuView
                         False -> none
                   ]
-            , column [] <|
-                case open of
-                    True -> folderChildrenView
-                    False -> []
+            , case open of
+                  True -> column [ spacing 10, paddingXY 10 7 ] folderChildrenView
+                  False -> none
             ]
