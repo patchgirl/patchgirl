@@ -14,7 +14,7 @@ import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util
 
-folderWithIconView : String -> Bool -> Html.Html Msg
+folderWithIconView : String -> Bool -> Element Msg
 folderWithIconView name isOpen =
     let
         folderIconText =
@@ -76,7 +76,7 @@ folderReadView idx name isOpen =
     in
         Input.button []
             { onPress = Just <| ToggleFolder idx
-            , label = html <| folderWithIconView name isOpen
+            , label = folderWithIconView name isOpen
             }
 
 folderEditView : String -> Int -> Element Msg
@@ -109,6 +109,6 @@ folderView name idx folderChildrenView open showMenu =
                       }
                   ]
             , case open of
-                  True -> column [ spacing 10, paddingXY 10 7 ] folderChildrenView
+                  True -> column [ spacing 10, paddingXY 20 10 ] folderChildrenView
                   False -> none
             ]

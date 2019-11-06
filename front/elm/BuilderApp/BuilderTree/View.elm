@@ -43,4 +43,4 @@ nodeView idx mDisplayedRequestNodeMenuIndex requestCollection =
               (newIdx, tailView) = nodeView (idx + 1) mDisplayedRequestNodeMenuIndex tail
               currentFileView = fileView name idx showMenu
             in
-              (newIdx, [none])--currentFileView :: tailView)
+              (newIdx, currentFileView :: tailView)

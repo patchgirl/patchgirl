@@ -12,15 +12,17 @@ import Bulma.Modifiers as Bulma
 import MainNavBar.Model exposing(..)
 import MainNavBar.Message exposing(..)
 
+import Color exposing (..)
+
 view : Model -> Element Msg
 view model =
     let
         activeAttribute =
-            [ Background.color <| rgb255 249 227 208
-            , Font.color <| rgb255 220 118 118
+            [ Background.color <| secondaryColor
+            , Font.color <| primaryColor
             ]
         passiveAttribute =
-            [ Font.color <| rgb255 249 227 208
+            [ Font.color <| secondaryColor
             ]
         attributes : Msg -> Model -> List (Attribute Msg)
         attributes event model2 =
@@ -36,7 +38,7 @@ view model =
                 , mouseOver activeAttribute
                 ] ++ activeOrPassiveAttribute
     in
-        el [ width fill, Background.color <| rgb255 220 118 118 ] <|
+        el [ width fill, Background.color primaryColor ] <|
             row [ centerX, paddingXY 10 0, centerY ]
                 [ link (attributes OpenReqTab ReqTab) { url = "#", label = text "Req" }
                 , link (attributes OpenEnvTab EnvTab) { url = "#", label = text "Env" }
