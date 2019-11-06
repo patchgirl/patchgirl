@@ -82,10 +82,9 @@ update msg model =
         let
             (RequestCollection id requestNodes) = model.requestCollection
         in
-
-        { model
-            | requestCollection =
-              RequestCollection id (deleteRequestNode requestNodes idx)
-        }
+            { model
+                | requestCollection =
+                    RequestCollection id (deleteRequestNode requestNodes idx)
+            }
 
     DoNothing -> model
