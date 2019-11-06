@@ -6,18 +6,43 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Input as Input
 import Html.Attributes as Html
+import Html as Html
 import Application.Type exposing (..)
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util
 
+folderWithIconView : String -> Bool -> Html.Html Msg
+folderWithIconView name isOpen =
+    let
+        icon =
+            case isOpen of
+                False -> "keyboard_arrow_right"
+                True -> "keyboard_arrow_down"
+    in
+        Html.span []
+            [ Html.i
+                  [ Html.class "material-icons"
+                  , Html.style "vertical-align" "middle"
+                  ]
+                  [ Html.text icon ]
+            , Html.text name
+            ]
+
 folderReadView : Int -> String -> Bool -> Element Msg
-folderReadView idx name open =
-    Input.button []
-        { onPress = Just <| ToggleFolder idx
-        , label = text name
-        }
+folderReadView idx name isOpen =
+    let
+        folder =
+            row []
+                [ el [ htmlAttribute <| Html.class "material-icons" ] (text "keyboard_arrow_right")
+                , text name
+                ]
+    in
+        Input.button []
+            { onPress = Just <| ToggleFolder idx
+            , label = html <| folderWithIconView name isOpen
+            }
 
 folderEditView : String -> Int -> Element Msg
 folderEditView name idx =
@@ -59,7 +84,7 @@ folderView name idx folderChildrenView open showMenu =
                     }
                 ]
     in
-        column [ Element.explain Debug.todo, padding 10 ]
+        column [ width (fill |> maximum 300), padding 10 ]
             [ row []
                   [ modeView
                   , Input.button []

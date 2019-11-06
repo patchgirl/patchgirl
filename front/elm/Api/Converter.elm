@@ -22,7 +22,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                 Back.RequestFolder folder ->
                     Front.RequestFolder
                         { name = NotEdited folder.name
-                        , open = True
+                        , open = not <| List.isEmpty folder.children
                         , children = convertRequestNodesFromBackToFront folder.children
                         }
                 Back.RequestFile file ->

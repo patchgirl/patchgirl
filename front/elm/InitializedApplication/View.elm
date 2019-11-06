@@ -31,7 +31,7 @@ view model =
     let
         contentView : Element Msg
         contentView =
-            el [] <|
+            el [ width fill ] <|
                 case model.mainNavBarModel of
                     MainNavBar.ReqTab -> builderView model
                     MainNavBar.EnvTab -> builderView model --[ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
@@ -51,8 +51,8 @@ builderView model =
         none
 --        map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
   in
-    row []
-      [ el [] (map BuilderAppMsg (BuilderApp.view model))
+    row [ width fill ]
+      [ el [ width fill ] (map BuilderAppMsg (BuilderApp.view model))
       , el [] envSelectionView
       ]
 

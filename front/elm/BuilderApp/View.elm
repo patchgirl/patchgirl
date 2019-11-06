@@ -17,8 +17,8 @@ import BuilderApp.BuilderTree.View as BuilderTree
 
 view : Model a -> Element Msg
 view model =
-    column []
-      [ column [] <| List.map (map TreeMsg) (BuilderTree.view model)
+    column [ width fill ]
+      [ column [ width (px 500) ] <| List.map (map TreeMsg) (BuilderTree.view model)
       , el [] {-builderView model model.selectedBuilderIndex-} none
       ]
 
