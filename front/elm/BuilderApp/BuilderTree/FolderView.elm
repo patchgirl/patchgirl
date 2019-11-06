@@ -30,6 +30,22 @@ folderWithIconView name isOpen =
             , Html.text name
             ]
 
+folderMenuView : Bool -> Html.Html Msg
+folderMenuView isOpen =
+    let
+        icon =
+            case isOpen of
+                True -> "more_horiz"
+                False -> "more_vert"
+    in
+        Html.span []
+            [ Html.i
+                  [ Html.class "material-icons"
+                  , Html.style "vertical-align" "middle"
+                  ]
+                  [ Html.text icon ]
+            ]
+
 folderReadView : Int -> String -> Bool -> Element Msg
 folderReadView idx name isOpen =
     let
@@ -89,7 +105,7 @@ folderView name idx folderChildrenView open showMenu =
                   [ modeView
                   , Input.button []
                       { onPress = Just <| ToggleMenu idx
-                      , label = text " menu"
+                      , label = html <| folderMenuView (not showMenu)
                       }
                   , case showMenu of
                         True -> menuView
