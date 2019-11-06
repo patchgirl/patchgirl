@@ -1,8 +1,9 @@
 module BuilderApp.View exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
 
 import BuilderApp.Message exposing (..)
 import BuilderApp.Model exposing (..)
@@ -14,16 +15,14 @@ import BuilderApp.Builder.View as Builder
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.View as BuilderTree
 
-view : Model a -> Html Msg
+view : Model a -> Element Msg
 view model =
-    div [ id "builderApp" ]
-      [ div [ id "requestCollectionView" ] [ Html.map TreeMsg (BuilderTree.view model) ]
-      , div [ id "builderPanel" ]
-          [ div [] [ builderView model model.selectedBuilderIndex ]
-          ]
+    column []
+      [ column [] <| List.map (map TreeMsg) (BuilderTree.view model)
+      , el [] {-builderView model model.selectedBuilderIndex-} none
       ]
 
-builderView : Model a -> Maybe Int -> Html Msg
+{-builderView : Model a -> Maybe Int -> Html Msg
 builderView model mIdx =
   let
     (RequestCollection _ requestNodes) = model.requestCollection
@@ -41,3 +40,4 @@ builderView model mIdx =
             , Html.map BuilderMsg (Builder.view file)
             ]
       Nothing -> div [] []
+-}

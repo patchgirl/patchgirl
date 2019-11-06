@@ -4,6 +4,7 @@ module BuilderApp.BuilderTree.Util exposing (..)
 import BuilderApp.BuilderTree.Message exposing (..)
 
 --import BuilderApp.Builder.App as Builder
+import Application.Type exposing (..)
 import BuilderApp.Model exposing (..)
 import BuilderApp.Builder.Model as Builder
 
@@ -50,14 +51,13 @@ modifyRequestNode f =
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               RequestFolder { name, open, showRenameInput, children } ->
+               RequestFolder { name, open, children } ->
                  let
                     (newIdx, newChildren) = modify children (idx - 1)
                     (rIdx, newTail) = modify tail newIdx
                     newFolder =
                         RequestFolder { name = name
                                       , open = open
-                                      , showRenameInput = showRenameInput
                                       , children = newChildren
                                       }
                  in (rIdx, newFolder :: newTail)
@@ -83,13 +83,12 @@ deleteRequestNode =
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               RequestFolder { name, open, showRenameInput, children } ->
+               RequestFolder { name, open, children } ->
                  let
                     (newIdx, newChildren) = delete children (idx - 1)
                     (rIdx, newTail) = delete tail newIdx
                     newFolder = RequestFolder { name = name
                                               , open = open
-                                              , showRenameInput = showRenameInput
                                               , children = newChildren
                                               }
                  in (rIdx, newFolder :: newTail)
@@ -109,7 +108,6 @@ toggleFolder node =
     RequestFolder folder ->
         RequestFolder { folder
                           | open = (not folder.open)
-                          , showRenameInput = False
                       }
 
 mkdir : RequestNode -> RequestNode
@@ -119,7 +117,6 @@ mkdir node =
     RequestFolder folder ->
         RequestFolder { folder
                           | children = defaultFolder :: folder.children
-                          , showRenameInput = False
                       }
 
 touch : RequestNode -> RequestNode
@@ -129,27 +126,36 @@ touch node =
     RequestFolder folder ->
       RequestFolder { folder
                         | children = (defaultFile :: folder.children)
-                        , showRenameInput = False
                     }
 
 displayRenameInput : RequestNode -> RequestNode
 displayRenameInput node =
   case node of
     RequestFolder folder ->
-        RequestFolder { folder | showRenameInput = True }
+        let
+            oldValue = notEditedValue folder.name
+        in
+            RequestFolder { folder | name = Edited oldValue oldValue }
+
     RequestFile file ->
-        RequestFile { file | showRenameInput = True }
+        let
+            oldValue = notEditedValue file.name
+        in
+            RequestFile { file | name = Edited oldValue oldValue }
 
 rename : String -> RequestNode -> RequestNode
 rename newName node =
   case node of
     RequestFolder folder ->
-        RequestFolder { folder
-                          | name = newName
-                          , showRenameInput = False
-                      }
+        RequestFolder { folder | name = NotEdited newName }
     RequestFile file ->
-        RequestFile { file
-                        | name = newName
-                        , showRenameInput = False
-                    }
+        RequestFile { file | name = NotEdited newName }
+
+tempRename : String -> RequestNode -> RequestNode
+tempRename newName node =
+    case node of
+        RequestFolder folder ->
+            RequestFolder { folder | name = changeEditedValue newName folder.name }
+
+        RequestFile file ->
+            RequestFile { file | name = changeEditedValue newName file.name }

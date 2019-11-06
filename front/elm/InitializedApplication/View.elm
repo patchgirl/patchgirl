@@ -1,9 +1,10 @@
 module InitializedApplication.View exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Element as UI
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
+import Html exposing (Html)
 
 import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
@@ -28,32 +29,33 @@ import InitializedApplication.Message exposing(..)
 view : Model -> Html Msg
 view model =
     let
-        contentView : Html Msg
+        contentView : Element Msg
         contentView =
-            div [ id "content" ] <|
+            el [] <|
                 case model.mainNavBarModel of
-                    MainNavBar.ReqTab -> [ builderView model ]
-                    MainNavBar.EnvTab -> [ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
-                    MainNavBar.VarTab -> [ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
+                    MainNavBar.ReqTab -> builderView model
+                    MainNavBar.EnvTab -> builderView model --[ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
+                    MainNavBar.VarTab -> builderView model --[ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
     in
-        UI.layout [] <|
-            UI.column [ UI.width UI.fill, UI.centerY, UI.spacing 30 ]
-                [ UI.map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
-                , UI.html contentView
+        layout [] <|
+            column [ width fill, centerY, spacing 30 ]
+                [ map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
+                , contentView
                 ]
 
-builderView : Model -> Html Msg
+builderView : Model -> Element Msg
 builderView model =
   let
-    envSelectionView : Html Msg
+    envSelectionView : Element Msg
     envSelectionView =
-        Html.map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
+        none
+--        map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
   in
-    div [ id "builderApp" ]
-      [ div [ id "builderView" ] [ (Html.map BuilderAppMsg (BuilderApp.view model)) ]
-      , div [ class "" ] [ envSelectionView ]
+    row []
+      [ el [] (map BuilderAppMsg (BuilderApp.view model))
+      , el [] envSelectionView
       ]
 
-postmanView : Html Msg
-postmanView =
-  Html.map PostmanMsg Postman.view
+--postmanView : Element Msg
+--postmanView =
+--  Html.map PostmanMsg Postman.view

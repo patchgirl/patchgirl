@@ -2,6 +2,7 @@ module BuilderApp.Model exposing (..)
 
 import Http as Http
 import Api.Client as Client
+import Application.Type exposing (..)
 
 type alias Model a =
     { a
@@ -19,15 +20,13 @@ type RequestNode
     | RequestFile File
 
 type alias Folder =
-  { name : String
+  { name : Editable String
   , open : Bool
-  , showRenameInput : Bool
   , children : List RequestNode
   }
 
 type alias File =
-  { name : String
-  , showRenameInput : Bool
+  { name : Editable String
   , isSaved : Bool
   , httpUrl : String
   , httpMethod : Client.Method
@@ -40,15 +39,13 @@ type alias Response = Result Http.Error String
 type alias Header = (String, String)
 
 defaultFolder =
-  RequestFolder { name = "new folder"
+  RequestFolder { name = NotEdited "new folder"
                 , open = False
                 , children = []
-                , showRenameInput = False
                 }
 
 defaultFile =
-  RequestFile { name = "new file"
-              , showRenameInput = False
+  RequestFile { name = NotEdited "new file"
               , isSaved = False
               , httpUrl = ""
               , httpMethod = Client.Get
@@ -59,9 +56,8 @@ defaultFile =
 
 emptyBuilderTree =
     [ RequestFolder
-          { name = "root"
+          { name = NotEdited "root"
           , open = False
           , children = []
-          , showRenameInput = False
           }
     ]

@@ -2,6 +2,7 @@ module Api.Converter exposing(..)
 
 import Api.Client as Back
 import BuilderApp.Model as Front
+import Application.Type exposing (..)
 
 import BuilderApp.Builder.Model as Builder
 
@@ -20,15 +21,13 @@ convertRequestNodesFromBackToFront backRequestNodes =
             case backRequestNode of
                 Back.RequestFolder folder ->
                     Front.RequestFolder
-                        { name = folder.name
+                        { name = NotEdited folder.name
                         , open = False
-                        , showRenameInput = False
                         , children = convertRequestNodesFromBackToFront folder.children
                         }
                 Back.RequestFile file ->
                     Front.RequestFile
-                        { name = file.name
-                        , showRenameInput = False
+                        { name = NotEdited file.name
                         , isSaved = True
                         , httpUrl = file.httpUrl
                         , httpMethod = file.httpMethod

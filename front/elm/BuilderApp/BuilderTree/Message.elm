@@ -7,5 +7,7 @@ type Msg
   | Touch Int
   | ShowRenameInput Int
   | Rename Int String
+  | ChangeName Int String
   | Delete Int
   | ToggleMenu Int
+  | DoNothing

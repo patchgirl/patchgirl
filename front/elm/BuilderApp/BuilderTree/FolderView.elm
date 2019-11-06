@@ -1,48 +1,77 @@
 module BuilderApp.BuilderTree.FolderView exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
+import Element.Input as Input
+import Html.Attributes as Html
+import Application.Type exposing (..)
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
 import Util.View as Util
 
-folderReadView : Int -> String -> Bool -> Html Msg
+folderReadView : Int -> String -> Bool -> Element Msg
 folderReadView idx name open =
-  let
-    folderIcon = if open then "fas fa-folder-open fa-fw" else "fas fa-folder fa-fw"
-  in
-    a [ onClick (ToggleFolder idx) ]
-      [ span [ class folderIcon ] []
-      , text name
-      ]
+    Input.button []
+        { onPress = Just <| ToggleFolder idx
+        , label = text name
+        }
 
-folderEditView : String -> Int -> Html Msg
+folderEditView : String -> Int -> Element Msg
 folderEditView name idx =
-  input [ value name, Util.onEnterWithInput (Rename idx) ] []
-
-folderView : String -> Int -> List(Html Msg) -> Bool -> Bool -> Bool -> Html Msg
-folderView name idx folderChildrenView open showMenu showRenameInput =
-  let
-    modeView =
-      case showRenameInput of
-        True -> folderEditView name idx
-        False -> folderReadView idx name open
-  in
-    div []
-      [ span []
-        [ modeView
-        , a [ onClick (ToggleMenu idx) ] [ span [ class "fas fa-ellipsis-h" ] []]
-        , span [ hidden (not showMenu) ]
-          [ a [ class "icono-tag", onClick (ShowRenameInput idx) ] [ text ("f2 ") ]
-          , a [ class "icono-folder", onClick (Mkdir idx) ] [ text ("+/ ") ]
-          , a [ class "icono-file", onClick (Touch idx) ] [ text ("+. ") ]
-          , a [ class "icono-cross", onClick (Delete idx) ] [ ]
-          ]
-        ]
-      , div [ class "columns" ]
-        [ div [ class "column is-offset-1"]
-          [ div [ hidden (not open) ] folderChildrenView ]
-        ]
+  Input.text
+      [ htmlAttribute <| Util.onEnterWithInput (Rename idx)
       ]
+      { onChange = ChangeName idx
+      , text = name
+      , placeholder = Nothing
+      , label = Input.labelHidden "rename folder"
+      }
+
+folderView : Editable String -> Int -> List(Element Msg) -> Bool -> Bool -> Element Msg
+folderView name idx folderChildrenView open showMenu =
+    let
+        modeView =
+            case name of
+                NotEdited value ->
+                    folderReadView idx value open
+                Edited oldValue newValue ->
+                    folderEditView newValue idx
+        menuView =
+            row []
+                [ Input.button []
+                      { onPress = Just <| ShowRenameInput idx
+                      , label = text "f2 "
+                      }
+                , Input.button []
+                    { onPress = Just <| Mkdir idx
+                    , label = text ("+/ ")
+                    }
+                , Input.button []
+                    { onPress = Just <| Touch idx
+                    , label = text ("+. ")
+                    }
+                , Input.button []
+                    { onPress = Just <| Delete idx
+                    , label = none
+                    }
+                ]
+    in
+        column [ Element.explain Debug.todo, padding 10 ]
+            [ row []
+                  [ modeView
+                  , Input.button []
+                      { onPress = Just <| ToggleMenu idx
+                      , label = text " menu"
+                      }
+                  , case showMenu of
+                        True -> menuView
+                        False -> none
+                  ]
+            , column [] <|
+                case open of
+                    True -> folderChildrenView
+                    False -> []
+            ]

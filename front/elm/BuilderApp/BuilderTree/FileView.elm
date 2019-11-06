@@ -3,6 +3,7 @@ module BuilderApp.BuilderTree.FileView exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Application.Type exposing (..)
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
@@ -19,13 +20,13 @@ fileEditView : String -> Int -> Html Msg
 fileEditView name idx =
   input [ value name, Util.onEnterWithInput (Rename idx) ] []
 
-fileView : String -> Int -> Bool -> Bool -> Html Msg
-fileView name idx showMenu showRenameInput =
+fileView : Editable String -> Int -> Bool -> Html Msg
+fileView name idx showMenu =
   let
     modeView =
-      case showRenameInput of
-        True -> fileEditView name idx
-        False -> fileReadView name idx
+      case name of
+        NotEdited value -> fileEditView value idx
+        Edited oldValue newValue -> fileReadView newValue idx
   in
     div [ ]
       [ modeView

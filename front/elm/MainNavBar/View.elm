@@ -1,6 +1,6 @@
 module MainNavBar.View exposing (..)
 
-import Element exposing (Element, rgb255, el, centerX, centerY, paddingXY, link, mouseOver, row, fill, width, Attribute, text)
+import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events

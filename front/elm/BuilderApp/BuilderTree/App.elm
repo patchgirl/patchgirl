@@ -69,6 +69,15 @@ update msg model =
                   RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
             }
 
+    ChangeName idx newName ->
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+        in
+            { model
+                | requestCollection =
+                  RequestCollection id (modifyRequestNode (tempRename newName) requestNodes idx)
+            }
+
     Delete idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
@@ -78,3 +87,5 @@ update msg model =
             | requestCollection =
               RequestCollection id (deleteRequestNode requestNodes idx)
         }
+
+    DoNothing -> model
