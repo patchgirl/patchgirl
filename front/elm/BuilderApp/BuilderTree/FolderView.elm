@@ -16,7 +16,7 @@ import Util.View as Util
 folderWithIconView : String -> Bool -> Html.Html Msg
 folderWithIconView name isOpen =
     let
-        icon =
+        folderIcon =
             case isOpen of
                 False -> "keyboard_arrow_right"
                 True -> "keyboard_arrow_down"
@@ -26,25 +26,71 @@ folderWithIconView name isOpen =
                   [ Html.class "material-icons"
                   , Html.style "vertical-align" "middle"
                   ]
-                  [ Html.text icon ]
+                  [ Html.text folderIcon ]
             , Html.text name
             ]
 
-folderMenuView : Bool -> Html.Html Msg
-folderMenuView isOpen =
+folderMenuView : Int -> Bool -> Element Msg
+folderMenuView idx isOpen =
     let
-        icon =
+        iconClass =
             case isOpen of
                 True -> "more_horiz"
                 False -> "more_vert"
+        menuIcon =
+            html <|
+                Html.span []
+                    [ Html.i
+                          [ Html.class "material-icons"
+                          , Html.style "vertical-align" "middle"
+                          ]
+                          [ Html.text iconClass ]
+                    ]
+        menuView =
+            row [ spacing 5 ]
+                [ Input.button []
+                      { onPress = Just <| ShowRenameInput idx
+                      , label = editIcon
+                      }
+                , Input.button []
+                    { onPress = Just <| Mkdir idx
+                    , label = createFolderIcon
+                    }
+                , Input.button []
+                    { onPress = Just <| Touch idx
+                    , label = createFileIcon
+                    }
+                , Input.button []
+                    { onPress = Just <| Delete idx
+                    , label = deleteIcon
+                    }
+                ]
     in
+        case isOpen of
+            True -> row [] [ menuIcon, menuView ]
+            False -> row [] [ menuIcon ]
+
+icon whichIcon =
+    html <|
         Html.span []
             [ Html.i
                   [ Html.class "material-icons"
                   , Html.style "vertical-align" "middle"
                   ]
-                  [ Html.text icon ]
+                  [ Html.text whichIcon ]
             ]
+
+createFolderIcon =
+    icon "create_new_folder"
+
+createFileIcon =
+    icon "note_add"
+
+editIcon =
+    icon "edit"
+
+deleteIcon =
+    icon "delete"
 
 folderReadView : Int -> String -> Bool -> Element Msg
 folderReadView idx name isOpen =
@@ -80,36 +126,14 @@ folderView name idx folderChildrenView open showMenu =
                     folderReadView idx value open
                 Edited oldValue newValue ->
                     folderEditView newValue idx
-        menuView =
-            row []
-                [ Input.button []
-                      { onPress = Just <| ShowRenameInput idx
-                      , label = text "f2 "
-                      }
-                , Input.button []
-                    { onPress = Just <| Mkdir idx
-                    , label = text ("+/ ")
-                    }
-                , Input.button []
-                    { onPress = Just <| Touch idx
-                    , label = text ("+. ")
-                    }
-                , Input.button []
-                    { onPress = Just <| Delete idx
-                    , label = none
-                    }
-                ]
     in
         column [ width (fill |> maximum 300) ]
             [ row []
                   [ modeView
                   , Input.button []
                       { onPress = Just <| ToggleMenu idx
-                      , label = html <| folderMenuView (not showMenu)
+                      , label = folderMenuView idx showMenu
                       }
-                  , case showMenu of
-                        True -> menuView
-                        False -> none
                   ]
             , case open of
                   True -> column [ spacing 10, paddingXY 10 7 ] folderChildrenView
