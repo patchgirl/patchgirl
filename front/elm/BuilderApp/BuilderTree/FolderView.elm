@@ -8,6 +8,7 @@ import Element.Input as Input
 import Html.Attributes as Html
 import Html as Html
 import Application.Type exposing (..)
+import Icon exposing (..)
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
@@ -16,19 +17,12 @@ import Util.View as Util
 folderWithIconView : String -> Bool -> Html.Html Msg
 folderWithIconView name isOpen =
     let
-        folderIcon =
+        folderIconText =
             case isOpen of
                 False -> "keyboard_arrow_right"
                 True -> "keyboard_arrow_down"
     in
-        Html.span []
-            [ Html.i
-                  [ Html.class "material-icons"
-                  , Html.style "vertical-align" "middle"
-                  ]
-                  [ Html.text folderIcon ]
-            , Html.text name
-            ]
+        iconWithText folderIconText name
 
 folderMenuView : Int -> Bool -> Element Msg
 folderMenuView idx isOpen =
@@ -70,27 +64,6 @@ folderMenuView idx isOpen =
             True -> row [] [ menuIcon, menuView ]
             False -> row [] [ menuIcon ]
 
-icon whichIcon =
-    html <|
-        Html.span []
-            [ Html.i
-                  [ Html.class "material-icons"
-                  , Html.style "vertical-align" "middle"
-                  ]
-                  [ Html.text whichIcon ]
-            ]
-
-createFolderIcon =
-    icon "create_new_folder"
-
-createFileIcon =
-    icon "note_add"
-
-editIcon =
-    icon "edit"
-
-deleteIcon =
-    icon "delete"
 
 folderReadView : Int -> String -> Bool -> Element Msg
 folderReadView idx name isOpen =
