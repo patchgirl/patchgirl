@@ -31,15 +31,7 @@ folderMenuView idx isOpen =
             case isOpen of
                 True -> "more_horiz"
                 False -> "more_vert"
-        menuIcon =
-            html <|
-                Html.span []
-                    [ Html.i
-                          [ Html.class "material-icons"
-                          , Html.style "vertical-align" "middle"
-                          ]
-                          [ Html.text iconClass ]
-                    ]
+        menuIcon = icon iconClass
         menuView =
             row [ spacing 5 ]
                 [ Input.button []

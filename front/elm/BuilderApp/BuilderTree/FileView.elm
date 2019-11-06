@@ -20,16 +20,10 @@ import Util.View as Util
 fileReadView : String -> Int -> Element Msg
 fileReadView name idx =
     el [] <| iconWithTextAndColor "label" name secondaryColor
-{-
-  Html.a [ Html.href "#", Html.onClick (SetDisplayedBuilder idx) ]
-    [ Html.span [ Html.class "fas fa-file fa-fw" ] []
-    , Html.text name
-    ]
-    -}
 
 fileEditView : String -> Int -> Element Msg
 fileEditView name idx =
-    el [] <| text ""
+    text ""
 --  input [ value name, Util.onEnterWithInput (Rename idx) ] []
 
 fileView : Editable String -> Int -> Bool -> Element Msg
@@ -46,11 +40,11 @@ fileView name idx showMenu =
                     row []
                         [ Input.button []
                               { onPress = Just <| ShowRenameInput idx
-                              , label = text "showRename"
+                              , label = editIcon
                               }
                         , Input.button []
                             { onPress = Just <| Delete idx
-                            , label = text "delete"
+                            , label = deleteIcon
                             }
                         ]
   in
@@ -58,7 +52,11 @@ fileView name idx showMenu =
           [ modeView
           , Input.button []
               { onPress = Just <| ToggleMenu idx
-              , label = text ""
+              , label =
+                  icon <|
+                      case showMenu of
+                          True -> "more_horiz"
+                          False -> "more_vert"
               }
           , menuView
           ]
