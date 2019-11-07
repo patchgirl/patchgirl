@@ -59,17 +59,10 @@ folderMenuView idx isOpen =
 
 folderReadView : Int -> String -> Bool -> Element Msg
 folderReadView idx name isOpen =
-    let
-        folder =
-            row []
-                [ el [ htmlAttribute <| Html.class "material-icons" ] (text "keyboard_arrow_right")
-                , text name
-                ]
-    in
-        Input.button []
-            { onPress = Just <| ToggleFolder idx
-            , label = folderWithIconView name isOpen
-            }
+    Input.button []
+        { onPress = Just <| ToggleFolder idx
+        , label = folderWithIconView name isOpen
+        }
 
 folderEditView : String -> Int -> Element Msg
 folderEditView name idx =

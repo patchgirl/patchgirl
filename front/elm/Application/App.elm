@@ -3,13 +3,25 @@ module Application.App exposing (..)
 import Http as Http
 import Api.Client as Client
 import Api.Converter as Client
-
-import Application.View exposing(..)
-import Application.Model exposing(..)
-import Application.Message exposing(..)
+import Html exposing (..)
+import InitializedApplication.View as InitializedApplication
 
 import InitializedApplication.Model as InitializedApplication
+import InitializedApplication.Message as InitializedApplication
 import InitializedApplication.App as InitializedApplication
+import BuilderApp.Model as BuilderApp
+
+type Msg
+  = ServerSuccess BuilderApp.RequestCollection
+  | ServerError
+  | InitializedApplicationMsg InitializedApplication.Msg
+
+type Model
+    = Unitialized
+    | Initialized InitializedApplication.Model
+
+defaultModel : Model
+defaultModel = Unitialized
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -66,3 +78,13 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
+
+view : Model -> Html Msg
+view model =
+    case model of
+        Unitialized ->
+            div [] [ text "loading" ]
+        Initialized initializedApplication ->
+            div []
+                [ Html.map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
+                ]

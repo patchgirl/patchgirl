@@ -11,11 +11,56 @@ import Bulma.Modifiers as Bulma
 
 import MainNavBar.Model exposing(..)
 import MainNavBar.Message exposing(..)
-
+import Icon exposing (..)
 import Color exposing (..)
 
-view : Model -> Element Msg
-view model =
+import Html as Html
+import Html.Attributes as Html
+import Util.Route exposing (..)
+
+leftView : Element Msg
+leftView =
+    let
+        linkContent =
+            html <|
+                Html.span [ Html.style "color" (colorToString secondaryColor)
+                          , Html.style "font-size" "30px"
+                          ]
+                    [ Html.i
+                          [ Html.class "material-icons"
+                          , Html.style "font-size" "30px"
+                          , Html.style "vertical-align" "bottom"
+                          ]
+                          [ Html.text "call_split" ]
+                    , Html.text "ApiTester"
+                    ]
+    in
+        link [] { url = href Home
+                , label = linkContent
+                }
+
+rightView : Element Msg
+rightView =
+    let
+        linkContent =
+            html <|
+                Html.span [ Html.style "color" (colorToString secondaryColor)
+                          ]
+                    [ Html.i
+                          [ Html.class "material-icons"
+                          , Html.style "vertical-align" "text-top"
+                          ]
+                          [ Html.text "menu" ]
+                    , Html.text "Settings"
+                    ]
+    in
+        link [ paddingXY 20 0 ]
+            { url = href Settings
+            , label = linkContent
+            }
+
+centerView : Model -> Element Msg
+centerView model =
     let
         activeAttribute =
             [ Background.color <| secondaryColor
@@ -38,9 +83,18 @@ view model =
                 , mouseOver activeAttribute
                 ] ++ activeOrPassiveAttribute
     in
-        el [ width fill, Background.color primaryColor ] <|
-            row [ centerX, paddingXY 10 0, centerY ]
-                [ link (attributes OpenReqTab ReqTab) { url = "#", label = text "Req" }
-                , link (attributes OpenEnvTab EnvTab) { url = "#", label = text "Env" }
-                , link (attributes OpenVarTab VarTab) { url = "#", label = text "Var" }
-                ]
+        row [ centerX, paddingXY 10 0, centerY ]
+            [ link (attributes OpenReqTab ReqTab) { url = "#", label = text "Req" }
+            , link (attributes OpenEnvTab EnvTab) { url = "#", label = text "Env" }
+            , link (attributes OpenVarTab VarTab) { url = "#", label = text "Var" }
+            ]
+
+
+view : Model -> Element Msg
+view model =
+    el [ width fill, Background.color primaryColor ] <|
+        row [ width fill]--, explain Debug.todo]
+            [ el [ alignLeft, paddingXY 20 0 ] leftView
+            , el [ centerX ] <| centerView model
+            , el [ alignRight ] rightView
+            ]

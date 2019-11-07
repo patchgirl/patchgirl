@@ -30,6 +30,10 @@ type alias Model =
     , runnerModel : RequestRunner.Model
     }
 
+{-type alias Model2
+    = Home Home.Model
+    | Request Request.Model-}
+
 getEnvironmentToRun : Model -> Maybe Type.Environment
 getEnvironmentToRun model =
     let
