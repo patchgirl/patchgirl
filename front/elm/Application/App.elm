@@ -3,7 +3,12 @@ module Application.App exposing (..)
 import Http as Http
 import Api.Client as Client
 import Api.Converter as Client
-import Html exposing (..)
+import Element exposing (..)
+import Element.Font as Font
+import Element.Background as Background
+import Color exposing (..)
+import Icon exposing (..)
+import Html as Html
 import InitializedApplication.View as InitializedApplication
 
 import InitializedApplication.Model as InitializedApplication
@@ -79,12 +84,20 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
 
-view : Model -> Html Msg
+view : Model -> Html.Html Msg
 view model =
-    case model of
-        Unitialized ->
-            div [] [ text "loading" ]
-        Initialized initializedApplication ->
-            div []
-                [ Html.map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
-                ]
+    layout [] <|
+        case model of
+            Unitialized ->
+                el [ width fill
+                   , height fill
+                   , Background.color <| secondaryColor
+                   ]
+                    <| el [ centerX
+                          , centerY
+                          , Font.center
+                          ]
+                        <| iconWithText "autorenew" "loading ApiTester..."
+            Initialized initializedApplication ->
+                el [ width fill ] <|
+                    map InitializedApplicationMsg (html <| InitializedApplication.view initializedApplication)
