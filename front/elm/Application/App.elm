@@ -98,6 +98,7 @@ view model =
                           , Font.center
                           ]
                         <| iconWithText "autorenew" "loading ApiTester..."
+
             Initialized initializedApplication ->
                 el [ width fill ] <|
                     map InitializedApplicationMsg (html <| InitializedApplication.view initializedApplication)
