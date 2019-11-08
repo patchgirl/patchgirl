@@ -3,3 +3,4 @@ packages:
   - '.'
 extra-deps:
   - servant-flatten-0.2
+  - servant-elm-0.7.1

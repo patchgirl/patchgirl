@@ -12,11 +12,15 @@ import Http
 import AppHealth
 import App
 import ElmOption (deriveElmDefOption)
+import Servant.API.ContentTypes (NoContent)
 
 deriveElmDef deriveElmDefOption ''RequestCollection
 deriveElmDef deriveElmDefOption ''RequestNode
 deriveElmDef deriveElmDefOption ''Method
 deriveElmDef deriveElmDefOption ''AppHealth
+deriveElmDef deriveElmDefOption ''NoContent
+deriveElmDef deriveElmDefOption ''NewRequestFile
+deriveElmDef deriveElmDefOption ''ParentNodeId
 
 main :: IO ()
 main =
@@ -33,7 +37,10 @@ main =
       , DefineElm (Proxy :: Proxy RequestNode)
       , DefineElm (Proxy :: Proxy Method)
       , DefineElm (Proxy :: Proxy AppHealth)
+      , DefineElm (Proxy :: Proxy NoContent)
+      , DefineElm (Proxy :: Proxy NewRequestFile)
+      , DefineElm (Proxy :: Proxy ParentNodeId)
       ]
-    proxyApi = (Proxy :: Proxy RequestCollectionApi)
+    proxyApi = (Proxy :: Proxy RestApi)
   in
     generateElmModuleWith options namespace defElmImports targetFolder elmDefinitions proxyApi

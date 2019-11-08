@@ -11,6 +11,13 @@ packages:
       sha256: 04f12c7bef2c3f9a25d94eb9489752ed498db8e243069fe95838dbb51df1dcb3
   original:
     hackage: servant-flatten-0.2
+- completed:
+    hackage: servant-elm-0.7.1@sha256:c354d82a2bbf69a7c66020a1a278055650aea678669e9a6db88ba24bf163e4c4,4577
+    pantry-tree:
+      size: 2081
+      sha256: dd72ffa037f1b743cea49b66ba74bfc2ac3d7ab029c721b712bd93b911af866a
+  original:
+    hackage: servant-elm-0.7.1
 snapshots:
 - completed:
     size: 523884
