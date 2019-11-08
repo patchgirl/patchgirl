@@ -6,19 +6,20 @@ module App where
 import           Network.Wai              hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Servant
+import Servant.API.Flatten (Flat)
 import           System.IO
-
 import           RequestCollection
-import           RequestNode
-import AppHealth
+import           RequestNode.App
 import RequestNode.Model
+import AppHealth
+
 
 -- * API
 
 type CombinedApi =
-  Api :<|> Public
+  RestApi :<|> AssetApi
 
-type Api =
+type RestApi =
   RequestCollectionApi :<|>
   RequestFileApi :<|>
   HealthApi
@@ -29,24 +30,25 @@ type RequestCollectionApi =
     Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
   )
 
-type RequestFileApi =
-  "requestCollection" :> (
+type RequestFileApi = Flat (
+  "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
     -- createRequestFile
-    Capture "requestCollectionId" Int :> "requestFile" :> ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int :<|>
+    ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int :<|>
     -- updateRequestFile
-    Capture "requestCollectionId" Int :> "requestFile" :> Capture "requestFileId" Int :> Put '[JSON] Int
+    Capture "requestFileId" Int :> Put '[JSON] Int
     )
+  )
 
 type HealthApi =
   "health" :> Get '[JSON] AppHealth
 
-type Public =
+type AssetApi =
   "public" :> Raw
 
 -- * Server
 
-api :: Server Api
-api =
+restApiServer :: Server RestApi
+restApiServer =
   requestCollectionApi :<|>
   requestFileApi :<|>
   getAppHealth
@@ -56,8 +58,8 @@ api =
     requestFileApi =
       createRequestFile :<|> updateRequestFile
 
-public :: Server Public
-public =
+assetApiServer :: Server AssetApi
+assetApiServer =
   serveDirectoryWebApp "../public"
 
 -- * Proxy
@@ -87,4 +89,4 @@ run = do
 
 mkApp :: IO Application
 mkApp =
-  return $ serve combinedApiProxy (api :<|> public)
+  return $ serve combinedApiProxy (restApiServer :<|> assetApiServer)

@@ -8,7 +8,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module RequestNode where
+module RequestNode.App where
 
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.ToRow

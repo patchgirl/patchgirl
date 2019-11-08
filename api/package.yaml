@@ -31,6 +31,7 @@ dependencies:
   - base
   - servant
   - servant-server
+  - servant-flatten
   - transformers
   - aeson
   - wai

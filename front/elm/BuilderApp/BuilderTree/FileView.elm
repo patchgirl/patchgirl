@@ -23,8 +23,14 @@ fileReadView name idx =
 
 fileEditView : String -> Int -> Element Msg
 fileEditView name idx =
-    text ""
---  input [ value name, Util.onEnterWithInput (Rename idx) ] []
+  Input.text
+      [ htmlAttribute <| Util.onEnterWithInput (Rename idx)
+      ]
+      { onChange = ChangeName idx
+      , text = name
+      , placeholder = Nothing
+      , label = Input.labelHidden "rename file"
+      }
 
 fileView : Editable String -> Int -> Bool -> Element Msg
 fileView name idx showMenu =

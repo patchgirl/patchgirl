@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 240672513a49009b71a276dcd19361bba37542077cd5673c2faf1aee508ac478
+-- hash: d4ee9ce72283881fa4571ee182e2e9ef71f29dbee6366e37a25741c8679c9645
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -18,7 +18,7 @@ library
       ElmOption
       Http
       RequestCollection
-      RequestNode
+      RequestNode.App
       RequestNode.Model
   other-modules:
       Paths_example_servant_minimal
@@ -33,6 +33,7 @@ library
     , postgresql-simple
     , servant
     , servant-elm
+    , servant-flatten
     , servant-server
     , text
     , transformers
@@ -54,6 +55,7 @@ executable example-servant-minimal
     , postgresql-simple
     , servant
     , servant-elm
+    , servant-flatten
     , servant-server
     , text
     , transformers
@@ -89,6 +91,7 @@ test-suite spec
     , servant
     , servant-client
     , servant-elm
+    , servant-flatten
     , servant-server
     , text
     , transformers
