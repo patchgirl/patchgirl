@@ -7,6 +7,7 @@ import           Network.Wai              hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Servant
 import Servant.API.Flatten (Flat)
+import Servant.API.ContentTypes (NoContent)
 import           System.IO
 import           RequestCollection
 import           RequestNode.App
@@ -21,6 +22,7 @@ type CombinedApi =
 
 type RestApi =
   RequestCollectionApi :<|>
+  RequestNodeApi :<|>
   RequestFileApi :<|>
   HealthApi
 
@@ -28,6 +30,13 @@ type RequestCollectionApi =
   "requestCollection" :> (
     -- getRequestCollectionById
     Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
+  )
+
+type RequestNodeApi = Flat (
+  "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
+    "_rename" :> ReqBody '[JSON] String :> Put '[JSON] NoContent :<|>
+    "_delete" :> Delete '[JSON] NoContent
+    )
   )
 
 type RequestFileApi = Flat (
@@ -50,11 +59,14 @@ type AssetApi =
 restApiServer :: Server RestApi
 restApiServer =
   requestCollectionApi :<|>
+  requestNodeApi :<|>
   requestFileApi :<|>
   getAppHealth
   where
     requestCollectionApi =
       getRequestCollectionById
+    requestNodeApi =
+      renameNodeRequest :<|> undefined
     requestFileApi =
       createRequestFile :<|> updateRequestFile
 

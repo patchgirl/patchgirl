@@ -15,12 +15,65 @@ import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
-import           Servant (Handler)
+import           Servant (Handler, throwError, err404)
+import Servant.API.ContentTypes (NoContent(..))
 import           Control.Monad.IO.Class (liftIO)
 import           DB
 import Http
 import           Data.Aeson (FromJSON, ToJSON)
 import RequestNode.Model
+import           Database.PostgreSQL.Simple.FromField
+
+-- * request node
+
+requestNodeIdsFromCollectionId :: Int -> Connection -> IO [Int]
+requestNodeIdsFromCollectionId requestCollectionId connection = do
+  oIds <- (query connection requestNodeIdsFromCollectionIdQuery $ Only requestCollectionId) :: IO [Only Int]
+  return $
+    map (\oId ->
+           let Only id = oId
+           in id
+        ) oIds
+  where
+    requestNodeIdsFromCollectionIdQuery =
+      [sql|
+          WITH RECURSIVE request_node_with_its_parent AS (
+            SELECT id, '{}'::int[] AS parents
+            FROM request_node n
+            INNER JOIN request_collection_to_request_node cn ON(cn.request_node_id = n.id)
+            WHERE request_node_parent_id IS NULL
+            AND cn.request_collection_id = ?
+
+            UNION ALL
+
+            SELECT c.id, parents || c.request_node_parent_id
+            FROM request_node_with_its_parent p
+            JOIN request_node c
+            ON c.request_node_parent_id = p.id
+          )
+          SELECT id
+          FROM request_node_with_its_parent;
+          |]
+
+updateRequestNodeNameFromId :: Int -> String -> Connection -> IO ()
+updateRequestNodeNameFromId requestNodeId newName connection = do
+  execute connection updateQuery $ (newName, requestNodeId)
+  return ()
+  where
+    updateQuery =
+      [sql|
+          UPDATE request_node
+          SET name = ?
+          WHERE id = ?
+          |]
+
+renameNodeRequest :: Int -> Int -> String -> Handler NoContent
+renameNodeRequest requestCollectionId requestNodeId newName = do
+  connection <- liftIO getDBConnection
+  requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
+  case requestNodeId `elem` requestNodeIds of
+    True -> (liftIO $ updateRequestNodeNameFromId requestNodeId newName connection) >> return NoContent
+    False -> throwError err404
 
 -- * file
 
