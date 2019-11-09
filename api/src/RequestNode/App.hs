@@ -55,9 +55,9 @@ requestNodeIdsFromCollectionId requestCollectionId connection = do
           FROM request_node_with_its_parent;
           |]
 
-updateRequestNodeNameFromId :: Int -> String -> Connection -> IO ()
-updateRequestNodeNameFromId requestNodeId newName connection = do
-  execute connection updateQuery $ (newName, requestNodeId)
+updateRequestNodeDB :: Int -> UpdateRequestNode -> Connection -> IO ()
+updateRequestNodeDB requestNodeId updateRequestNode connection = do
+  execute connection updateQuery $ (updateRequestNode, requestNodeId)
   return ()
   where
     updateQuery =
@@ -67,12 +67,12 @@ updateRequestNodeNameFromId requestNodeId newName connection = do
           WHERE id = ?
           |]
 
-renameNodeRequest :: Int -> Int -> String -> Handler NoContent
-renameNodeRequest requestCollectionId requestNodeId newName = do
+updateRequestNodeHandler :: Int -> Int -> UpdateRequestNode -> Handler NoContent
+updateRequestNodeHandler requestCollectionId requestNodeId updateRequestNode = do
   connection <- liftIO getDBConnection
   requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
   case requestNodeId `elem` requestNodeIds of
-    True -> (liftIO $ updateRequestNodeNameFromId requestNodeId newName connection) >> return NoContent
+    True -> (liftIO $ updateRequestNodeDB requestNodeId updateRequestNode connection) >> return NoContent
     False -> throwError err404
 
 -- * file

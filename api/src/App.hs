@@ -32,10 +32,10 @@ type RequestCollectionApi =
     Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
   )
 
-type RequestNodeApi = Flat (
-  "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
-    "_rename" :> ReqBody '[JSON] String :> Put '[JSON] NoContent -- :<|>
---    "_delete" :> Delete '[JSON] NoContent
+type RequestNodeApi =
+  Flat (
+    "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
+      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] NoContent
     )
   )
 
@@ -66,7 +66,7 @@ restApiServer =
     requestCollectionApi =
       getRequestCollectionById
     requestNodeApi =
-      renameNodeRequest -- :<|> undefined
+      updateRequestNodeHandler -- renameNodeRequest -- :<|> undefined
     requestFileApi =
       createRequestFile :<|> updateRequestFile
 

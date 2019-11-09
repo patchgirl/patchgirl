@@ -7,10 +7,12 @@
 {-# LANGUAGE FlexibleInstances       #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module RequestNode.Model where
 
 import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.SqlQQ
@@ -24,6 +26,27 @@ import           Data.Aeson.Types (Parser, camelTo2, fieldLabelModifier, generic
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Data.Aeson (Value, parseJSON)
 import Data.Aeson.Types (parseEither)
+
+data UpdateRequestNode
+  = UpdateRequestFolder { eName :: String
+                        }
+  | UpdateRequestFile { name :: String
+                      , httpUrl :: String
+                      , httpMethod :: Method
+                      , httpHeaders :: [(String, String)]
+                      , httpBody :: String
+                      }
+  deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+instance ToField UpdateRequestNode where
+  toField (UpdateRequestFolder { eName }) =
+    toField (show eName)
+  toField (UpdateRequestFile { name, httpUrl, httpMethod, httpBody }) =
+    Many [ toField name
+         , toField httpUrl
+         , toField httpMethod
+         , toField httpBody
+         ]
 
 data RequestNode
   = RequestFolder { id :: Int
