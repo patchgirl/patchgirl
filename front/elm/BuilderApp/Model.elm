@@ -28,7 +28,7 @@ type alias Folder =
 type alias File =
   { name : Editable String
   , isSaved : Bool
-  , httpUrl : String
+  , httpUrl : Editable String
   , httpMethod : Client.Method
   , httpHeaders : List Header
   , httpBody : String
@@ -47,7 +47,7 @@ defaultFolder =
 defaultFile =
   RequestFile { name = NotEdited "new file"
               , isSaved = False
-              , httpUrl = ""
+              , httpUrl = NotEdited ""
               , httpMethod = Client.Get
               , httpHeaders = []
               , httpBody = ""

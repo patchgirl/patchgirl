@@ -2,6 +2,7 @@ module BuilderApp.Util exposing (..)
 
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Model exposing (..)
+import BuilderApp.Builder.Model as Builder
 
 findPrevious : List a -> a -> Maybe a
 findPrevious l a =
@@ -24,10 +25,10 @@ markFileAsSaved node =
       RequestFile f ->
           RequestFile { f | isSaved = True }
 
-changeFileBuilder : RequestNode -> RequestNode -> RequestNode
-changeFileBuilder newRequestNode node =
+changeFileBuilder : File -> RequestNode -> RequestNode
+changeFileBuilder newFile node =
     case node of
         RequestFolder f ->
             RequestFolder f
         RequestFile f ->
-            newRequestNode
+            RequestFile newFile

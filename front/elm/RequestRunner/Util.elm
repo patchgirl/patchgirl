@@ -22,7 +22,7 @@ buildRequestInput : EnvironmentKeyValueEdition.Model -> VarApp.Model -> Builder.
 buildRequestInput env var builder =
     { method = Builder.methodToString builder.httpMethod
     , headers = builder.httpHeaders
-    , url = interpolate env var.vars builder.httpUrl
+    , url = "" --interpolate env var.vars builder.httpUrl
     , body = ""
     }
 

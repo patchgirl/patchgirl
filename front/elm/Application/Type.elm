@@ -7,6 +7,14 @@ type alias Environment =
 
 type Editable a = NotEdited a | Edited a a
 
+editedOrNotEditedValue : Editable a -> a
+editedOrNotEditedValue editable =
+    case editable of
+        NotEdited value ->
+            value
+        Edited _ newValue ->
+            newValue
+
 notEditedValue : Editable a -> a
 notEditedValue editable =
     case editable of

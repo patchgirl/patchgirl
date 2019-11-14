@@ -16,19 +16,16 @@ import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Builder.Method as Builder
 import Api.Client as Client
 import Maybe.Extra as Maybe
+import Application.Type exposing (..)
 
 update : Msg -> Model a -> Model a
 update msg model =
     case msg of
-        UpdateUrl httpUrl ->
-            { model | httpUrl = httpUrl }
+        UpdateUrl newHttpUrl ->
+            { model | httpUrl = changeEditedValue newHttpUrl model.httpUrl }
 
         SetHttpMethod newMethod ->
-            case newMethod of
-                "GET" ->
-                    { model | httpMethod = Client.Get }
-                _ ->
-                    { model | httpMethod = Client.Post }
+            { model | httpMethod = newMethod }
 
         GiveResponse result ->
             { model | response = Just result }

@@ -31,24 +31,26 @@ update msg model =
         BuilderMsg subMsg ->
             let
                 (RequestCollection id requestNodes) = model.requestCollection
+                mFile : Maybe File
                 mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderIndex
             in
-                (model, Cmd.none)
-                {-
                 case (model.selectedBuilderIndex, mFile) of
                     (Just idx, Just file) ->
                         let
-                            newBuilder = Builder.update subMsg file
+                            newFile : File
+                            newFile =
+                                Builder.update subMsg file
                             newBuilderTree =
-                                BuilderTree.modifyRequestNode (changeFileBuilder newBuilder) requestNodes idx
+                                BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
                             newModel =
                                 { model
                                     | requestCollection = RequestCollection id newBuilderTree }
                         in
-                            saveBuilder subMsg newModel
+                            (newModel, Cmd.none)
+                            --saveBuilder subMsg newModel
 
                     _ ->
-                        (model, Cmd.none)-}
+                        (model, Cmd.none)
 
         ServerOk ->
             (model, Cmd.none)

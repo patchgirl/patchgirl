@@ -3,10 +3,11 @@ module BuilderApp.Builder.Model exposing (..)
 import Http
 import BuilderApp.Model as BuilderApp
 import Api.Client as Client
+import Application.Type exposing (..)
 
 type alias Model a =
     { a
-        | httpUrl : String
+        | httpUrl : Editable String
         , httpMethod : Client.Method
         , httpHeaders : List(BuilderApp.Header)
         , httpBody : String
@@ -14,7 +15,7 @@ type alias Model a =
     }
 
 defaultBuilder =
-  { httpUrl = ""
+  { httpUrl = NotEdited ""
   , httpMethod = Client.Get
   , httpHeaders = []
   , httpBody = ""
@@ -22,7 +23,7 @@ defaultBuilder =
   }
 
 defaultModel1 =
-  { httpUrl = "{{url}}/api/people/1"
+  { httpUrl = NotEdited "{{url}}/api/people/1"
   , httpMethod = Client.Get
   , httpHeaders = []
   , httpBody = ""
@@ -30,7 +31,7 @@ defaultModel1 =
   }
 
 defaultModel =
-  { httpUrl = "swapi.co/api/people/2"
+  { httpUrl = NotEdited "swapi.co/api/people/2"
   , httpMethod = Client.Get
   , httpHeaders = []
   , httpBody = ""

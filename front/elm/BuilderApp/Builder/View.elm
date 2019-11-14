@@ -4,6 +4,11 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
+import Element.Input as Input
+
+import Html as Html
+import Html.Attributes as Html
+import Html.Events as Html
 
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
@@ -11,36 +16,46 @@ import Util.View as Util
 import BuilderApp.Builder.Method exposing (..)
 import Api.Client as Client
 import Http
+import Application.Type exposing (..)
 
 view : Model a -> Element Msg
-view model = none
-    {-
-    div [ id "builder" ]
+view model =
+    column []
         [ urlView model
         , headerView model
         , bodyView
         , responseView model
         ]
-        -}
+
 
 urlView : Model a -> Element Msg
 urlView model =
-    none {-
-    div [ id "urlBuilder" ]
-        [ select [ class "urlOption", onInput SetHttpMethod ]
-              ([ Client.Get
-               , Client.Post
-               , Client.Put
-               , Client.Delete
-               , Client.Head
-               , Client.Patch
-               , Client.Options
-               ] |> List.map toOption)
-        , input [ id "urlInput"
+    column []
+        [ Input.radioRow [ padding 10, spacing 20 ]
+              { onChange = SetHttpMethod
+              , selected = Just model.httpMethod
+              , label = Input.labelAbove [] (text "Method")
+              , options =
+                    [ Input.option Client.Get (text "Get")
+                    , Input.option Client.Post (text "Post")
+                    , Input.option Client.Put (text "Put")
+                    ]
+              }
+        , Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+            { onChange = UpdateUrl
+            , text = editedOrNotEditedValue model.httpUrl
+            , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
+            , label = Input.labelAbove [] <| text "url"
+            }
+
+
+              {-input [ id "urlInput"
                 , placeholder "myApi.com/path?arg=someArg"
                 , value model.httpUrl
                 , onInput UpdateUrl
-                , Util.onEnter AskRun ] []
+                , Util.onEnter AskRun ] []-}
+        ]
+            {-
         , button [ onClick AskRun ] [ text "Send" ]
         , button [ onClick ShowRequestAsCurl] [ text "Curl" ]
         , button [ onClick AskSave] [ text "Save" ]

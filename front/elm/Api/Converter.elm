@@ -29,7 +29,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                     Front.RequestFile
                         { name = NotEdited file.name
                         , isSaved = True
-                        , httpUrl = file.httpUrl
+                        , httpUrl = NotEdited file.httpUrl
                         , httpMethod = file.httpMethod
                         , httpHeaders = file.httpHeaders
                         , httpBody = file.httpBody
