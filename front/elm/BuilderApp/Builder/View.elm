@@ -3,8 +3,12 @@ module BuilderApp.Builder.View exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Element.Events as Events
 import Element.Input as Input
+
+import Icon exposing (..)
+import Color exposing (..)
 
 import Html as Html
 import Html.Attributes as Html
@@ -20,7 +24,7 @@ import Application.Type exposing (..)
 
 view : Model a -> Element Msg
 view model =
-    column []
+    column [ width fill ]
         [ urlView model
         , headerView model
         , bodyView
@@ -30,36 +34,61 @@ view model =
 
 urlView : Model a -> Element Msg
 urlView model =
-    column []
-        [ Input.radioRow [ padding 10, spacing 20 ]
-              { onChange = SetHttpMethod
-              , selected = Just model.httpMethod
-              , label = Input.labelAbove [] (text "Method")
-              , options =
-                    [ Input.option Client.Get (text "Get")
-                    , Input.option Client.Post (text "Post")
-                    , Input.option Client.Put (text "Put")
-                    ]
-              }
-        , Input.text [ htmlAttribute <| Util.onEnter AskRun ]
-            { onChange = UpdateUrl
-            , text = editedOrNotEditedValue model.httpUrl
-            , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-            , label = Input.labelAbove [] <| text "Url"
+    column [ width fill ]
+        [ row [ width fill ]
+            [ el [ alignLeft, width fill ] <|
+                  Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+                  { onChange = UpdateUrl
+                  , text = editedOrNotEditedValue model.httpUrl
+                  , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
+                  , label = Input.labelLeft [ centerY ] <| text "Url: "
+                  }
+            , row [ centerY
+                  , height fill
+                  , spacing 10
+                  , alignRight
+                  , paddingXY 20 0
+                  , Font.color primaryColor
+                  ] [
+                   Input.button [ Border.solid
+                           , Border.color secondaryColor
+                           , Border.width 1
+                           , Border.rounded 5
+                           , Background.color secondaryColor
+                           , height fill
+                           , paddingXY 10 0
+                           ]
+                { onPress = Just <| AskRun
+                , label = el [ centerY] <| iconWithTextAndColor "send" "Send" primaryColor
+                }
+            , Input.button [ Border.solid
+                           , Border.color secondaryColor
+                           , Border.width 1
+                           , Border.rounded 5
+                           , Background.color secondaryColor
+                           , height fill
+                           , paddingXY 10 0
+                           ]
+                { onPress = Just <| AskSave
+                , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
+                }
+                  ]
+            ]
+        , Input.radioRow [ padding 10, spacing 20 ]
+            { onChange = SetHttpMethod
+            , selected = Just model.httpMethod
+            , label = Input.labelLeft [ centerY ] (text "Method: ")
+            , options =
+                  [ Input.option Client.Get (text "Get")
+                  , Input.option Client.Post (text "Post")
+                  , Input.option Client.Put (text "Put")
+                  , Input.option Client.Delete (text "Delete")
+                  , Input.option Client.Patch (text "Patch")
+                  , Input.option Client.Head (text "Head")
+                  , Input.option Client.Options (text "Options")
+                  ]
             }
-
-
-              {-input [ id "urlInput"
-                , placeholder "myApi.com/path?arg=someArg"
-                , value model.httpUrl
-                , onInput UpdateUrl
-                , Util.onEnter AskRun ] []-}
         ]
-            {-
-        , button [ onClick AskRun ] [ text "Send" ]
-        , button [ onClick ShowRequestAsCurl] [ text "Curl" ]
-        , button [ onClick AskSave] [ text "Save" ]
-        ]-}
 
 headerView : Model a -> Element Msg
 headerView model = none {-

@@ -38,9 +38,9 @@ builderView model mIdx =
     in
         case Maybe.andThen mFile mIdx of
             Just file ->
-                column []
-                    [ el [] <| text (title file)
+                column [ width fill, height fill, spacing 20 ]
+                    [ el [ centerX ] <| text (title file)
                     , map BuilderMsg (Builder.view file)
                     ]
             Nothing ->
-                none
+                el [ centerX ] (text "No request selected")

@@ -40,3 +40,6 @@ deleteIcon =
 
 playIcon =
     icon "play-arrow"
+
+sendIcon =
+    icon "send"
