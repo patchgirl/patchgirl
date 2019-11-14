@@ -1,28 +1,14 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
-{-# LANGUAGE FlexibleInstances       #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module RequestNode.App where
 
 import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.ToRow
-import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.SqlQQ
-import           GHC.Generics
 import           Servant (Handler, throwError, err404)
 import Servant.API.ContentTypes (NoContent(..))
 import           Control.Monad.IO.Class (liftIO)
 import           DB
-import Http
-import           Data.Aeson (FromJSON, ToJSON)
 import RequestNode.Model
-import           Database.PostgreSQL.Simple.FromField
 
 -- * request node
 
@@ -57,7 +43,8 @@ requestNodeIdsFromCollectionId requestCollectionId connection = do
 
 updateRequestNodeDB :: Int -> UpdateRequestNode -> Connection -> IO ()
 updateRequestNodeDB requestNodeId updateRequestNode connection = do
-  execute connection updateQuery $ (updateRequestNode, requestNodeId)
+  -- todo search func with : m a -> m b
+  _ <- execute connection updateQuery $ (updateRequestNode, requestNodeId)
   return ()
   where
     updateQuery =
@@ -98,10 +85,6 @@ insertRequestFile newRequestFile connection = do
 createRequestFile :: Int -> NewRequestFile -> Handler Int
 createRequestFile requestCollectionId newRequestFile = do
   liftIO (getDBConnection >>= (insertRequestFile newRequestFile)) >>= return
-
-updateRequestFile :: Int -> Int -> Handler Int
-updateRequestFile requestCollectionId requestFileId =
-  undefined
 
 -- * folder
 

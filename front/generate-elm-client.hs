@@ -21,6 +21,7 @@ deriveElmDef deriveElmDefOption ''AppHealth
 deriveElmDef deriveElmDefOption ''NoContent
 deriveElmDef deriveElmDefOption ''NewRequestFile
 deriveElmDef deriveElmDefOption ''ParentNodeId
+deriveElmDef deriveElmDefOption ''UpdateRequestNode
 
 main :: IO ()
 main =
@@ -40,6 +41,7 @@ main =
       , DefineElm (Proxy :: Proxy NoContent)
       , DefineElm (Proxy :: Proxy NewRequestFile)
       , DefineElm (Proxy :: Proxy ParentNodeId)
+      , DefineElm (Proxy :: Proxy UpdateRequestNode)
       ]
     proxyApi = (Proxy :: Proxy RestApi)
   in

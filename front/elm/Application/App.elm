@@ -32,7 +32,7 @@ init : () -> (Model, Cmd Msg)
 init _ =
     let
         initializeState =
-            Client.getRequestCollectionByRequestCollectionId "/" 1 httpResultToMsg
+            Client.getRequestCollectionByRequestCollectionId "" 1 httpResultToMsg
     in
         (defaultModel, initializeState)
 

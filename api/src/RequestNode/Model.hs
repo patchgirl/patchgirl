@@ -1,9 +1,6 @@
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE FlexibleInstances       #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,12 +11,7 @@ module RequestNode.Model where
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.ToRow
-import           Database.PostgreSQL.Simple.FromRow
-import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
-import           Servant (Handler)
-import           Control.Monad.IO.Class (liftIO)
-import           DB
 import Http
 import           Data.Aeson (withObject, FromJSON(..), ToJSON, (.:), constructorTagModifier)
 import           Data.Aeson.Types (Parser, camelTo2, fieldLabelModifier, genericParseJSON, defaultOptions)
@@ -65,7 +57,42 @@ data RequestNode
 instance FromJSON RequestNode where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
+instance FromField [RequestNode] where
+  fromField field mdata = do
+    value <- fromField field mdata :: Conversion Value
+    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
+    either (returnError ConversionFailed field) return errorOrRequestNodes
+
 newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
+
+instance FromJSON RequestNodeFromPG where
+  parseJSON = withObject "RequestNode" $ \o -> do
+    requestNodeType <- o .: "tag" :: Parser RequestNodeType
+    case requestNodeType of
+      RequestFileType -> do
+        pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
+        let httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
+        id <- o .: "id"
+        name <- o .: "name"
+        httpUrl <- o .: "http_url"
+        httpMethod <- o .: "http_method"
+        httpBody <- o .: "http_body"
+        return $ RequestNodeFromPG $ RequestFile{..}
+      RequestFolderType -> do
+        pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
+        id <- o .: "id"
+        name <- o .: "name"
+        let children = fromPgRequestNodeToRequestNode <$> pgChildren
+        return $ RequestNodeFromPG $ RequestFolder{..}
+
+instance FromField [RequestNodeFromPG] where
+  fromField field mdata = do
+    value <- fromField field mdata :: Conversion Value
+    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNodeFromPG]
+    either (returnError ConversionFailed field) return errorOrRequestNodes
+
+fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
+fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode
 
 data PGHeader = PGHeader { headerKey :: String
                          , headerValue :: String
@@ -89,100 +116,65 @@ instance FromJSON RequestNodeType where
         in take ((length s) - (length suffixToRemove)) s
     }
 
-instance FromJSON RequestNodeFromPG where
-  parseJSON = withObject "RequestNode" $ \o -> do
-    requestNodeType <- o .: "tag" :: Parser RequestNodeType
-    case requestNodeType of
-      RequestFileType -> do
-        pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
-        let httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
-        id <- o .: "id"
-        name <- o .: "name"
-        httpUrl <- o .: "http_url"
-        httpMethod <- o .: "http_method"
-        httpBody <- o .: "http_body"
-        return $ RequestNodeFromPG $ RequestFile{..}
-      RequestFolderType -> do
-        pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
-        id <- o .: "id"
-        name <- o .: "name"
-        let children = fromPgRequestNodeToRequestNode <$> pgChildren
-        return $ RequestNodeFromPG $ RequestFolder{..}
-
-fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
-fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode
-
-instance FromField [RequestNode] where
-  fromField field mdata = do
-    value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
-    either (returnError ConversionFailed field) return errorOrRequestNodes
-
-instance FromField [RequestNodeFromPG] where
-  fromField field mdata = do
-    value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNodeFromPG]
-    either (returnError ConversionFailed field) return errorOrRequestNodes
-
 data ParentNodeId
   = RequestCollectionId Int
   | RequestNodeId Int
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 data NewRequestFile =
-  NewRequestFile { newRequestFileName :: String
-                 , newRequestFileParentNodeId :: ParentNodeId
-                 , newRequestFileMethod :: Method
+  NewRequestFile { name :: String
+                 , parentNodeId :: ParentNodeId
+                 , httpMethod :: Method
                  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 instance ToRow NewRequestFile where
-  toRow (NewRequestFile { newRequestFileName
-                        , newRequestFileParentNodeId
-                        , newRequestFileMethod
+  toRow (NewRequestFile { name
+                        , parentNodeId
+                        , httpMethod
                         }) =
     let
       tag = "RequestFile" :: String
       noId = Nothing :: Maybe Int
     in
-      case newRequestFileParentNodeId of
+      case parentNodeId of
         RequestCollectionId requestCollectionId ->
           toRow ( requestCollectionId
                 , noId
                 , tag
-                , newRequestFileName
-                , newRequestFileMethod
+                , name
+                , httpMethod
                 )
         RequestNodeId requestNodeId ->
           toRow ( noId
                 , requestNodeId
                 , tag
-                , newRequestFileName
-                , newRequestFileMethod
+                , name
+                , httpMethod
                 )
 
 data NewRequestFolder =
-  NewRequestFolder { newRequestFolderName :: String
-                   , newRequestFolderParentNodeId :: ParentNodeId
+  NewRequestFolder { name :: String
+                   , parentNodeId :: ParentNodeId
                    } deriving (Eq, Show, Generic)
 
 instance ToRow NewRequestFolder where
-  toRow (NewRequestFolder { newRequestFolderName
-                          , newRequestFolderParentNodeId
+  toRow (NewRequestFolder { name
+                          , parentNodeId
                           }) =
     let
       tag = "RequestFolder" :: String
       noId = Nothing :: Maybe Int
     in
-      case newRequestFolderParentNodeId of
+      case parentNodeId of
         RequestCollectionId requestCollectionId ->
           toRow ( requestCollectionId
                 , noId
                 , tag
-                , newRequestFolderName
+                , name
                 )
         RequestNodeId requestNodeId ->
           toRow ( noId
                 , requestNodeId
                 , tag
-                , newRequestFolderName
+                , name
                 )

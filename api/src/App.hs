@@ -42,9 +42,9 @@ type RequestNodeApi =
 type RequestFileApi = Flat (
   "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
     -- createRequestFile
-    ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int :<|>
+    ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int -- :<|>
     -- updateRequestFile
-    Capture "requestFileId" Int :> Put '[JSON] Int
+    -- Capture "requestFileId" Int :> Put '[JSON] Int
     )
   )
 
@@ -68,7 +68,7 @@ restApiServer =
     requestNodeApi =
       updateRequestNodeHandler -- renameNodeRequest -- :<|> undefined
     requestFileApi =
-      createRequestFile :<|> updateRequestFile
+      createRequestFile -- :<|> updateRequestFile
 
 assetApiServer :: Server AssetApi
 assetApiServer =
