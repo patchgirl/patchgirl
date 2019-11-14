@@ -36,7 +36,7 @@ update msg model =
                     { model | httpHeaders = changeEditedValue httpHeaders model.httpHeaders }
 
         SetHttpBody httpBody ->
-            { model | httpBody = httpBody }
+            { model | httpBody = changeEditedValue httpBody model.httpBody }
 
         AskSave ->
             model

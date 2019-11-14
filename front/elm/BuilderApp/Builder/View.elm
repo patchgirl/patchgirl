@@ -24,10 +24,11 @@ import Application.Type exposing (..)
 
 view : Model a -> Element Msg
 view model =
-    column [ width fill ]
+    column [ width fill, spacing 10 ]
         [ urlView model
+        , methodView model
         , headerView model
-        , bodyView
+        , bodyView model
         , responseView model
         ]
 
@@ -35,19 +36,18 @@ view model =
 urlView : Model a -> Element Msg
 urlView model =
     column [ width fill ]
-        [ row [ width fill ]
+        [ row [ width fill, spacing 10 ]
             [ el [ alignLeft, width fill ] <|
                   Input.text [ htmlAttribute <| Util.onEnter AskRun ]
                   { onChange = UpdateUrl
                   , text = editedOrNotEditedValue model.httpUrl
                   , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-                  , label = Input.labelLeft [ centerY ] <| text "Url: "
+                  , label = labelView "Url: "
                   }
             , row [ centerY
                   , height fill
                   , spacing 10
                   , alignRight
-                  , paddingXY 20 0
                   , Font.color primaryColor
                   ] [
                    Input.button [ Border.solid
@@ -74,21 +74,24 @@ urlView model =
                 }
                   ]
             ]
-        , Input.radioRow [ padding 10, spacing 20 ]
-            { onChange = SetHttpMethod
-            , selected = Just model.httpMethod
-            , label = Input.labelLeft [ centerY ] (text "Method: ")
-            , options =
-                  [ Input.option Client.Get (text "Get")
-                  , Input.option Client.Post (text "Post")
-                  , Input.option Client.Put (text "Put")
-                  , Input.option Client.Delete (text "Delete")
-                  , Input.option Client.Patch (text "Patch")
-                  , Input.option Client.Head (text "Head")
-                  , Input.option Client.Options (text "Options")
-                  ]
-            }
         ]
+
+methodView : Model a -> Element Msg
+methodView model =
+    Input.radioRow [ padding 10, spacing 20 ]
+        { onChange = SetHttpMethod
+        , selected = Just model.httpMethod
+        , label = labelView "Method: "
+        , options =
+              [ Input.option Client.Get (text "Get")
+              , Input.option Client.Post (text "Post")
+              , Input.option Client.Put (text "Put")
+              , Input.option Client.Delete (text "Delete")
+              , Input.option Client.Patch (text "Patch")
+              , Input.option Client.Head (text "Head")
+              , Input.option Client.Options (text "Options")
+              ]
+        }
 
 headerView : Model a -> Element Msg
 headerView model =
@@ -109,15 +112,19 @@ headerView model =
             { onChange = UpdateHeaders
             , text = headersToText model.httpHeaders
             , placeholder = Just <| Input.placeholder [] (text "Header: SomeHeader\nHeader2: SomeHeader2")
-            , label = Input.labelLeft [ centerY ] <| text "Headers: "
+            , label = labelView "Headers: "
             , spellcheck = False
             }
 
-bodyView : Element Msg
-bodyView = none{-
-    div [ id "bodyBuilder" ]
-        [ textarea [ placeholder "{ \n  \"your\": \"data\"\n}", onInput SetHttpBody ] []
-        ]-}
+bodyView : Model a -> Element Msg
+bodyView model =
+    Input.multiline []
+        { onChange = SetHttpBody
+        , text = editedOrNotEditedValue model.httpBody
+        , placeholder = Just <| Input.placeholder [] (text "{}")
+        , label = labelView "Body: "
+        , spellcheck = False
+        }
 
 responseView : Model a -> Element Msg
 responseView model = none {-
@@ -142,3 +149,14 @@ responseView model = none {-
             , textarea [ placeholder "response" ] [ text response ]
             ]
 -}
+
+labelView : String -> Input.Label Msg
+labelView labelText =
+    let
+        size =
+            width (fill
+                  |> maximum 100
+                  |> minimum 100
+                  )
+    in
+        Input.labelLeft [ centerY, size ] <| text labelText

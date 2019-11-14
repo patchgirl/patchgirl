@@ -19,11 +19,14 @@ import Application.Type exposing (..)
 
 view : Model a -> Element Msg
 view model =
-    row [ width fill ]
-      [ column [ alignTop, paddingXY 10 0, spacing 10, width (px 200) ] <|
-            List.map (map TreeMsg) (BuilderTree.view model)
-      , builderView model model.selectedBuilderIndex
-      ]
+    let
+        size = width fill
+    in
+        row [ width fill, paddingXY 10 0 ]
+            [ column [ alignTop, paddingXY 10 0, spacing 10, width (px 200) ] <|
+                  List.map (map TreeMsg) (BuilderTree.view model)
+            , builderView model model.selectedBuilderIndex
+            ]
 
 builderView : Model a -> Maybe Int -> Element Msg
 builderView model mIdx =

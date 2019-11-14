@@ -32,7 +32,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         , httpUrl = NotEdited file.httpUrl
                         , httpMethod = file.httpMethod
                         , httpHeaders = NotEdited file.httpHeaders
-                        , httpBody = file.httpBody
+                        , httpBody = NotEdited file.httpBody
                         , response = Nothing
                         }
     in
