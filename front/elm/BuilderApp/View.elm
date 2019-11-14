@@ -19,8 +19,9 @@ import Application.Type exposing (..)
 
 view : Model a -> Element Msg
 view model =
-    column [ width fill ]
-      [ column [ paddingXY 10 0, spacing 10, width (px 500) ] <| List.map (map TreeMsg) (BuilderTree.view model)
+    row [ width fill ]
+      [ column [ paddingXY 10 0, spacing 10, width (px 200) ] <|
+            List.map (map TreeMsg) (BuilderTree.view model)
       , builderView model model.selectedBuilderIndex
       ]
 

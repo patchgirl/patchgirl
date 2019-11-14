@@ -45,7 +45,7 @@ urlView model =
             { onChange = UpdateUrl
             , text = editedOrNotEditedValue model.httpUrl
             , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-            , label = Input.labelAbove [] <| text "url"
+            , label = Input.labelAbove [] <| text "Url"
             }
 
 
