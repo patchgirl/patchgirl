@@ -25,56 +25,59 @@ import Application.Type exposing (..)
 view : Model a -> Element Msg
 view model =
     column [ width fill, spacing 10 ]
-        [ urlView model
+        [ column [ width fill ]
+              [ row [ width fill, spacing 10 ]
+                    [ urlView model
+                    , mainActionButtonsView
+                    ]
+              ]
         , methodView model
         , headerView model
         , bodyView model
         , responseView model
         ]
 
-
 urlView : Model a -> Element Msg
 urlView model =
-    column [ width fill ]
-        [ row [ width fill, spacing 10 ]
-            [ el [ alignLeft, width fill ] <|
-                  Input.text [ htmlAttribute <| Util.onEnter AskRun ]
-                  { onChange = UpdateUrl
-                  , text = editedOrNotEditedValue model.httpUrl
-                  , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-                  , label = labelView "Url: "
-                  }
-            , row [ centerY
-                  , height fill
-                  , spacing 10
-                  , alignRight
-                  , Font.color primaryColor
-                  ] [
-                   Input.button [ Border.solid
-                           , Border.color secondaryColor
-                           , Border.width 1
-                           , Border.rounded 5
-                           , Background.color secondaryColor
-                           , height fill
-                           , paddingXY 10 0
-                           ]
+    el [ alignLeft, width fill ] <|
+        Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+            { onChange = UpdateUrl
+            , text = editedOrNotEditedValue model.httpUrl
+            , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
+            , label = labelView "Url: "
+            }
+
+mainActionButtonsView : Element Msg
+mainActionButtonsView =
+    let
+        rowParam =
+            [ centerY
+            , height fill
+            , spacing 10
+            , alignRight
+            , Font.color primaryColor
+            ]
+
+        inputParam =
+            [ Border.solid
+            , Border.color secondaryColor
+            , Border.width 1
+            , Border.rounded 5
+            , Background.color secondaryColor
+            , height fill
+            , paddingXY 10 0
+            ]
+    in
+        row rowParam
+            [ Input.button inputParam
                 { onPress = Just <| AskRun
                 , label = el [ centerY] <| iconWithTextAndColor "send" "Send" primaryColor
                 }
-            , Input.button [ Border.solid
-                           , Border.color secondaryColor
-                           , Border.width 1
-                           , Border.rounded 5
-                           , Background.color secondaryColor
-                           , height fill
-                           , paddingXY 10 0
-                           ]
+            , Input.button inputParam
                 { onPress = Just <| AskSave
                 , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
                 }
-                  ]
             ]
-        ]
 
 methodView : Model a -> Element Msg
 methodView model =
