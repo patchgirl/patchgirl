@@ -1,8 +1,9 @@
 module BuilderApp.Builder.View exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
 
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
@@ -11,17 +12,20 @@ import BuilderApp.Builder.Method exposing (..)
 import Api.Client as Client
 import Http
 
-view : Model a -> Html Msg
-view model =
+view : Model a -> Element Msg
+view model = none
+    {-
     div [ id "builder" ]
         [ urlView model
         , headerView model
         , bodyView
         , responseView model
         ]
+        -}
 
-urlView : Model a -> Html Msg
+urlView : Model a -> Element Msg
 urlView model =
+    none {-
     div [ id "urlBuilder" ]
         [ select [ class "urlOption", onInput SetHttpMethod ]
               ([ Client.Get
@@ -40,23 +44,23 @@ urlView model =
         , button [ onClick AskRun ] [ text "Send" ]
         , button [ onClick ShowRequestAsCurl] [ text "Curl" ]
         , button [ onClick AskSave] [ text "Save" ]
-        ]
+        ]-}
 
-headerView : Model a -> Html Msg
-headerView model =
+headerView : Model a -> Element Msg
+headerView model = none {-
     div [ id "headersBuilder" ]
         [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2"
                    , onInput UpdateHeaders ] []
-        ]
+        ]-}
 
-bodyView : Html Msg
-bodyView =
+bodyView : Element Msg
+bodyView = none{-
     div [ id "bodyBuilder" ]
         [ textarea [ placeholder "{ \n  \"your\": \"data\"\n}", onInput SetHttpBody ] []
-        ]
+        ]-}
 
-responseView : Model a -> Html Msg
-responseView model =
+responseView : Model a -> Element Msg
+responseView model = none {-
     let
         status =
             case model.response of
@@ -77,3 +81,4 @@ responseView model =
             [ div [] [ text status ]
             , textarea [ placeholder "response" ] [ text response ]
             ]
+-}

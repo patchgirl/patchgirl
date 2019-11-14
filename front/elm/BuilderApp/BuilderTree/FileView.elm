@@ -19,7 +19,10 @@ import Util.View as Util
 
 fileReadView : String -> Int -> Element Msg
 fileReadView name idx =
-    el [] <| iconWithTextAndColor "label" name secondaryColor
+    Input.button []
+        { onPress = Just <| SetDisplayedBuilder idx
+        , label = el [] <| iconWithTextAndColor "label" name secondaryColor
+        }
 
 fileEditView : String -> Int -> Element Msg
 fileEditView name idx =
