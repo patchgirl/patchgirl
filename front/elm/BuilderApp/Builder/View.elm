@@ -91,11 +91,27 @@ urlView model =
         ]
 
 headerView : Model a -> Element Msg
-headerView model = none {-
-    div [ id "headersBuilder" ]
-        [ textarea [ placeholder "Header: SomeHeader\nHeader2: SomeHeader2"
-                   , onInput UpdateHeaders ] []
-        ]-}
+headerView model =
+    let
+        untuple : (String, String) -> String
+        untuple (key, value) =
+            case String.isEmpty key of
+                True -> ""
+                False -> key ++ ":" ++ value
+
+        headersToText : Editable (List (String, String)) -> String
+        headersToText eHeaders =
+            editedOrNotEditedValue model.httpHeaders
+                |> List.map untuple
+                |> String.join "\n"
+    in
+        Input.multiline []
+            { onChange = UpdateHeaders
+            , text = headersToText model.httpHeaders
+            , placeholder = Just <| Input.placeholder [] (text "Header: SomeHeader\nHeader2: SomeHeader2")
+            , label = Input.labelLeft [ centerY ] <| text "Headers: "
+            , spellcheck = False
+            }
 
 bodyView : Element Msg
 bodyView = none{-

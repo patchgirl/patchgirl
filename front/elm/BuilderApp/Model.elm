@@ -30,7 +30,7 @@ type alias File =
   , isSaved : Bool
   , httpUrl : Editable String
   , httpMethod : Client.Method
-  , httpHeaders : List Header
+  , httpHeaders : Editable (List Header)
   , httpBody : String
   , response : Maybe Response
   }
@@ -49,7 +49,7 @@ defaultFile =
               , isSaved = False
               , httpUrl = NotEdited ""
               , httpMethod = Client.Get
-              , httpHeaders = []
+              , httpHeaders = NotEdited []
               , httpBody = ""
               , response = Nothing
               }

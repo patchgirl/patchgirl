@@ -32,10 +32,8 @@ update msg model =
 
         UpdateHeaders rawHeaders ->
             case parseHeaders rawHeaders of
-                Just httpHeaders ->
-                    { model | httpHeaders = Debug.log "headers" httpHeaders }
-                Nothing ->
-                    model
+                httpHeaders ->
+                    { model | httpHeaders = changeEditedValue httpHeaders model.httpHeaders }
 
         SetHttpBody httpBody ->
             { model | httpBody = httpBody }
@@ -49,15 +47,13 @@ update msg model =
         ShowRequestAsCurl ->
             model
 
-parseHeaders : String -> Maybe (List(String, String))
+parseHeaders : String -> List(String, String)
 parseHeaders headers =
   let
-    parseRawHeader : String -> Maybe(String, String)
+    parseRawHeader : String -> (String, String)
     parseRawHeader rawHeader =
       case String.split ":" rawHeader of
-        [headerKey, headerValue] -> Just (headerKey, headerValue)
-        _ -> Nothing
+        [headerKey, headerValue] -> (headerKey, headerValue)
+        _ -> ("", "")
   in
-    Maybe.traverse parseRawHeader (
-      String.lines headers |> List.filter (not << String.isEmpty)
-    )
+      String.lines headers |> List.map parseRawHeader

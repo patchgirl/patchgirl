@@ -9,7 +9,7 @@ type alias Model a =
     { a
         | httpUrl : Editable String
         , httpMethod : Client.Method
-        , httpHeaders : List(BuilderApp.Header)
+        , httpHeaders : Editable (List BuilderApp.Header)
         , httpBody : String
         , response : Maybe BuilderApp.Response
     }
@@ -17,7 +17,7 @@ type alias Model a =
 defaultBuilder =
   { httpUrl = NotEdited ""
   , httpMethod = Client.Get
-  , httpHeaders = []
+  , httpHeaders = NotEdited []
   , httpBody = ""
   , response = Nothing
   }
@@ -25,7 +25,7 @@ defaultBuilder =
 defaultModel1 =
   { httpUrl = NotEdited "{{url}}/api/people/1"
   , httpMethod = Client.Get
-  , httpHeaders = []
+  , httpHeaders = NotEdited []
   , httpBody = ""
   , response = Nothing
   }
@@ -33,7 +33,7 @@ defaultModel1 =
 defaultModel =
   { httpUrl = NotEdited "swapi.co/api/people/2"
   , httpMethod = Client.Get
-  , httpHeaders = []
+  , httpHeaders = NotEdited []
   , httpBody = ""
   , response = Nothing
   }
