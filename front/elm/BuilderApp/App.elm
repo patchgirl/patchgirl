@@ -19,7 +19,6 @@ import BuilderApp.Builder.Util as Builder
 import BuilderApp.Builder.Method as Builder
 import List.Extra as List
 import InitializedApplication.Model as InitializedApplication
-import RequestRunner.Util as RequestRunner
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
@@ -49,54 +48,18 @@ update msg model =
                 mFile : Maybe File
                 mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderIndex
             in
-                case subMsg of
-                    Builder.AskRun ->
+                case (model.selectedBuilderIndex, mFile) of
+                    (Just idx, Just file) ->
                         let
-                            mEnvKeyValues = InitializedApplication.getEnvironmentKeyValuesToRun model
+                            (newFile, newSubMsg) =
+                                Builder.update subMsg (InitializedApplication.getEnvironmentKeyValuesToRun model) model.varAppModel.vars file
+                            newBuilderTree =
+                                BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
+                            newModel =
+                                { model
+                                    | requestCollection = RequestCollection id newBuilderTree }
                         in
-                            case (mEnvKeyValues, mFile) of
-                                (envKeyValues, Just file) ->
-                                    (model, buildRequestToRun envKeyValues model.varAppModel.vars file)
-                                _ ->
-                                    (model, Cmd.none)
+                            (newModel, Cmd.none)
 
                     _ ->
-                        case (model.selectedBuilderIndex, mFile) of
-                            (Just idx, Just file) ->
-                                let
-                                    newFile : File
-                                    newFile =
-                                        Builder.update subMsg file
-                                    newBuilderTree =
-                                        BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
-                                    newModel =
-                                        { model
-                                            | requestCollection = RequestCollection id newBuilderTree }
-                                in
-                                    (newModel, Cmd.none)
-                                --saveBuilder subMsg newModel
-
-                            _ ->
-                                (model, Cmd.none)
-
-        ServerOk _ ->
-            (model, Cmd.none)
-
-        ServerError serverErrorMsg ->
-            (model, Cmd.none)
-
-buildRequestToRun : List(String, String) -> List(String, String) -> File -> Cmd Msg
-buildRequestToRun envKeyValues varKeyValues builder =
-    let
-        request = RequestRunner.buildRequest <| RequestRunner.buildRequestInput envKeyValues varKeyValues builder
-        cmdRequest =
-            { method = request.method
-            , headers = request.headers
-            , url = request.url
-            , body = request.body
-            , expect = Http.expectString ServerOk
-            , timeout = Nothing
-            , tracker = Nothing
-            }
-    in
-        Http.request cmdRequest
+                        (model, Cmd.none)

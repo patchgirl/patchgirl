@@ -38,6 +38,7 @@ type alias File =
   , httpHeaders : Editable (List Header)
   , httpBody : Editable String
   , response : Maybe Response
+  , showResponseView : Bool
   }
 
 type alias Response = Result Http.Error String
@@ -57,6 +58,7 @@ defaultFile =
               , httpHeaders = NotEdited []
               , httpBody = NotEdited ""
               , response = Nothing
+              , showResponseView = False
               }
 
 emptyBuilderTree =

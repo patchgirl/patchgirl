@@ -12,6 +12,7 @@ type alias Model a =
         , httpHeaders : Editable (List BuilderApp.Header)
         , httpBody : Editable String
         , response : Maybe BuilderApp.Response
+        , showResponseView : Bool
     }
 
 defaultBuilder =

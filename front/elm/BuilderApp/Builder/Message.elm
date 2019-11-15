@@ -15,3 +15,4 @@ type Msg
   | ShowRequestAsCurl
   | GiveResponse (Result Http.Error String)
   | AskSave
+  | ServerOk  (Result Http.Error String)

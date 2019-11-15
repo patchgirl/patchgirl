@@ -24,18 +24,29 @@ import Application.Type exposing (..)
 
 view : Model a -> Element Msg
 view model =
-    column [ width fill, spacing 10 ]
-        [ column [ width fill ]
-              [ row [ width fill, spacing 10 ]
-                    [ urlView model
-                    , mainActionButtonsView
+    let
+        builderView =
+            column [ width fill, spacing 10 ]
+                [ column [ width fill ]
+                      [ row [ width fill, spacing 10 ]
+                            [ urlView model
+                            , mainActionButtonsView
+                            ]
+                      ]
+                , methodView model
+                , headerView model
+                , bodyView model
+                , responseView model
+                ]
+    in
+        case model.showResponseView of
+            False ->
+                builderView
+
+            True ->
+                row []
+                    [ builderView
                     ]
-              ]
-        , methodView model
-        , headerView model
-        , bodyView model
-        , responseView model
-        ]
 
 urlView : Model a -> Element Msg
 urlView model =

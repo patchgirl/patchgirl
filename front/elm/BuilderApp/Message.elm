@@ -10,5 +10,3 @@ type Msg
   | BuilderMsg Builder.Msg
   | TreeMsg BuilderTree.Msg
   | EnvSelectionMsg Int
-  | ServerOk (Result Http.Error String)
-  | ServerError String
