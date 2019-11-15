@@ -1,7 +1,6 @@
 module BuilderApp.Builder.Model exposing (..)
 
 import Http
-import BuilderApp.Model as BuilderApp
 import Api.Client as Client
 import Application.Type exposing (..)
 
@@ -9,11 +8,18 @@ type alias Model a =
     { a
         | httpUrl : Editable String
         , httpMethod : Client.Method
-        , httpHeaders : Editable (List BuilderApp.Header)
+        , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
-        , response : Maybe BuilderApp.Response
+        , response : Maybe (Result ErrorDetailed (Http.Metadata, String))
         , showResponseView : Bool
     }
+
+type ErrorDetailed
+    = BadUrl String
+    | Timeout
+    | NetworkError
+    | BadStatus Http.Metadata String
+    | BadBody String
 
 defaultBuilder =
   { httpUrl = NotEdited ""

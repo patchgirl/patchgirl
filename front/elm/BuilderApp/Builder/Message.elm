@@ -12,7 +12,6 @@ type Msg
   | UpdateHeaders String
   | SetHttpBody String
   | AskRun
+  | ServerOk (Result ErrorDetailed ( Http.Metadata, String ))
   | ShowRequestAsCurl
-  | GiveResponse (Result Http.Error String)
   | AskSave
-  | ServerOk  (Result Http.Error String)

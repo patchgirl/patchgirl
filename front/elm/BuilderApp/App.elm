@@ -22,7 +22,7 @@ import InitializedApplication.Model as InitializedApplication
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
-    case Debug.log "it"  msg of
+    case msg of
         EnvSelectionMsg idx ->
             let
                 newModel =
@@ -57,9 +57,10 @@ update msg model =
                                 BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
                             newModel =
                                 { model
-                                    | requestCollection = RequestCollection id newBuilderTree }
+                                    | requestCollection = RequestCollection id newBuilderTree
+                                }
                         in
-                            (newModel, Cmd.none)
+                            (newModel, Cmd.map BuilderMsg newSubMsg)
 
                     _ ->
                         (model, Cmd.none)

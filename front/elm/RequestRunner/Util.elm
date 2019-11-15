@@ -32,7 +32,7 @@ buildRequest requestInput =
     { method = requestInput.method
     , headers = List.map Builder.mkHeader requestInput.headers
     , url = requestInput.url
-    , body = Http.stringBody "application/json" <| Debug.log "body" requestInput.body
+    , body = Http.stringBody "application/json" requestInput.body
     }
 
 interpolate : List(String, String) -> List(String, String) -> String -> String

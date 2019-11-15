@@ -36,7 +36,6 @@ view model =
                 , methodView model
                 , headerView model
                 , bodyView model
-                , responseView model
                 ]
     in
         case model.showResponseView of
@@ -46,7 +45,33 @@ view model =
             True ->
                 row []
                     [ builderView
+                    , responseView model
                     ]
+
+responseView : Model a -> Element Msg
+responseView model =
+    let
+        view2 =
+            case model.response of
+                Just response ->
+                    case response of
+                        Ok (metadata, body) ->
+                            Input.multiline []
+                                { onChange = SetHttpBody
+                                , text = body
+                                , placeholder = Nothing
+                                , label = Input.labelHidden ""
+                                , spellcheck = False
+                                }
+
+                        Err bar ->
+                            none
+
+                Nothing ->
+                    el [] (text "no response available")
+    in
+        view2
+
 
 urlView : Model a -> Element Msg
 urlView model =
@@ -139,30 +164,6 @@ bodyView model =
         , label = labelView "Body: "
         , spellcheck = False
         }
-
-responseView : Model a -> Element Msg
-responseView model = none {-
-    let
-        status =
-            case model.response of
-                Just (Err error) ->
-                    case error of
-                        Http.BadUrl url -> "Bad url: [" ++ url ++ "]"
-                        Http.Timeout -> "Timeout"
-                        Http.NetworkError -> "Network error"
-                        Http.BadStatus statusCode -> "Error " ++ (String.fromInt statusCode)
-                        Http.BadBody body -> "Error " ++ (body)
-                _ -> ""
-        response =
-            case model.response of
-                Just (Ok responseBody) -> responseBody
-                _ -> ""
-    in
-        div [ id "responseBody" ]
-            [ div [] [ text status ]
-            , textarea [ placeholder "response" ] [ text response ]
-            ]
--}
 
 labelView : String -> Input.Label Msg
 labelView labelText =

@@ -36,13 +36,6 @@ update msg envKeyValues varKeyValues model =
             in
                 (newModel, Cmd.none)
 
-        GiveResponse result ->
-            let
-                newModel =
-                    { model | response = Just result }
-            in
-                (newModel, Cmd.none)
-
         UpdateHeaders rawHeaders ->
             let
                 newModel =
@@ -64,17 +57,24 @@ update msg envKeyValues varKeyValues model =
 
         AskRun ->
             let
-                newMsg = buildRequestToRun envKeyValues varKeyValues model
-                newModel = { model | showResponseView = True }
+                newMsg =
+                    buildRequestToRun envKeyValues varKeyValues model
+                newModel =
+                    { model
+                        | showResponseView = True
+                    }
             in
-                (newModel, newMsg)
+                (newModel, Debug.log "test" newMsg)
 
         ServerOk result ->
-            (model, Cmd.none)
+            let
+                newModel =
+                    { model | response = Just result }
+            in
+                (newModel, Cmd.none)
 
         ShowRequestAsCurl ->
             (model, Cmd.none)
-
 
 parseHeaders : String -> List(String, String)
 parseHeaders headers =
@@ -96,9 +96,31 @@ buildRequestToRun envKeyValues varKeyValues builder =
             , headers = request.headers
             , url = request.url
             , body = request.body
-            , expect = Http.expectString ServerOk
+            , expect = expectStringDetailed ServerOk
             , timeout = Nothing
             , tracker = Nothing
             }
     in
         Http.request cmdRequest
+
+convertResponseString : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
+convertResponseString httpResponse =
+    case httpResponse of
+        Http.BadUrl_ url ->
+            Err (BadUrl url)
+
+        Http.Timeout_ ->
+            Err Timeout
+
+        Http.NetworkError_ ->
+            Err NetworkError
+
+        Http.BadStatus_ metadata body ->
+            Err (BadStatus metadata body)
+
+        Http.GoodStatus_ metadata body ->
+            Ok ( metadata, body )
+
+expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg
+expectStringDetailed msg =
+    Http.expectStringResponse msg convertResponseString

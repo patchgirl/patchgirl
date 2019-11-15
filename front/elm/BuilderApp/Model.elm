@@ -5,6 +5,7 @@ import Api.Client as Client
 import Application.Type exposing (..)
 import Application.Type as Type
 import VarApp.Model as VarApp
+import BuilderApp.Builder.Model as Builder
 
 type alias Model a =
     { a
@@ -35,14 +36,11 @@ type alias File =
   , isSaved : Bool
   , httpUrl : Editable String
   , httpMethod : Client.Method
-  , httpHeaders : Editable (List Header)
+  , httpHeaders : Editable (List (String, String))
   , httpBody : Editable String
-  , response : Maybe Response
+  , response : Maybe (Result Builder.ErrorDetailed ( Http.Metadata, String ))
   , showResponseView : Bool
   }
-
-type alias Response = Result Http.Error String
-type alias Header = (String, String)
 
 defaultFolder =
   RequestFolder { name = NotEdited "new folder"
