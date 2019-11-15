@@ -12,10 +12,25 @@ import BuilderApp.Builder.Message as Builder
 import Api.Client as Client
 import Api.Converter as Client
 import Http as Http
+import EnvironmentToRunSelection.App as EnvSelection
+import RequestInput.Model as RequestInput
+import BuilderApp.Builder.Model as Builder
+import BuilderApp.Builder.Util as Builder
+import BuilderApp.Builder.Method as Builder
+import List.Extra as List
+import InitializedApplication.Model as InitializedApplication
+import RequestRunner.Util as RequestRunner
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
-    case msg of
+    case Debug.log "it"  msg of
+        EnvSelectionMsg idx ->
+            let
+                newModel =
+                    { model | selectedEnvironmentToRunIndex = Just idx }
+            in
+                (newModel, Cmd.none)
+
         DisplayBuilder idx ->
             let
                 newModel = { model | selectedBuilderIndex = Just idx }
@@ -34,67 +49,54 @@ update msg model =
                 mFile : Maybe File
                 mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderIndex
             in
-                case (model.selectedBuilderIndex, mFile) of
-                    (Just idx, Just file) ->
+                case subMsg of
+                    Builder.AskRun ->
                         let
-                            newFile : File
-                            newFile =
-                                Builder.update subMsg file
-                            newBuilderTree =
-                                BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
-                            newModel =
-                                { model
-                                    | requestCollection = RequestCollection id newBuilderTree }
+                            mEnvKeyValues = InitializedApplication.getEnvironmentKeyValuesToRun model
                         in
-                            (newModel, Cmd.none)
-                            --saveBuilder subMsg newModel
+                            case (mEnvKeyValues, mFile) of
+                                (envKeyValues, Just file) ->
+                                    (model, buildRequestToRun envKeyValues model.varAppModel.vars file)
+                                _ ->
+                                    (model, Cmd.none)
 
                     _ ->
-                        (model, Cmd.none)
+                        case (model.selectedBuilderIndex, mFile) of
+                            (Just idx, Just file) ->
+                                let
+                                    newFile : File
+                                    newFile =
+                                        Builder.update subMsg file
+                                    newBuilderTree =
+                                        BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
+                                    newModel =
+                                        { model
+                                            | requestCollection = RequestCollection id newBuilderTree }
+                                in
+                                    (newModel, Cmd.none)
+                                --saveBuilder subMsg newModel
 
-        ServerOk ->
+                            _ ->
+                                (model, Cmd.none)
+
+        ServerOk _ ->
             (model, Cmd.none)
 
         ServerError serverErrorMsg ->
             (model, Cmd.none)
 
-saveBuilder : Builder.Msg -> Model a -> (Model a , Cmd Msg)
-saveBuilder subMsg model =
-    case subMsg of
-        Builder.AskSave ->
-            let
-                (RequestCollection id requestNodes) = model.requestCollection
-                --backRequestCollection = Client.convertRequestNodesFromFrontToBack requestNodes
-            in
-                (model, Cmd.none)
-                --(model, Client.postRequestCollection "/" backRequestCollection fromServer)
-
-        _ ->
-            (model, Cmd.none)
-
-fromServer : Result Http.Error a -> Msg
-fromServer result =
-    case result of
-        Ok content ->
-            ServerOk
-
-        Err error ->
-            ServerError <| httpErrorToString error
-
-httpErrorToString : Http.Error -> String
-httpErrorToString error =
-    case error of
-        Http.BadUrl s ->
-            "bad url: " ++ s
-
-        Http.Timeout ->
-            "timeout"
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.BadStatus status ->
-            "bad status: " ++ String.fromInt status
-
-        Http.BadBody response ->
-            "bad payload: " ++ response
+buildRequestToRun : List(String, String) -> List(String, String) -> File -> Cmd Msg
+buildRequestToRun envKeyValues varKeyValues builder =
+    let
+        request = RequestRunner.buildRequest <| RequestRunner.buildRequestInput envKeyValues varKeyValues builder
+        cmdRequest =
+            { method = request.method
+            , headers = request.headers
+            , url = request.url
+            , body = request.body
+            , expect = Http.expectString ServerOk
+            , timeout = Nothing
+            , tracker = Nothing
+            }
+    in
+        Http.request cmdRequest

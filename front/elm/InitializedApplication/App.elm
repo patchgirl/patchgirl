@@ -71,15 +71,11 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        EnvSelectionMsg subMsg ->
-            case EnvSelection.update subMsg model of
-                newModel ->
-                    (newModel, Cmd.none)
-
         BuilderAppMsg subMsg ->
             case subMsg of
+                {-
                 BuilderApp.BuilderMsg Builder.AskRun ->
-                    (model, Cmd.none)
+                    (model, Cmd.none)-}
 --                    case getEnvironmentToRun model of
                         {-
                         Just environment ->

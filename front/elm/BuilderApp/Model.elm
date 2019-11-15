@@ -3,6 +3,8 @@ module BuilderApp.Model exposing (..)
 import Http as Http
 import Api.Client as Client
 import Application.Type exposing (..)
+import Application.Type as Type
+import VarApp.Model as VarApp
 
 type alias Model a =
     { a
@@ -10,6 +12,9 @@ type alias Model a =
         , displayedBuilderIndex : Maybe Int
         , requestCollection : RequestCollection
         , displayedRequestNodeMenuIndex : Maybe Int
+        , environments : List Type.Environment
+        , selectedEnvironmentToRunIndex : Maybe Int
+        , varAppModel : VarApp.Model
     }
 
 type RequestCollection  =

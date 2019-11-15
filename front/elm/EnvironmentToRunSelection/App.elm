@@ -7,6 +7,13 @@ import Html.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
 
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Element.Events as Events
+import Element.Input as Input
+
 import EnvironmentToRunSelection.Message exposing (..)
 import List.Extra as List
 import Application.Type as Type
@@ -27,11 +34,12 @@ update msg model =
                 Nothing ->
                     { model | selectedEnvironmentToRunIndex = Nothing }
 
-view : List String -> Html Msg
+view : List String -> Element Msg
 view environmentNames =
-  select [ style "align-self" "flex-start", on "change" (Json.map Select targetValueIntParse) ]
-    (List.indexedMap entryView environmentNames)
+  html <|
+      select [ on "change" (Json.map Select targetValueIntParse) ]
+          (List.indexedMap entryView environmentNames)
 
 entryView : Int -> String -> Html Msg
 entryView idx envName =
-  option [ Html.Attributes.value (String.fromInt idx) ] [ text envName ]
+  option [ Html.Attributes.value (String.fromInt idx) ] [ Html.text envName ]

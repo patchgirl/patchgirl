@@ -34,7 +34,13 @@ type alias Model =
     = Home Home.Model
     | Request Request.Model-}
 
-getEnvironmentToRun : Model -> Maybe Type.Environment
+type alias GetEnvironment a =
+    { a
+        | environments : List Type.Environment
+        , selectedEnvironmentToRunIndex : Maybe Int
+    }
+
+getEnvironmentToRun : GetEnvironment a -> Maybe Type.Environment
 getEnvironmentToRun model =
     let
         selectEnvironment : Int -> Maybe Type.Environment
@@ -42,7 +48,7 @@ getEnvironmentToRun model =
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
 
-getEnvironmentKeyValuesToRun : Model -> List(String, String)
+getEnvironmentKeyValuesToRun : GetEnvironment a -> List(String, String)
 getEnvironmentKeyValuesToRun model =
     (getEnvironmentToRun model) |> Maybe.map .keyValues |> Maybe.withDefault []
 

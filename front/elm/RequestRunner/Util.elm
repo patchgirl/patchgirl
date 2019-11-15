@@ -17,13 +17,14 @@ import RequestInput.Model as RequestInput
 
 import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import VarApp.Model as VarApp
+import Application.Type exposing (..)
 
-buildRequestInput : EnvironmentKeyValueEdition.Model -> VarApp.Model -> Builder.Model a -> RequestInput.Model
-buildRequestInput env var builder =
+buildRequestInput : List(String, String) -> List(String, String) -> Builder.Model a -> RequestInput.Model
+buildRequestInput envKeyValues varKeyValues builder =
     { method = Builder.methodToString builder.httpMethod
-    , headers = []-- builder.httpHeaders
-    , url = "" --interpolate env var.vars builder.httpUrl
-    , body = ""
+    , headers = editedOrNotEditedValue builder.httpHeaders
+    , url = interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
+    , body = editedOrNotEditedValue builder.httpBody
     }
 
 buildRequest : RequestInput.Model -> Request
@@ -31,10 +32,10 @@ buildRequest requestInput =
     { method = requestInput.method
     , headers = List.map Builder.mkHeader requestInput.headers
     , url = requestInput.url
-    , body = Http.emptyBody
+    , body = Http.stringBody "application/json" <| Debug.log "body" requestInput.body
     }
 
-interpolate : EnvironmentKeyValueEdition.Model -> List(KeyValue.Model) -> String -> String
+interpolate : List(String, String) -> List(String, String) -> String -> String
 interpolate env var str =
   let
     build : TemplatedString -> String

@@ -14,19 +14,45 @@ import Util.Maybe as Maybe
 import BuilderApp.Builder.View as Builder
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.View as BuilderTree
+import EnvironmentToRunSelection.App as EnvSelection
 
+import Html.Events.Extra exposing (targetValueIntParse)
 import Application.Type exposing (..)
+import Json.Decode as Json
+import Html.Events as Html
+import Html as Html
+import Html.Attributes as Html
 
 view : Model a -> Element Msg
 view model =
     let
-        size = width fill
+        treeView : Element Msg
+        treeView =
+            column [ paddingXY 10 0, spacing 10, width (px 200) ]
+                <| List.map (map TreeMsg) (BuilderTree.view model)
+
     in
         row [ width fill, paddingXY 10 0 ]
-            [ column [ alignTop, paddingXY 10 0, spacing 10, width (px 200) ] <|
-                  List.map (map TreeMsg) (BuilderTree.view model)
+            [ column [ spacing 20 ]
+                  [ el [centerX, width fill] <| envSelectionView <| List.map .name model.environments
+                  , treeView
+                  ]
             , builderView model model.selectedBuilderIndex
             ]
+
+envSelectionView : List String -> Element Msg
+envSelectionView environmentNames =
+    let
+        entryView : Int -> String -> Html.Html Msg
+        entryView idx envName =
+            Html.option [ Html.value (String.fromInt idx) ] [ Html.text envName ]
+    in
+        html <|
+            Html.div []
+                [ Html.label [] [ Html.text "Env: " ]
+                , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
+                    (List.indexedMap entryView environmentNames)
+                ]
 
 builderView : Model a -> Maybe Int -> Element Msg
 builderView model mIdx =

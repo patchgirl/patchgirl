@@ -20,5 +20,4 @@ type Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg
-    | EnvSelectionMsg EnvSelection.Msg
     | VarAppMsg VarApp.Msg
