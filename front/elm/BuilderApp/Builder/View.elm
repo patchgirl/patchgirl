@@ -78,19 +78,39 @@ responseView model =
                         else
                             labelWarning statusText
 
-
+        headersResponseView : Response -> Element Msg
+        headersResponseView response =
+            let
+                (Response _ metadata _) = response
+                headers =
+                    Dict.toList metadata.headers
+                        |> List.map (joinTuple ": ")
+                        |> String.join "\n"
+            in
+                Input.multiline []
+                    { onChange = SetHttpBody
+                    , text = headers
+                    , placeholder = Nothing
+                    , label = labelView "Headers: "
+                    , spellcheck = False
+                    }
 
         bodyResponseView : Response -> Element Msg
         bodyResponseView response =
             case response of
                 Response status metadata body ->
-                    Input.multiline []
-                        { onChange = SetHttpBody
-                        , text = bodyResponseText body metadata.headers
-                        , placeholder = Nothing
-                        , label = Input.labelHidden ""
-                        , spellcheck = False
-                        }
+                    case body of
+                        "" ->
+                            none
+
+                        _ ->
+                            Input.multiline []
+                                { onChange = SetHttpBody
+                                , text = bodyResponseText body metadata.headers
+                                , placeholder = Nothing
+                                , label = labelView "body: "
+                                , spellcheck = False
+                                }
     in
         case model.response of
             Nothing ->
@@ -100,6 +120,7 @@ responseView model =
                 column [ spacing 10 ]
                     [ statusResponseView response
                     , bodyResponseView response
+                    , headersResponseView response
                     ]
 
 
@@ -162,19 +183,17 @@ methodView model =
               ]
         }
 
+joinTuple : String -> (String, String) -> String
+joinTuple separator (key, value) =
+    key ++ separator ++ value
+
 headerView : Model a -> Element Msg
 headerView model =
     let
-        untuple : (String, String) -> String
-        untuple (key, value) =
-            case String.isEmpty key of
-                True -> ""
-                False -> key ++ ":" ++ value
-
         headersToText : Editable (List (String, String)) -> String
         headersToText eHeaders =
             editedOrNotEditedValue model.httpHeaders
-                |> List.map untuple
+                |> List.map (joinTuple ": ")
                 |> String.join "\n"
     in
         Input.multiline []
