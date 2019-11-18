@@ -8,7 +8,6 @@ import Element.Events as Events
 import Element.Input as Input
 
 import ViewUtil exposing (..)
-import Label exposing (..)
 
 import Html as Html
 import Html.Attributes as Html
