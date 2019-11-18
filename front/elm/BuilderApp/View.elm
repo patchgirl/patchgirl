@@ -60,16 +60,11 @@ builderView model mIdx =
         (RequestCollection _ requestNodes) = model.requestCollection
         mFile : Int -> Maybe BuilderApp.Model.File
         mFile idx = BuilderTree.findFile requestNodes idx
-        title file =
-            case file.isSaved of
-                True -> notEditedValue file.name
-                False -> (notEditedValue file.name) ++ " *"
     in
         case Maybe.andThen mFile mIdx of
             Just file ->
-                column [ width fill, height fill, spacing 20 ]
-                    [ el [ centerX ] <| text (title file)
-                    , map BuilderMsg (Builder.view file)
-                    ]
+                el [ width fill, height fill, spacing 20 ]
+                    (map BuilderMsg (Builder.view file))
+
             Nothing ->
                 el [ centerX ] (text "No request selected")

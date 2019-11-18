@@ -7,7 +7,8 @@ import Dict as Dict
 
 type alias Model a =
     { a
-        | httpUrl : Editable String
+        | name : Editable String
+        , httpUrl : Editable String
         , httpMethod : Client.Method
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String

@@ -31,7 +31,6 @@ view model =
                 [ column [ width fill ]
                       [ row [ width fill, spacing 10 ]
                             [ urlView model
-                            , mainActionButtonsView
                             ]
                       ]
                 , methodView model
@@ -41,13 +40,29 @@ view model =
     in
         case model.showResponseView of
             False ->
-                el [ width fill ] builderView
+                column [ width fill ]
+                    [ titleView model
+                    , el [ width fill ] builderView
+                    ]
 
             True ->
-                row [ width fill, spacing 20 ]
-                    [ el [ width (fillPortion 5), alignTop ] builderView
-                    , el [ width (fillPortion 5), alignTop ] (responseView model)
+                column []
+                    [ titleView model
+                    , row [ width fill, spacing 20 ]
+                        [ el [ width (fillPortion 5), alignTop ] builderView
+                        , el [ width (fillPortion 5), alignTop ] (responseView model)
+                        ]
                     ]
+
+titleView : Model a -> Element Msg
+titleView model =
+    let
+        name = notEditedValue model.name
+    in
+        row [ centerX, paddingXY 0 10, spacing 10 ]
+            [ el [] <| iconWithTextAndColor "label" (name) secondaryColor
+            , mainActionButtonsView
+            ]
 
 responseView : Model a -> Element Msg
 responseView model =
