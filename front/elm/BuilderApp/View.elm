@@ -28,16 +28,16 @@ view model =
     let
         treeView : Element Msg
         treeView =
-            column [ paddingXY 10 0, spacing 10, width (px 200) ]
+            column [ spacing 10 ]
                 <| List.map (map TreeMsg) (BuilderTree.view model)
 
     in
         row [ width fill, paddingXY 10 0 ]
-            [ column [ spacing 20 ]
-                  [ el [centerX, width fill] <| envSelectionView <| List.map .name model.environments
-                  , treeView
+            [ column [ alignTop, spacing 20, centerX, paddingXY 20 0,  width (fillPortion 2) ]
+                  [ el [ ] <| envSelectionView <| List.map .name model.environments
+                  , el [ paddingXY 10 0 ] treeView
                   ]
-            , builderView model model.selectedBuilderIndex
+            , el [ width (fillPortion 8) ] <| builderView model model.selectedBuilderIndex
             ]
 
 envSelectionView : List String -> Element Msg

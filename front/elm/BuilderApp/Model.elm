@@ -38,7 +38,7 @@ type alias File =
   , httpMethod : Client.Method
   , httpHeaders : Editable (List (String, String))
   , httpBody : Editable String
-  , response : Maybe (Result Builder.ErrorDetailed ( Http.Metadata, String ))
+  , response : Maybe (Http.Response String)
   , showResponseView : Bool
   }
 

@@ -69,7 +69,7 @@ update msg envKeyValues varKeyValues model =
         ServerOk result ->
             let
                 newModel =
-                    { model | response = Just result }
+                    { model | response = Just (convertResultToResponseString result) }
             in
                 (newModel, Cmd.none)
 
@@ -103,8 +103,9 @@ buildRequestToRun envKeyValues varKeyValues builder =
     in
         Http.request cmdRequest
 
-convertResponseString : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
-convertResponseString httpResponse =
+
+convertResponseStringToResult : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
+convertResponseStringToResult httpResponse =
     case httpResponse of
         Http.BadUrl_ url ->
             Err (BadUrl url)
@@ -121,6 +122,25 @@ convertResponseString httpResponse =
         Http.GoodStatus_ metadata body ->
             Ok ( metadata, body )
 
+convertResultToResponseString : Result ErrorDetailed (Http.Metadata, String) -> Http.Response String
+convertResultToResponseString result =
+    case result of
+        Err (BadUrl url) ->
+            Http.BadUrl_ url
+
+        Err Timeout ->
+            Http.Timeout_
+
+        Err NetworkError ->
+            Http.NetworkError_
+
+        Err (BadStatus metadata body) ->
+            Http.BadStatus_ metadata body
+
+        Ok ( metadata, body ) ->
+            Http.GoodStatus_ metadata body
+
+
 expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg
 expectStringDetailed msg =
-    Http.expectStringResponse msg convertResponseString
+    Http.expectStringResponse msg convertResponseStringToResult

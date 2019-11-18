@@ -10,7 +10,7 @@ type alias Model a =
         , httpMethod : Client.Method
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
-        , response : Maybe (Result ErrorDetailed (Http.Metadata, String))
+        , response : Maybe (Http.Response String)
         , showResponseView : Bool
     }
 
@@ -19,7 +19,6 @@ type ErrorDetailed
     | Timeout
     | NetworkError
     | BadStatus Http.Metadata String
-    | BadBody String
 
 defaultBuilder =
   { httpUrl = NotEdited ""

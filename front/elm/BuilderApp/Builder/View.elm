@@ -21,6 +21,8 @@ import BuilderApp.Builder.Method exposing (..)
 import Api.Client as Client
 import Http
 import Application.Type exposing (..)
+import Dict as Dict
+import Json.Print as Json
 
 view : Model a -> Element Msg
 view model =
@@ -40,37 +42,53 @@ view model =
     in
         case model.showResponseView of
             False ->
-                builderView
+                el [ width fill ] builderView
 
             True ->
-                row []
-                    [ builderView
-                    , responseView model
+                row [ width fill, spacing 20 ]
+                    [ el [ width (fillPortion 5), alignTop ] builderView
+                    , el [ width (fillPortion 5) ] (responseView model)
                     ]
 
 responseView : Model a -> Element Msg
 responseView model =
     let
-        view2 =
+        bodyResponseText : String -> Dict.Dict String String -> String
+        bodyResponseText body responseHeaders =
+            case Dict.get "content-type" responseHeaders of
+                Just contentType ->
+                    case String.contains "application/json" contentType of
+                        True -> Result.withDefault body (Json.prettyString { indent = 4, columns = 4 } body)
+                        False -> body
+                _ -> body
+
+{-        responseStatus =
+            case model.response of
+                Just response -> el [] (text "")-}
+
+        bodyResponseView =
             case model.response of
                 Just response ->
                     case response of
-                        Ok (metadata, body) ->
+                        Http.GoodStatus_ metadata body ->
                             Input.multiline []
                                 { onChange = SetHttpBody
-                                , text = body
+                                , text = bodyResponseText body metadata.headers
                                 , placeholder = Nothing
                                 , label = Input.labelHidden ""
                                 , spellcheck = False
                                 }
 
-                        Err bar ->
+                        _ ->
                             none
 
                 Nothing ->
                     el [] (text "no response available")
     in
-        view2
+        column []
+            [ el [] (text "coucou")
+            , bodyResponseView
+            ]
 
 
 urlView : Model a -> Element Msg
