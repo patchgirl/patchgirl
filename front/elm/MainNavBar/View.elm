@@ -11,7 +11,6 @@ import Bulma.Modifiers as Bulma
 
 import MainNavBar.Model exposing(..)
 import MainNavBar.Message exposing(..)
-import Icon exposing (..)
 import ViewUtil exposing (..)
 
 import Html as Html

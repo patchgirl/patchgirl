@@ -7,7 +7,6 @@ import Element.Font as Font
 import Element.Events as Events
 import Element.Input as Input
 
-import Icon exposing (..)
 import ViewUtil exposing (..)
 import Label exposing (..)
 

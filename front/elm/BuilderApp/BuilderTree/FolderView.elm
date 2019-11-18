@@ -8,7 +8,7 @@ import Element.Input as Input
 import Html.Attributes as Html
 import Html as Html
 import Application.Type exposing (..)
-import Icon exposing (..)
+import ViewUtil exposing (..)
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 

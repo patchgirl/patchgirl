@@ -11,7 +11,6 @@ import Html as Html
 import Application.Type exposing (..)
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
-import Icon exposing (..)
 import Element.Font as Font
 
 import ViewUtil exposing (..)

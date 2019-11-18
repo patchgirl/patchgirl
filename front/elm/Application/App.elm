@@ -7,7 +7,6 @@ import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
 import ViewUtil exposing (..)
-import Icon exposing (..)
 import Html as Html
 import InitializedApplication.View as InitializedApplication
 
