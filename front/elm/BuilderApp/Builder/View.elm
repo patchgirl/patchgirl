@@ -76,7 +76,7 @@ responseView model =
                         else if metadata.statusCode >= 500 then
                             labelError statusText
                         else
-                            labelInfo statusText
+                            labelWarning statusText
 
 
 

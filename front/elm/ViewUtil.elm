@@ -153,6 +153,3 @@ labelError labelText =
             ]
     in
         el (attributes ++ labelAttrs) (text labelText)
-
-labelInfo : String -> Element a
-labelInfo = labelSuccess
