@@ -11,6 +11,7 @@ type Msg
   | SetHttpMethod Client.Method
   | UpdateHeaders String
   | SetHttpBody String
+  | SetHttpBodyResponse String
   | AskRun
   | ServerOk (Result ErrorDetailed ( Http.Metadata, String ))
   | ShowRequestAsCurl

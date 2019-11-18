@@ -76,6 +76,18 @@ update msg envKeyValues varKeyValues model =
         ShowRequestAsCurl ->
             (model, Cmd.none)
 
+        SetHttpBodyResponse newBody ->
+            case model.response of
+                Just response ->
+                    let
+                        newResponse = { response | body = newBody }
+                        newModel = { model | response = Just newResponse }
+                    in
+                        (newModel, Cmd.none)
+
+                _ ->
+                    (model, Cmd.none)
+
 parseHeaders : String -> List(String, String)
 parseHeaders headers =
   let
@@ -135,10 +147,18 @@ convertResultToResponse result =
             Debug.todo "network error"
 
         Err (BadStatus metadata body) ->
-            Response Failure metadata body
+            { statusCode = metadata.statusCode
+            , statusText = metadata.statusText
+            , headers = metadata.headers
+            , body = body
+            }
 
         Ok (metadata, body) ->
-            Response Success metadata body
+            { statusCode = metadata.statusCode
+            , statusText = metadata.statusText
+            , headers = metadata.headers
+            , body = body
+            }
 
 
 expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg

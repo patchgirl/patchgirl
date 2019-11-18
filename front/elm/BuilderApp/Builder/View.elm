@@ -63,27 +63,30 @@ responseView model =
 
         statusResponseView : Response -> Element Msg
         statusResponseView response =
-            case response of
-                Response status metadata body ->
-                    let
-                        statusText =
-                            String.fromInt metadata.statusCode ++ " - " ++ metadata.statusText
+            let
+                statusText =
+                    String.fromInt response.statusCode ++ " - " ++ response.statusText
+                statusLabel =
+                    if response.statusCode >= 200 && response.statusCode < 300 then
+                        labelSuccess statusText
+                    else if response.statusCode >= 400 && response.statusCode < 500 then
+                        labelWarning statusText
+                    else if response.statusCode >= 500 then
+                        labelError statusText
+                    else
+                        labelWarning statusText
                     in
-                        if metadata.statusCode >= 200 && metadata.statusCode < 300 then
-                            labelSuccess statusText
-                        else if metadata.statusCode >= 400 && metadata.statusCode < 500 then
-                            labelWarning statusText
-                        else if metadata.statusCode >= 500 then
-                            labelError statusText
-                        else
-                            labelWarning statusText
+                        column [ spacing 5 ]
+                            [ text "status: "
+                            , statusLabel
+                            ]
+
 
         headersResponseView : Response -> Element Msg
         headersResponseView response =
             let
-                (Response _ metadata _) = response
                 headers =
-                    Dict.toList metadata.headers
+                    Dict.toList response.headers
                         |> List.map (joinTuple ": ")
                         |> String.join "\n"
             in
@@ -91,32 +94,29 @@ responseView model =
                     { onChange = SetHttpBody
                     , text = headers
                     , placeholder = Nothing
-                    , label = labelView "Headers: "
+                    , label = labelInputView "Headers: "
                     , spellcheck = False
                     }
 
         bodyResponseView : Response -> Element Msg
         bodyResponseView response =
-            case response of
-                Response status metadata body ->
-                    case body of
-                        "" ->
-                            none
+            case response.body of
+                "" ->
+                    none
 
-                        _ ->
-                            Input.multiline []
-                                { onChange = SetHttpBody
-                                , text = bodyResponseText body metadata.headers
-                                , placeholder = Nothing
-                                , label = labelView "body: "
-                                , spellcheck = False
-                                }
+                _ ->
+                    Input.multiline []
+                        { onChange = SetHttpBodyResponse
+                        , text = bodyResponseText response.body response.headers
+                        , placeholder = Nothing                                , label = labelInputView "body: "
+                        , spellcheck = False
+                        }
     in
         case model.response of
             Nothing ->
                 none
 
-            Just (_ as response) ->
+            Just response ->
                 column [ spacing 10 ]
                     [ statusResponseView response
                     , bodyResponseView response
@@ -131,7 +131,7 @@ urlView model =
             { onChange = UpdateUrl
             , text = editedOrNotEditedValue model.httpUrl
             , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-            , label = labelView "Url: "
+            , label = labelInputView "Url: "
             }
 
 mainActionButtonsView : Element Msg
@@ -150,9 +150,9 @@ mainActionButtonsView =
             , Border.color secondaryColor
             , Border.width 1
             , Border.rounded 5
+            , alignBottom
             , Background.color secondaryColor
-            , height fill
-            , paddingXY 10 0
+            , paddingXY 10 10
             ]
     in
         row rowParam
@@ -171,7 +171,7 @@ methodView model =
     Input.radioRow [ padding 10, spacing 20 ]
         { onChange = SetHttpMethod
         , selected = Just model.httpMethod
-        , label = labelView "Method: "
+        , label = labelInputView "Method: "
         , options =
               [ Input.option Client.Get (text "Get")
               , Input.option Client.Post (text "Post")
@@ -200,7 +200,7 @@ headerView model =
             { onChange = UpdateHeaders
             , text = headersToText model.httpHeaders
             , placeholder = Just <| Input.placeholder [] (text "Header: SomeHeader\nHeader2: SomeHeader2")
-            , label = labelView "Headers: "
+            , label = labelInputView "Headers: "
             , spellcheck = False
             }
 
@@ -210,12 +210,12 @@ bodyView model =
         { onChange = SetHttpBody
         , text = editedOrNotEditedValue model.httpBody
         , placeholder = Just <| Input.placeholder [] (text "{}")
-        , label = labelView "Body: "
+        , label = labelInputView "Body: "
         , spellcheck = False
         }
 
-labelView : String -> Input.Label Msg
-labelView labelText =
+labelInputView : String -> Input.Label Msg
+labelInputView labelText =
     let
         size =
             width (fill
@@ -223,4 +223,4 @@ labelView labelText =
                   |> minimum 100
                   )
     in
-        Input.labelLeft [ centerY, size ] <| text labelText
+        Input.labelAbove [ centerY, size ] <| text labelText

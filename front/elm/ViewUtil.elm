@@ -118,7 +118,7 @@ labelAttrs =
      , Border.solid
      , Border.width 1
      , Border.rounded 5
-     , height fill
+     , paddingXY 10 10
      ]
 
 labelSuccess : String -> Element a

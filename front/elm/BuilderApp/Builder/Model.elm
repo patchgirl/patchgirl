@@ -3,6 +3,7 @@ module BuilderApp.Builder.Model exposing (..)
 import Http
 import Api.Client as Client
 import Application.Type exposing (..)
+import Dict as Dict
 
 type alias Model a =
     { a
@@ -14,7 +15,14 @@ type alias Model a =
         , showResponseView : Bool
     }
 
-type Response = Response Status (Http.Metadata) String
+type alias Response =
+    { statusCode : Int
+    , statusText : String
+    , headers : Dict.Dict String String
+    , body : String
+    }
+
+    --Response Status (Http.Metadata) String
 
 type Status
     = Success
