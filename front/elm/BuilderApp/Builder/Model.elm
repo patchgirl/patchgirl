@@ -10,9 +10,15 @@ type alias Model a =
         , httpMethod : Client.Method
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
-        , response : Maybe (Http.Response String)
+        , response : Maybe Response
         , showResponseView : Bool
     }
+
+type Response = Response Status (Http.Metadata) String
+
+type Status
+    = Success
+    | Failure
 
 type ErrorDetailed
     = BadUrl String

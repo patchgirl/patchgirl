@@ -62,32 +62,25 @@ responseView model =
                         False -> body
                 _ -> body
 
-{-        responseStatus =
-            case model.response of
-                Just response -> el [] (text "")-}
-
-        bodyResponseView =
-            case model.response of
-                Just response ->
-                    case response of
-                        Http.GoodStatus_ metadata body ->
-                            Input.multiline []
-                                { onChange = SetHttpBody
-                                , text = bodyResponseText body metadata.headers
-                                , placeholder = Nothing
-                                , label = Input.labelHidden ""
-                                , spellcheck = False
-                                }
-
-                        _ ->
-                            none
-
-                Nothing ->
-                    el [] (text "no response available")
+        bodyResponseView : Response -> Element Msg
+        bodyResponseView response =
+            case response of
+                Response status metadata body ->
+                    Input.multiline []
+                        { onChange = SetHttpBody
+                        , text = bodyResponseText body metadata.headers
+                        , placeholder = Nothing
+                        , label = Input.labelHidden ""
+                        , spellcheck = False
+                        }
     in
         column []
             [ el [] (text "coucou")
-            , bodyResponseView
+            , case model.response of
+                  Just (_ as response) ->
+                      bodyResponseView response
+                  Nothing ->
+                      none
             ]
 
 
