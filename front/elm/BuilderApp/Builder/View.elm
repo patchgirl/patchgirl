@@ -8,7 +8,8 @@ import Element.Events as Events
 import Element.Input as Input
 
 import Icon exposing (..)
-import Color exposing (..)
+import ViewUtil exposing (..)
+import Label exposing (..)
 
 import Html as Html
 import Html.Attributes as Html
@@ -47,7 +48,7 @@ view model =
             True ->
                 row [ width fill, spacing 20 ]
                     [ el [ width (fillPortion 5), alignTop ] builderView
-                    , el [ width (fillPortion 5) ] (responseView model)
+                    , el [ width (fillPortion 5), alignTop ] (responseView model)
                     ]
 
 responseView : Model a -> Element Msg
@@ -62,6 +63,25 @@ responseView model =
                         False -> body
                 _ -> body
 
+        statusResponseView : Response -> Element Msg
+        statusResponseView response =
+            case response of
+                Response status metadata body ->
+                    let
+                        statusText =
+                            String.fromInt metadata.statusCode ++ " - " ++ metadata.statusText
+                    in
+                        if metadata.statusCode >= 200 && metadata.statusCode < 300 then
+                            labelSuccess statusText
+                        else if metadata.statusCode >= 400 && metadata.statusCode < 500 then
+                            labelWarning statusText
+                        else if metadata.statusCode >= 500 then
+                            labelError statusText
+                        else
+                            labelInfo statusText
+
+
+
         bodyResponseView : Response -> Element Msg
         bodyResponseView response =
             case response of
@@ -74,14 +94,15 @@ responseView model =
                         , spellcheck = False
                         }
     in
-        column []
-            [ el [] (text "coucou")
-            , case model.response of
-                  Just (_ as response) ->
-                      bodyResponseView response
-                  Nothing ->
-                      none
-            ]
+        case model.response of
+            Nothing ->
+                none
+
+            Just (_ as response) ->
+                column [ spacing 10 ]
+                    [ statusResponseView response
+                    , bodyResponseView response
+                    ]
 
 
 urlView : Model a -> Element Msg

@@ -3,7 +3,7 @@ module Icon exposing (..)
 import Element exposing (..)
 import Html as Html
 import Html.Attributes as Html
-import Color exposing (..)
+import ViewUtil exposing (..)
 
 icon : String -> Element a
 icon whichIcon =

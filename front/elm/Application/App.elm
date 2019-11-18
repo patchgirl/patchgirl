@@ -6,7 +6,7 @@ import Api.Converter as Client
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
-import Color exposing (..)
+import ViewUtil exposing (..)
 import Icon exposing (..)
 import Html as Html
 import InitializedApplication.View as InitializedApplication

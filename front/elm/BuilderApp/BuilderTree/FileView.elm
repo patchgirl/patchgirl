@@ -14,7 +14,7 @@ import BuilderApp.BuilderTree.Message exposing (Msg(..))
 import Icon exposing (..)
 import Element.Font as Font
 
-import Color exposing (..)
+import ViewUtil exposing (..)
 import Util.View as Util
 
 fileReadView : String -> Int -> Element Msg
