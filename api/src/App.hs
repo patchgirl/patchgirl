@@ -13,12 +13,12 @@ import           RequestCollection
 import           RequestNode.App
 import RequestNode.Model
 import AppHealth
-
+import Test
 
 -- * API
 
 type CombinedApi =
-  RestApi :<|> AssetApi
+  RestApi :<|> TestApi :<|> AssetApi
 
 type RestApi =
   RequestCollectionApi :<|>
@@ -48,6 +48,15 @@ type RequestFileApi = Flat (
     )
   )
 
+type TestApi =
+  Flat (
+    "test" :> (
+      "deleteNoContent" :> DeleteNoContent '[JSON] NoContent :<|>
+      "getNotFound" :> Get '[JSON] () :<|>
+      "getInternalServerError" :> Get '[JSON] ()
+    )
+  )
+
 type HealthApi =
   "health" :> Get '[JSON] AppHealth
 
@@ -70,6 +79,15 @@ restApiServer =
     requestFileApi =
       createRequestFile -- :<|> updateRequestFile
 
+testApiServer :: Server TestApi
+testApiServer =
+  testApi
+  where
+    testApi =
+      deleteNoContentHandler :<|>
+      getNotFoundHandler :<|>
+      getInternalServerErrorHandler
+
 assetApiServer :: Server AssetApi
 assetApiServer =
   serveDirectoryWebApp "../public"
@@ -81,6 +99,9 @@ requestCollectionApiProxy = Proxy
 
 requestFileApiProxy :: Proxy RequestFileApi
 requestFileApiProxy = Proxy
+
+testApiProxy :: Proxy TestApi
+testApiProxy = Proxy
 
 healthApiProxy :: Proxy HealthApi
 healthApiProxy = Proxy
@@ -101,4 +122,4 @@ run = do
 
 mkApp :: IO Application
 mkApp =
-  return $ serve combinedApiProxy (restApiServer :<|> assetApiServer)
+  return $ serve combinedApiProxy (restApiServer :<|> testApiServer :<|> assetApiServer)
