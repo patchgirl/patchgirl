@@ -24,7 +24,7 @@ view model =
         keyValuesEditionView =
             case mSelectedEnv of
                 Just selectedEnv ->
-                    el [ centerX ]
+                    el []
                         <| map EnvironmentKeyValueEditionMsg (EnvironmentKeyValueEdition.view (Debug.log "coucouo" selectedEnv.keyValues))
 
                 Nothing ->
@@ -39,7 +39,7 @@ view model =
                 , label =
                     row []
                         [ addIcon
-                        , el [] (text "new environment")
+                        , el [] (text "Add environment")
                         ]
                 }
 
@@ -52,7 +52,7 @@ view model =
                 [ column [ spacing 10 ] envListView
                 , el [ centerX ] addEnvButtonView
                 ]
-          , keyValuesEditionView
+          , el [ centerX, alignTop ] keyValuesEditionView
           ]
 
 

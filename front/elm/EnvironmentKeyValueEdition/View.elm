@@ -5,70 +5,46 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import Element.Events as Events
-
+import ViewUtil exposing (..)
 import EnvironmentKeyValueEdition.Message exposing (..)
 import EnvironmentKeyValueEdition.Model exposing (..)
 
 view : Model -> Element Msg
 view model =
-    column []
-        <| (List.indexedMap viewKeyValue model) ++ [defaultView]
+    let
+        addNewKeyValueView =
+            Input.button []
+                { onPress = Just <| AddNewInput
+                , label =
+                    row []
+                        [ addIcon
+                        , el [] (text "Add key value")
+                        ]
+                }
+    in
+        column [ spacing 10 ]
+            [ column [ spacing 5 ] (List.indexedMap viewKeyValue model)
+            , el [ centerX ] addNewKeyValueView
+            ]
 
-defaultView : Element Msg
-defaultView =
-    Input.button []
-        { onPress = Just <| AddNewInput
-        , label = el [] (text "+")
-        }
 
 viewKeyValue : Int -> (String, String) -> Element Msg
 viewKeyValue idx (key, envValue) =
-  row []
+  row [ spacing 5 ]
       [ Input.text []
             { onChange = (PromptKey idx)
             , text = key
             , placeholder = Just <| Input.placeholder [] (text "key")
-            , label = labelInputView "Key: "
+            , label = Input.labelHidden "Key: "
             }
       , Input.text []
             { onChange = (PromptValue idx)
             , text = envValue
             , placeholder = Just <| Input.placeholder [] (text "value")
-            , label = labelInputView "Value: "
+            , label = Input.labelHidden "Value: "
             }
       , Input.button []
           { onPress = Just <| (DeleteKeyValue idx)
-          , label = el [] (text "+")
+          , label = el [] deleteIcon
           }
       ]
-
-labelInputView : String -> Input.Label Msg
-labelInputView labelText =
-    let
-        size =
-            width (fill
-                  |> maximum 100
-                  |> minimum 100
-                  )
-    in
-        Input.labelAbove [ centerY, size ] <| text labelText
-
-
-{-
-view : Model -> Html Msg
-view model =
-  div [ id "envBuilder" ] ((List.indexedMap viewKeyValue model) ++ [defaultView])
-
-viewKeyValue : Int -> (String, String) -> Html Msg
-viewKeyValue idx (key, envValue) =
-  div [ id "envForm" ]
-    [ input [ placeholder "key", onInput (PromptKey idx), value key ] []
-    , input [ placeholder "value", onInput (PromptValue idx), value envValue ] []
-    , a [ href "#", class "icono-cross", onClick (DeleteKeyValue idx)] [ text "chia" ]
-    ]
-
-defaultView : Html Msg
-defaultView =
-  div [ onClick AddNewInput, class "centerHorizontal align-self-center" ]
-      [ span [] [ text "+" ] ]
--}
