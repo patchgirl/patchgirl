@@ -66,11 +66,11 @@ entryView renameEnvIdx mSelectedEnvIdx idx environment =
             }
 
     editView =
-        Input.text []
-            { onChange = (Rename idx)
+        Input.text [ htmlAttribute <| Util.onEnterWithInput (Rename idx) ]
+            { onChange = (ChangeName idx)
             , text = environment.name
-            , placeholder = Just <| Input.placeholder [] (text environment.name)
-            , label = labelInputView "environment name: "
+            , placeholder = Just <| Input.placeholder [] (text "environment name")
+            , label = Input.labelHidden "rename environment"
             }
 
     modeView =

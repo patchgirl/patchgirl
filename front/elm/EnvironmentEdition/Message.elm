@@ -9,3 +9,4 @@ type Msg
   | Add
   | ShowRenameInput Int
   | Rename Int String
+  | ChangeName Int String

@@ -54,6 +54,17 @@ update msg model =
                       , environments = newEnvs
                   }
 
+    ChangeName idx newEnvironmentName ->
+        let
+            updateEnv old = { old | name = newEnvironmentName }
+            mNewEnvs = List.updateAt idx updateEnv model.environments
+      in
+          case mNewEnvs of
+              newEnvs ->
+                  { model
+                      | environments = newEnvs
+                  }
+
     EnvironmentKeyValueEditionMsg subMsg ->
         case getEnvironmentToEdit model of
             Nothing ->
