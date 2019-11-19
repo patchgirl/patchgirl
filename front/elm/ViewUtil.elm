@@ -110,6 +110,9 @@ playIcon =
 sendIcon =
     icon "send"
 
+addIcon =
+    icon "add_circle_outline"
+
 -- * Label
 
 labelAttrs : List(Attribute a)

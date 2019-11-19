@@ -79,10 +79,15 @@ createModel requestCollection =
       selectedEnvironmentToRenameIndex = Nothing
       environments =
           [ { name = "staging1"
-            , keyValues = [("key1", "value1")]
+            , keyValues =
+                  [ ("key1", "value1")
+                  , ("key2", "value2")
+                  ]
             }
           , { name = "staging2"
-            , keyValues = []
+            , keyValues =
+                  [ ("key3", "value3")
+                  ]
             }
           ]
   in

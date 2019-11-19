@@ -4,7 +4,7 @@ import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
 
 type Msg
   = SelectEnvToEdit Int
-  | EnvironmentKeyValueEditionMsg Int EnvironmentKeyValueEdition.Msg
+  | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
   | Delete Int
   | Add
   | ShowRenameInput Int

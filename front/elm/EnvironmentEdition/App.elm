@@ -54,7 +54,7 @@ update msg model =
                       , environments = newEnvs
                   }
 
-    EnvironmentKeyValueEditionMsg idx subMsg ->
+    EnvironmentKeyValueEditionMsg subMsg ->
         case getEnvironmentToEdit model of
             Nothing ->
                 model
@@ -62,6 +62,7 @@ update msg model =
                 case EnvironmentKeyValueEdition.update subMsg environment of
                     newEnvironment ->
                         let
-                            newEnvironments = List.setAt idx newEnvironment model.environments
+                            -- todo fix 0 -> should be model.selectedEnvironmentToEditIndex
+                            newEnvironments = List.setAt 0 newEnvironment model.environments
                         in
                             { model | environments = newEnvironments }
