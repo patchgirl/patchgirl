@@ -34,7 +34,7 @@ view model =
             el [ width fill ] <|
                 case model.mainNavBarModel of
                     MainNavBar.ReqTab -> builderView model
-                    MainNavBar.EnvTab -> builderView model --[ Html.map EnvironmentEditionMsg (EnvironmentEdition.view model) ]
+                    MainNavBar.EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     MainNavBar.VarTab -> builderView model --[ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
     in
         layout [] <|

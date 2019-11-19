@@ -1,22 +1,29 @@
 module EnvironmentEdition.View exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
 
 import EnvironmentEdition.Message exposing (..)
 import Util.View as Util
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
+import EnvironmentEdition.Model exposing (..)
 import Application.Type as Type
 
-type alias Model a =
-    { a
-        | environments : List Type.Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
-        , selectedEnvironmentToEditIndex : Maybe Int
-        , selectedEnvironmentToRenameIndex : Maybe Int
-    }
+view : Model a -> Element Msg
+view model =
+    none
 
+envView : Model a -> Int -> Type.Environment -> Element Msg
+envView model idx environment =
+    let
+        isEnvSelected = model.selectedEnvironmentToEditIndex == Just idx
+    in
+        el [ {-hidden (not isEnvSelected)-} ]
+            <| map (EnvironmentKeyValueEditionMsg idx) (EnvironmentKeyValueEdition.view (Debug.log "coucou" environment.keyValues))
+
+{-
 view : Model a -> Html Msg
 view model =
     let
@@ -58,3 +65,4 @@ envView model idx environment =
     in
         div [ hidden (not isEnvSelected) ]
             [ Html.map (EnvironmentKeyValueEditionMsg idx) (EnvironmentKeyValueEdition.view environment.keyValues) ]
+-}
