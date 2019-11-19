@@ -37,17 +37,20 @@ view model =
             Input.button []
                 { onPress = Just <| (Add)
                 , label =
-                    row [ spacing 5 ]
+                    row []
                         [ addIcon
                         , el [] (text "new environment")
                         ]
                 }
 
     in
-        row [ width fill ]
-          [ column [alignLeft, paddingXY 10 0, alignTop, spacing 10]
+        row [ width fill
+            , centerX
+            , paddingXY 30 10
+            ]
+          [ column [ alignLeft, alignTop, spacing 10 ]
                 [ column [ spacing 10 ] envListView
-                , el [centerX] addEnvButtonView
+                , el [ centerX ] addEnvButtonView
                 ]
           , keyValuesEditionView
           ]
@@ -79,15 +82,15 @@ entryView renameEnvIdx mSelectedEnvIdx idx environment =
         mSelectedEnvIdx == Just idx
 
   in
-    row [ {-class active-} ]
+    row [ spacing 5 ]
       [ modeView
       , Input.button []
           { onPress = Just <| (ShowRenameInput idx)
-          , label = el [] (text "Rename")
+          , label = editIcon
           }
       , Input.button []
           { onPress = Just <| (Delete idx)
-          , label = el [] (text "Delete")
+          , label = el [] deleteIcon
           }
       ]
 
