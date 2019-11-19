@@ -46,11 +46,11 @@ view model =
                     ]
 
             True ->
-                column []
+                column [ width fill ]
                     [ titleView model
                     , row [ width fill, spacing 20 ]
-                        [ el [ width (fillPortion 5), alignTop ] builderView
-                        , el [ width (fillPortion 5), alignTop ] (responseView model)
+                        [ el [ width (fillPortion 1), alignTop ] builderView
+                        , el [ width (fillPortion 1), alignTop ] (responseView model)
                         ]
                     ]
 
