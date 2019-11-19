@@ -23,7 +23,6 @@ type alias Model =
     , selectedEnvironmentToEditIndex : Maybe Int
     , selectedEnvironmentToRenameIndex : Maybe Int
     , environments : List Type.Environment
-    , envModel : EnvironmentKeyValueEdition.Model
     -- VARIABLE APP
     , varAppModel : VarApp.Model
     -- RUNNER
@@ -64,8 +63,6 @@ createModel requestCollection =
       selectedBuilderIndex = Nothing
       displayedBuilderIndex = Nothing
       displayedRequestNodeMenuIndex = Nothing
-      envModel : EnvironmentKeyValueEdition.Model
-      envModel = [("url", "swapi.co")]
       varAppModel =
           { vars =
                 [ ("key0", "value0")
@@ -99,7 +96,6 @@ createModel requestCollection =
       , selectedEnvironmentToEditIndex = selectedEnvironmentToEditIndex
       , selectedEnvironmentToRenameIndex = selectedEnvironmentToRenameIndex
       , environments = environments
-      , envModel = envModel
       , runnerModel = Nothing
       , varAppModel = varAppModel
       }
