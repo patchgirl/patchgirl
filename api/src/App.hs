@@ -94,7 +94,7 @@ restApiServer =
     requestFileApi =
       createRequestFile -- :<|> updateRequestFile
     environmentApi =
-      undefined
+      createEnvironmentHandler :<|> undefined
 
 testApiServer :: Server TestApi
 testApiServer =

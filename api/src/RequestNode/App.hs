@@ -2,7 +2,7 @@
 
 module RequestNode.App where
 
-import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple (Connection, Only(..), query, execute)
 import           Database.PostgreSQL.Simple.SqlQQ
 import           Servant (Handler, throwError, err404)
 import Servant.API.ContentTypes (NoContent(..))
