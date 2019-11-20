@@ -17,8 +17,6 @@ type alias Model a =
         | keyValues : List(String, String)
     }
 
-emptyModel = [("", "")]
-
 -- * Message
 
 type Msg
@@ -46,7 +44,7 @@ update msg model =
 
         AddNewInput ->
             let
-                newKeyValues = model.keyValues ++ emptyModel
+                newKeyValues = model.keyValues ++ [("", "")]
             in
                 { model | keyValues = newKeyValues }
 
