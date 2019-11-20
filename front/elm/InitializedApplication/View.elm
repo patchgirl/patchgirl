@@ -9,7 +9,6 @@ import Html exposing (Html)
 import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
-import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
 import EnvironmentEdition.View as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
 import MainNavBar.View as MainNavBar

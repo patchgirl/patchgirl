@@ -9,7 +9,7 @@ import Element.Input as Input
 import EnvironmentEdition.Message exposing (..)
 import Util.View as Util
 import ViewUtil exposing (..)
-import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Model exposing (..)
 import Application.Type as Type
 import List.Extra as List

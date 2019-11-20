@@ -1,6 +1,6 @@
 module EnvironmentEdition.Message exposing (..)
 
-import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 
 type Msg
   = SelectEnvToEdit Int

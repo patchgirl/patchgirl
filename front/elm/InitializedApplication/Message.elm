@@ -4,7 +4,7 @@ import BuilderApp.Message as BuilderApp
 import BuilderApp.Builder.Message as BuilderAppBuilder
 import BuilderApp.BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
-import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
+import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Message as EnvironmentEdition
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
