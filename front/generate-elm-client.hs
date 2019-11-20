@@ -8,12 +8,14 @@ import           Servant.Elm
 import qualified Data.Aeson as Aeson
 import RequestCollection
 import RequestNode.Model
+import Environment.App
 import Http
 import AppHealth
 import App
 import ElmOption (deriveElmDefOption)
 import Servant.API.ContentTypes (NoContent)
 
+-- input
 deriveElmDef deriveElmDefOption ''RequestCollection
 deriveElmDef deriveElmDefOption ''RequestNode
 deriveElmDef deriveElmDefOption ''Method
@@ -22,6 +24,9 @@ deriveElmDef deriveElmDefOption ''NoContent
 deriveElmDef deriveElmDefOption ''NewRequestFile
 deriveElmDef deriveElmDefOption ''ParentNodeId
 deriveElmDef deriveElmDefOption ''UpdateRequestNode
+deriveElmDef deriveElmDefOption ''Environment
+deriveElmDef deriveElmDefOption ''NewEnvironment
+deriveElmDef deriveElmDefOption ''UpdateEnvironment
 
 main :: IO ()
 main =
@@ -42,6 +47,8 @@ main =
       , DefineElm (Proxy :: Proxy NewRequestFile)
       , DefineElm (Proxy :: Proxy ParentNodeId)
       , DefineElm (Proxy :: Proxy UpdateRequestNode)
+      , DefineElm (Proxy :: Proxy NewEnvironment)
+      , DefineElm (Proxy :: Proxy UpdateEnvironment)
       ]
     proxyApi = (Proxy :: Proxy RestApi)
   in

@@ -96,6 +96,45 @@ CREATE FUNCTION public.request_node_as_js(somerow public.request_node) RETURNS j
 
 
 --
+-- Name: account; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.account (
+    id integer NOT NULL
+);
+
+
+--
+-- Name: account_environment; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.account_environment (
+    account_id integer NOT NULL,
+    environment_id integer NOT NULL
+);
+
+
+--
+-- Name: account_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.account_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.account_id_seq OWNED BY public.account.id;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -105,6 +144,68 @@ CREATE TABLE public.ar_internal_metadata (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
+
+
+--
+-- Name: environment; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.environment (
+    id integer NOT NULL,
+    name text NOT NULL
+);
+
+
+--
+-- Name: environment_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.environment_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: environment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.environment_id_seq OWNED BY public.environment.id;
+
+
+--
+-- Name: key_value; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.key_value (
+    id integer NOT NULL,
+    environment_id integer,
+    key text NOT NULL,
+    value text NOT NULL
+);
+
+
+--
+-- Name: key_value_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.key_value_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: key_value_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 
 
 --
@@ -147,10 +248,47 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: account id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account ALTER COLUMN id SET DEFAULT nextval('public.account_id_seq'::regclass);
+
+
+--
+-- Name: environment id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.environment ALTER COLUMN id SET DEFAULT nextval('public.environment_id_seq'::regclass);
+
+
+--
+-- Name: key_value id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.key_value ALTER COLUMN id SET DEFAULT nextval('public.key_value_id_seq'::regclass);
+
+
+--
 -- Name: request_node id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.request_node ALTER COLUMN id SET DEFAULT nextval('public.request_node_id_seq'::regclass);
+
+
+--
+-- Name: account_environment account_environment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_environment
+    ADD CONSTRAINT account_environment_pkey PRIMARY KEY (account_id, environment_id);
+
+
+--
+-- Name: account account_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account
+    ADD CONSTRAINT account_pkey PRIMARY KEY (id);
 
 
 --
@@ -159,6 +297,22 @@ ALTER TABLE ONLY public.request_node ALTER COLUMN id SET DEFAULT nextval('public
 
 ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: environment environment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.environment
+    ADD CONSTRAINT environment_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: key_value key_value_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.key_value
+    ADD CONSTRAINT key_value_pkey PRIMARY KEY (id);
 
 
 --
@@ -183,6 +337,30 @@ ALTER TABLE ONLY public.request_node
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: account_environment account_environment_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_environment
+    ADD CONSTRAINT account_environment_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id);
+
+
+--
+-- Name: account_environment account_environment_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_environment
+    ADD CONSTRAINT account_environment_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id);
+
+
+--
+-- Name: key_value key_value_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.key_value
+    ADD CONSTRAINT key_value_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id);
 
 
 --

@@ -10,7 +10,7 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
       CREATE TABLE request_node(
-        id serial PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         request_node_parent_id INTEGER,
         tag request_node_type NOT NULL,
         name TEXT NOT NULL,
@@ -28,6 +28,28 @@ class Init < ActiveRecord::Migration[5.2]
         request_collection_id INTEGER,
         request_node_id INTEGER REFERENCES request_node,
         PRIMARY KEY (request_collection_id, request_node_id)
+      );
+
+      CREATE TABLE account(
+          id SERIAL PRIMARY KEY
+      );
+
+      CREATE TABLE environment(
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL
+      );
+
+      CREATE TABLE account_environment(
+          account_id INTEGER REFERENCES account,
+          environment_id INTEGER REFERENCES environment,
+          PRIMARY KEY (account_id, environment_id)
+      );
+
+      CREATE TABLE key_value(
+          id SERIAL PRIMARY KEY,
+          environment_id INTEGER REFERENCES environment(id),
+          key TEXT NOT NULL,
+          value TEXT NOT NULL
       );
 
       CREATE OR REPLACE FUNCTION request_node_as_js(someRow request_node) RETURNS jsonb AS $$

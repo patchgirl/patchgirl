@@ -68,3 +68,70 @@ ActiveRecord::Migration[5.2].execute %{
       request_node_id
     ) values (1,2);
   }
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO account (
+      id
+    ) values (
+      1
+    );
+}
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO environment (
+      id,
+      name
+    ) values (
+      1,
+      'staging1'
+    );
+
+    INSERT INTO environment (
+      id,
+      name
+    ) values (
+      2,
+      'staging2'
+    );
+}
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO account_environment (
+      account_id,
+      environment_id
+    ) values (
+      1,
+      1
+    );
+
+    INSERT INTO account_environment (
+      account_id,
+      environment_id
+    ) values (
+      1,
+      2
+    );
+}
+
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO key_value (
+      environment_id,
+      key,
+      value
+    ) values (
+      1,
+      'key1',
+      'value1'
+    );
+
+    INSERT INTO key_value (
+      environment_id,
+      key,
+      value
+    ) values (
+      1,
+      'key2',
+      'value2'
+    );
+}
