@@ -11,6 +11,7 @@ import Servant.API.ContentTypes (NoContent)
 import           System.IO
 import           RequestCollection
 import           RequestNode.App
+import           Environment.App
 import RequestNode.Model
 import AppHealth
 import Test
@@ -24,6 +25,7 @@ type RestApi =
   RequestCollectionApi :<|>
   RequestNodeApi :<|>
   RequestFileApi :<|>
+  EnvironmentApi :<|>
   HealthApi
 
 type RequestCollectionApi =
@@ -45,6 +47,18 @@ type RequestFileApi = Flat (
     ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int -- :<|>
     -- updateRequestFile
     -- Capture "requestFileId" Int :> Put '[JSON] Int
+    )
+  )
+
+type EnvironmentApi =
+  Flat (
+    "environment" :> (
+      ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
+      Capture "environmentId" Int :> (
+        Get '[JSON] Environment :<|> -- getEnvironment
+        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] NoContent :<|> -- updateEnvironment
+        Delete '[JSON] NoContent -- deleteEnvironment
+      )
     )
   )
 
@@ -70,6 +84,7 @@ restApiServer =
   requestCollectionApi :<|>
   requestNodeApi :<|>
   requestFileApi :<|>
+  environmentApi :<|>
   getAppHealth
   where
     requestCollectionApi =
@@ -78,6 +93,8 @@ restApiServer =
       updateRequestNodeHandler -- renameNodeRequest -- :<|> undefined
     requestFileApi =
       createRequestFile -- :<|> updateRequestFile
+    environmentApi =
+      undefined
 
 testApiServer :: Server TestApi
 testApiServer =
@@ -102,6 +119,9 @@ requestFileApiProxy = Proxy
 
 testApiProxy :: Proxy TestApi
 testApiProxy = Proxy
+
+environmentApiProxy :: Proxy EnvironmentApi
+environmentApiProxy = Proxy
 
 healthApiProxy :: Proxy HealthApi
 healthApiProxy = Proxy

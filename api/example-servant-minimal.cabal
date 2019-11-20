@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d84af918c10ffc68e2539dcbd95d47db1925fdc9bfedcf2b020848956f086c32
+-- hash: 436a9598ba10e4252a5deee0c0c1185bb3ebc165510b41b70f3195c9509f32fe
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -16,6 +16,7 @@ library
       AppHealth
       DB
       ElmOption
+      Environment.App
       Foo
       Http
       RequestCollection
