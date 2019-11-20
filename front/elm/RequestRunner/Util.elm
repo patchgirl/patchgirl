@@ -15,7 +15,6 @@ import BuilderApp.Builder.Model as Builder
 
 import RequestInput.Model as RequestInput
 
-import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import VarApp.Model as VarApp
 import Application.Type exposing (..)
 

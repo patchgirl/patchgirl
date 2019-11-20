@@ -1,10 +1,19 @@
 module EnvironmentKeyValueEdition.App exposing (..)
 
-import EnvironmentKeyValueEdition.Model exposing (..)
 import EnvironmentKeyValueEdition.Message exposing (Msg(..))
 
 import Util.KeyValue.Util as KeyValue
 import Application.Type as Type
+
+type alias Model a =
+    { a
+        | keyValues : List(String, String)
+
+    }
+
+emptyModel = [("", "")]
+
+
 
 update : Msg -> Type.Environment -> Type.Environment
 update msg model =

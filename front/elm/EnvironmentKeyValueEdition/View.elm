@@ -7,9 +7,16 @@ import Element.Input as Input
 import Element.Events as Events
 import ViewUtil exposing (..)
 import EnvironmentKeyValueEdition.Message exposing (..)
-import EnvironmentKeyValueEdition.Model exposing (..)
 
-view : Model -> Element Msg
+type alias Model a =
+    { a
+        | keyValues : List(String, String)
+
+    }
+
+emptyModel = [("", "")]
+
+view : Model a -> Element Msg
 view model =
     let
         addNewKeyValueView =
@@ -23,10 +30,23 @@ view model =
                 }
     in
         column [ spacing 10 ]
-            [ column [ spacing 5 ] (List.indexedMap viewKeyValue model)
+            [ titleView model
+            , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
             , el [ centerX ] addNewKeyValueView
             ]
 
+titleView : Model a -> Element Msg
+titleView model =
+    none
+{-
+    let
+        name = notEditedValue model.name
+    in
+        row [ centerX, paddingXY 0 10, spacing 10 ]
+            [ el [] <| iconWithTextAndColor "label" (name) secondaryColor
+            , mainActionButtonsView
+            ]
+-}
 
 viewKeyValue : Int -> (String, String) -> Element Msg
 viewKeyValue idx (key, envValue) =

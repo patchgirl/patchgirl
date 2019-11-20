@@ -26,7 +26,6 @@ import Postman.Message as Postman
 import Postman.App as Postman
 
 import EnvironmentKeyValueEdition.View as EnvironmentKeyValueEdition
-import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import EnvironmentKeyValueEdition.Message as EnvironmentKeyValueEdition
 import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 

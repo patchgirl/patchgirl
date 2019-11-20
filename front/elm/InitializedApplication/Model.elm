@@ -2,7 +2,6 @@ module InitializedApplication.Model exposing (..)
 
 import MainNavBar.Model as MainNavBar
 import RequestRunner.Model as RequestRunner
-import EnvironmentKeyValueEdition.Model as EnvironmentKeyValueEdition
 import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp

@@ -25,7 +25,7 @@ view model =
             case mSelectedEnv of
                 Just selectedEnv ->
                     el []
-                        <| map EnvironmentKeyValueEditionMsg (EnvironmentKeyValueEdition.view (Debug.log "coucouo" selectedEnv.keyValues))
+                        <| map EnvironmentKeyValueEditionMsg (EnvironmentKeyValueEdition.view selectedEnv)
 
                 Nothing ->
                     el [] (text "no environment selected")
