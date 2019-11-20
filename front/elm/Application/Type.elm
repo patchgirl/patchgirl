@@ -2,7 +2,7 @@ module Application.Type exposing (..)
 
 type alias Environment =
     { name : String
-    , keyValues : List(String, String)
+    , keyValues : Editable (List(String, String))
     }
 
 type Editable a = NotEdited a | Edited a a
@@ -35,3 +35,16 @@ changeEditedValue newValue editable =
         oldValue = notEditedValue editable
     in
         Edited oldValue newValue
+
+changeEditedValue2 : Editable a -> Editable a -> Editable a
+changeEditedValue2 eOldValue eNewValue =
+    let
+        oldValue = notEditedValue eOldValue
+        newValue = editedOrNotEditedValue eNewValue
+    in
+        case oldValue == newValue of
+        True ->
+            NotEdited oldValue
+
+        False->
+            eNewValue

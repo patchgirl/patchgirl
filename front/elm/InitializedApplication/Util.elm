@@ -4,10 +4,11 @@ import BuilderApp.Model as BuilderApp
 import InitializedApplication.Model exposing (..)
 import Util.List as List
 import List.Extra as List
+import Application.Type exposing (..)
 
 type alias Environment =
     { name : String
-    , keyValues : List(String, String)
+    , keyValues : Editable (List(String, String))
     }
 
 replaceEnvironmentToEdit : Model -> Environment -> Model

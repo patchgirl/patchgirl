@@ -7,11 +7,11 @@ import EnvironmentEdition.Message exposing (Msg(..))
 import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Model exposing (..)
 import EnvironmentEdition.Util exposing (..)
-import Application.Type as Type
+import Application.Type exposing (..)
 
 defaultEnvironment =
     { name = "new environment"
-    , keyValues = []
+    , keyValues = NotEdited []
     }
 
 update : Msg -> Model a -> Model a

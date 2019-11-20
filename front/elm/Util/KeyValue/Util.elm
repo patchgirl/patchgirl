@@ -23,3 +23,10 @@ modify f idx elems =
     (0, elem :: tail) -> f elem :: tail
     (_, []) -> elems
     (_, elem :: tail) -> elem :: (modify f (idx - 1) tail)
+
+modify2 : (Model -> Model) -> Int -> List(Model) -> List(Model)
+modify2 f idx elems =
+  case (idx, elems) of
+    (0, elem :: tail) -> f elem :: tail
+    (_, []) -> elems
+    (_, elem :: tail) -> elem :: (modify f (idx - 1) tail)

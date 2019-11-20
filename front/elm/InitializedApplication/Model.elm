@@ -6,7 +6,7 @@ import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
 import List.Extra as List
-import Application.Type as Type
+import Application.Type exposing (..)
 
 type alias Model =
     { mainNavBarModel : MainNavBar.Model
@@ -21,7 +21,7 @@ type alias Model =
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditIndex : Maybe Int
     , selectedEnvironmentToRenameIndex : Maybe Int
-    , environments : List Type.Environment
+    , environments : List Environment
     -- VARIABLE APP
     , varAppModel : VarApp.Model
     -- RUNNER
@@ -34,26 +34,30 @@ type alias Model =
 
 type alias GetEnvironment a =
     { a
-        | environments : List Type.Environment
+        | environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
     }
 
-getEnvironmentToRun : GetEnvironment a -> Maybe Type.Environment
+getEnvironmentToRun : GetEnvironment a -> Maybe Environment
 getEnvironmentToRun model =
     let
-        selectEnvironment : Int -> Maybe Type.Environment
+        selectEnvironment : Int -> Maybe Environment
         selectEnvironment idx = List.getAt idx model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
 
 getEnvironmentKeyValuesToRun : GetEnvironment a -> List(String, String)
 getEnvironmentKeyValuesToRun model =
-    (getEnvironmentToRun model) |> Maybe.map .keyValues |> Maybe.withDefault []
+    (getEnvironmentToRun model)
+        |> Maybe.map (.keyValues)
+        |> Maybe.map (editedOrNotEditedValue)
+        |> Maybe.withDefault []
 
 getEnvironmentKeyValuesToEdit : Model -> List(String, String)
 getEnvironmentKeyValuesToEdit model =
     EnvironmentEdition.getEnvironmentToEdit model
         |> Maybe.map .keyValues
+        |> Maybe.map (editedOrNotEditedValue)
         |> Maybe.withDefault []
 
 createModel : BuilderApp.RequestCollection -> Model
@@ -79,14 +83,14 @@ createModel requestCollection =
       environments =
           [ { name = "staging1"
             , keyValues =
-                  [ ("key1", "value1")
-                  , ("key2", "value2")
-                  ]
+                  NotEdited [ ("key1", "value1")
+                            , ("key2", "value2")
+                            ]
             }
           , { name = "staging2"
             , keyValues =
-                  [ ("key3", "value3")
-                  ]
+                  NotEdited [ ("key3", "value3")
+                            ]
             }
           ]
   in
