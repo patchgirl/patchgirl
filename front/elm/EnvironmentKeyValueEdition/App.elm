@@ -98,11 +98,16 @@ view model =
 titleView : Model a -> Element Msg
 titleView model =
     let
-        name = model.name
-        -- name = notEditedValue model.name
+        name =
+            case isDirty (Debug.log "teto" model.keyValues) of
+                True ->
+                    model.name ++ "*"
+
+                False ->
+                    model.name
     in
         row [ centerX, paddingXY 0 10, spacing 10 ]
-            [ el [] <| iconWithTextAndColor "label" model.name secondaryColor
+            [ el [] <| iconWithTextAndColor "label" name secondaryColor
             , mainActionButtonsView
             ]
 
