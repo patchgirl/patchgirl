@@ -98,8 +98,11 @@ view model =
 titleView : Model a -> Element Msg
 titleView model =
     let
+        isModelDirty =
+            isDirty model.keyValues
+
         name =
-            case isDirty (Debug.log "teto" model.keyValues) of
+            case isModelDirty of
                 True ->
                     model.name ++ "*"
 
