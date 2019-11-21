@@ -134,4 +134,14 @@ ActiveRecord::Migration[5.2].execute %{
       'key2',
       'value2'
     );
+
+    INSERT INTO key_value (
+      environment_id,
+      key,
+      value
+    ) values (
+      2,
+      'key3',
+      'value3'
+    );
 }
