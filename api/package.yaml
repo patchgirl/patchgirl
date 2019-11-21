@@ -41,3 +41,5 @@ dependencies:
   - servant-elm
   - elm-bridge
   - aeson-qq
+  - unordered-containers
+  - lens

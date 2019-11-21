@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 436a9598ba10e4252a5deee0c0c1185bb3ebc165510b41b70f3195c9509f32fe
+-- hash: 704b9a3d337215f1297c27b6d8abcfb28bd54485b67922dcb7a0d92d06dead17
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -33,6 +33,7 @@ library
     , aeson-qq
     , base
     , elm-bridge
+    , lens
     , postgresql-simple
     , servant
     , servant-elm
@@ -40,6 +41,7 @@ library
     , servant-server
     , text
     , transformers
+    , unordered-containers
     , wai
     , warp
   default-language: Haskell2010
@@ -55,6 +57,7 @@ executable example-servant-minimal
     , base
     , elm-bridge
     , example-servant-minimal
+    , lens
     , postgresql-simple
     , servant
     , servant-elm
@@ -62,6 +65,7 @@ executable example-servant-minimal
     , servant-server
     , text
     , transformers
+    , unordered-containers
     , wai
     , warp
   default-language: Haskell2010
@@ -90,6 +94,7 @@ test-suite spec
     , hspec
     , http-client
     , http-types
+    , lens
     , postgresql-simple
     , servant
     , servant-client
@@ -98,6 +103,7 @@ test-suite spec
     , servant-server
     , text
     , transformers
+    , unordered-containers
     , wai
     , warp >=3.2.4
   default-language: Haskell2010

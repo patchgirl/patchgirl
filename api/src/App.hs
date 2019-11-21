@@ -54,8 +54,8 @@ type EnvironmentApi =
   Flat (
     "environment" :> (
       ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
+      Get '[JSON] [Environment] :<|> -- getEnvironments
       Capture "environmentId" Int :> (
-        Get '[JSON] Environment :<|> -- getEnvironment
         ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] NoContent :<|> -- updateEnvironment
         Delete '[JSON] NoContent -- deleteEnvironment
       )
@@ -94,7 +94,7 @@ restApiServer =
     requestFileApi =
       createRequestFile -- :<|> updateRequestFile
     environmentApi =
-      createEnvironmentHandler :<|> undefined
+      createEnvironmentHandler :<|> getEnvironmentsHandler :<|> updateEnvironmentHandler :<|> deleteEnvironmentHandler
 
 testApiServer :: Server TestApi
 testApiServer =
