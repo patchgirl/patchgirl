@@ -13,7 +13,6 @@
 module Environment.App where
 
 import Control.Lens hiding (element)
-import Control.Lens.TH
 
 import Prelude hiding (id)
 import           DB
