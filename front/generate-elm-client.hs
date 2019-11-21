@@ -24,9 +24,9 @@ deriveElmDef deriveElmDefOption ''NoContent
 deriveElmDef deriveElmDefOption ''NewRequestFile
 deriveElmDef deriveElmDefOption ''ParentNodeId
 deriveElmDef deriveElmDefOption ''UpdateRequestNode
-deriveElmDef deriveElmDefOption ''Environment
 deriveElmDef deriveElmDefOption ''NewEnvironment
 deriveElmDef deriveElmDefOption ''UpdateEnvironment
+deriveElmDef deriveElmDefOption ''Environment
 
 main :: IO ()
 main =
@@ -49,6 +49,7 @@ main =
       , DefineElm (Proxy :: Proxy UpdateRequestNode)
       , DefineElm (Proxy :: Proxy NewEnvironment)
       , DefineElm (Proxy :: Proxy UpdateEnvironment)
+      , DefineElm (Proxy :: Proxy Environment)
       ]
     proxyApi = (Proxy :: Proxy RestApi)
   in
