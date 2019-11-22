@@ -5,6 +5,9 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FunctionalDependencies #-}
 
 module RequestNode.Model where
 
@@ -13,44 +16,52 @@ import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import Http
-import           Data.Aeson (withObject, FromJSON(..), ToJSON, (.:), constructorTagModifier)
+import           Data.Aeson (withObject, FromJSON(..), ToJSON(..), (.:), constructorTagModifier, genericToJSON)
 import           Data.Aeson.Types (Parser, camelTo2, fieldLabelModifier, genericParseJSON, defaultOptions)
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Data.Aeson (Value, parseJSON)
 import Data.Aeson.Types (parseEither)
+import Control.Lens (makeFieldsNoPrefix)
+
 
 data UpdateRequestNode
-  = UpdateRequestFolder { eName :: String
+  = UpdateRequestFolder { _name :: String
                         }
-  | UpdateRequestFile { name :: String
-                      , httpUrl :: String
-                      , httpMethod :: Method
-                      , httpHeaders :: [(String, String)]
-                      , httpBody :: String
+  | UpdateRequestFile { _name :: String
+                      , _httpUrl :: String
+                      , _httpMethod :: Method
+                      , _httpHeaders :: [(String, String)]
+                      , _httpBody :: String
                       }
-  deriving (Eq, Show, Generic, ToJSON, FromJSON)
+  deriving (Eq, Show, Generic, FromJSON)
+
+instance ToJSON UpdateRequestNode where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+$(makeFieldsNoPrefix ''UpdateRequestNode)
 
 instance ToField UpdateRequestNode where
-  toField (UpdateRequestFolder { eName }) =
-    toField (show eName)
-  toField (UpdateRequestFile { name, httpUrl, httpMethod, httpBody }) =
-    Many [ toField name
-         , toField httpUrl
-         , toField httpMethod
-         , toField httpBody
+  toField (UpdateRequestFolder { _name }) =
+    toField (show _name)
+  toField (UpdateRequestFile { _name, _httpUrl, _httpMethod, _httpBody }) =
+    Many [ toField _name
+         , toField _httpUrl
+         , toField _httpMethod
+         , toField _httpBody
          ]
 
 data RequestNode
-  = RequestFolder { id :: Int
-                  , name :: String
-                  , children :: [RequestNode]
+  = RequestFolder { _id :: Int
+                  , _name :: String
+                  , _children :: [RequestNode]
                   }
-  | RequestFile { id :: Int
-                , name :: String
-                , httpUrl :: String
-                , httpMethod :: Method
-                , httpHeaders :: [(String, String)]
-                , httpBody :: String
+  | RequestFile { _id :: Int
+                , _name :: String
+                , _httpUrl :: String
+                , _httpMethod :: Method
+                , _httpHeaders :: [(String, String)]
+                , _httpBody :: String
                 }
   deriving (Eq, Show, Generic, ToJSON)
 
@@ -71,18 +82,18 @@ instance FromJSON RequestNodeFromPG where
     case requestNodeType of
       RequestFileType -> do
         pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
-        let httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
-        id <- o .: "id"
-        name <- o .: "name"
-        httpUrl <- o .: "http_url"
-        httpMethod <- o .: "http_method"
-        httpBody <- o .: "http_body"
+        let _httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
+        _id <- o .: "id"
+        _name <- o .: "name"
+        _httpUrl <- o .: "http_url"
+        _httpMethod <- o .: "http_method"
+        _httpBody <- o .: "http_body"
         return $ RequestNodeFromPG $ RequestFile{..}
       RequestFolderType -> do
         pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
-        id <- o .: "id"
-        name <- o .: "name"
-        let children = fromPgRequestNodeToRequestNode <$> pgChildren
+        _id <- o .: "id"
+        _name <- o .: "name"
+        let _children = fromPgRequestNodeToRequestNode <$> pgChildren
         return $ RequestNodeFromPG $ RequestFolder{..}
 
 instance FromField [RequestNodeFromPG] where
@@ -122,59 +133,59 @@ data ParentNodeId
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 data NewRequestFile =
-  NewRequestFile { name :: String
-                 , parentNodeId :: ParentNodeId
-                 , httpMethod :: Method
+  NewRequestFile { _name :: String
+                 , _parentNodeId :: ParentNodeId
+                 , _httpMethod :: Method
                  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 instance ToRow NewRequestFile where
-  toRow (NewRequestFile { name
-                        , parentNodeId
-                        , httpMethod
+  toRow (NewRequestFile { _name
+                        , _parentNodeId
+                        , _httpMethod
                         }) =
     let
       tag = "RequestFile" :: String
       noId = Nothing :: Maybe Int
     in
-      case parentNodeId of
+      case _parentNodeId of
         RequestCollectionId requestCollectionId ->
           toRow ( requestCollectionId
                 , noId
                 , tag
-                , name
-                , httpMethod
+                , _name
+                , _httpMethod
                 )
         RequestNodeId requestNodeId ->
           toRow ( noId
                 , requestNodeId
                 , tag
-                , name
-                , httpMethod
+                , _name
+                , _httpMethod
                 )
 
 data NewRequestFolder =
-  NewRequestFolder { name :: String
-                   , parentNodeId :: ParentNodeId
+  NewRequestFolder { _name :: String
+                   , _parentNodeId :: ParentNodeId
                    } deriving (Eq, Show, Generic)
 
 instance ToRow NewRequestFolder where
-  toRow (NewRequestFolder { name
-                          , parentNodeId
+  toRow (NewRequestFolder { _name
+                          , _parentNodeId
                           }) =
     let
       tag = "RequestFolder" :: String
       noId = Nothing :: Maybe Int
     in
-      case parentNodeId of
+      case _parentNodeId of
         RequestCollectionId requestCollectionId ->
           toRow ( requestCollectionId
                 , noId
                 , tag
-                , name
+                , _name
                 )
         RequestNodeId requestNodeId ->
           toRow ( noId
                 , requestNodeId
                 , tag
-                , name
+                , _name
                 )

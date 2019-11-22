@@ -30,10 +30,10 @@ defaultModel = Unitialized
 init : () -> (Model, Cmd Msg)
 init _ =
     let
-        initializeState =
+        getRequestCollection =
             Client.getRequestCollectionByRequestCollectionId "" 1 httpResultToMsg
     in
-        (defaultModel, initializeState)
+        (defaultModel, getRequestCollection)
 
 httpResultToMsg : Result Http.Error Client.RequestCollection -> Msg
 httpResultToMsg result =
