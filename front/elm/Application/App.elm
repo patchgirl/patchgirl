@@ -16,12 +16,17 @@ import InitializedApplication.App as InitializedApplication
 import BuilderApp.Model as BuilderApp
 
 type Msg
-  = ServerSuccess BuilderApp.RequestCollection
+  = RequestCollectionFetched BuilderApp.RequestCollection
+  | EnvironmentsFetched (List Client.Environment)
   | ServerError
   | InitializedApplicationMsg InitializedApplication.Msg
 
 type Model
     = Unitialized
+    | Pending
+      { mRequestCollection : Maybe BuilderApp.RequestCollection
+      , mEnvironments : Maybe (List Client.Environment)
+      }
     | Initialized InitializedApplication.Model
 
 defaultModel : Model
@@ -31,31 +36,94 @@ init : () -> (Model, Cmd Msg)
 init _ =
     let
         getRequestCollection =
-            Client.getRequestCollectionByRequestCollectionId "" 1 httpResultToMsg
-    in
-        (defaultModel, getRequestCollection)
+            Client.getRequestCollectionByRequestCollectionId "" 1 requestCollectionResultToMsg
 
-httpResultToMsg : Result Http.Error Client.RequestCollection -> Msg
-httpResultToMsg result =
+        getEnvironments =
+            Client.getEnvironment "" environmentsResultToMsg
+
+        getInitialState = Cmd.batch [getRequestCollection, getEnvironments]
+
+    in
+        (defaultModel, getInitialState)
+
+requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> Msg
+requestCollectionResultToMsg result =
     case result of
         Ok requestCollection ->
             let
                 newRequestCollection =
                     Client.convertRequestCollectionFromBackToFront requestCollection
             in
-                ServerSuccess newRequestCollection
+                RequestCollectionFetched newRequestCollection
 
         Err error ->
             Debug.log "test" ServerError
 
+
+
+environmentsResultToMsg : Result Http.Error (List Client.Environment) -> Msg
+environmentsResultToMsg result =
+    case result of
+        Ok environments ->
+            EnvironmentsFetched environments
+
+        Err error ->
+            Debug.log "test" ServerError
+
+upgradeModel : Model -> Model
+upgradeModel model =
+    case model of
+        Pending { mRequestCollection, mEnvironments } ->
+            case (mRequestCollection, mEnvironments) of
+                (Just requestCollection, Just environments) ->
+                    let
+                        newModel =
+                            Initialized <|
+                                InitializedApplication.createModel requestCollection
+                    in
+                        newModel
+
+                _ ->
+                    model
+
+        _ ->
+            model
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ServerSuccess requestCollection ->
+        EnvironmentsFetched environments ->
             let
                 newModel =
-                    Initialized <|
-                        InitializedApplication.createModel requestCollection
+                    case model of
+                        Unitialized ->
+                            Pending { mEnvironments = Just environments
+                                    , mRequestCollection = Nothing
+                                    }
+
+                        Pending pending ->
+                            Pending { pending | mEnvironments = Just environments } |> upgradeModel
+
+                        Initialized _ ->
+                            Debug.todo "already initialized app received initialization infos"
+            in
+                (newModel, Cmd.none)
+
+        RequestCollectionFetched requestCollection ->
+            let
+                newModel =
+                    case model of
+                        Unitialized ->
+                            Pending { mEnvironments = Nothing
+                                    , mRequestCollection = Just requestCollection
+                                    }
+
+                        Pending pending ->
+                            Pending { pending | mRequestCollection = Just requestCollection } |> upgradeModel
+
+                        Initialized _ ->
+                            Debug.todo "already initialized app received initialization infos"
+
             in
                 (newModel, Cmd.none)
 
@@ -64,11 +132,11 @@ update msg model =
 
         InitializedApplicationMsg subMsg ->
             case model of
+                Pending _ ->
+                    Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
+
                 Unitialized ->
-                    let
-                        errorMsg = "InitializedApplicationMsg received with unitialized Application - This should never happen"
-                    in
-                        (model, Cmd.none)
+                    Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
 
                 Initialized initializedApplication ->
                     let
@@ -85,19 +153,27 @@ subscriptions _ =
 
 view : Model -> Html.Html Msg
 view model =
-    layout [] <|
-        case model of
-            Unitialized ->
-                el [ width fill
-                   , height fill
-                   , Background.color <| secondaryColor
-                   ]
-                    <| el [ centerX
-                          , centerY
-                          , Font.center
-                          ]
-                        <| iconWithText "autorenew" "loading ApiTester..."
+    let
+        loadingView =
+            el [ width fill
+               , height fill
+               , Background.color <| secondaryColor
+               ]
+            <| el [ centerX
+                  , centerY
+                  , Font.center
+                  ]
+                <| iconWithText "autorenew" "loading ApiTester..."
 
-            Initialized initializedApplication ->
-                el [ width fill ] <|
-                    map InitializedApplicationMsg (html <| InitializedApplication.view initializedApplication)
+    in
+        layout [] <|
+            case model of
+                Unitialized ->
+                    loadingView
+
+                Pending _ ->
+                    loadingView
+
+                Initialized initializedApplication ->
+                    el [ width fill ] <|
+                        map InitializedApplicationMsg (html <| InitializedApplication.view initializedApplication)
