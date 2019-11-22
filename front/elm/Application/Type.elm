@@ -1,8 +1,15 @@
 module Application.Type exposing (..)
 
 type alias Environment =
-    { name : String
-    , keyValues : Editable (List(String, String))
+    { id : Int
+    , name : String
+    , keyValues : Editable (List KeyValue)
+    }
+
+type alias KeyValue =
+    { id : Int
+    , key : String
+    , value : String
     }
 
 type Editable a = NotEdited a | Edited a a

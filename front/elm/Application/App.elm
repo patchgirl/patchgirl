@@ -60,12 +60,14 @@ requestCollectionResultToMsg result =
             Debug.log "test" ServerError
 
 
-
 environmentsResultToMsg : Result Http.Error (List Client.Environment) -> Msg
 environmentsResultToMsg result =
     case result of
-        Ok environments ->
-            EnvironmentsFetched environments
+        Ok clientEnvironments ->
+            let
+                environments = List.map Client.convertEnvironmentFromBackToFront clientEnvironments
+            in
+                EnvironmentsFetched environments
 
         Err error ->
             Debug.log "test" ServerError
@@ -79,7 +81,7 @@ upgradeModel model =
                     let
                         newModel =
                             Initialized <|
-                                InitializedApplication.createModel requestCollection
+                                InitializedApplication.createModel requestCollection environments
                     in
                         newModel
 

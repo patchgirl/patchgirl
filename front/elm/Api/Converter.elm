@@ -3,8 +3,11 @@ module Api.Converter exposing(..)
 import Api.Client as Back
 import BuilderApp.Model as Front
 import Application.Type exposing (..)
+import Application.Type as Front
 
 import BuilderApp.Builder.Model as Builder
+
+-- * Request Collection
 
 convertRequestCollectionFromBackToFront : Back.RequestCollection -> Front.RequestCollection
 convertRequestCollectionFromBackToFront backRequestCollection =
@@ -39,25 +42,11 @@ convertRequestNodesFromBackToFront backRequestNodes =
     in
         List.map convertRequestNodeFromBackToFront backRequestNodes
 
-{-convertRequestNodesFromFrontToBack : List Front.RequestNode -> List Back.RequestNode
-convertRequestNodesFromFrontToBack frontRequestNodes =
-    let
-        convertRequestNodeFromFrontToBack : Front.RequestNode -> Back.RequestNode
-        convertRequestNodeFromFrontToBack frontRequestNode =
-            case frontRequestNode of
-                Front.RequestFolder folder ->
-                    Back.RequestFolder
-                        { name = folder.name
-                        , children = convertRequestNodesFromFrontToBack folder.children
-                        }
-                Front.RequestFile file ->
-                    Back.RequestFile
-                        { name = file.name
-                        , url = file.url
-                        , method = file.method
-                        , headers = file.headers
-                        , body = file.body
-                        }
-    in
-        List.map convertRequestNodeFromFrontToBack frontRequestNodes
--}
+-- * Environment
+
+convertEnvironmentFromBackToFront : Back.Environment -> Front.Environment
+convertEnvironmentFromBackToFront { id, name, keyValues } =
+    { id = id
+    , name = name
+    , keyValues = NotEdited keyValues
+    }
