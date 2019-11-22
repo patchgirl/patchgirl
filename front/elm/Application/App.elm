@@ -46,7 +46,7 @@ httpResultToMsg result =
                 ServerSuccess newRequestCollection
 
         Err error ->
-            ServerError
+            Debug.log "test" ServerError
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =

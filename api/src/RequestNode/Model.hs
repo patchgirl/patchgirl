@@ -63,7 +63,11 @@ data RequestNode
                 , _httpHeaders :: [(String, String)]
                 , _httpBody :: String
                 }
-  deriving (Eq, Show, Generic, ToJSON)
+  deriving (Eq, Show, Generic)
+
+instance ToJSON RequestNode where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJSON RequestNode where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
@@ -136,7 +140,11 @@ data NewRequestFile =
   NewRequestFile { _name :: String
                  , _parentNodeId :: ParentNodeId
                  , _httpMethod :: Method
-                 } deriving (Eq, Show, Generic, FromJSON, ToJSON)
+                 } deriving (Eq, Show, Generic, FromJSON)
+
+instance ToJSON NewRequestFile where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance ToRow NewRequestFile where
   toRow (NewRequestFile { _name
