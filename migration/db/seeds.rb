@@ -79,18 +79,14 @@ ActiveRecord::Migration[5.2].execute %{
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO environment (
-      id,
       name
     ) values (
-      1,
       'staging1'
     );
 
     INSERT INTO environment (
-      id,
       name
     ) values (
-      2,
       'staging2'
     );
 }

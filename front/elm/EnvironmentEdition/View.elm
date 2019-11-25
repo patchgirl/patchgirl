@@ -35,7 +35,7 @@ view model =
 
         addEnvButtonView =
             Input.button []
-                { onPress = Just <| (Add)
+                { onPress = Just <| (AskEnvironmentCreation "new environment")
                 , label =
                     row []
                         [ addIcon

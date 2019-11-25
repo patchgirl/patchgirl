@@ -17,9 +17,10 @@ import Control.Lens hiding (element)
 import Prelude hiding (id)
 import           DB
 import           GHC.Generics
-import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericToJSON, defaultOptions)
+import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericToJSON, defaultOptions, parseJSON)
+import           Data.Aeson.Types (genericParseJSON)
 import           Servant (Handler)
-import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow)
+import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow, execute)
 import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
 import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
@@ -40,17 +41,26 @@ instance ToJSON Environment where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-data PGEnvironment =
-  PGEnvironment { _environmentName :: String
-                , _environmentId :: Int
-                , _keyValueId :: Int
-                , _key :: String
-                , _value :: String
-                } deriving (Generic, FromRow)
+data PGEnvironmentWithKeyValue =
+  PGEnvironmentWithKeyValue { _environmentId :: Int
+                            , _environmentName :: String
+                            , _keyValueId :: Int
+                            , _key :: String
+                            , _value :: String
+                            } deriving (Generic, FromRow)
+
+data PGEnvironmentWithoutKeyValue =
+  PGEnvironmentWithoutKeyValue { _environmentId :: Int
+                               , _environmentName :: String
+                               } deriving (Generic, FromRow)
+
 
 data NewEnvironment
   = NewEnvironment { _name :: String
-                   } deriving (Eq, Show, Generic, FromJSON)
+                   } deriving (Eq, Show, Generic)
+
+instance FromJSON NewEnvironment where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 data KeyValue =
   KeyValue { _id :: Int
@@ -65,20 +75,29 @@ instance ToJSON KeyValue where
 $(makeFieldsNoPrefix ''KeyValue)
 $(makeFieldsNoPrefix ''Environment)
 $(makeFieldsNoPrefix ''NewEnvironment)
-$(makeFieldsNoPrefix ''PGEnvironment)
+$(makeFieldsNoPrefix ''PGEnvironmentWithKeyValue)
+$(makeFieldsNoPrefix ''PGEnvironmentWithoutKeyValue)
 
 -- * Get environments
 
 selectEnvironments :: Connection -> IO [Environment]
 selectEnvironments connection = do
-  pgEnvironments :: [PGEnvironment] <- query connection selectEnvironmentQuery $ (Only 1 :: Only Int)
-  return $ elems $ convertPgEnvironmentsToHashMap pgEnvironments
+  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues $ (Only 1 :: Only Int)
+  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues $ (Only 1 :: Only Int)
+
+  let
+    environmentsWithKeyValues =
+      elems $ convertPgEnvironmentsToHashMap pgEnvironmentsWithKeyValue
+    environmentsWithoutKeyValues =
+      map convertPGEnviromentWithoutKeyValuesToEnvironment pgEnvironmentsWithoutKeyValues
+    in
+    return $ environmentsWithKeyValues ++ environmentsWithoutKeyValues
   where
-    convertPgEnvironmentsToHashMap :: [PGEnvironment] -> HashMap Int Environment
+    convertPgEnvironmentsToHashMap :: [PGEnvironmentWithKeyValue] -> HashMap Int Environment
     convertPgEnvironmentsToHashMap pgEnvironments =
       foldl' (\acc pgEnv -> insertWith mergeValue (pgEnv ^. environmentId) (convertPGEnviromentToEnvironment pgEnv) acc) HashMap.empty pgEnvironments
 
-    convertPGEnviromentToEnvironment :: PGEnvironment -> Environment
+    convertPGEnviromentToEnvironment :: PGEnvironmentWithKeyValue -> Environment
     convertPGEnviromentToEnvironment pgEnv =
       let
         keyValue :: KeyValue
@@ -93,15 +112,22 @@ selectEnvironments connection = do
                     , _keyValues = [ keyValue ]
                     }
 
+    convertPGEnviromentWithoutKeyValuesToEnvironment :: PGEnvironmentWithoutKeyValue -> Environment
+    convertPGEnviromentWithoutKeyValuesToEnvironment pgEnv =
+        Environment { _id = pgEnv ^. environmentId
+                    , _name = pgEnv ^. environmentName
+                    , _keyValues = []
+                    }
+
     mergeValue :: Environment -> Environment -> Environment
     mergeValue oldEnv newEnv =
       oldEnv & keyValues %~ (++) (newEnv ^. keyValues)
 
-    selectEnvironmentQuery =
+    selectEnvironmentQueryWithKeyValues =
       [sql|
           SELECT
-            environment.name as environment_name,
             environment.id as environment_id,
+            environment.name as environment_name,
             key_value.id as key_value_id,
             key,
             value
@@ -109,6 +135,18 @@ selectEnvironments connection = do
           JOIN environment ON (key_value.environment_id = environment.id)
           JOIN account_environment ON (account_environment.environment_id = environment.id)
           WHERE account_id = ?;
+          |]
+
+    selectEnvironmentQueryWithoutKeyValues =
+      [sql|
+          SELECT
+            environment.id as environment_id,
+            environment.name as environment_name
+          FROM environment
+          LEFT JOIN key_value ON (key_value.environment_id = environment.id)
+          JOIN account_environment ON (account_environment.environment_id = environment.id)
+          WHERE key_value.environment_id IS NULL
+          AND account_id = ?;
           |]
 
 getEnvironmentsHandler :: Handler [Environment]
@@ -131,9 +169,27 @@ insertEnvironment (NewEnvironment { _name }) connection = do
           RETURNING id
           |]
 
+bindEnvironmentToAccount :: Int -> Int -> Connection -> IO ()
+bindEnvironmentToAccount accountId environmentId connection = do
+  _ <- execute connection bindEnvironmentToAccountQuery $ (accountId, environmentId)
+  return ()
+  where
+    bindEnvironmentToAccountQuery =
+      [sql|
+          INSERT INTO account_environment (
+            account_id,
+            environment_id
+          ) values (
+            ?,
+            ?
+          );
+          |]
+
 createEnvironmentHandler :: NewEnvironment -> Handler Int
 createEnvironmentHandler newEnvironment = do
-  liftIO (getDBConnection >>= (insertEnvironment newEnvironment)) >>= return
+  connection <- liftIO getDBConnection
+  environmentId <- liftIO $ insertEnvironment newEnvironment connection
+  liftIO $ bindEnvironmentToAccount 1 environmentId connection >> return environmentId
 
 -- * else
 

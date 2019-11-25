@@ -7,6 +7,8 @@ type Msg
   | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
   | Delete Int
   | AskEnvironmentCreation String
+  | EnvironmentCreated Int String
+  | ServerError
   | Add
   | ShowRenameInput Int
   | Rename Int String

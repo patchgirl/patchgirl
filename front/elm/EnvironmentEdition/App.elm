@@ -8,6 +8,8 @@ import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Model exposing (..)
 import EnvironmentEdition.Util exposing (..)
 import Application.Type exposing (..)
+import Api.Client as Client
+import Http as Http
 
 defaultEnvironment =
     { id = 0
@@ -42,7 +44,34 @@ update msg model =
           (newModel, Cmd.none)
 
     AskEnvironmentCreation name ->
-        (model, Cmd.none)
+        let
+            payload =
+                { name = name
+                }
+
+            newMsg =
+                Client.postEnvironment "" payload (newEnvironmentResultToMsg name)
+        in
+            (model, newMsg)
+
+    EnvironmentCreated id name ->
+        let
+            newEnv =
+                { id = id
+                , name = name
+                , keyValues = NotEdited []
+                }
+
+            newEnvironments =
+                model.environments ++ [ defaultEnvironment ]
+
+            newModel =
+                { model | environments = newEnvironments }
+        in
+            (newModel, Cmd.none)
+
+    ServerError ->
+        Debug.todo "server error :-("
 
     Add ->
         let
@@ -112,3 +141,12 @@ update msg model =
 
                         in
                             (newModel, Cmd.none)
+
+newEnvironmentResultToMsg : String -> Result Http.Error Int -> Msg
+newEnvironmentResultToMsg name result =
+    case result of
+        Ok id ->
+            EnvironmentCreated id name
+
+        Err error ->
+            Debug.log "test" ServerError
