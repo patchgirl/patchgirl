@@ -12,6 +12,8 @@ import VarApp.Model exposing (..)
 
 import Util.Maybe as Maybe
 
+import Application.Type exposing (..)
+
 view : Model -> Html Msg
 view model =
     let
@@ -24,9 +26,9 @@ view model =
             , defaultView
             ]
 
-varView : Model -> Int -> (String, String) -> List(Html Msg)
-varView model idx var =
-  [(varDropableView model idx), (varDragableView idx var)]
+varView : Model -> Int -> KeyValue -> List(Html Msg)
+varView model idx varKeyValue =
+  [(varDropableView model idx), (varDragableView idx varKeyValue)]
 
 varDropableView : Model -> Int -> Html Msg
 varDropableView model idx  =
@@ -56,8 +58,8 @@ varDropableView model idx  =
                    , class onOverClass
                    ] [ text (String.fromInt (newIdx))]
 
-varDragableView : Int -> (String, String) -> Html Msg
-varDragableView idx (varKey, varValue) =
+varDragableView : Int -> KeyValue -> Html Msg
+varDragableView idx varKeyValue =
     li [ draggable "true"
        , onDragStart (Drag idx)
        , onDragEnd DragEnd
@@ -66,12 +68,12 @@ varDragableView idx (varKey, varValue) =
        [ input [ id ""
                , placeholder "key"
                , onInput (PromptKey idx)
-               , value varKey
+               , value varKeyValue.key
                ] []
        , input [ id ""
                , placeholder "value"
                , onInput (PromptValue idx)
-               , value varValue
+               , value varKeyValue.value
                ] []
        , input [ onClick (DeleteInput idx), type_ "button" ]
            []

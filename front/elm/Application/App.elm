@@ -14,10 +14,11 @@ import InitializedApplication.Model as InitializedApplication
 import InitializedApplication.Message as InitializedApplication
 import InitializedApplication.App as InitializedApplication
 import BuilderApp.Model as BuilderApp
+import Application.Type exposing (..)
 
 type Msg
   = RequestCollectionFetched BuilderApp.RequestCollection
-  | EnvironmentsFetched (List Client.Environment)
+  | EnvironmentsFetched (List Environment)
   | ServerError
   | InitializedApplicationMsg InitializedApplication.Msg
 
@@ -25,7 +26,7 @@ type Model
     = Unitialized
     | Pending
       { mRequestCollection : Maybe BuilderApp.RequestCollection
-      , mEnvironments : Maybe (List Client.Environment)
+      , mEnvironments : Maybe (List Environment)
       }
     | Initialized InitializedApplication.Model
 

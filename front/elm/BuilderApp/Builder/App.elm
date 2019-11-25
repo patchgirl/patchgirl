@@ -19,7 +19,7 @@ import Maybe.Extra as Maybe
 import Application.Type exposing (..)
 import RequestRunner.Util as RequestRunner
 
-update : Msg -> List(String, String) -> List(String, String) -> Model a -> (Model a, Cmd Msg)
+update : Msg -> List KeyValue -> List KeyValue -> Model a -> (Model a, Cmd Msg)
 update msg envKeyValues varKeyValues model =
     case msg of
         UpdateUrl newHttpUrl ->
@@ -99,7 +99,7 @@ parseHeaders headers =
   in
       String.lines headers |> List.map parseRawHeader
 
-buildRequestToRun : List(String, String) -> List(String, String) -> Model a -> Cmd Msg
+buildRequestToRun : List KeyValue -> List KeyValue -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues varKeyValues builder =
     let
         request = RequestRunner.buildRequest <| RequestRunner.buildRequestInput envKeyValues varKeyValues builder

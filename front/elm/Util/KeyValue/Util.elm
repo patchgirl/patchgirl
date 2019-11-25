@@ -11,11 +11,11 @@ delete idx models =
 
 changeKey : String -> Model -> Model
 changeKey newKey model =
-  (newKey, Tuple.second model)
+  { model | key = newKey }
 
 changeValue : String -> Model -> Model
 changeValue newValue model =
-  (Tuple.first model, newValue)
+    { model | value = newValue }
 
 modify : (Model -> Model) -> Int -> List(Model) -> List(Model)
 modify f idx elems =

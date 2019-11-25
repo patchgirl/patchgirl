@@ -18,7 +18,7 @@ import RequestInput.Model as RequestInput
 import VarApp.Model as VarApp
 import Application.Type exposing (..)
 
-buildRequestInput : List(String, String) -> List(String, String) -> Builder.Model a -> RequestInput.Model
+buildRequestInput : List KeyValue -> List KeyValue -> Builder.Model a -> RequestInput.Model
 buildRequestInput envKeyValues varKeyValues builder =
     { method = Builder.methodToString builder.httpMethod
     , headers = editedOrNotEditedValue builder.httpHeaders
@@ -34,19 +34,19 @@ buildRequest requestInput =
     , body = Http.stringBody "application/json" requestInput.body
     }
 
-interpolate : List(String, String) -> List(String, String) -> String -> String
-interpolate env var str =
+interpolate : List KeyValue -> List KeyValue -> String -> String
+interpolate envKeys varKeyValues str =
   let
     build : TemplatedString -> String
     build templatedString =
       case templatedString of
         Sentence c -> c
         Key key ->
-          case List.find (\(k, v) -> k == key) env of
-            Just (_, value) -> value
+          case List.find (\envKey -> envKey.key == key) envKeys of
+            Just { value } -> value
             Nothing ->
-                case List.find (\(k, v) -> k == key) var of
-                    Just (_, value) -> value
+                case List.find (\varKeyValue -> varKeyValue.key == key) varKeyValues of
+                    Just  { value } -> value
                     Nothing -> key
   in
     case toRaw str of

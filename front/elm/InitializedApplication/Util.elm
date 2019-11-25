@@ -7,8 +7,9 @@ import List.Extra as List
 import Application.Type exposing (..)
 
 type alias Environment =
-    { name : String
-    , keyValues : Editable (List(String, String))
+    { id : Int
+    , name : String
+    , keyValues : Editable (List KeyValue)
     }
 
 replaceEnvironmentToEdit : Model -> Environment -> Model

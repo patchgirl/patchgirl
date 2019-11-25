@@ -14,7 +14,7 @@ import Application.Type as Type
 
 type alias Model a =
     { a
-        | keyValues : Editable (List(String, String))
+        | keyValues : Editable (List Type.KeyValue)
         , name : String
     }
 
@@ -55,7 +55,7 @@ update msg model =
         AddNewInput ->
             let
                 newKeyValues =
-                    changeEditedValue ((editedOrNotEditedValue model.keyValues) ++ [("", "")]) model.keyValues
+                    changeEditedValue ((editedOrNotEditedValue model.keyValues) ++ [{id = 0, key = "", value = ""}]) model.keyValues
 
             in
                 { model | keyValues = newKeyValues }
@@ -132,8 +132,8 @@ mainActionButtonsView =
             , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
             }
 
-viewKeyValue : Int -> (String, String) -> Element Msg
-viewKeyValue idx (key, envValue) =
+viewKeyValue : Int -> KeyValue -> Element Msg
+viewKeyValue idx { key, value } =
   row [ spacing 5 ]
       [ Input.text []
             { onChange = (PromptKey idx)
@@ -143,7 +143,7 @@ viewKeyValue idx (key, envValue) =
             }
       , Input.text []
             { onChange = (PromptValue idx)
-            , text = envValue
+            , text = value
             , placeholder = Just <| Input.placeholder [] (text "value")
             , label = Input.labelHidden "Value: "
             }

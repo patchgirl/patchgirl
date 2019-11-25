@@ -46,53 +46,34 @@ getEnvironmentToRun model =
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
 
-getEnvironmentKeyValuesToRun : GetEnvironment a -> List(String, String)
+getEnvironmentKeyValuesToRun : GetEnvironment a -> List KeyValue
 getEnvironmentKeyValuesToRun model =
     (getEnvironmentToRun model)
         |> Maybe.map (.keyValues)
         |> Maybe.map (editedOrNotEditedValue)
         |> Maybe.withDefault []
 
-getEnvironmentKeyValuesToEdit : Model -> List(String, String)
+getEnvironmentKeyValuesToEdit : Model -> List KeyValue
 getEnvironmentKeyValuesToEdit model =
     EnvironmentEdition.getEnvironmentToEdit model
         |> Maybe.map .keyValues
         |> Maybe.map (editedOrNotEditedValue)
         |> Maybe.withDefault []
 
-createModel : BuilderApp.RequestCollection -> Model
-createModel requestCollection =
+createModel : BuilderApp.RequestCollection -> List Environment -> Model
+createModel requestCollection environments =
   let
       selectedBuilderIndex = Nothing
       displayedBuilderIndex = Nothing
       displayedRequestNodeMenuIndex = Nothing
       varAppModel =
-          { vars =
-                [ ("key0", "value0")
-                , ("key1", "value1")
-                , ("key2", "value2")
-                , ("key3", "value3")
-                , ("key4", "value4")
-                ]
+          { vars = []
           , overZoneId = Nothing
           , draggedId = Nothing
           }
       selectedEnvironmentToEditIndex = Just 0
       selectedEnvironmentToRunIndex = Just 0
       selectedEnvironmentToRenameIndex = Nothing
-      environments =
-          [ { name = "staging1"
-            , keyValues =
-                  NotEdited [ ("key1", "value1")
-                            , ("key2", "value2")
-                            ]
-            }
-          , { name = "staging2"
-            , keyValues =
-                  NotEdited [ ("key3", "value3")
-                            ]
-            }
-          ]
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , selectedBuilderIndex = selectedBuilderIndex

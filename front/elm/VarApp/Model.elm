@@ -10,7 +10,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { vars = [("", "")]
+    { vars = []
     , overZoneId = Nothing
     , draggedId = Nothing
     }

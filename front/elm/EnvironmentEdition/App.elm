@@ -10,7 +10,8 @@ import EnvironmentEdition.Util exposing (..)
 import Application.Type exposing (..)
 
 defaultEnvironment =
-    { name = "new environment"
+    { id = 0
+    , name = "new environment"
     , keyValues = NotEdited []
     }
 
