@@ -6,6 +6,7 @@ type Msg
   = SelectEnvToEdit Int
   | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
   | Delete Int
+  | AskEnvironmentCreation String
   | Add
   | ShowRenameInput Int
   | Rename Int String

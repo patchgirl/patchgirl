@@ -93,13 +93,12 @@ update msg model =
 
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
-                newModel ->
-                    (newModel, Cmd.none)
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
 
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of
                 (_, _) -> (model, Cmd.none)
-
 
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)

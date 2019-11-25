@@ -15,11 +15,15 @@ defaultEnvironment =
     , keyValues = NotEdited []
     }
 
-update : Msg -> Model a -> Model a
+update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
   case msg of
     SelectEnvToEdit idx ->
-      { model | selectedEnvironmentToEditIndex = Just idx }
+      let
+          newModel =
+              { model | selectedEnvironmentToEditIndex = Just idx }
+      in
+          (newModel, Cmd.none)
 
     Delete idx ->
       let
@@ -28,53 +32,83 @@ update msg model =
           case model.selectedEnvironmentToEditIndex == Just idx of
             True -> Nothing
             False -> model.selectedEnvironmentToEditIndex
+
+        newModel =
+            { model
+                | selectedEnvironmentToEditIndex = newSelectedEnvironmentToEditIndex
+                , environments = newEnvironments
+             }
       in
-          { model
-              | selectedEnvironmentToEditIndex = newSelectedEnvironmentToEditIndex
-              , environments = newEnvironments
-          }
+          (newModel, Cmd.none)
+
+    AskEnvironmentCreation name ->
+        (model, Cmd.none)
 
     Add ->
         let
-            newEnvironments = model.environments ++ [ defaultEnvironment ]
+            newEnvironments =
+                model.environments ++ [ defaultEnvironment ]
+
+            newModel =
+                { model | environments = newEnvironments }
+
         in
-            { model | environments = newEnvironments }
+            (newModel, Cmd.none)
 
     ShowRenameInput idx ->
-        { model | selectedEnvironmentToRenameIndex = Just idx }
+        let
+            newModel =
+                { model | selectedEnvironmentToRenameIndex = Just idx }
+        in
+            (newModel, Cmd.none)
 
     Rename idx newEnvironmentName ->
         let
-            updateEnv old = { old | name = newEnvironmentName }
-            mNewEnvs = List.updateAt idx updateEnv model.environments
+            updateEnv old =
+                { old | name = newEnvironmentName }
+
+            mNewEnvs =
+                List.updateAt idx updateEnv model.environments
+
+            newModel =
+                { model
+                    | selectedEnvironmentToRenameIndex = Nothing
+                    , environments = mNewEnvs
+                }
       in
-          case mNewEnvs of
-              newEnvs ->
-                  { model
-                      | selectedEnvironmentToRenameIndex = Nothing
-                      , environments = newEnvs
-                  }
+          (newModel, Cmd.none)
+
 
     ChangeName idx newEnvironmentName ->
         let
-            updateEnv old = { old | name = newEnvironmentName }
-            mNewEnvs = List.updateAt idx updateEnv model.environments
+            updateEnv old =
+                { old | name = newEnvironmentName }
+
+            mNewEnvs =
+                List.updateAt idx updateEnv model.environments
+
+            newModel =
+                { model
+                    | environments = mNewEnvs
+                }
       in
-          case mNewEnvs of
-              newEnvs ->
-                  { model
-                      | environments = newEnvs
-                  }
+          (newModel, Cmd.none)
+
 
     EnvironmentKeyValueEditionMsg subMsg ->
         case getEnvironmentToEdit model of
             Nothing ->
-                model
+                (model, Cmd.none)
+
             Just environment ->
                 case EnvironmentKeyValueEdition.update subMsg environment of
                     newEnvironment ->
                         let
                             -- todo fix 0 -> should be model.selectedEnvironmentToEditIndex
                             newEnvironments = List.setAt 0 newEnvironment model.environments
+
+                            newModel =
+                                { model | environments = newEnvironments }
+
                         in
-                            { model | environments = newEnvironments }
+                            (newModel, Cmd.none)
