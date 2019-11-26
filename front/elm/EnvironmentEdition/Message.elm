@@ -8,8 +8,10 @@ type Msg
   | Delete Int
   | AskEnvironmentCreation String
   | EnvironmentCreated Int String
+  | ChangeName Int String
+  | AskRename Int String
+  | EnvironmentUpdated Int String
   | ServerError
   | Add
   | ShowRenameInput Int
   | Rename Int String
-  | ChangeName Int String

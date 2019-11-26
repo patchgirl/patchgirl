@@ -91,6 +91,34 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+    AskRename idx name ->
+        let
+            payload =
+                { name = name
+                }
+
+            newMsg =
+                Client.putEnvironmentByEnvironmentId "" idx payload (updateEnvironmentResultToMsg idx name)
+        in
+            (model, newMsg)
+
+    EnvironmentUpdated idx name ->
+        let
+            updateEnv old =
+                { old | name = name }
+
+            mNewEnvs =
+                List.updateAt idx updateEnv model.environments
+
+            newModel =
+                { model
+                    | selectedEnvironmentToRenameIndex = Nothing
+                    , environments = mNewEnvs
+                }
+        in
+            (newModel, Cmd.none)
+
+
     Rename idx newEnvironmentName ->
         let
             updateEnv old =
@@ -150,3 +178,12 @@ newEnvironmentResultToMsg name result =
 
         Err error ->
             Debug.log "test" ServerError
+
+updateEnvironmentResultToMsg : Int -> String -> Result Http.Error Client.NoContent -> Msg
+updateEnvironmentResultToMsg id name result =
+    case result of
+        Ok Client.NoContent ->
+            EnvironmentUpdated id name
+
+        Err error ->
+            Debug.todo "server error" ServerError

@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -25,11 +26,10 @@ import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
 import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
 import  Data.Foldable (foldl')
+import Servant.API.ContentTypes (NoContent(..))
+import Control.Lens (makeFieldsNoPrefix)
 
 -- * Model
-
-data UpdateEnvironment
-  = UpdateEnvironment deriving (Eq, Show, Generic, FromJSON)
 
 data Environment
   = Environment { _id :: Int
@@ -191,7 +191,35 @@ createEnvironmentHandler newEnvironment = do
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
   liftIO $ bindEnvironmentToAccount 1 environmentId connection >> return environmentId
 
+-- * update environment
+
+data UpdateEnvironment
+  = UpdateEnvironment { _name :: String }
+  deriving (Eq, Show, Generic)
+
+$(makeFieldsNoPrefix ''UpdateEnvironment)
+
+instance FromJSON UpdateEnvironment where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+updateEnvironmentHandler :: Int -> UpdateEnvironment -> Handler NoContent
+updateEnvironmentHandler environmentId updateEnvironment = do
+  liftIO (getDBConnection >>= (updateEnvironmentDB environmentId updateEnvironment))
+  return NoContent
+
+updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
+updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
+  _ <- execute connection updateEnvironmentQuery $ (_name, environmentId)
+  return ()
+  where
+    updateEnvironmentQuery =
+      [sql|
+          UPDATE environment
+          SET name = ?
+          WHERE id = ?
+          |]
+
+
 -- * else
 
-updateEnvironmentHandler = undefined
 deleteEnvironmentHandler = undefined
