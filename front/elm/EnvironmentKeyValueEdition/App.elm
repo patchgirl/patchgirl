@@ -15,7 +15,7 @@ import Application.Type as Type
 type alias Model a =
     { a
         | keyValues : Editable (List Type.KeyValue)
-        , name : String
+        , name : Editable String
     }
 
 -- * Message
@@ -104,10 +104,10 @@ titleView model =
         name =
             case isModelDirty of
                 True ->
-                    model.name ++ "*"
+                    (editedOrNotEditedValue model.name) ++ "*"
 
                 False ->
-                    model.name
+                    editedOrNotEditedValue model.name
     in
         row [ centerX, paddingXY 0 10, spacing 10 ]
             [ el [] <| iconWithTextAndColor "label" name secondaryColor

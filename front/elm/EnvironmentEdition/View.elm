@@ -11,13 +11,13 @@ import Util.View as Util
 import ViewUtil exposing (..)
 import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Model exposing (..)
-import Application.Type as Type
+import Application.Type exposing (..)
 import List.Extra as List
 
 view : Model a -> Element Msg
 view model =
     let
-        mSelectedEnv : Maybe Type.Environment
+        mSelectedEnv : Maybe Environment
         mSelectedEnv =
             Maybe.andThen (\idx -> List.getAt idx model.environments) model.selectedEnvironmentToEditIndex
 
@@ -56,19 +56,19 @@ view model =
           ]
 
 
-entryView : Maybe Int -> Maybe Int -> Int -> Type.Environment -> Element Msg
+entryView : Maybe Int -> Maybe Int -> Int -> Environment -> Element Msg
 entryView renameEnvIdx mSelectedEnvIdx idx environment =
   let
     readView =
         Input.button []
             { onPress = Just <| (SelectEnvToEdit idx)
-            , label = el [] <| iconWithTextAndColor "label" environment.name secondaryColor
+            , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) secondaryColor
             }
 
     editView =
-        Input.text [ htmlAttribute <| Util.onEnterWithInput (Rename idx) ]
+        Input.text [ htmlAttribute <| Util.onEnterWithInput (AskRename environment.id) ]
             { onChange = (ChangeName idx)
-            , text = environment.name
+            , text = editedOrNotEditedValue environment.name
             , placeholder = Just <| Input.placeholder [] (text "environment name")
             , label = Input.labelHidden "rename environment"
             }

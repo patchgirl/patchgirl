@@ -8,7 +8,7 @@ import Application.Type exposing (..)
 
 type alias Environment =
     { id : Int
-    , name : String
+    , name : Editable String
     , keyValues : Editable (List KeyValue)
     }
 

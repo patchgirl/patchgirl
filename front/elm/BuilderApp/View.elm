@@ -40,12 +40,12 @@ view model =
             , el [ width (fillPortion 8) ] <| builderView model model.selectedBuilderIndex
             ]
 
-envSelectionView : List String -> Element Msg
+envSelectionView : List (Editable String) -> Element Msg
 envSelectionView environmentNames =
     let
-        entryView : Int -> String -> Html.Html Msg
+        entryView : Int -> Editable String -> Html.Html Msg
         entryView idx envName =
-            Html.option [ Html.value (String.fromInt idx) ] [ Html.text envName ]
+            Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
     in
         html <|
             Html.div []

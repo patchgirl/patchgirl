@@ -26,7 +26,6 @@ import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
 import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
 import  Data.Foldable (foldl')
-import Servant.API.ContentTypes (NoContent(..))
 import Control.Lens (makeFieldsNoPrefix)
 
 -- * Model
@@ -202,10 +201,9 @@ $(makeFieldsNoPrefix ''UpdateEnvironment)
 instance FromJSON UpdateEnvironment where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-updateEnvironmentHandler :: Int -> UpdateEnvironment -> Handler NoContent
+updateEnvironmentHandler :: Int -> UpdateEnvironment -> Handler ()
 updateEnvironmentHandler environmentId updateEnvironment = do
   liftIO (getDBConnection >>= (updateEnvironmentDB environmentId updateEnvironment))
-  return NoContent
 
 updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
 updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do

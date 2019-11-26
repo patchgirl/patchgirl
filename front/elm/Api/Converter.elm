@@ -47,6 +47,6 @@ convertRequestNodesFromBackToFront backRequestNodes =
 convertEnvironmentFromBackToFront : Back.Environment -> Front.Environment
 convertEnvironmentFromBackToFront { id, name, keyValues } =
     { id = id
-    , name = name
+    , name = NotEdited name
     , keyValues = NotEdited keyValues
     }

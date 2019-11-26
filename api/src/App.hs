@@ -56,7 +56,7 @@ type EnvironmentApi =
       ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
       Get '[JSON] [Environment] :<|> -- getEnvironments
       Capture "environmentId" Int :> (
-        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] NoContent :<|> -- updateEnvironment
+        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
         Delete '[JSON] NoContent -- deleteEnvironment
       )
     )

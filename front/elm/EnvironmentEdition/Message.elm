@@ -14,4 +14,3 @@ type Msg
   | ServerError
   | Add
   | ShowRenameInput Int
-  | Rename Int String

@@ -13,7 +13,7 @@ import Http as Http
 
 defaultEnvironment =
     { id = 0
-    , name = "new environment"
+    , name = NotEdited "new environment"
     , keyValues = NotEdited []
     }
 
@@ -58,7 +58,7 @@ update msg model =
         let
             newEnv =
                 { id = id
-                , name = name
+                , name = NotEdited name
                 , keyValues = NotEdited []
                 }
 
@@ -91,24 +91,24 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    AskRename idx name ->
+    AskRename id name ->
         let
             payload =
                 { name = name
                 }
 
             newMsg =
-                Client.putEnvironmentByEnvironmentId "" idx payload (updateEnvironmentResultToMsg idx name)
+                Client.putEnvironmentByEnvironmentId "" id payload (updateEnvironmentResultToMsg id name)
         in
             (model, newMsg)
 
-    EnvironmentUpdated idx name ->
+    EnvironmentUpdated id name ->
         let
             updateEnv old =
-                { old | name = name }
+                { old | name = NotEdited name }
 
             mNewEnvs =
-                List.updateAt idx updateEnv model.environments
+                List.updateIf (\elem -> elem.id == id) updateEnv model.environments
 
             newModel =
                 { model
@@ -118,28 +118,14 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-
-    Rename idx newEnvironmentName ->
+    ChangeName idx name ->
         let
             updateEnv old =
-                { old | name = newEnvironmentName }
-
-            mNewEnvs =
-                List.updateAt idx updateEnv model.environments
-
-            newModel =
-                { model
-                    | selectedEnvironmentToRenameIndex = Nothing
-                    , environments = mNewEnvs
-                }
-      in
-          (newModel, Cmd.none)
-
-
-    ChangeName idx newEnvironmentName ->
-        let
-            updateEnv old =
-                { old | name = newEnvironmentName }
+                let
+                    newName =
+                        changeEditedValue name old.name
+                in
+                    { old | name = newName }
 
             mNewEnvs =
                 List.updateAt idx updateEnv model.environments
@@ -179,10 +165,10 @@ newEnvironmentResultToMsg name result =
         Err error ->
             Debug.log "test" ServerError
 
-updateEnvironmentResultToMsg : Int -> String -> Result Http.Error Client.NoContent -> Msg
+updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
 updateEnvironmentResultToMsg id name result =
     case result of
-        Ok Client.NoContent ->
+        Ok () ->
             EnvironmentUpdated id name
 
         Err error ->
