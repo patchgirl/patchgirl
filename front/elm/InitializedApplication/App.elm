@@ -2,7 +2,6 @@ module InitializedApplication.App exposing (..)
 
 import InitializedApplication.Model exposing (..)
 import InitializedApplication.Message exposing (..)
-import InitializedApplication.Util exposing (..)
 
 import BuilderApp.App as BuilderApp
 import BuilderApp.Model as BuilderApp
@@ -58,6 +57,8 @@ import List.Extra as List
 
 import Curl.Util as Curl
 import Http as Http
+
+import Application.Type exposing (..)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -133,3 +134,14 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.none
+
+replaceEnvironmentToEdit : Model -> Environment -> Model
+replaceEnvironmentToEdit model newEnvironment =
+    let newEnvironments =
+            case model.selectedEnvironmentToEditId of
+                Just idx ->
+                    List.updateListAt model.environments idx (\formerEnvironment -> newEnvironment)
+                Nothing ->
+                    model.environments
+    in
+        { model | environments = newEnvironments }
