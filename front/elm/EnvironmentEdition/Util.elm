@@ -8,6 +8,6 @@ getEnvironmentToEdit : Model a -> Maybe Type.Environment
 getEnvironmentToEdit model =
     let
         selectEnvironment : Int -> Maybe Type.Environment
-        selectEnvironment idx = List.getAt idx model.environments
+        selectEnvironment id = List.find (\env -> env.id == id) model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId

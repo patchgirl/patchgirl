@@ -9,14 +9,19 @@ import ViewUtil exposing (..)
 import Application.Type exposing(..)
 import Util.KeyValue.Util as KeyValue
 import Application.Type as Type
+import List.Extra as List
 
 -- * Model
 
 type alias Model a =
     { a
-        | keyValues : Editable (List Type.KeyValue)
+        | keyValues : List (Storable Type.NewKeyValue Type.KeyValue)
         , name : Editable String
     }
+
+newDefaultKeyValue : Storable Type.NewKeyValue Type.KeyValue
+newDefaultKeyValue =
+    New { key = "", value = "" }
 
 -- * Message
 
@@ -34,42 +39,57 @@ update msg model =
     case msg of
         PromptKey idx str ->
             let
-                newKeyValues =
-                    KeyValue.modify (KeyValue.changeKey str) idx (editedOrNotEditedValue model.keyValues)
+--                newKeyValues =
+--                    KeyValue.modify2 (KeyValue.changeKey str) idx (editedOrNotEditedValue model.keyValues)
 
-                newEditedKeyValues =
-                    changeEditedValue2 model.keyValues (Edited (notEditedValue model.keyValues) newKeyValues)
+                newKeyValues =
+                    List.updateAt idx (\sKeyValue ->
+                                           case sKeyValue of
+                                               New new ->
+                                                 New { new | key = str }
+
+                                               Saved saved ->
+                                                   Edited2 saved { saved | key = str }
+
+                                               Edited2 saved edited ->
+                                                   Edited2 saved { edited | key = str }
+                                      ) model.keyValues
+
+--                newEditedKeyValues =
+--                    changeEditedValue2 model.keyValues (Edited (notEditedValue model.keyValues) newKeyValues)
             in
-                { model | keyValues = newEditedKeyValues }
+                { model | keyValues = newKeyValues }
 
         PromptValue idx str ->
             let
                 newKeyValues =
-                    KeyValue.modify (KeyValue.changeValue str) idx (editedOrNotEditedValue model.keyValues)
+                    List.updateAt idx (\sKeyValue ->
+                                           case sKeyValue of
+                                               New new ->
+                                                 New { new | value = str }
 
-                newEditedKeyValues =
-                    changeEditedValue2 model.keyValues (Edited (notEditedValue model.keyValues) newKeyValues)
+                                               Saved saved ->
+                                                   Edited2 saved { saved | value = str }
+
+                                               Edited2 saved edited ->
+                                                   Edited2 saved { edited | value = str }
+                                      ) model.keyValues
             in
-                { model | keyValues = newEditedKeyValues }
+                { model | keyValues = newKeyValues }
 
         AddNewInput ->
             let
                 newKeyValues =
-                    changeEditedValue ((editedOrNotEditedValue model.keyValues) ++ [{id = 0, key = "", value = ""}]) model.keyValues
-
+                    model.keyValues ++ [ newDefaultKeyValue ]
             in
                 { model | keyValues = newKeyValues }
 
         DeleteKeyValue idx ->
             let
                 newKeyValues =
-                    KeyValue.delete idx (editedOrNotEditedValue model.keyValues)
-
-                newEditedKeyValues =
-                    changeEditedValue2 model.keyValues (Edited (notEditedValue model.keyValues) newKeyValues)
-
+                    List.removeAt idx model.keyValues
             in
-                { model | keyValues = newEditedKeyValues }
+                { model | keyValues = newKeyValues }
 
         AskSave ->
             model
@@ -91,7 +111,7 @@ view model =
     in
         column [ spacing 10 ]
             [ titleView model
-            , column [ spacing 5 ] (List.indexedMap viewKeyValue (editedOrNotEditedValue model.keyValues))
+            , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
             , el [ centerX ] addNewKeyValueView
             ]
 
@@ -99,7 +119,7 @@ titleView : Model a -> Element Msg
 titleView model =
     let
         isModelDirty =
-            isDirty model.keyValues
+            List.any isDirty2 model.keyValues
 
         name =
             case isModelDirty of
@@ -111,7 +131,9 @@ titleView model =
     in
         row [ centerX, paddingXY 0 10, spacing 10 ]
             [ el [] <| iconWithTextAndColor "label" name secondaryColor
-            , mainActionButtonsView
+            , case isModelDirty of
+                  True -> mainActionButtonsView
+                  False -> none
             ]
 
 mainActionButtonsView : Element Msg
@@ -132,18 +154,37 @@ mainActionButtonsView =
             , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
             }
 
-viewKeyValue : Int -> KeyValue -> Element Msg
-viewKeyValue idx { key, value } =
+viewKeyValue : Int -> Storable NewKeyValue KeyValue -> Element Msg
+viewKeyValue idx sKeyValue =
   row [ spacing 5 ]
       [ Input.text []
             { onChange = (PromptKey idx)
-            , text = key
+            , text =
+                case sKeyValue of
+                    New { key } ->
+                        key
+
+                    Saved { key } ->
+                        key
+
+                    Edited2 _ { key } ->
+                        key
+
             , placeholder = Just <| Input.placeholder [] (text "key")
             , label = Input.labelHidden "Key: "
             }
       , Input.text []
             { onChange = (PromptValue idx)
-            , text = value
+            , text =
+                case sKeyValue of
+                    New { value } ->
+                        value
+
+                    Saved { value } ->
+                        value
+
+                    Edited2 _ { value } ->
+                        value
             , placeholder = Just <| Input.placeholder [] (text "value")
             , label = Input.labelHidden "Value: "
             }

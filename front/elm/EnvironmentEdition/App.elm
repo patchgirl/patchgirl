@@ -11,11 +11,12 @@ import Application.Type exposing (..)
 import Api.Client as Client
 import Http as Http
 
+defaultEnvironment : Environment
 defaultEnvironment =
     { id = 0
     , name = NotEdited "new environment"
     , showRenameInput = False
-    , keyValues = NotEdited []
+    , keyValues = []
     }
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
@@ -45,7 +46,7 @@ update msg model =
                 { id = id
                 , name = NotEdited name
                 , showRenameInput = True
-                , keyValues = NotEdited []
+                , keyValues = []
                 }
 
             newEnvironments =
@@ -153,17 +154,20 @@ update msg model =
                 (model, Cmd.none)
 
             Just environment ->
-                case EnvironmentKeyValueEdition.update subMsg environment of
-                    newEnvironment ->
+                case (EnvironmentKeyValueEdition.update subMsg environment, model.selectedEnvironmentToEditId) of
+                    (newEnvironment, Just id) ->
                         let
-                            -- todo fix 0 -> should be model.selectedEnvironmentToEditId
-                            newEnvironments = List.setAt 0 newEnvironment model.environments
+                            newEnvironments =
+                                List.updateIf (\env -> env.id == id) (\_ -> newEnvironment) model.environments
 
                             newModel =
                                 { model | environments = newEnvironments }
 
                         in
                             (newModel, Cmd.none)
+
+                    _ ->
+                        Debug.todo "error when trying to edit environment key value"
 
 newEnvironmentResultToMsg : String -> Result Http.Error Int -> Msg
 newEnvironmentResultToMsg name result =

@@ -4,7 +4,12 @@ type alias Environment =
     { id : Int
     , name : Editable String
     , showRenameInput : Bool
-    , keyValues : Editable (List KeyValue)
+    , keyValues : List (Storable NewKeyValue KeyValue)
+    }
+
+type alias NewKeyValue =
+    { key : String
+    , value : String
     }
 
 type alias KeyValue =
@@ -13,7 +18,14 @@ type alias KeyValue =
     , value : String
     }
 
-type Editable a = NotEdited a | Edited a a
+type Editable a
+    = NotEdited a
+    | Edited a a
+
+type Storable a b
+    = New a
+    | Saved b
+    | Edited2 b b
 
 isDirty : Editable a -> Bool
 isDirty editable =
@@ -24,6 +36,19 @@ isDirty editable =
         Edited _ _ ->
             True
 
+isDirty2 : Storable a b -> Bool
+isDirty2 storable =
+    case storable of
+        New _ ->
+            True
+
+        Edited2 _ _ ->
+            True
+
+        Saved _ ->
+            False
+
+
 editedOrNotEditedValue : Editable a -> a
 editedOrNotEditedValue editable =
     case editable of
@@ -31,6 +56,18 @@ editedOrNotEditedValue editable =
             value
         Edited _ newValue ->
             newValue
+
+storedOrNotStoredValue : Storable a b -> (a -> c) -> (b -> c) -> c
+storedOrNotStoredValue storable f g =
+    case storable of
+        New value ->
+            f value
+
+        Saved value ->
+            g value
+
+        Edited2 _ value ->
+            g value
 
 notEditedValue : Editable a -> a
 notEditedValue editable =

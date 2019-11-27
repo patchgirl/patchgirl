@@ -49,5 +49,5 @@ convertEnvironmentFromBackToFront { id, name, keyValues } =
     { id = id
     , name = NotEdited name
     , showRenameInput = False
-    , keyValues = NotEdited keyValues
+    , keyValues = List.map Saved keyValues
     }

@@ -18,7 +18,7 @@ import RequestInput.Model as RequestInput
 import VarApp.Model as VarApp
 import Application.Type exposing (..)
 
-buildRequestInput : List KeyValue -> List KeyValue -> Builder.Model a -> RequestInput.Model
+buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Builder.Model a -> RequestInput.Model
 buildRequestInput envKeyValues varKeyValues builder =
     { method = Builder.methodToString builder.httpMethod
     , headers = editedOrNotEditedValue builder.httpHeaders
@@ -34,20 +34,39 @@ buildRequest requestInput =
     , body = Http.stringBody "application/json" requestInput.body
     }
 
-interpolate : List KeyValue -> List KeyValue -> String -> String
+interpolate : List (Storable NewKeyValue KeyValue) -> List KeyValue -> String -> String
 interpolate envKeys varKeyValues str =
   let
     build : TemplatedString -> String
     build templatedString =
       case templatedString of
         Sentence c -> c
-        Key key ->
-          case List.find (\envKey -> envKey.key == key) envKeys of
-            Just { value } -> value
+        Key k ->
+          case List.find (\sEnvKey ->
+                              case sEnvKey of
+                                  New { key } ->
+                                      key == k
+
+                                  Saved { key } ->
+                                      key == k
+
+                                  Edited2 _ { key } ->
+                                      key == k
+                         ) envKeys of
+            Just sEnvKey ->
+                case sEnvKey of
+                    New { value } ->
+                        value
+
+                    Saved { value } ->
+                        value
+
+                    Edited2 _ { value } ->
+                        value
             Nothing ->
-                case List.find (\varKeyValue -> varKeyValue.key == key) varKeyValues of
+                case List.find (\varKeyValue -> varKeyValue.key == k) varKeyValues of
                     Just  { value } -> value
-                    Nothing -> key
+                    Nothing -> k
   in
     case toRaw str of
       Ok result -> List.map build result |> List.foldr (++) ""

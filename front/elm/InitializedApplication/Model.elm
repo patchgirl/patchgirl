@@ -45,18 +45,16 @@ getEnvironmentToRun model =
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
 
-getEnvironmentKeyValuesToRun : GetEnvironment a -> List KeyValue
+getEnvironmentKeyValuesToRun : GetEnvironment a -> List (Storable NewKeyValue KeyValue)
 getEnvironmentKeyValuesToRun model =
     (getEnvironmentToRun model)
         |> Maybe.map (.keyValues)
-        |> Maybe.map (editedOrNotEditedValue)
         |> Maybe.withDefault []
 
-getEnvironmentKeyValuesToEdit : Model -> List KeyValue
+getEnvironmentKeyValuesToEdit : Model -> List (Storable NewKeyValue KeyValue)
 getEnvironmentKeyValuesToEdit model =
     EnvironmentEdition.getEnvironmentToEdit model
         |> Maybe.map .keyValues
-        |> Maybe.map (editedOrNotEditedValue)
         |> Maybe.withDefault []
 
 createModel : BuilderApp.RequestCollection -> List Environment -> Model
