@@ -41,14 +41,15 @@ update msg model =
 
     EnvironmentCreated id name ->
         let
-            newEnv =
+            newEnvironment =
                 { id = id
                 , name = NotEdited name
+                , showRenameInput = True
                 , keyValues = NotEdited []
                 }
 
             newEnvironments =
-                model.environments ++ [ defaultEnvironment ]
+                model.environments ++ [ newEnvironment ]
 
             newModel =
                 { model | environments = newEnvironments }
@@ -57,17 +58,6 @@ update msg model =
 
     ServerError ->
         Debug.todo "server error :-("
-
-    Add ->
-        let
-            newEnvironments =
-                model.environments ++ [ defaultEnvironment ]
-
-            newModel =
-                { model | environments = newEnvironments }
-
-        in
-            (newModel, Cmd.none)
 
     ShowRenameInput id ->
         let

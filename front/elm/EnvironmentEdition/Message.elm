@@ -13,5 +13,4 @@ type Msg
   | AskDelete Int
   | EnvironmentDeleted Int
   | ServerError
-  | Add
   | ShowRenameInput Int
