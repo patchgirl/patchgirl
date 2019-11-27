@@ -134,7 +134,7 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    ChangeName idx name ->
+    ChangeName id name ->
         let
             updateEnv old =
                 let
@@ -144,7 +144,7 @@ update msg model =
                     { old | name = newName }
 
             mNewEnvs =
-                List.updateAt idx updateEnv model.environments
+                List.updateIf (\elem -> elem.id == id) updateEnv model.environments
 
             newModel =
                 { model

@@ -31,7 +31,7 @@ view model =
                     el [] (text "no environment selected")
 
         envListView =
-            (List.indexedMap (entryView model.selectedEnvironmentToRenameId model.selectedEnvironmentToEditId) model.environments)
+            List.map (entryView model.selectedEnvironmentToRenameId model.selectedEnvironmentToEditId) model.environments
 
         addEnvButtonView =
             Input.button []
@@ -56,18 +56,18 @@ view model =
           ]
 
 
-entryView : Maybe Int -> Maybe Int -> Int -> Environment -> Element Msg
-entryView renameEnvId mSelectedEnvId idx environment =
+entryView : Maybe Int -> Maybe Int -> Environment -> Element Msg
+entryView renameEnvId mSelectedEnvId environment =
   let
     readView =
         Input.button []
-            { onPress = Just <| (SelectEnvToEdit idx)
+            { onPress = Just <| (SelectEnvToEdit environment.id)
             , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) secondaryColor
             }
 
     editView =
         Input.text [ htmlAttribute <| Util.onEnterWithInput (AskRename environment.id) ]
-            { onChange = (ChangeName idx)
+            { onChange = (ChangeName environment.id)
             , text = editedOrNotEditedValue environment.name
             , placeholder = Just <| Input.placeholder [] (text "environment name")
             , label = Input.labelHidden "rename environment"
