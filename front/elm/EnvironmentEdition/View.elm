@@ -19,7 +19,7 @@ view model =
     let
         mSelectedEnv : Maybe Environment
         mSelectedEnv =
-            Maybe.andThen (\idx -> List.getAt idx model.environments) model.selectedEnvironmentToEditIndex
+            List.find (\env -> Just env.id == model.selectedEnvironmentToEditIndex) model.environments
 
         keyValuesEditionView =
             case mSelectedEnv of
@@ -57,7 +57,7 @@ view model =
 
 
 entryView : Maybe Int -> Maybe Int -> Int -> Environment -> Element Msg
-entryView renameEnvIdx mSelectedEnvIdx idx environment =
+entryView renameEnvId mSelectedEnvId idx environment =
   let
     readView =
         Input.button []
@@ -74,18 +74,18 @@ entryView renameEnvIdx mSelectedEnvIdx idx environment =
             }
 
     modeView =
-      case renameEnvIdx == Just idx of
+      case renameEnvId == Just environment.id of
         True -> editView
         False -> readView
 
     active =
-        mSelectedEnvIdx == Just idx
+        mSelectedEnvId == Just environment.id
 
   in
     row [ spacing 5 ]
       [ modeView
       , Input.button []
-          { onPress = Just <| (ShowRenameInput idx)
+          { onPress = Just <| (ShowRenameInput environment.id)
           , label = editIcon
           }
       , Input.button []

@@ -84,10 +84,10 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    ShowRenameInput idx ->
+    ShowRenameInput id ->
         let
             newModel =
-                { model | selectedEnvironmentToRenameIndex = Just idx }
+                { model | selectedEnvironmentToRenameIndex = Just id }
         in
             (newModel, Cmd.none)
 
