@@ -14,6 +14,7 @@ import Http as Http
 defaultEnvironment =
     { id = 0
     , name = NotEdited "new environment"
+    , showRenameInput = False
     , keyValues = NotEdited []
     }
 
@@ -70,8 +71,14 @@ update msg model =
 
     ShowRenameInput id ->
         let
+            updateEnv old =
+                { old | showRenameInput = True }
+
+            newEnvironments =
+                List.updateIf (\elem -> elem.id == id) updateEnv model.environments
+
             newModel =
-                { model | selectedEnvironmentToRenameId = Just id }
+                { model | environments = newEnvironments }
         in
             (newModel, Cmd.none)
 
@@ -86,18 +93,20 @@ update msg model =
         in
             (model, newMsg)
 
-    EnvironmentUpdated id name ->
+    EnvironmentRenamed id name ->
         let
             updateEnv old =
-                { old | name = NotEdited name }
+                { old
+                    | name = NotEdited name
+                    , showRenameInput = False
+                }
 
             mNewEnvs =
                 List.updateIf (\elem -> elem.id == id) updateEnv model.environments
 
             newModel =
                 { model
-                    | selectedEnvironmentToRenameId = Nothing
-                    , environments = mNewEnvs
+                    | environments = mNewEnvs
                 }
         in
             (newModel, Cmd.none)
@@ -119,15 +128,9 @@ update msg model =
                     True -> Nothing
                     False -> model.selectedEnvironmentToEditId
 
-            newSelectedEnvironmentToRenameId =
-                case model.selectedEnvironmentToRenameId == Just id of
-                    True -> Nothing
-                    False -> model.selectedEnvironmentToRenameId
-
             newModel =
                 { model
                     | selectedEnvironmentToEditId = newSelectedEnvironmentToEditId
-                    , selectedEnvironmentToRenameId = newSelectedEnvironmentToRenameId
                     , environments = newEnvironments
                 }
 
@@ -185,7 +188,7 @@ updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
 updateEnvironmentResultToMsg id name result =
     case result of
         Ok () ->
-            EnvironmentUpdated id name
+            EnvironmentRenamed id name
 
         Err error ->
             Debug.todo "server error" ServerError

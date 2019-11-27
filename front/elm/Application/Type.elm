@@ -3,6 +3,7 @@ module Application.Type exposing (..)
 type alias Environment =
     { id : Int
     , name : Editable String
+    , showRenameInput : Bool
     , keyValues : Editable (List KeyValue)
     }
 

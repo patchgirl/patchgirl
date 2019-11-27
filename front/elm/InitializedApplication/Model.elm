@@ -20,7 +20,6 @@ type alias Model =
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
-    , selectedEnvironmentToRenameId : Maybe Int
     , environments : List Environment
     -- VARIABLE APP
     , varAppModel : VarApp.Model
@@ -73,7 +72,6 @@ createModel requestCollection environments =
           }
       selectedEnvironmentToEditId = Just 0
       selectedEnvironmentToRunIndex = Just 0
-      selectedEnvironmentToRenameId = Nothing
   in
       { mainNavBarModel = MainNavBar.defaultModel
       , selectedBuilderIndex = selectedBuilderIndex
@@ -83,7 +81,6 @@ createModel requestCollection environments =
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditId = selectedEnvironmentToEditId
-      , selectedEnvironmentToRenameId = selectedEnvironmentToRenameId
       , environments = environments
       , runnerModel = Nothing
       , varAppModel = varAppModel

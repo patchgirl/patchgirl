@@ -9,7 +9,7 @@ type Msg
   | EnvironmentCreated Int String
   | ChangeName Int String
   | AskRename Int String
-  | EnvironmentUpdated Int String
+  | EnvironmentRenamed Int String
   | AskDelete Int
   | EnvironmentDeleted Int
   | ServerError

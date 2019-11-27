@@ -31,7 +31,7 @@ view model =
                     el [] (text "no environment selected")
 
         envListView =
-            List.map (entryView model.selectedEnvironmentToRenameId model.selectedEnvironmentToEditId) model.environments
+            List.map (entryView model.selectedEnvironmentToEditId) model.environments
 
         addEnvButtonView =
             Input.button []
@@ -56,8 +56,8 @@ view model =
           ]
 
 
-entryView : Maybe Int -> Maybe Int -> Environment -> Element Msg
-entryView renameEnvId mSelectedEnvId environment =
+entryView : Maybe Int -> Environment -> Element Msg
+entryView mSelectedEnvId environment =
   let
     readView =
         Input.button []
@@ -74,7 +74,7 @@ entryView renameEnvId mSelectedEnvId environment =
             }
 
     modeView =
-      case renameEnvId == Just environment.id of
+      case environment.showRenameInput of
         True -> editView
         False -> readView
 
