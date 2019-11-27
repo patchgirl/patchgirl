@@ -15,7 +15,7 @@ type alias Environment =
 replaceEnvironmentToEdit : Model -> Environment -> Model
 replaceEnvironmentToEdit model newEnvironment =
     let newEnvironments =
-            case model.selectedEnvironmentToEditIndex of
+            case model.selectedEnvironmentToEditId of
                 Just idx ->
                     List.updateListAt model.environments idx (\formerEnvironment -> newEnvironment)
                 Nothing ->

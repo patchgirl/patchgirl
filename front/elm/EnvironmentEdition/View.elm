@@ -19,7 +19,7 @@ view model =
     let
         mSelectedEnv : Maybe Environment
         mSelectedEnv =
-            List.find (\env -> Just env.id == model.selectedEnvironmentToEditIndex) model.environments
+            List.find (\env -> Just env.id == model.selectedEnvironmentToEditId) model.environments
 
         keyValuesEditionView =
             case mSelectedEnv of
@@ -31,7 +31,7 @@ view model =
                     el [] (text "no environment selected")
 
         envListView =
-            (List.indexedMap (entryView model.selectedEnvironmentToRenameIndex model.selectedEnvironmentToEditIndex) model.environments)
+            (List.indexedMap (entryView model.selectedEnvironmentToRenameId model.selectedEnvironmentToEditId) model.environments)
 
         addEnvButtonView =
             Input.button []

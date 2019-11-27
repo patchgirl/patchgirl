@@ -10,4 +10,4 @@ getEnvironmentToEdit model =
         selectEnvironment : Int -> Maybe Type.Environment
         selectEnvironment idx = List.getAt idx model.environments
     in
-        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditIndex
+        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId

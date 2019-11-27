@@ -5,7 +5,6 @@ import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 type Msg
   = SelectEnvToEdit Int
   | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
-  | Delete Int
   | AskEnvironmentCreation String
   | EnvironmentCreated Int String
   | ChangeName Int String

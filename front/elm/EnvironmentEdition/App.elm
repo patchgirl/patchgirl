@@ -20,26 +20,10 @@ defaultEnvironment =
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
   case msg of
-    SelectEnvToEdit idx ->
+    SelectEnvToEdit id ->
       let
           newModel =
-              { model | selectedEnvironmentToEditIndex = Just idx }
-      in
-          (newModel, Cmd.none)
-
-    Delete idx ->
-      let
-        newEnvironments = List.removeAt idx model.environments
-        newSelectedEnvironmentToEditIndex =
-          case model.selectedEnvironmentToEditIndex == Just idx of
-            True -> Nothing
-            False -> model.selectedEnvironmentToEditIndex
-
-        newModel =
-            { model
-                | selectedEnvironmentToEditIndex = newSelectedEnvironmentToEditIndex
-                , environments = newEnvironments
-             }
+              { model | selectedEnvironmentToEditId = Just id }
       in
           (newModel, Cmd.none)
 
@@ -87,7 +71,7 @@ update msg model =
     ShowRenameInput id ->
         let
             newModel =
-                { model | selectedEnvironmentToRenameIndex = Just id }
+                { model | selectedEnvironmentToRenameId = Just id }
         in
             (newModel, Cmd.none)
 
@@ -112,7 +96,7 @@ update msg model =
 
             newModel =
                 { model
-                    | selectedEnvironmentToRenameIndex = Nothing
+                    | selectedEnvironmentToRenameId = Nothing
                     , environments = mNewEnvs
                 }
         in
@@ -127,13 +111,26 @@ update msg model =
 
     EnvironmentDeleted id ->
         let
-            mNewEnvs =
+            newEnvironments =
                 List.filter (\elem -> elem.id /= id) model.environments
+
+            newSelectedEnvironmentToEditId =
+                case model.selectedEnvironmentToEditId == Just id of
+                    True -> Nothing
+                    False -> model.selectedEnvironmentToEditId
+
+            newSelectedEnvironmentToRenameId =
+                case model.selectedEnvironmentToRenameId == Just id of
+                    True -> Nothing
+                    False -> model.selectedEnvironmentToRenameId
 
             newModel =
                 { model
-                    | environments = mNewEnvs
+                    | selectedEnvironmentToEditId = newSelectedEnvironmentToEditId
+                    , selectedEnvironmentToRenameId = newSelectedEnvironmentToRenameId
+                    , environments = newEnvironments
                 }
+
         in
             (newModel, Cmd.none)
 
@@ -166,7 +163,7 @@ update msg model =
                 case EnvironmentKeyValueEdition.update subMsg environment of
                     newEnvironment ->
                         let
-                            -- todo fix 0 -> should be model.selectedEnvironmentToEditIndex
+                            -- todo fix 0 -> should be model.selectedEnvironmentToEditId
                             newEnvironments = List.setAt 0 newEnvironment model.environments
 
                             newModel =
