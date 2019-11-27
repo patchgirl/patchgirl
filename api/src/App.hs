@@ -57,7 +57,7 @@ type EnvironmentApi =
       Get '[JSON] [Environment] :<|> -- getEnvironments
       Capture "environmentId" Int :> (
         ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
-        Delete '[JSON] NoContent -- deleteEnvironment
+        Delete '[JSON] () -- deleteEnvironment
       )
     )
   )

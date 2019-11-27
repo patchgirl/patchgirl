@@ -89,7 +89,7 @@ entryView renameEnvIdx mSelectedEnvIdx idx environment =
           , label = editIcon
           }
       , Input.button []
-          { onPress = Just <| (Delete idx)
+          { onPress = Just <| (AskDelete environment.id)
           , label = el [] deleteIcon
           }
       ]

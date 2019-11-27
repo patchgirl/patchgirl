@@ -118,6 +118,25 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+    AskDelete id ->
+        let
+            newMsg =
+                Client.deleteEnvironmentByEnvironmentId "" id (deleteEnvironmentResultToMsg id)
+        in
+            (model, newMsg)
+
+    EnvironmentDeleted id ->
+        let
+            mNewEnvs =
+                List.filter (\elem -> elem.id /= id) model.environments
+
+            newModel =
+                { model
+                    | environments = mNewEnvs
+                }
+        in
+            (newModel, Cmd.none)
+
     ChangeName idx name ->
         let
             updateEnv old =
@@ -170,6 +189,15 @@ updateEnvironmentResultToMsg id name result =
     case result of
         Ok () ->
             EnvironmentUpdated id name
+
+        Err error ->
+            Debug.todo "server error" ServerError
+
+deleteEnvironmentResultToMsg : Int -> Result Http.Error () -> Msg
+deleteEnvironmentResultToMsg id result =
+    case result of
+        Ok () ->
+            EnvironmentDeleted id
 
         Err error ->
             Debug.todo "server error" ServerError

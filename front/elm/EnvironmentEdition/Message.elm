@@ -11,6 +11,8 @@ type Msg
   | ChangeName Int String
   | AskRename Int String
   | EnvironmentUpdated Int String
+  | AskDelete Int
+  | EnvironmentDeleted Int
   | ServerError
   | Add
   | ShowRenameInput Int

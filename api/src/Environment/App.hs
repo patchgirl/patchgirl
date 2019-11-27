@@ -220,4 +220,17 @@ updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
 
 -- * else
 
-deleteEnvironmentHandler = undefined
+deleteEnvironmentHandler :: Int -> Handler ()
+deleteEnvironmentHandler environmentId =
+  liftIO (getDBConnection >>= (deleteEnvironmentDB environmentId))
+
+deleteEnvironmentDB :: Int -> Connection -> IO ()
+deleteEnvironmentDB environmentId connection = do
+  _ <- execute connection deleteEnvironmentQuery $ Only environmentId
+  return ()
+  where
+    deleteEnvironmentQuery =
+      [sql|
+          DELETE FROM environment
+          WHERE id = ?
+          |]

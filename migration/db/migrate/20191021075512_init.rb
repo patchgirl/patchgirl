@@ -26,7 +26,7 @@ class Init < ActiveRecord::Migration[5.2]
 
       CREATE TABLE request_collection_to_request_node(
         request_collection_id INTEGER,
-        request_node_id INTEGER REFERENCES request_node,
+        request_node_id INTEGER REFERENCES request_node(id) ON DELETE CASCADE,
         PRIMARY KEY (request_collection_id, request_node_id)
       );
 
@@ -40,14 +40,14 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
       CREATE TABLE account_environment(
-          account_id INTEGER REFERENCES account,
-          environment_id INTEGER REFERENCES environment,
+          account_id INTEGER REFERENCES account(id) ON DELETE CASCADE,
+          environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
           PRIMARY KEY (account_id, environment_id)
       );
 
       CREATE TABLE key_value(
           id SERIAL PRIMARY KEY,
-          environment_id INTEGER REFERENCES environment(id),
+          environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
           key TEXT NOT NULL,
           value TEXT NOT NULL
       );

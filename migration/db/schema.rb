@@ -344,7 +344,7 @@ ALTER TABLE ONLY public.schema_migrations
 --
 
 ALTER TABLE ONLY public.account_environment
-    ADD CONSTRAINT account_environment_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id);
+    ADD CONSTRAINT account_environment_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
 
 
 --
@@ -352,7 +352,7 @@ ALTER TABLE ONLY public.account_environment
 --
 
 ALTER TABLE ONLY public.account_environment
-    ADD CONSTRAINT account_environment_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id);
+    ADD CONSTRAINT account_environment_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id) ON DELETE CASCADE;
 
 
 --
@@ -360,7 +360,7 @@ ALTER TABLE ONLY public.account_environment
 --
 
 ALTER TABLE ONLY public.key_value
-    ADD CONSTRAINT key_value_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id);
+    ADD CONSTRAINT key_value_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id) ON DELETE CASCADE;
 
 
 --
@@ -368,7 +368,7 @@ ALTER TABLE ONLY public.key_value
 --
 
 ALTER TABLE ONLY public.request_collection_to_request_node
-    ADD CONSTRAINT request_collection_to_request_node_request_node_id_fkey FOREIGN KEY (request_node_id) REFERENCES public.request_node(id);
+    ADD CONSTRAINT request_collection_to_request_node_request_node_id_fkey FOREIGN KEY (request_node_id) REFERENCES public.request_node(id) ON DELETE CASCADE;
 
 
 --
