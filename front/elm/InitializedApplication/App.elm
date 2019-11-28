@@ -24,9 +24,7 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import EnvironmentEdition.Message as EnvironmentEdition
 import EnvironmentEdition.App as EnvironmentEdition
-import EnvironmentEdition.Util as EnvironmentEdition
 
 import EnvironmentToRunSelection.Message as EnvSelection
 import EnvironmentToRunSelection.App as EnvSelection

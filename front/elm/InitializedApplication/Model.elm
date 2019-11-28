@@ -2,7 +2,6 @@ module InitializedApplication.Model exposing (..)
 
 import MainNavBar.Model as MainNavBar
 import RequestRunner.Model as RequestRunner
-import EnvironmentEdition.Util as EnvironmentEdition
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
 import List.Extra as List
@@ -51,9 +50,17 @@ getEnvironmentKeyValuesToRun model =
         |> Maybe.map (.keyValues)
         |> Maybe.withDefault []
 
+getEnvironmentToEdit : Model -> Maybe Environment
+getEnvironmentToEdit model =
+    let
+        selectEnvironment : Int -> Maybe Environment
+        selectEnvironment id = List.find (\env -> env.id == id) model.environments
+    in
+        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
+
 getEnvironmentKeyValuesToEdit : Model -> List (Storable NewKeyValue KeyValue)
 getEnvironmentKeyValuesToEdit model =
-    EnvironmentEdition.getEnvironmentToEdit model
+    getEnvironmentToEdit model
         |> Maybe.map .keyValues
         |> Maybe.withDefault []
 

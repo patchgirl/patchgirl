@@ -2,16 +2,12 @@ module EnvironmentEdition.App exposing (..)
 
 import List.Extra as List
 
-import EnvironmentEdition.Message exposing (..)
-
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import Element.Events as Events
 import ViewUtil exposing (..)
-import EnvironmentEdition.Model exposing (..)
-import EnvironmentEdition.Util exposing (..)
 import Application.Type exposing (..)
 import Api.Client as Client
 import Http as Http
@@ -22,6 +18,12 @@ import Util.View as Util
 
 -- ** model
 
+type alias Model a =
+    { a
+        | environments : List Environment
+        , selectedEnvironmentToEditId : Maybe Int
+    }
+
 defaultEnvironment : Environment
 defaultEnvironment =
     { id = 0
@@ -29,6 +31,22 @@ defaultEnvironment =
     , showRenameInput = False
     , keyValues = []
     }
+
+
+-- ** message
+
+type Msg
+  = SelectEnvToEdit Int
+  | EnvironmentKeyValueEditionMsg KeyValueMsg
+  | AskEnvironmentCreation String
+  | EnvironmentCreated Int String
+  | ChangeName Int String
+  | AskRename Int String
+  | EnvironmentRenamed Int String
+  | AskDelete Int
+  | EnvironmentDeleted Int
+  | EnvServerError
+  | ShowRenameInput Int
 
 -- ** update
 
@@ -211,6 +229,13 @@ deleteEnvironmentResultToMsg id result =
         Err error ->
             Debug.todo "server error" EnvServerError
 
+getEnvironmentToEdit : Model a -> Maybe Environment
+getEnvironmentToEdit model =
+    let
+        selectEnvironment : Int -> Maybe Environment
+        selectEnvironment id = List.find (\env -> env.id == id) model.environments
+    in
+        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
 
 -- ** view
 
@@ -319,6 +344,18 @@ type alias KeyValueModel a =
 newDefaultKeyValue : Storable NewKeyValue KeyValue
 newDefaultKeyValue =
     New { key = "", value = "" }
+
+-- ** message
+
+type KeyValueMsg
+  = PromptKey Int String
+  | PromptValue Int String
+  | AddNewInput
+  | AskSave
+  | AskDeleteKeyValue Int
+  | KeyDeleted Int
+  | DeleteNewKeyValue Int
+  | KeyValueServerError
 
 -- ** update
 
