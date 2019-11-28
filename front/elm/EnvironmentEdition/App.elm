@@ -4,7 +4,6 @@ import List.Extra as List
 
 import EnvironmentEdition.Message exposing (..)
 
---import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -20,7 +19,6 @@ import Application.Type exposing (..)
 import Util.View as Util
 
 -- * environment edition
-
 
 -- ** model
 
