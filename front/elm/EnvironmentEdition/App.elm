@@ -2,14 +2,27 @@ module EnvironmentEdition.App exposing (..)
 
 import List.Extra as List
 
-import EnvironmentEdition.Message exposing (Msg(..))
+import EnvironmentEdition.Message exposing (..)
 
-import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
+--import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Input as Input
+import Element.Events as Events
+import ViewUtil exposing (..)
 import EnvironmentEdition.Model exposing (..)
 import EnvironmentEdition.Util exposing (..)
 import Application.Type exposing (..)
 import Api.Client as Client
 import Http as Http
+import Application.Type exposing (..)
+import Util.View as Util
+
+-- * environment edition
+
+
+-- ** model
 
 defaultEnvironment : Environment
 defaultEnvironment =
@@ -18,6 +31,8 @@ defaultEnvironment =
     , showRenameInput = False
     , keyValues = []
     }
+
+-- ** update
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
@@ -57,7 +72,7 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    ServerError ->
+    EnvServerError ->
         Debug.todo "server error :-("
 
     ShowRenameInput id ->
@@ -154,8 +169,8 @@ update msg model =
                 (model, Cmd.none)
 
             Just environment ->
-                case (EnvironmentKeyValueEdition.update subMsg environment, model.selectedEnvironmentToEditId) of
-                    (newEnvironment, Just id) ->
+                case ((updateKeyValue subMsg environment), model.selectedEnvironmentToEditId) of
+                    ((newEnvironment, newSubMsg), Just id) ->
                         let
                             newEnvironments =
                                 List.updateIf (\env -> env.id == id) (\_ -> newEnvironment) model.environments
@@ -164,10 +179,12 @@ update msg model =
                                 { model | environments = newEnvironments }
 
                         in
-                            (newModel, Cmd.none)
+                            (newModel, Cmd.map EnvironmentKeyValueEditionMsg newSubMsg)
 
                     _ ->
                         Debug.todo "error when trying to edit environment key value"
+
+-- ** util
 
 newEnvironmentResultToMsg : String -> Result Http.Error Int -> Msg
 newEnvironmentResultToMsg name result =
@@ -176,7 +193,7 @@ newEnvironmentResultToMsg name result =
             EnvironmentCreated id name
 
         Err error ->
-            Debug.log "test" ServerError
+            Debug.log "test" EnvServerError
 
 updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
 updateEnvironmentResultToMsg id name result =
@@ -185,7 +202,7 @@ updateEnvironmentResultToMsg id name result =
             EnvironmentRenamed id name
 
         Err error ->
-            Debug.todo "server error" ServerError
+            Debug.todo "server error" EnvServerError
 
 deleteEnvironmentResultToMsg : Int -> Result Http.Error () -> Msg
 deleteEnvironmentResultToMsg id result =
@@ -194,4 +211,386 @@ deleteEnvironmentResultToMsg id result =
             EnvironmentDeleted id
 
         Err error ->
-            Debug.todo "server error" ServerError
+            Debug.todo "server error" EnvServerError
+
+
+-- ** view
+
+view : Model a -> Element Msg
+view model =
+    let
+        mSelectedEnv : Maybe Environment
+        mSelectedEnv =
+            List.find (\env -> Just env.id == model.selectedEnvironmentToEditId) model.environments
+
+        keyValuesEditionView =
+            case mSelectedEnv of
+                Just selectedEnv ->
+                    el []
+                        <| map EnvironmentKeyValueEditionMsg (envKeyValueView selectedEnv)
+
+                Nothing ->
+                    el [] (text "no environment selected")
+
+        envListView =
+            List.map (entryView model.selectedEnvironmentToEditId) model.environments
+
+        addEnvButtonView =
+            Input.button []
+                { onPress = Just <| (AskEnvironmentCreation "new environment")
+                , label =
+                    row []
+                        [ addIcon
+                        , el [] (text "Add environment")
+                        ]
+                }
+
+    in
+        row [ width fill
+            , centerX
+            , paddingXY 30 10
+            ]
+          [ column [ alignLeft, alignTop, spacing 10 ]
+                [ column [ spacing 10 ] envListView
+                , el [ centerX ] addEnvButtonView
+                ]
+          , el [ centerX, alignTop ] keyValuesEditionView
+          ]
+
+
+entryView : Maybe Int -> Environment -> Element Msg
+entryView mSelectedEnvId environment =
+  let
+    readView =
+        Input.button []
+            { onPress = Just <| (SelectEnvToEdit environment.id)
+            , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) secondaryColor
+            }
+
+    editView =
+        Input.text [ htmlAttribute <| Util.onEnterWithInput (AskRename environment.id) ]
+            { onChange = (ChangeName environment.id)
+            , text = editedOrNotEditedValue environment.name
+            , placeholder = Just <| Input.placeholder [] (text "environment name")
+            , label = Input.labelHidden "rename environment"
+            }
+
+    modeView =
+      case environment.showRenameInput of
+        True -> editView
+        False -> readView
+
+    active =
+        mSelectedEnvId == Just environment.id
+
+  in
+    row [ spacing 5 ]
+      [ modeView
+      , Input.button []
+          { onPress = Just <| (ShowRenameInput environment.id)
+          , label = editIcon
+          }
+      , Input.button []
+          { onPress = Just <| (AskDelete environment.id)
+          , label = el [] deleteIcon
+          }
+      ]
+
+labelInputView : String -> Input.Label Msg
+labelInputView labelText =
+    let
+        size =
+            width (fill
+                  |> maximum 100
+                  |> minimum 100
+                  )
+    in
+        Input.labelAbove [ centerY, size ] <| text labelText
+
+
+-- * environment key value edition
+-- ** model
+
+type alias KeyValueModel a =
+    { a
+        | keyValues : List (Storable NewKeyValue KeyValue)
+        , name : Editable String
+        , id : Int
+    }
+
+newDefaultKeyValue : Storable NewKeyValue KeyValue
+newDefaultKeyValue =
+    New { key = "", value = "" }
+
+-- ** update
+
+updateKeyValue : KeyValueMsg -> Environment -> (Environment, Cmd KeyValueMsg)
+updateKeyValue msg model =
+    case msg of
+        PromptKey idx newKey ->
+            let
+                newKeyValues =
+                    List.updateAt idx (changeKey newKey) model.keyValues
+
+                newModel =
+                    { model | keyValues = newKeyValues }
+            in
+                (newModel, Cmd.none)
+
+        PromptValue idx newValue ->
+            let
+                newKeyValues =
+                    List.updateAt idx (changeValue newValue) model.keyValues
+
+                newModel =
+                    { model | keyValues = newKeyValues }
+            in
+                (newModel, Cmd.none)
+
+        AddNewInput ->
+            let
+                newKeyValues =
+                    model.keyValues ++ [ newDefaultKeyValue ]
+
+                newModel =
+                    { model | keyValues = newKeyValues }
+            in
+                (newModel, Cmd.none)
+
+        DeleteNewKeyValue idx ->
+            let
+                newKeyValues =
+                    List.removeAt idx model.keyValues
+
+                newModel =
+                    { model | keyValues = newKeyValues }
+            in
+                (newModel, Cmd.none)
+
+        AskDeleteKeyValue id ->
+            let
+                newMsg =
+                    Client.deleteEnvironmentByEnvironmentIdKeyValueByKeyValueId "" model.id id (deleteKeyValueResultToMsg id)
+            in
+                (model, newMsg)
+
+        KeyDeleted id ->
+            let
+                newKeyValues =
+                    removeKeyValueWithId id model.keyValues
+
+                newModel =
+                    { model | keyValues = newKeyValues }
+
+            in
+                (newModel, Cmd.none)
+
+        AskSave ->
+            (model, Cmd.none)
+
+        KeyValueServerError ->
+            Debug.todo "server error while handling key values"
+
+-- ** util
+
+deleteKeyValueResultToMsg : Int -> Result Http.Error () -> KeyValueMsg
+deleteKeyValueResultToMsg id result =
+    case result of
+        Ok () ->
+            KeyDeleted id
+
+        Err error ->
+            Debug.todo "server error" KeyValueServerError
+
+removeKeyValueWithId : Int -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
+removeKeyValueWithId id keyValues =
+    let
+        fold : Storable NewKeyValue KeyValue -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
+        fold storable acc =
+            case storable of
+                New new ->
+                    acc ++ [storable]
+
+                Saved saved ->
+                    case saved.id == id of
+                        True ->
+                            acc
+
+                        False ->
+                            acc ++ [storable]
+
+                Edited2 saved edited ->
+                    case saved.id == id of
+                        True ->
+                            acc
+
+                        False ->
+                            acc ++ [storable]
+
+    in
+        List.foldl fold [] keyValues
+
+
+changeKey : String -> Storable NewKeyValue KeyValue -> Storable NewKeyValue KeyValue
+changeKey newKey storable =
+    case storable of
+        New new ->
+            New { new | key = newKey }
+
+        Saved saved ->
+            case saved.key == newKey of
+                True ->
+                    Saved saved
+
+                False ->
+                    Edited2 saved { saved | key = newKey }
+
+        Edited2 saved edited ->
+            case saved.key == newKey of
+                True ->
+                    Saved saved
+
+                False ->
+                    Edited2 saved { edited | key = newKey }
+
+
+changeValue : String -> Storable NewKeyValue KeyValue -> Storable NewKeyValue KeyValue
+changeValue newValue storable =
+    case storable of
+        New new ->
+            New { new | value = newValue }
+
+        Saved saved ->
+            case saved.value == newValue of
+                True ->
+                    Saved saved
+
+                False ->
+                    Edited2 saved { saved | value = newValue }
+
+        Edited2 saved edited ->
+            case saved.value == newValue of
+                True ->
+                    Saved saved
+
+                False ->
+                    Edited2 saved { edited | value = newValue }
+
+-- ** view
+
+envKeyValueView : KeyValueModel a -> Element KeyValueMsg
+envKeyValueView model =
+    let
+        addNewKeyValueView =
+            Input.button []
+                { onPress = Just <| AddNewInput
+                , label =
+                    row []
+                        [ addIcon
+                        , el [] (text "Add key value")
+                        ]
+                }
+    in
+        column [ spacing 10 ]
+            [ titleView model
+            , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
+            , el [ centerX ] addNewKeyValueView
+            ]
+
+titleView : KeyValueModel a -> Element KeyValueMsg
+titleView model =
+    let
+        isModelDirty =
+            List.any isDirty2 model.keyValues
+
+        name =
+            case isModelDirty of
+                True ->
+                    (editedOrNotEditedValue model.name) ++ "*"
+
+                False ->
+                    editedOrNotEditedValue model.name
+    in
+        row [ centerX, paddingXY 0 10, spacing 10 ]
+            [ el [] <| iconWithTextAndColor "label" name secondaryColor
+            , case isModelDirty of
+                  True -> mainActionButtonsView
+                  False -> none
+            ]
+
+mainActionButtonsView : Element KeyValueMsg
+mainActionButtonsView =
+    let
+        inputParam =
+            [ Border.solid
+            , Border.color secondaryColor
+            , Border.width 1
+            , Border.rounded 5
+            , alignBottom
+            , Background.color secondaryColor
+            , paddingXY 10 10
+            ]
+    in
+        Input.button inputParam
+            { onPress = Just <| AskSave
+            , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
+            }
+
+viewKeyValue : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
+viewKeyValue idx sKeyValue =
+    let
+        deleteView =
+            case sKeyValue of
+                New new ->
+                    Input.button []
+                        { onPress = Just <| (DeleteNewKeyValue idx)
+                        , label = el [] deleteIcon
+                        }
+
+                Saved saved ->
+                    Input.button []
+                        { onPress = Just <| (AskDeleteKeyValue saved.id)
+                        , label = el [] deleteIcon
+                        }
+
+                Edited2 saved _ ->
+                    Input.button []
+                        { onPress = Just <| (AskDeleteKeyValue saved.id)
+                        , label = el [] deleteIcon
+                        }
+
+    in
+        row [ spacing 5 ]
+            [ Input.text []
+                  { onChange = (PromptKey idx)
+                  , text =
+                      case sKeyValue of
+                          New { key } ->
+                              key
+
+                          Saved { key } ->
+                              key
+
+                          Edited2 _ { key } ->
+                              key
+
+                  , placeholder = Just <| Input.placeholder [] (text "key")
+                  , label = Input.labelHidden "Key: "
+                  }
+            , Input.text []
+                { onChange = (PromptValue idx)
+                , text =
+                    case sKeyValue of
+                        New { value } ->
+                            value
+
+                        Saved { value } ->
+                            value
+
+                        Edited2 _ { value } ->
+                            value
+                , placeholder = Just <| Input.placeholder [] (text "value")
+                , label = Input.labelHidden "Value: "
+                }
+            , deleteView
+            ]

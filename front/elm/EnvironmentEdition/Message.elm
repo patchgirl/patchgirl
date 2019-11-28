@@ -1,10 +1,8 @@
 module EnvironmentEdition.Message exposing (..)
 
-import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
-
 type Msg
   = SelectEnvToEdit Int
-  | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
+  | EnvironmentKeyValueEditionMsg KeyValueMsg
   | AskEnvironmentCreation String
   | EnvironmentCreated Int String
   | ChangeName Int String
@@ -12,5 +10,15 @@ type Msg
   | EnvironmentRenamed Int String
   | AskDelete Int
   | EnvironmentDeleted Int
-  | ServerError
+  | EnvServerError
   | ShowRenameInput Int
+
+type KeyValueMsg
+  = PromptKey Int String
+  | PromptValue Int String
+  | AddNewInput
+  | AskSave
+  | AskDeleteKeyValue Int
+  | KeyDeleted Int
+  | DeleteNewKeyValue Int
+  | KeyValueServerError

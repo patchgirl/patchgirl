@@ -57,7 +57,17 @@ type EnvironmentApi =
       Get '[JSON] [Environment] :<|> -- getEnvironments
       Capture "environmentId" Int :> (
         ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
-        Delete '[JSON] () -- deleteEnvironment
+        Delete '[JSON] () :<|>
+        KeyValueApi -- deleteEnvironment
+      )
+    )
+  )
+
+type KeyValueApi =
+  Flat (
+    "keyValue" :> (
+      Capture "keyValueId" Int :> (
+        Delete '[JSON] ()
       )
     )
   )
@@ -94,7 +104,11 @@ restApiServer =
     requestFileApi =
       createRequestFile -- :<|> updateRequestFile
     environmentApi =
-      createEnvironmentHandler :<|> getEnvironmentsHandler :<|> updateEnvironmentHandler :<|> deleteEnvironmentHandler
+      createEnvironmentHandler :<|>
+      getEnvironmentsHandler :<|>
+      updateEnvironmentHandler :<|>
+      deleteEnvironmentHandler :<|>
+      deleteKeyValueHandler
 
 testApiServer :: Server TestApi
 testApiServer =
@@ -122,6 +136,9 @@ testApiProxy = Proxy
 
 environmentApiProxy :: Proxy EnvironmentApi
 environmentApiProxy = Proxy
+
+keyValueApiProxy :: Proxy KeyValueApi
+keyValueApiProxy = Proxy
 
 healthApiProxy :: Proxy HealthApi
 healthApiProxy = Proxy

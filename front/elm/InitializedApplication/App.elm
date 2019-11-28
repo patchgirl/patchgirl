@@ -24,9 +24,6 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
-
-import EnvironmentEdition.View as EnvironmentEdition
 import EnvironmentEdition.Message as EnvironmentEdition
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentEdition.Util as EnvironmentEdition
@@ -103,19 +100,6 @@ update msg model =
 
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
-
-        EnvironmentKeyValueEditionMsg subMsg ->
-            case EnvironmentEdition.getEnvironmentToEdit model of
-                Just environment ->
-                    case EnvironmentKeyValueEdition.update subMsg environment of
-                        newEnvironmentKeyValueEdition ->
-                            let
-                                newModel = replaceEnvironmentToEdit model newEnvironmentKeyValueEdition
-                            in
-                                (newModel, Cmd.none)
-
-                Nothing ->
-                    (model, Cmd.none)
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model.mainNavBarModel of

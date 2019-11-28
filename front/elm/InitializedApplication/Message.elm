@@ -4,7 +4,6 @@ import BuilderApp.Message as BuilderApp
 import BuilderApp.Builder.Message as BuilderAppBuilder
 import BuilderApp.BuilderTree.Message as BuilderTree
 import Postman.Message as Postman
-import EnvironmentKeyValueEdition.App as EnvironmentKeyValueEdition
 import EnvironmentEdition.Message as EnvironmentEdition
 import RequestRunner.Message as RequestRunner
 import MainNavBar.Message as MainNavBar
@@ -16,7 +15,6 @@ type Msg
     = BuilderTreeMsg BuilderTree.Msg
     | BuilderAppMsg BuilderApp.Msg
     | PostmanMsg Postman.Msg
-    | EnvironmentKeyValueEditionMsg EnvironmentKeyValueEdition.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg

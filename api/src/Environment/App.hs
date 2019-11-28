@@ -13,14 +13,17 @@
 
 module Environment.App where
 
+-- * import
+
 import Control.Lens hiding (element)
 
+import Data.List (find)
 import Prelude hiding (id)
 import           DB
 import           GHC.Generics
 import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericToJSON, defaultOptions, parseJSON)
 import           Data.Aeson.Types (genericParseJSON)
-import           Servant (Handler)
+import           Servant (Handler, throwError, err404)
 import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow, execute)
 import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
@@ -218,7 +221,7 @@ updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
           |]
 
 
--- * else
+-- * delete environment
 
 deleteEnvironmentHandler :: Int -> Handler ()
 deleteEnvironmentHandler environmentId =
@@ -232,5 +235,32 @@ deleteEnvironmentDB environmentId connection = do
     deleteEnvironmentQuery =
       [sql|
           DELETE FROM environment
+          WHERE id = ?
+          |]
+
+-- * delete key value
+
+deleteKeyValueHandler :: Int -> Int -> Handler ()
+deleteKeyValueHandler environmentId keyValueId = do
+  connection <- liftIO getDBConnection
+  environments <- liftIO $ selectEnvironments connection
+  let
+    mKeyValue = do
+      environment <- find (\environment -> environment ^. id == environmentId) environments
+      find (\keyValue -> keyValue ^. id == keyValueId) $ environment ^. keyValues
+  case mKeyValue of
+    Just keyValue ->
+      liftIO $ deleteKeyValueDB (keyValue ^. id) connection
+    Nothing -> throwError err404
+
+
+deleteKeyValueDB :: Int -> Connection -> IO ()
+deleteKeyValueDB keyValueId connection = do
+  _ <- execute connection deleteKeyValueQuery $ Only keyValueId
+  return ()
+  where
+    deleteKeyValueQuery =
+      [sql|
+          DELETE FROM key_value
           WHERE id = ?
           |]
