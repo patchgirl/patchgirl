@@ -25,7 +25,7 @@ import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericTo
 import           Data.Aeson.Types (genericParseJSON)
 import           Servant (Handler, throwError, err404)
 import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow, execute)
-import           Database.PostgreSQL.Simple.ToRow (ToRow(..))
+import           Database.PostgreSQL.Simple.ToField (ToField(..), Action(..))
 import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
 import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
@@ -280,42 +280,29 @@ deleteKeyValueDB keyValueId connection = do
 -- ** model
 
 
-data UpsertKeyValue
-  = NewKeyValue { _upsertKeyValueKey :: String
-                , _upsertKeyValueValue :: String
+data NewKeyValue
+  = NewKeyValue { _newKeyValueKey :: String
+                , _newKeyValueValue :: String
                 }
-  | UpdateKeyValue { _upsertKeyValueId :: Int
-                   , _upsertKeyValueKey :: String
-                   , _upsertKeyValueValue :: String
-                   }
-    deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic)
 
-instance FromJSON UpsertKeyValue where
+instance ToField NewKeyValue where
+  toField (NewKeyValue { _newKeyValueKey, _newKeyValueValue }) =
+    Many [ toField _newKeyValueKey
+         , toField _newKeyValueValue
+         ]
+
+instance FromJSON NewKeyValue where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeFieldsNoPrefix ''UpsertKeyValue)
-
-instance ToRow UpsertKeyValue where
-  toRow (NewKeyValue _upsertKeyValueKey _upsertKeyValueValue ) =
-    toRow (_upsertKeyValueKey, _upsertKeyValueValue)
-  toRow (UpdateKeyValue _upsertKeyValueId _upsertKeyValueKey _upsertKeyValueValue ) =
-    toRow (_upsertKeyValueId, _upsertKeyValueKey, _upsertKeyValueValue)
-
-
+$(makeFieldsNoPrefix ''NewKeyValue)
 
 -- ** handler
 
-upsertKeyValueDB :: UpsertKeyValue -> Connection -> IO KeyValue
-upsertKeyValueDB upsertKeyValue connection =
-  case upsertKeyValue of
-      NewKeyValue _ _ -> do
-        [keyValue] <- query connection insertKeyValueQuery $ upsertKeyValue
-        return keyValue
-
-      UpdateKeyValue _ _ _ -> do
-        [keyValue] <- query connection updateKeyValueQuery $ upsertKeyValue
-        return keyValue
-
+insertManyKeyValuesDB :: Int -> NewKeyValue -> Connection -> IO KeyValue
+insertManyKeyValuesDB environmentId newKeyValue connection = do
+  [keyValue] <- query connection insertKeyValueQuery $ (environmentId, newKeyValue)
+  return keyValue
   where
     insertKeyValueQuery =
       [sql|
@@ -324,23 +311,16 @@ upsertKeyValueDB upsertKeyValue connection =
           RETURNING id, key, value
           |]
 
-    updateKeyValueQuery =
-      [sql|
-          UPDATE key_value
-          SET key = ?, value = ?
-          WHERE id = ?
-          RETURNING id, key, value
-          |]
 
-upsertKeyValuesHandler :: Int -> [UpsertKeyValue] -> Handler [KeyValue]
-upsertKeyValuesHandler environmentId upsertKeyValues = do
+updateKeyValuesHandler :: Int -> [NewKeyValue] -> Handler [KeyValue]
+updateKeyValuesHandler environmentId newKeyValues = do
   connection <- liftIO getDBConnection
   environments <- liftIO $ selectEnvironments connection
   let
     environment = find (\environment -> environment ^. id == environmentId) environments
   case environment of
-    Just _ ->
-      liftIO $ mapM (flip upsertKeyValueDB connection) upsertKeyValues
-
+    Just _ -> do
+      liftIO $ deleteEnvironmentDB environmentId connection
+      liftIO $ mapM (flip (insertManyKeyValuesDB environmentId) connection) newKeyValues
     Nothing ->
       throwError err404
