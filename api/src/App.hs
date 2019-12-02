@@ -66,6 +66,7 @@ type EnvironmentApi =
 type KeyValueApi =
   Flat (
     "keyValue" :> (
+      ReqBody '[JSON] [UpsertKeyValue] :> Put '[JSON] [KeyValue] :<|> -- upsertKeyValues
       Capture "keyValueId" Int :> (
         Delete '[JSON] ()
       )
@@ -108,6 +109,7 @@ restApiServer =
       getEnvironmentsHandler :<|>
       updateEnvironmentHandler :<|>
       deleteEnvironmentHandler :<|>
+      upsertKeyValuesHandler :<|>
       deleteKeyValueHandler
 
 testApiServer :: Server TestApi

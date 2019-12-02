@@ -25,23 +25,15 @@ import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericTo
 import           Data.Aeson.Types (genericParseJSON)
 import           Servant (Handler, throwError, err404)
 import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow, execute)
+import           Database.PostgreSQL.Simple.ToRow (ToRow(..))
 import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
 import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
 import  Data.Foldable (foldl')
 import Control.Lens (makeFieldsNoPrefix)
 
--- * Model
+-- * get environments
 
-data Environment
-  = Environment { _id :: Int
-                , _name :: String
-                , _keyValues :: [KeyValue]
-                } deriving (Eq, Show, Generic)
-
-instance ToJSON Environment where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 data PGEnvironmentWithKeyValue =
   PGEnvironmentWithKeyValue { _environmentId :: Int
@@ -57,30 +49,32 @@ data PGEnvironmentWithoutKeyValue =
                                } deriving (Generic, FromRow)
 
 
-data NewEnvironment
-  = NewEnvironment { _name :: String
-                   } deriving (Eq, Show, Generic)
-
-instance FromJSON NewEnvironment where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+$(makeFieldsNoPrefix ''PGEnvironmentWithKeyValue)
+$(makeFieldsNoPrefix ''PGEnvironmentWithoutKeyValue)
 
 data KeyValue =
   KeyValue { _id :: Int
            , _key :: String
            , _value :: String
-           } deriving (Eq, Show, Generic)
+           } deriving (Eq, Show, Generic, FromRow)
 
 instance ToJSON KeyValue where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 $(makeFieldsNoPrefix ''KeyValue)
-$(makeFieldsNoPrefix ''Environment)
-$(makeFieldsNoPrefix ''NewEnvironment)
-$(makeFieldsNoPrefix ''PGEnvironmentWithKeyValue)
-$(makeFieldsNoPrefix ''PGEnvironmentWithoutKeyValue)
 
--- * Get environments
+data Environment
+  = Environment { _id :: Int
+                , _name :: String
+                , _keyValues :: [KeyValue]
+                } deriving (Eq, Show, Generic)
+
+instance ToJSON Environment where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+$(makeFieldsNoPrefix ''Environment)
 
 selectEnvironments :: Connection -> IO [Environment]
 selectEnvironments connection = do
@@ -155,7 +149,18 @@ getEnvironmentsHandler :: Handler [Environment]
 getEnvironmentsHandler = do
   liftIO (getDBConnection >>= selectEnvironments >>= return)
 
--- * Create environment
+
+-- * create environment
+
+
+data NewEnvironment
+  = NewEnvironment { _name :: String
+                   } deriving (Eq, Show, Generic)
+
+instance FromJSON NewEnvironment where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+$(makeFieldsNoPrefix ''NewEnvironment)
 
 insertEnvironment :: NewEnvironment -> Connection -> IO Int
 insertEnvironment (NewEnvironment { _name }) connection = do
@@ -195,6 +200,7 @@ createEnvironmentHandler newEnvironment = do
 
 -- * update environment
 
+
 data UpdateEnvironment
   = UpdateEnvironment { _name :: String }
   deriving (Eq, Show, Generic)
@@ -223,6 +229,7 @@ updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
 
 -- * delete environment
 
+
 deleteEnvironmentHandler :: Int -> Handler ()
 deleteEnvironmentHandler environmentId =
   liftIO (getDBConnection >>= (deleteEnvironmentDB environmentId))
@@ -238,7 +245,9 @@ deleteEnvironmentDB environmentId connection = do
           WHERE id = ?
           |]
 
+
 -- * delete key value
+
 
 deleteKeyValueHandler :: Int -> Int -> Handler ()
 deleteKeyValueHandler environmentId keyValueId = do
@@ -253,7 +262,6 @@ deleteKeyValueHandler environmentId keyValueId = do
       liftIO $ deleteKeyValueDB (keyValue ^. id) connection
     Nothing -> throwError err404
 
-
 deleteKeyValueDB :: Int -> Connection -> IO ()
 deleteKeyValueDB keyValueId connection = do
   _ <- execute connection deleteKeyValueQuery $ Only keyValueId
@@ -264,3 +272,75 @@ deleteKeyValueDB keyValueId connection = do
           DELETE FROM key_value
           WHERE id = ?
           |]
+
+
+-- * upsert key values
+
+
+-- ** model
+
+
+data UpsertKeyValue
+  = NewKeyValue { _upsertKeyValueKey :: String
+                , _upsertKeyValueValue :: String
+                }
+  | UpdateKeyValue { _upsertKeyValueId :: Int
+                   , _upsertKeyValueKey :: String
+                   , _upsertKeyValueValue :: String
+                   }
+    deriving (Eq, Show, Generic)
+
+instance FromJSON UpsertKeyValue where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+$(makeFieldsNoPrefix ''UpsertKeyValue)
+
+instance ToRow UpsertKeyValue where
+  toRow (NewKeyValue _upsertKeyValueKey _upsertKeyValueValue ) =
+    toRow (_upsertKeyValueKey, _upsertKeyValueValue)
+  toRow (UpdateKeyValue _upsertKeyValueId _upsertKeyValueKey _upsertKeyValueValue ) =
+    toRow (_upsertKeyValueId, _upsertKeyValueKey, _upsertKeyValueValue)
+
+
+
+-- ** handler
+
+upsertKeyValueDB :: UpsertKeyValue -> Connection -> IO KeyValue
+upsertKeyValueDB upsertKeyValue connection =
+  case upsertKeyValue of
+      NewKeyValue _ _ -> do
+        [keyValue] <- query connection insertKeyValueQuery $ upsertKeyValue
+        return keyValue
+
+      UpdateKeyValue _ _ _ -> do
+        [keyValue] <- query connection updateKeyValueQuery $ upsertKeyValue
+        return keyValue
+
+  where
+    insertKeyValueQuery =
+      [sql|
+          INSERT INTO key_value (environment_id, key, value)
+          VALUES (?, ?, ?)
+          RETURNING id, key, value
+          |]
+
+    updateKeyValueQuery =
+      [sql|
+          UPDATE key_value
+          SET key = ?, value = ?
+          WHERE id = ?
+          RETURNING id, key, value
+          |]
+
+upsertKeyValuesHandler :: Int -> [UpsertKeyValue] -> Handler [KeyValue]
+upsertKeyValuesHandler environmentId upsertKeyValues = do
+  connection <- liftIO getDBConnection
+  environments <- liftIO $ selectEnvironments connection
+  let
+    environment = find (\environment -> environment ^. id == environmentId) environments
+  case environment of
+    Just _ ->
+      liftIO $ mapM (flip upsertKeyValueDB connection) upsertKeyValues
+
+    Nothing ->
+      throwError err404

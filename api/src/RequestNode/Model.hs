@@ -1,13 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleInstances       #-}
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE FlexibleInstances       #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FunctionalDependencies #-}
 
 module RequestNode.Model where
 
@@ -22,7 +22,6 @@ import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Data.Aeson (Value, parseJSON)
 import Data.Aeson.Types (parseEither)
 import Control.Lens (makeFieldsNoPrefix)
-
 
 data UpdateRequestNode
   = UpdateRequestFolder { _name :: String
