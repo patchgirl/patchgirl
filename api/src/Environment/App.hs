@@ -25,7 +25,6 @@ import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericTo
 import           Data.Aeson.Types (genericParseJSON)
 import           Servant (Handler, throwError, err404)
 import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow, execute)
-import           Database.PostgreSQL.Simple.ToField (ToField(..), Action(..))
 import           Control.Monad.IO.Class (liftIO)
 import           Database.PostgreSQL.Simple.SqlQQ
 import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
@@ -286,12 +285,6 @@ data NewKeyValue
                 }
   deriving (Eq, Show, Generic)
 
-instance ToField NewKeyValue where
-  toField (NewKeyValue { _newKeyValueKey, _newKeyValueValue }) =
-    Many [ toField _newKeyValueKey
-         , toField _newKeyValueValue
-         ]
-
 instance FromJSON NewKeyValue where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
@@ -299,9 +292,20 @@ $(makeFieldsNoPrefix ''NewKeyValue)
 
 -- ** handler
 
+deleteKeyValuesDB :: Int -> Connection -> IO ()
+deleteKeyValuesDB environmentId connection = do
+  _ <- execute connection deleteKeyValuesQuery (Only environmentId)
+  return ()
+  where
+    deleteKeyValuesQuery =
+      [sql|
+          DELETE FROM key_value
+          WHERE environment_id = ?
+          |]
+
 insertManyKeyValuesDB :: Int -> NewKeyValue -> Connection -> IO KeyValue
-insertManyKeyValuesDB environmentId newKeyValue connection = do
-  [keyValue] <- query connection insertKeyValueQuery $ (environmentId, newKeyValue)
+insertManyKeyValuesDB environmentId (NewKeyValue { _newKeyValueKey, _newKeyValueValue }) connection = do
+  [keyValue] <- query connection insertKeyValueQuery $ (environmentId, _newKeyValueKey, _newKeyValueValue)
   return keyValue
   where
     insertKeyValueQuery =
@@ -320,7 +324,7 @@ updateKeyValuesHandler environmentId newKeyValues = do
     environment = find (\environment -> environment ^. id == environmentId) environments
   case environment of
     Just _ -> do
-      liftIO $ deleteEnvironmentDB environmentId connection
+      liftIO $ deleteKeyValuesDB environmentId connection
       liftIO $ mapM (flip (insertManyKeyValuesDB environmentId) connection) newKeyValues
     Nothing ->
       throwError err404

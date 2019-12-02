@@ -28,6 +28,7 @@ deriveElmDef deriveElmDefOption ''NewEnvironment
 deriveElmDef deriveElmDefOption ''UpdateEnvironment
 deriveElmDef deriveElmDefOption ''Environment
 deriveElmDef deriveElmDefOption ''KeyValue
+deriveElmDef deriveElmDefOption ''NewKeyValue
 
 main :: IO ()
 main =
@@ -52,6 +53,7 @@ main =
       , DefineElm (Proxy :: Proxy UpdateEnvironment)
       , DefineElm (Proxy :: Proxy Environment)
       , DefineElm (Proxy :: Proxy KeyValue)
+      , DefineElm (Proxy :: Proxy NewKeyValue)
       ]
     proxyApi = (Proxy :: Proxy RestApi)
   in

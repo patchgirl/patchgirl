@@ -7,7 +7,7 @@ import Application.Type as Front
 
 import BuilderApp.Builder.Model as Builder
 
--- * Request Collection
+-- * request Collection
 
 convertRequestCollectionFromBackToFront : Back.RequestCollection -> Front.RequestCollection
 convertRequestCollectionFromBackToFront backRequestCollection =
@@ -42,7 +42,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
     in
         List.map convertRequestNodeFromBackToFront backRequestNodes
 
--- * Environment
+-- * environment
 
 convertEnvironmentFromBackToFront : Back.Environment -> Front.Environment
 convertEnvironmentFromBackToFront { id, name, keyValues } =
@@ -51,3 +51,27 @@ convertEnvironmentFromBackToFront { id, name, keyValues } =
     , showRenameInput = False
     , keyValues = List.map Saved keyValues
     }
+
+-- * environment key values
+
+convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.Storable Front.NewKeyValue Front.KeyValue
+convertEnvironmentKeyValueFromBackToFront backKeyValue =
+    Front.Saved backKeyValue
+
+convertEnvironmentKeyValueFromFrontToBack : Front.Storable Front.NewKeyValue Front.KeyValue -> Back.NewKeyValue
+convertEnvironmentKeyValueFromFrontToBack storable =
+    case storable of
+        New { key, value } ->
+            { newKeyValueKey = key
+            , newKeyValueValue = value
+            }
+
+        Saved { key, value } ->
+            { newKeyValueKey = key
+            , newKeyValueValue = value
+            }
+
+        Edited2 _ { key, value } ->
+            { newKeyValueKey = key
+            , newKeyValueValue = value
+            }

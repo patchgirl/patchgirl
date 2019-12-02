@@ -10,6 +10,7 @@ import Element.Events as Events
 import ViewUtil exposing (..)
 import Application.Type exposing (..)
 import Api.Client as Client
+import Api.Converter as Client
 import Http as Http
 import Application.Type exposing (..)
 import Util.View as Util
@@ -352,6 +353,7 @@ type KeyValueMsg
   | PromptValue Int String
   | AddNewInput
   | AskSave
+  | KeyValuesUpserted (List (Storable NewKeyValue KeyValue))
   | AskDeleteKeyValue Int
   | KeyDeleted Int
   | DeleteNewKeyValue Int
@@ -421,12 +423,40 @@ updateKeyValue msg model =
                 (newModel, Cmd.none)
 
         AskSave ->
-            (model, Cmd.none)
+            let
+                updateKeyValues =
+                    List.map Client.convertEnvironmentKeyValueFromFrontToBack model.keyValues
+
+                newMsg =
+                    Client.putEnvironmentByEnvironmentIdKeyValue "" model.id updateKeyValues updateKeyValuesResultToMsg
+            in
+                (model, newMsg)
+
+        KeyValuesUpserted newKeyValues ->
+            let
+                newModel =
+                    { model | keyValues = newKeyValues }
+            in
+                (newModel, Cmd.none)
 
         KeyValueServerError ->
             Debug.todo "server error while handling key values"
 
 -- ** util
+
+updateKeyValuesResultToMsg : Result Http.Error (List Client.KeyValue) -> KeyValueMsg
+updateKeyValuesResultToMsg result =
+    case result of
+        Ok backKeyValues ->
+            let
+                keyValues =
+                    List.map Client.convertEnvironmentKeyValueFromBackToFront backKeyValues
+            in
+                KeyValuesUpserted keyValues
+
+        Err error ->
+            Debug.todo "server error" KeyValueServerError
+
 
 deleteKeyValueResultToMsg : Int -> Result Http.Error () -> KeyValueMsg
 deleteKeyValueResultToMsg id result =
