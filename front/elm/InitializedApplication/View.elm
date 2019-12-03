@@ -15,7 +15,6 @@ import MainNavBar.App as MainNavBar
 import VarApp.View as VarApp
 
 import BuilderApp.Model as BuilderApp
-import BuilderApp.Builder.View as Builder
 import BuilderApp.View as BuilderApp
 
 import Util.List as List

@@ -23,8 +23,6 @@ type alias Response =
     , body : String
     }
 
-    --Response Status (Http.Metadata) String
-
 type Status
     = Success
     | Failure
