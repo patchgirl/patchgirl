@@ -20,7 +20,7 @@ import Application.Type exposing (..)
 
 buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Builder.Model a -> RequestInput.Model
 buildRequestInput envKeyValues varKeyValues builder =
-    { method = Builder.methodToString builder.httpMethod
+    { method = Builder.methodToString <| editedOrNotEditedValue builder.httpMethod
     , headers = editedOrNotEditedValue builder.httpHeaders
     , url = interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
     , body = editedOrNotEditedValue builder.httpBody

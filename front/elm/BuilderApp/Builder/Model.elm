@@ -9,12 +9,19 @@ type alias Model a =
     { a
         | name : Editable String
         , httpUrl : Editable String
-        , httpMethod : Client.Method
+        , httpMethod : Editable Client.Method
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
         , response : Maybe Response
         , showResponseView : Bool
     }
+
+isBuilderDirty : Model a -> Bool
+isBuilderDirty model =
+    isDirty model.httpMethod ||
+        isDirty model.httpHeaders ||
+            List.any isDirty [model.name, model.httpUrl, model.httpBody]
+
 
 type alias Response =
     { statusCode : Int

@@ -54,7 +54,7 @@ update msg envKeyValues varKeyValues model =
         SetHttpMethod newMethod ->
             let
                 newModel =
-                    { model | httpMethod = newMethod }
+                    { model | httpMethod = changeEditedValue newMethod model.httpMethod }
             in
                 (newModel, Cmd.none)
 
@@ -338,15 +338,13 @@ mainActionButtonsView model =
             , paddingXY 10 10
             ]
 
-        builderIsDirty =
-            List.any isDirty [model.name, model.httpUrl, model.httpBody]
     in
         row rowParam
             [ Input.button inputParam
                 { onPress = Just <| AskRun
                 , label = el [ centerY] <| iconWithTextAndColor "send" "Send" primaryColor
                 }
-            , case builderIsDirty of
+            , case isBuilderDirty model of
                   True ->
                       Input.button inputParam
                           { onPress = Just <| AskSave
@@ -361,7 +359,7 @@ methodView : Model a -> Element Msg
 methodView model =
     Input.radioRow [ padding 10, spacing 20 ]
         { onChange = SetHttpMethod
-        , selected = Just model.httpMethod
+        , selected = Just <| editedOrNotEditedValue model.httpMethod
         , label = labelInputView "Method: "
         , options =
               [ Input.option Client.Get (text "Get")
@@ -384,7 +382,7 @@ headerView model =
         headersToText : Editable (List (String, String)) -> String
         headersToText eHeaders =
             editedOrNotEditedValue model.httpHeaders
-                |> List.map (joinTuple ": ")
+                |> List.map (joinTuple ":")
                 |> String.join "\n"
     in
         Input.multiline []

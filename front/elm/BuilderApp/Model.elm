@@ -35,7 +35,7 @@ type alias File =
   { name : Editable String
   , isSaved : Bool
   , httpUrl : Editable String
-  , httpMethod : Client.Method
+  , httpMethod : Editable Client.Method
   , httpHeaders : Editable (List (String, String))
   , httpBody : Editable String
   , response : Maybe Builder.Response
@@ -52,7 +52,7 @@ defaultFile =
   RequestFile { name = NotEdited "new file"
               , isSaved = False
               , httpUrl = NotEdited ""
-              , httpMethod = Client.Get
+              , httpMethod = NotEdited Client.Get
               , httpHeaders = NotEdited []
               , httpBody = NotEdited ""
               , response = Nothing
