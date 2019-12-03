@@ -229,7 +229,7 @@ titleView model =
     in
         row [ centerX, paddingXY 0 10, spacing 10 ]
             [ el [] <| iconWithTextAndColor "label" (name) secondaryColor
-            , mainActionButtonsView
+            , mainActionButtonsView model
             ]
 
 responseView : Model a -> Element Msg
@@ -317,8 +317,8 @@ urlView model =
             , label = labelInputView "Url: "
             }
 
-mainActionButtonsView : Element Msg
-mainActionButtonsView =
+mainActionButtonsView : Model a -> Element Msg
+mainActionButtonsView model =
     let
         rowParam =
             [ centerY
@@ -337,16 +337,24 @@ mainActionButtonsView =
             , Background.color secondaryColor
             , paddingXY 10 10
             ]
+
+        builderIsDirty =
+            List.any isDirty [model.name, model.httpUrl, model.httpBody]
     in
         row rowParam
             [ Input.button inputParam
                 { onPress = Just <| AskRun
                 , label = el [ centerY] <| iconWithTextAndColor "send" "Send" primaryColor
                 }
-            , Input.button inputParam
-                { onPress = Just <| AskSave
-                , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
-                }
+            , case builderIsDirty of
+                  True ->
+                      Input.button inputParam
+                          { onPress = Just <| AskSave
+                          , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
+                          }
+
+                  False ->
+                      none
             ]
 
 methodView : Model a -> Element Msg

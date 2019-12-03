@@ -18,7 +18,7 @@ type Model
     = ReqTab
     | EnvTab
 
-defaultModel = EnvTab
+defaultModel = ReqTab
 
 -- * message
 

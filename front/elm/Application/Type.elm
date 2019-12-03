@@ -88,7 +88,12 @@ changeEditedValue newValue editable =
     let
         oldValue = notEditedValue editable
     in
-        Edited oldValue newValue
+        case oldValue == newValue of
+            True ->
+                NotEdited oldValue
+
+            False ->
+                Edited oldValue newValue
 
 changeEditedValue2 : Editable a -> Editable a -> Editable a
 changeEditedValue2 eOldValue eNewValue =
