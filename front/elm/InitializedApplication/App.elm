@@ -34,9 +34,6 @@ import RequestRunner.Message as RequestRunner
 import RequestRunner.Model as RequestRunner
 import RequestRunner.Util as RequestRunner
 
-import MainNavBar.Model as MainNavBar
-import MainNavBar.View as MainNavBar
-import MainNavBar.Message as MainNavBar
 import MainNavBar.App as MainNavBar
 
 import VarApp.Model as VarApp

@@ -11,8 +11,7 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
-import MainNavBar.View as MainNavBar
-import MainNavBar.Model as MainNavBar
+import MainNavBar.App as MainNavBar
 import VarApp.View as VarApp
 
 import BuilderApp.Model as BuilderApp
@@ -34,7 +33,6 @@ view model =
                 case model.mainNavBarModel of
                     MainNavBar.ReqTab -> builderView model
                     MainNavBar.EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    MainNavBar.VarTab -> builderView model --[ Html.map VarAppMsg (VarApp.view model.varAppModel) ]
     in
         layout [] <|
             column [ width fill, centerY, spacing 30 ]

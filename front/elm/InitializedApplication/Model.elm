@@ -1,6 +1,6 @@
 module InitializedApplication.Model exposing (..)
 
-import MainNavBar.Model as MainNavBar
+import MainNavBar.App as MainNavBar
 import RequestRunner.Model as RequestRunner
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
