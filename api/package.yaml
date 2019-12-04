@@ -31,6 +31,8 @@ dependencies:
   - base
   - servant
   - servant-server
+  - servant-auth
+  - servant-auth-server
   - servant-flatten
   - transformers
   - aeson
@@ -43,3 +45,4 @@ dependencies:
   - aeson-qq
   - unordered-containers
   - lens
+  - mtl

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 704b9a3d337215f1297c27b6d8abcfb28bd54485b67922dcb7a0d92d06dead17
+-- hash: f4e1265f52c8f7adc434bb20e0221c622f44a4f7b9588d269f9d90e9f2dfae74
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -22,6 +22,7 @@ library
       RequestCollection
       RequestNode.App
       RequestNode.Model
+      Session
       Test
   other-modules:
       Paths_example_servant_minimal
@@ -34,8 +35,11 @@ library
     , base
     , elm-bridge
     , lens
+    , mtl
     , postgresql-simple
     , servant
+    , servant-auth
+    , servant-auth-server
     , servant-elm
     , servant-flatten
     , servant-server
@@ -58,8 +62,11 @@ executable example-servant-minimal
     , elm-bridge
     , example-servant-minimal
     , lens
+    , mtl
     , postgresql-simple
     , servant
+    , servant-auth
+    , servant-auth-server
     , servant-elm
     , servant-flatten
     , servant-server
@@ -95,8 +102,11 @@ test-suite spec
     , http-client
     , http-types
     , lens
+    , mtl
     , postgresql-simple
     , servant
+    , servant-auth
+    , servant-auth-server
     , servant-client
     , servant-elm
     , servant-flatten

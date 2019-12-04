@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE LambdaCase #-}
 
 module App where
 
@@ -15,13 +16,23 @@ import           Environment.App
 import RequestNode.Model
 import AppHealth
 import Test
+import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, JWT, throwAll, SetCookie, CookieSettings, JWTSettings)
+import Session
+
 
 -- * API
 
-type CombinedApi =
-  RestApi :<|> TestApi :<|> AssetApi
 
-type RestApi =
+type CombinedApi auths =
+  (Auth auths Session :> ProtectedApi) :<|> PublicApi :<|> TestApi :<|> AssetApi
+
+type PublicApi =
+  "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                                                      , Header "Set-Cookie" SetCookie
+                                                                      ] NoContent)
+
+
+type ProtectedApi =
   RequestCollectionApi :<|>
   RequestNodeApi :<|>
   RequestFileApi :<|>
@@ -88,22 +99,32 @@ type HealthApi =
 type AssetApi =
   "public" :> Raw
 
+
 -- * Server
 
-restApiServer :: Server RestApi
-restApiServer =
-  requestCollectionApi :<|>
-  requestNodeApi :<|>
-  requestFileApi :<|>
-  environmentApi :<|>
-  getAppHealth
+publicApiServer :: CookieSettings -> JWTSettings -> Server PublicApi
+publicApiServer cookieSettings jwtSettings =
+  createSessionHandler cookieSettings jwtSettings
+
+protectedApiServer :: AuthResult Session -> Server ProtectedApi
+protectedApiServer = \case
+
+  Authenticated session ->
+    requestCollectionApi :<|>
+    requestNodeApi :<|>
+    requestFileApi :<|>
+    environmentApi :<|>
+    getAppHealth
+
+  _ -> throwAll err401
+
   where
     requestCollectionApi =
       getRequestCollectionById
     requestNodeApi =
-      updateRequestNodeHandler -- renameNodeRequest -- :<|> undefined
+      updateRequestNodeHandler
     requestFileApi =
-      createRequestFile -- :<|> updateRequestFile
+      createRequestFile
     environmentApi =
       createEnvironmentHandler :<|>
       getEnvironmentsHandler :<|>
@@ -125,7 +146,9 @@ assetApiServer :: Server AssetApi
 assetApiServer =
   serveDirectoryWebApp "../public"
 
+
 -- * Proxy
+
 
 requestCollectionApiProxy :: Proxy RequestCollectionApi
 requestCollectionApiProxy = Proxy
@@ -145,10 +168,15 @@ keyValueApiProxy = Proxy
 healthApiProxy :: Proxy HealthApi
 healthApiProxy = Proxy
 
-combinedApiProxy :: Proxy CombinedApi
+publicApiProxy :: Proxy PublicApi
+publicApiProxy = Proxy
+
+combinedApiProxy :: Proxy (CombinedApi '[JWT])
 combinedApiProxy = Proxy
 
+
 -- * APP
+
 
 run :: IO ()
 run = do
@@ -160,5 +188,12 @@ run = do
   runSettings settings =<< mkApp
 
 mkApp :: IO Application
-mkApp =
-  return $ serve combinedApiProxy (restApiServer :<|> testApiServer :<|> assetApiServer)
+mkApp = do
+  myKey <- generateKey
+  let
+    jwtSettings = defaultJWTSettings myKey
+    cookieSettings = defaultCookieSettings
+    context = cookieSettings :. jwtSettings :. EmptyContext
+    apiServer = protectedApiServer :<|> (publicApiServer cookieSettings jwtSettings)  :<|> testApiServer :<|> assetApiServer
+  return $
+    serveWithContext combinedApiProxy context apiServer
