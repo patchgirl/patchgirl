@@ -16,11 +16,9 @@ import InitializedApplication.App as InitializedApplication
 import BuilderApp.Model as BuilderApp
 import Application.Type exposing (..)
 
-type Msg
-  = RequestCollectionFetched BuilderApp.RequestCollection
-  | EnvironmentsFetched (List Environment)
-  | ServerError
-  | InitializedApplicationMsg InitializedApplication.Msg
+
+-- * model
+
 
 type Model
     = Unitialized
@@ -32,6 +30,20 @@ type Model
 
 defaultModel : Model
 defaultModel = Unitialized
+
+
+-- * message
+
+
+type Msg
+  = RequestCollectionFetched BuilderApp.RequestCollection
+  | EnvironmentsFetched (List Environment)
+  | ServerError
+  | InitializedApplicationMsg InitializedApplication.Msg
+
+
+-- * init
+
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -92,6 +104,10 @@ upgradeModel model =
         _ ->
             model
 
+
+-- * update
+
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
@@ -150,9 +166,9 @@ update msg model =
                         , Cmd.map InitializedApplicationMsg newMsg
                         )
 
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Sub.none
+
+-- * view
+
 
 view : Model -> Html.Html Msg
 view model =
@@ -180,3 +196,11 @@ view model =
                 Initialized initializedApplication ->
                     el [ width fill ] <|
                         map InitializedApplicationMsg (html <| InitializedApplication.view initializedApplication)
+
+
+-- * subscriptions
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.none

@@ -9,6 +9,7 @@ import qualified Data.Aeson as Aeson
 import RequestCollection
 import RequestNode.Model
 import Environment.App
+import Session
 import Http
 import AppHealth
 import App
@@ -29,6 +30,8 @@ deriveElmDef deriveElmDefOption ''UpdateEnvironment
 deriveElmDef deriveElmDefOption ''Environment
 deriveElmDef deriveElmDefOption ''KeyValue
 deriveElmDef deriveElmDefOption ''NewKeyValue
+deriveElmDef deriveElmDefOption ''Login
+deriveElmDef deriveElmDefOption ''CaseInsensitive
 
 main :: IO ()
 main =
@@ -54,7 +57,9 @@ main =
       , DefineElm (Proxy :: Proxy Environment)
       , DefineElm (Proxy :: Proxy KeyValue)
       , DefineElm (Proxy :: Proxy NewKeyValue)
+      , DefineElm (Proxy :: Proxy Login)
+      , DefineElm (Proxy :: Proxy CaseInsensitive)
       ]
-    proxyApi = (Proxy :: Proxy RestApi)
+    proxyApi = (Proxy :: Proxy ProtectedApi)
   in
     generateElmModuleWith options namespace defElmImports targetFolder elmDefinitions proxyApi

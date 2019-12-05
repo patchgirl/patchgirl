@@ -30,8 +30,6 @@ type PublicApi =
   "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                                                       , Header "Set-Cookie" SetCookie
                                                                       ] NoContent)
-
-
 type ProtectedApi =
   RequestCollectionApi :<|>
   RequestNodeApi :<|>
