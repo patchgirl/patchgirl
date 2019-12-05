@@ -46,3 +46,4 @@ dependencies:
   - unordered-containers
   - lens
   - mtl
+  - case-insensitive

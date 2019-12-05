@@ -2,6 +2,9 @@ class Init < ActiveRecord::Migration[5.2]
   def up
     execute %{
 
+      CREATE EXTENSION CITEXT;
+      CREATE EXTENSION PGCRYPTO;
+
       CREATE TYPE request_node_type AS ENUM ('RequestFolder', 'RequestFile');
       CREATE TYPE http_method_type AS ENUM ('Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options');
       CREATE TYPE header_type AS (
@@ -31,7 +34,9 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
       CREATE TABLE account(
-          id SERIAL PRIMARY KEY
+          id SERIAL PRIMARY KEY,
+          email CITEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL
       );
 
       CREATE TABLE environment(

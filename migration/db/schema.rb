@@ -10,6 +10,34 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
+
+
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
+--
 -- Name: header_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -100,7 +128,9 @@ CREATE FUNCTION public.request_node_as_js(somerow public.request_node) RETURNS j
 --
 
 CREATE TABLE public.account (
-    id integer NOT NULL
+    id integer NOT NULL,
+    email public.citext NOT NULL,
+    password text NOT NULL
 );
 
 
@@ -273,6 +303,14 @@ ALTER TABLE ONLY public.key_value ALTER COLUMN id SET DEFAULT nextval('public.ke
 --
 
 ALTER TABLE ONLY public.request_node ALTER COLUMN id SET DEFAULT nextval('public.request_node_id_seq'::regclass);
+
+
+--
+-- Name: account account_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account
+    ADD CONSTRAINT account_email_key UNIQUE (email);
 
 
 --

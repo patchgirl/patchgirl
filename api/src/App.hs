@@ -4,20 +4,20 @@
 
 module App where
 
-import           Network.Wai              hiding (Request)
-import           Network.Wai.Handler.Warp
-import           Servant
-import Servant.API.Flatten (Flat)
-import Servant.API.ContentTypes (NoContent)
-import           System.IO
-import           RequestCollection
-import           RequestNode.App
-import           Environment.App
-import RequestNode.Model
 import AppHealth
-import Test
+import Environment.App
+import Network.Wai hiding (Request)
+import Network.Wai.Handler.Warp
+import RequestNode.App
+import RequestCollection
+import RequestNode.Model
+import Servant
+import Servant.API.ContentTypes (NoContent)
+import Servant.API.Flatten (Flat)
 import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, JWT, throwAll, SetCookie, CookieSettings, JWTSettings)
 import Session
+import System.IO
+import Test
 
 
 -- * API

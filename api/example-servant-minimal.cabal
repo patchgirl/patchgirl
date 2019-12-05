@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f4e1265f52c8f7adc434bb20e0221c622f44a4f7b9588d269f9d90e9f2dfae74
+-- hash: 20e465043e5b6be91b361907c293950ce9d53d27b7adbbf1bbadbe8f079ca78b
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -33,6 +33,7 @@ library
       aeson
     , aeson-qq
     , base
+    , case-insensitive
     , elm-bridge
     , lens
     , mtl
@@ -59,6 +60,7 @@ executable example-servant-minimal
       aeson
     , aeson-qq
     , base
+    , case-insensitive
     , elm-bridge
     , example-servant-minimal
     , lens
@@ -96,6 +98,7 @@ test-suite spec
       aeson
     , aeson-qq
     , base
+    , case-insensitive
     , elm-bridge
     , example-servant-minimal
     , hspec
