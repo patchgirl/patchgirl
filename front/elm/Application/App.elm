@@ -22,6 +22,7 @@ import Application.Type exposing (..)
 
 type Model
     = Unitialized
+    | SignedInNotInitialized
     | Pending
       { mRequestCollection : Maybe BuilderApp.RequestCollection
       , mEnvironments : Maybe (List Environment)

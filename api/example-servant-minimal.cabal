@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 20e465043e5b6be91b361907c293950ce9d53d27b7adbbf1bbadbe8f079ca78b
+-- hash: bb6f1904a544adc1209674d93c9f45810986641a13fd947d32cd0bd91b5f662e
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -12,6 +12,8 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Account.App
+      Account.Model
       App
       AppHealth
       DB
@@ -19,10 +21,12 @@ library
       Environment.App
       Foo
       Http
+      Model
       RequestCollection
       RequestNode.App
       RequestNode.Model
-      Session
+      Session.App
+      Session.Model
       Test
   other-modules:
       Paths_example_servant_minimal

@@ -15,10 +15,12 @@ import Servant
 import Servant.API.ContentTypes (NoContent)
 import Servant.API.Flatten (Flat)
 import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, JWT, throwAll, SetCookie, CookieSettings, JWTSettings)
-import Session
 import System.IO
 import Test
-
+import Account.App
+import Account.Model
+import Session.App
+import Session.Model
 
 -- * API
 
@@ -30,12 +32,19 @@ type PublicApi =
   "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                                                       , Header "Set-Cookie" SetCookie
                                                                       ] NoContent)
+
 type ProtectedApi =
+  AccountApi :<|>
   RequestCollectionApi :<|>
   RequestNodeApi :<|>
   RequestFileApi :<|>
   EnvironmentApi :<|>
   HealthApi
+
+type AccountApi =
+  Flat (
+    "account" :> "me" :> Get '[JSON] Account
+  )
 
 type RequestCollectionApi =
   "requestCollection" :> (
@@ -100,6 +109,7 @@ type AssetApi =
 
 -- * Server
 
+
 publicApiServer :: CookieSettings -> JWTSettings -> Server PublicApi
 publicApiServer cookieSettings jwtSettings =
   createSessionHandler cookieSettings jwtSettings
@@ -108,6 +118,7 @@ protectedApiServer :: AuthResult Session -> Server ProtectedApi
 protectedApiServer = \case
 
   Authenticated session ->
+    accountApi session :<|>
     requestCollectionApi :<|>
     requestNodeApi :<|>
     requestFileApi :<|>
@@ -117,6 +128,8 @@ protectedApiServer = \case
   _ -> throwAll err401
 
   where
+    accountApi session =
+      meHandler session
     requestCollectionApi =
       getRequestCollectionById
     requestNodeApi =
@@ -147,6 +160,9 @@ assetApiServer =
 
 -- * Proxy
 
+
+accountApiProxy :: Proxy AccountApi
+accountApiProxy = Proxy
 
 requestCollectionApiProxy :: Proxy RequestCollectionApi
 requestCollectionApiProxy = Proxy
