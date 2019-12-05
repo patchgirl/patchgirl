@@ -75,3 +75,14 @@ convertEnvironmentKeyValueFromFrontToBack storable =
             { newKeyValueKey = key
             , newKeyValueValue = value
             }
+
+-- * account
+
+convertAccountFromBackToFront : Back.Account -> Front.Account
+convertAccountFromBackToFront { accountId, accountEmail } =
+    let
+        (Back.CaseInsensitive email) = accountEmail
+    in
+        { id = accountId
+        , email = email
+        }

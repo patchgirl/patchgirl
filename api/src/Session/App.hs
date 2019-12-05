@@ -11,8 +11,6 @@
 module Session.App where
 
 import Control.Monad.Trans (liftIO)
-import Data.Aeson (FromJSON, ToJSON)
-import GHC.Generics (Generic)
 import Servant
 import Servant.Auth.Server
 import Servant.Auth.Server (SetCookie, CookieSettings, JWTSettings)
@@ -22,22 +20,12 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import Data.Functor ((<&>))
 import Data.Maybe (listToMaybe)
-import Model
 import Account.Model
 import Session.Model
 
 
 -- * sign in
 
-
-data Login
-  = Login { email :: CaseInsensitive
-          , password :: String
-          }
-  deriving (Eq, Show, Read, Generic)
-
-instance ToJSON Login
-instance FromJSON Login
 
 createSessionHandler ::
   CookieSettings

@@ -9,7 +9,9 @@ import qualified Data.Aeson as Aeson
 import RequestCollection
 import RequestNode.Model
 import Environment.App
-import Session
+import Session.Model
+import Account.Model
+import Model
 import Http
 import AppHealth
 import App
@@ -32,6 +34,7 @@ deriveElmDef deriveElmDefOption ''KeyValue
 deriveElmDef deriveElmDefOption ''NewKeyValue
 deriveElmDef deriveElmDefOption ''Login
 deriveElmDef deriveElmDefOption ''CaseInsensitive
+deriveElmDef deriveElmDefOption ''Account
 
 main :: IO ()
 main =
@@ -59,6 +62,7 @@ main =
       , DefineElm (Proxy :: Proxy NewKeyValue)
       , DefineElm (Proxy :: Proxy Login)
       , DefineElm (Proxy :: Proxy CaseInsensitive)
+      , DefineElm (Proxy :: Proxy Account)
       ]
     proxyApi = (Proxy :: Proxy ProtectedApi)
   in

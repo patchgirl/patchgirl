@@ -23,7 +23,7 @@ import List.Extra as List
 import InitializedApplication.Model exposing(..)
 import InitializedApplication.Message exposing(..)
 
-view : Model -> Html Msg
+view : Model -> Element Msg
 view model =
     let
         contentView : Element Msg
@@ -33,11 +33,10 @@ view model =
                     MainNavBar.ReqTab -> builderView model
                     MainNavBar.EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
     in
-        layout [] <|
-            column [ width fill, centerY, spacing 30 ]
-                [ map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
-                , contentView
-                ]
+        column [ width fill, centerY, spacing 30 ]
+            [ map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
+            , contentView
+            ]
 
 builderView : Model -> Element Msg
 builderView model =

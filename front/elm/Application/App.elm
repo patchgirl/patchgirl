@@ -17,10 +17,131 @@ import BuilderApp.Model as BuilderApp
 import Application.Type exposing (..)
 
 
--- * model
+-- * session
+
+
+-- ** model
 
 
 type Model
+    = SessionCheckingPending
+    | Unsigned
+    | Signed SignedAppModel
+
+defaultModel : Model
+defaultModel = SessionCheckingPending
+
+type alias Account  =
+   { id: Int
+   , email: String
+   }
+
+
+-- ** message
+
+
+type Msg
+    = AccountFetched Account
+    | AccountNotFetched
+    | AskSignOff
+    | SignOff
+    | AskSignOn
+    | SignOn
+    | SignedInAppMsg SignedAppMsg
+    | ServerError
+
+
+-- ** init
+
+
+init : () -> (Model, Cmd Msg)
+init _ =
+    let
+        msg =
+            Client.getAccountMe "" getAccountResultToMsg
+    in
+        (defaultModel, msg)
+
+
+getAccountResultToMsg : Result Http.Error Client.Account -> Msg
+getAccountResultToMsg result =
+    case result of
+        Ok account ->
+            let
+                newAccount =
+                    Client.convertAccountFromBackToFront account
+            in
+                AccountFetched newAccount
+
+        Err (Http.BadStatus 401) ->
+             AccountNotFetched
+
+        Err error ->
+            Debug.log "test" ServerError
+
+
+-- ** update
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    case msg of
+        AccountFetched _ ->
+            let
+                newModel =
+                    Signed Unitialized
+            in
+                (newModel, Cmd.none)--Cmd.map SignedAppMsg init)
+
+        AccountNotFetched ->
+            (Unsigned, Cmd.none)
+
+        _ ->
+            let
+                newModel = Unsigned
+            in
+                (newModel, Cmd.none)
+
+
+-- ** view
+
+view : Model -> Html.Html Msg
+view model =
+    layout [] <|
+        case model of
+            SessionCheckingPending ->
+                loadingView
+
+            Unsigned ->
+                unsignedView
+
+            Signed signedAppModel ->
+                loadingView
+
+
+unsignedView : Element Msg
+unsignedView = none
+
+loadingView : Element a
+loadingView =
+    el [ width fill
+       , height fill
+       , Background.color <| secondaryColor
+       ]
+    <| el [ centerX
+          , centerY
+          , Font.center
+          ]
+        <| iconWithText "autorenew" "loading ApiTester..."
+
+
+-- * signed in app
+
+
+-- ** model
+
+
+type SignedAppModel
     = Unitialized
     | Pending
       { mRequestCollection : Maybe BuilderApp.RequestCollection
@@ -28,25 +149,22 @@ type Model
       }
     | Initialized InitializedApplication.Model
 
-defaultModel : Model
-defaultModel = Unitialized
+
+-- ** message
 
 
--- * message
-
-
-type Msg
+type SignedAppMsg
   = RequestCollectionFetched BuilderApp.RequestCollection
   | EnvironmentsFetched (List Environment)
-  | ServerError
+  | SignedAppServerError
   | InitializedApplicationMsg InitializedApplication.Msg
 
 
--- * init
+-- ** init
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
+initSignedApp : Cmd SignedAppMsg
+initSignedApp =
     let
         getRequestCollection =
             Client.getRequestCollectionByRequestCollectionId "" 1 requestCollectionResultToMsg
@@ -57,9 +175,9 @@ init _ =
         getInitialState = Cmd.batch [getRequestCollection, getEnvironments]
 
     in
-        (defaultModel, getInitialState)
+        getInitialState
 
-requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> Msg
+requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> SignedAppMsg
 requestCollectionResultToMsg result =
     case result of
         Ok requestCollection ->
@@ -70,10 +188,10 @@ requestCollectionResultToMsg result =
                 RequestCollectionFetched newRequestCollection
 
         Err error ->
-            Debug.log "test" ServerError
+            Debug.log "test" SignedAppServerError
 
 
-environmentsResultToMsg : Result Http.Error (List Client.Environment) -> Msg
+environmentsResultToMsg : Result Http.Error (List Client.Environment) -> SignedAppMsg
 environmentsResultToMsg result =
     case result of
         Ok clientEnvironments ->
@@ -83,9 +201,9 @@ environmentsResultToMsg result =
                 EnvironmentsFetched environments
 
         Err error ->
-            Debug.log "test" ServerError
+            Debug.log "test" SignedAppServerError
 
-upgradeModel : Model -> Model
+upgradeModel : SignedAppModel -> SignedAppModel
 upgradeModel model =
     case model of
         Pending { mRequestCollection, mEnvironments } ->
@@ -105,11 +223,11 @@ upgradeModel model =
             model
 
 
--- * update
+-- ** update
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
+updateSignedApp : SignedAppMsg -> SignedAppModel -> (SignedAppModel, Cmd SignedAppMsg)
+updateSignedApp msg model =
     case msg of
         EnvironmentsFetched environments ->
             let
@@ -146,7 +264,7 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        ServerError ->
+        SignedAppServerError ->
             (model, Cmd.none)
 
         InitializedApplicationMsg subMsg ->
@@ -167,38 +285,25 @@ update msg model =
                         )
 
 
--- * view
+-- ** view
 
 
-view : Model -> Html.Html Msg
-view model =
-    let
-        loadingView =
-            el [ width fill
-               , height fill
-               , Background.color <| secondaryColor
-               ]
-            <| el [ centerX
-                  , centerY
-                  , Font.center
-                  ]
-                <| iconWithText "autorenew" "loading ApiTester..."
+signedAppView : SignedAppModel -> Html.Html SignedAppMsg
+signedAppView model =
+    layout [] <|
+        case model of
+            Unitialized ->
+                loadingView
 
-    in
-        layout [] <|
-            case model of
-                Unitialized ->
-                    loadingView
+            Pending _ ->
+                loadingView
 
-                Pending _ ->
-                    loadingView
-
-                Initialized initializedApplication ->
-                    el [ width fill ] <|
-                        map InitializedApplicationMsg (html <| InitializedApplication.view initializedApplication)
+            Initialized initializedApplication ->
+                el [ width fill ] <|
+                    map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
 
 
--- * subscriptions
+-- ** subscriptions
 
 
 subscriptions : Model -> Sub Msg

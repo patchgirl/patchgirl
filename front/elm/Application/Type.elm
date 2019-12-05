@@ -1,5 +1,10 @@
 module Application.Type exposing (..)
 
+type alias Account  =
+   { id: Int
+   , email: String
+   }
+
 type alias Environment =
     { id : Int
     , name : Editable String

@@ -7,6 +7,18 @@ import GHC.Generics (Generic)
 import Servant.Auth.Server (ToJWT, FromJWT)
 import Model
 
+-- * login
+
+data Login
+  = Login { email :: CaseInsensitive
+          , password :: String
+          }
+  deriving (Eq, Show, Read, Generic)
+
+instance ToJSON Login
+instance FromJSON Login
+
+-- * session
 
 data Session =
   Session { accountId :: Int
