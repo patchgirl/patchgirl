@@ -1,9 +1,8 @@
 module Application.Type exposing (..)
 
-type alias Account  =
-   { id: Int
-   , email: String
-   }
+type Session
+    = Visitor { id: Int }
+    | SignedUser { id: Int, email: String }
 
 type alias Environment =
     { id : Int

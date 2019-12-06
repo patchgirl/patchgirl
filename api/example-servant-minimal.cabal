@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bb6f1904a544adc1209674d93c9f45810986641a13fd947d32cd0bd91b5f662e
+-- hash: 4a70f45d9331f7474fa81a0c303bf8aff398ff9c38e4a98c497201e62e612b81
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -12,7 +12,6 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Account.App
       Account.Model
       App
       AppHealth

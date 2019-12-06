@@ -17,8 +17,6 @@ import Servant.API.Flatten (Flat)
 import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, JWT, throwAll, SetCookie, CookieSettings, JWTSettings)
 import System.IO
 import Test
-import Account.App
-import Account.Model
 import Session.App
 import Session.Model
 
@@ -26,25 +24,37 @@ import Session.Model
 
 
 type CombinedApi auths =
-  (Auth auths Session :> ProtectedApi) :<|> PublicApi :<|> TestApi :<|> AssetApi
+  (RestApi auths) :<|>
+  TestApi :<|>
+  AssetApi
 
-type PublicApi =
-  "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                                                                      , Header "Set-Cookie" SetCookie
-                                                                      ] NoContent)
+type RestApi auths =
+  (Auth auths Session :> ProtectedApi) :<|>
+  (Auth auths Session :> SessionApi)
+
+type SessionApi =
+  Flat (
+    "session" :> (
+        "login" :>
+        ReqBody '[JSON] Login :>
+        PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                        , Header "Set-Cookie" SetCookie
+                                        ] NoContent) :<|>
+        "whoami" :>
+        Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                              , Header "Set-Cookie" SetCookie
+                              ] Session)
+
+
+    )
+  )
 
 type ProtectedApi =
-  AccountApi :<|>
   RequestCollectionApi :<|>
   RequestNodeApi :<|>
   RequestFileApi :<|>
   EnvironmentApi :<|>
   HealthApi
-
-type AccountApi =
-  Flat (
-    "account" :> "me" :> Get '[JSON] Account
-  )
 
 type RequestCollectionApi =
   "requestCollection" :> (
@@ -109,16 +119,19 @@ type AssetApi =
 
 -- * Server
 
-
-publicApiServer :: CookieSettings -> JWTSettings -> Server PublicApi
-publicApiServer cookieSettings jwtSettings =
-  createSessionHandler cookieSettings jwtSettings
+sessionApiServer
+  :: CookieSettings
+  -> JWTSettings
+  -> AuthResult Session
+  -> Server SessionApi
+sessionApiServer cookieSettings jwtSettings sessionAuthResult =
+  createSessionHandler cookieSettings jwtSettings :<|>
+  whoAmIHandler cookieSettings jwtSettings sessionAuthResult
 
 protectedApiServer :: AuthResult Session -> Server ProtectedApi
 protectedApiServer = \case
 
-  Authenticated session ->
-    accountApi session :<|>
+  Authenticated _ ->
     requestCollectionApi :<|>
     requestNodeApi :<|>
     requestFileApi :<|>
@@ -128,8 +141,6 @@ protectedApiServer = \case
   _ -> throwAll err401
 
   where
-    accountApi session =
-      meHandler session
     requestCollectionApi =
       getRequestCollectionById
     requestNodeApi =
@@ -161,8 +172,11 @@ assetApiServer =
 -- * Proxy
 
 
-accountApiProxy :: Proxy AccountApi
-accountApiProxy = Proxy
+combinedApiProxy :: Proxy (CombinedApi '[JWT])
+combinedApiProxy = Proxy
+
+restApiProxy :: Proxy (RestApi '[JWT])
+restApiProxy = Proxy
 
 requestCollectionApiProxy :: Proxy RequestCollectionApi
 requestCollectionApiProxy = Proxy
@@ -182,11 +196,8 @@ keyValueApiProxy = Proxy
 healthApiProxy :: Proxy HealthApi
 healthApiProxy = Proxy
 
-publicApiProxy :: Proxy PublicApi
-publicApiProxy = Proxy
-
-combinedApiProxy :: Proxy (CombinedApi '[JWT])
-combinedApiProxy = Proxy
+sessionApiProxy :: Proxy SessionApi
+sessionApiProxy = Proxy
 
 
 -- * APP
@@ -208,6 +219,9 @@ mkApp = do
     jwtSettings = defaultJWTSettings myKey
     cookieSettings = defaultCookieSettings
     context = cookieSettings :. jwtSettings :. EmptyContext
-    apiServer = protectedApiServer :<|> (publicApiServer cookieSettings jwtSettings)  :<|> testApiServer :<|> assetApiServer
+    apiServer =
+      (protectedApiServer :<|> (sessionApiServer cookieSettings jwtSettings)) :<|>
+      testApiServer :<|>
+      assetApiServer
   return $
     serveWithContext combinedApiProxy context apiServer

@@ -20,10 +20,12 @@ instance FromJSON Login
 
 -- * session
 
-data Session =
-  Session { accountId :: Int
-          , accountEmail :: CaseInsensitive
-          } deriving (Eq, Show, Read, Generic)
+data Session
+  = Visitor { _sessionId :: Int }
+  | SignedUser { _sessionId :: Int
+               , _sessionEmail :: CaseInsensitive
+               }
+  deriving (Eq, Show, Read, Generic)
 
 instance ToJSON Session
 instance ToJWT Session

@@ -17,6 +17,8 @@ import AppHealth
 import App
 import ElmOption (deriveElmDefOption)
 import Servant.API.ContentTypes (NoContent)
+import Servant.Auth.Server (JWT)
+import Servant ((:<|>))
 
 -- input
 deriveElmDef deriveElmDefOption ''RequestCollection
@@ -35,6 +37,7 @@ deriveElmDef deriveElmDefOption ''NewKeyValue
 deriveElmDef deriveElmDefOption ''Login
 deriveElmDef deriveElmDefOption ''CaseInsensitive
 deriveElmDef deriveElmDefOption ''Account
+deriveElmDef deriveElmDefOption ''Session
 
 main :: IO ()
 main =
@@ -63,7 +66,8 @@ main =
       , DefineElm (Proxy :: Proxy Login)
       , DefineElm (Proxy :: Proxy CaseInsensitive)
       , DefineElm (Proxy :: Proxy Account)
+      , DefineElm (Proxy :: Proxy Session)
       ]
-    proxyApi = (Proxy :: Proxy ProtectedApi)
+    proxyApi = (Proxy :: Proxy (ProtectedApi :<|> SessionApi))
   in
     generateElmModuleWith options namespace defElmImports targetFolder elmDefinitions proxyApi

@@ -78,11 +78,17 @@ convertEnvironmentKeyValueFromFrontToBack storable =
 
 -- * account
 
-convertAccountFromBackToFront : Back.Account -> Front.Account
-convertAccountFromBackToFront { accountId, accountEmail } =
-    let
-        (Back.CaseInsensitive email) = accountEmail
-    in
-        { id = accountId
-        , email = email
-        }
+convertSessionFromBackToFront : Back.Session -> Front.Session
+convertSessionFromBackToFront backSession =
+    case backSession of
+        Back.Visitor { sessionId } ->
+            Front.Visitor { id = sessionId }
+
+        Back.SignedUser { sessionId, sessionEmail } ->
+            let
+                (Back.CaseInsensitive email) = sessionEmail
+            in
+                Front.SignedUser
+                    { id = sessionId
+                    , email = email
+                    }

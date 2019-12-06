@@ -31,18 +31,12 @@ type Model
 defaultModel : Model
 defaultModel = SessionCheckingPending
 
-type alias Account  =
-   { id: Int
-   , email: String
-   }
-
 
 -- ** message
 
 
 type Msg
-    = AccountFetched Account
-    | AccountNotFetched
+    = SessionFetched Session
     | AskSignOff
     | SignOff
     | AskSignOn
@@ -58,23 +52,20 @@ init : () -> (Model, Cmd Msg)
 init _ =
     let
         msg =
-            Client.getAccountMe "" getAccountResultToMsg
+            Client.getSessionWhoami "" getSessionWhoamiResult
     in
         (defaultModel, msg)
 
 
-getAccountResultToMsg : Result Http.Error Client.Account -> Msg
-getAccountResultToMsg result =
+getSessionWhoamiResult : Result Http.Error Client.Session -> Msg
+getSessionWhoamiResult result =
     case result of
-        Ok account ->
+        Ok session ->
             let
-                newAccount =
-                    Client.convertAccountFromBackToFront account
+                newSession =
+                    Client.convertSessionFromBackToFront session
             in
-                AccountFetched newAccount
-
-        Err (Http.BadStatus 401) ->
-             AccountNotFetched
+                SessionFetched newSession
 
         Err error ->
             Debug.log "test" ServerError
@@ -86,15 +77,12 @@ getAccountResultToMsg result =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        AccountFetched _ ->
+        SessionFetched _ ->
             let
                 newModel =
                     Signed Unitialized
             in
                 (newModel, Cmd.none)--Cmd.map SignedAppMsg init)
-
-        AccountNotFetched ->
-            (Unsigned, Cmd.none)
 
         _ ->
             let
@@ -113,7 +101,7 @@ view model =
                 loadingView
 
             Unsigned ->
-                unsignedView
+                loadingView
 
             Signed signedAppModel ->
                 loadingView
