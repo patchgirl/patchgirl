@@ -4,6 +4,12 @@ type Session
     = Visitor { id: Int }
     | SignedUser { id: Int, email: String }
 
+getSessionId : Session -> Int
+getSessionId session =
+    case session of
+        Visitor { id } -> id
+        SignedUser { id } -> id
+
 type alias Environment =
     { id : Int
     , name : Editable String

@@ -24,12 +24,16 @@ import Application.Type exposing (..)
 
 
 type Model
-    = SessionCheckingPending
-    | Unsigned
-    | Signed SignedAppModel
+    = SessionPending
+    | AppDataPending
+      { session : Session
+      , mRequestCollection : Maybe BuilderApp.RequestCollection
+      , mEnvironments : Maybe (List Environment)
+      }
+    | InitializedApp InitializedApplication.Model
 
 defaultModel : Model
-defaultModel = SessionCheckingPending
+defaultModel = SessionPending
 
 
 -- ** message
@@ -37,11 +41,9 @@ defaultModel = SessionCheckingPending
 
 type Msg
     = SessionFetched Session
-    | AskSignOff
-    | SignOff
-    | AskSignOn
-    | SignOn
-    | SignedInAppMsg SignedAppMsg
+    | RequestCollectionFetched BuilderApp.RequestCollection
+    | EnvironmentsFetched (List Environment)
+    | InitializedApplicationMsg InitializedApplication.Msg
     | ServerError
 
 
@@ -77,34 +79,131 @@ getSessionWhoamiResult result =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        SessionFetched _ ->
+        SessionFetched session ->
             let
                 newModel =
-                    Signed Unitialized
+                    AppDataPending { session = session
+                                   , mRequestCollection = Nothing
+                                   , mEnvironments = Nothing
+                                   }
+
+                getRequestCollection =
+                    Client.getRequestCollectionByRequestCollectionId "" (getSessionId session) requestCollectionResultToMsg
+
+                getEnvironments =
+                    Client.getEnvironment "" environmentsResultToMsg
+
+                getAppData =
+                    Cmd.batch
+                        [ getRequestCollection
+                        , getEnvironments
+                        ]
+
             in
-                (newModel, Cmd.none)--Cmd.map SignedAppMsg init)
+                (newModel, getAppData)
+
+        EnvironmentsFetched environments ->
+            case model of
+                AppDataPending pending ->
+                    AppDataPending { pending | mEnvironments = Just environments }
+                        |> upgradeModel
+
+                _ ->
+                    Debug.todo "already initialized app received initialization infos"
+
+        RequestCollectionFetched requestCollection ->
+            case model of
+                AppDataPending pending ->
+                    AppDataPending { pending | mRequestCollection = Just requestCollection }
+                        |> upgradeModel
+
+                _ ->
+                    Debug.todo "already initialized app received initialization infos"
+
+        InitializedApplicationMsg subMsg ->
+            case model of
+                InitializedApp initializedApplication ->
+                    let
+                        (newInitializedApplication, newMsg) =
+                            InitializedApplication.update subMsg initializedApplication
+                    in
+                        ( InitializedApp newInitializedApplication
+                        , Cmd.map InitializedApplicationMsg newMsg
+                        )
+
+                _ ->
+                    Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
+
 
         _ ->
+            (model, Cmd.none)
+
+-- ** util
+
+requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> Msg
+requestCollectionResultToMsg result =
+    case result of
+        Ok requestCollection ->
             let
-                newModel = Unsigned
+                newRequestCollection =
+                    Client.convertRequestCollectionFromBackToFront requestCollection
             in
-                (newModel, Cmd.none)
+                RequestCollectionFetched newRequestCollection
+
+        Err error ->
+            Debug.log "could not fetch request collection" ServerError
+
+
+
+environmentsResultToMsg : Result Http.Error (List Client.Environment) -> Msg
+environmentsResultToMsg result =
+    case result of
+        Ok clientEnvironments ->
+            let
+                environments = List.map Client.convertEnvironmentFromBackToFront clientEnvironments
+            in
+                EnvironmentsFetched environments
+
+        Err error ->
+            Debug.log "could not fetch environments" ServerError
+
+
+upgradeModel : Model -> (Model, Cmd Msg)
+upgradeModel model =
+    case model of
+        AppDataPending { mRequestCollection, mEnvironments } ->
+            case (mRequestCollection, mEnvironments) of
+                (Just requestCollection, Just environments) ->
+                    let
+                        newModel =
+                            InitializedApp <|
+                                InitializedApplication.createModel requestCollection environments
+                    in
+                        (newModel, Cmd.none)
+
+                _ ->
+                    (model, Cmd.none)
+
+        _ ->
+            (model, Cmd.none)
 
 
 -- ** view
+
 
 view : Model -> Html.Html Msg
 view model =
     layout [] <|
         case model of
-            SessionCheckingPending ->
+            SessionPending ->
                 loadingView
 
-            Unsigned ->
+            AppDataPending _ ->
                 loadingView
 
-            Signed signedAppModel ->
-                loadingView
+            InitializedApp initializedApplication ->
+                el [ width fill ] <|
+                    map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
 
 
 unsignedView : Element Msg
@@ -122,173 +221,6 @@ loadingView =
           ]
         <| iconWithText "autorenew" "loading ApiTester..."
 
-
--- * signed in app
-
-
--- ** model
-
-
-type SignedAppModel
-    = Unitialized
-    | Pending
-      { mRequestCollection : Maybe BuilderApp.RequestCollection
-      , mEnvironments : Maybe (List Environment)
-      }
-    | Initialized InitializedApplication.Model
-
-
--- ** message
-
-
-type SignedAppMsg
-  = RequestCollectionFetched BuilderApp.RequestCollection
-  | EnvironmentsFetched (List Environment)
-  | SignedAppServerError
-  | InitializedApplicationMsg InitializedApplication.Msg
-
-
--- ** init
-
-
-initSignedApp : Cmd SignedAppMsg
-initSignedApp =
-    let
-        getRequestCollection =
-            Client.getRequestCollectionByRequestCollectionId "" 1 requestCollectionResultToMsg
-
-        getEnvironments =
-            Client.getEnvironment "" environmentsResultToMsg
-
-        getInitialState = Cmd.batch [getRequestCollection, getEnvironments]
-
-    in
-        getInitialState
-
-requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> SignedAppMsg
-requestCollectionResultToMsg result =
-    case result of
-        Ok requestCollection ->
-            let
-                newRequestCollection =
-                    Client.convertRequestCollectionFromBackToFront requestCollection
-            in
-                RequestCollectionFetched newRequestCollection
-
-        Err error ->
-            Debug.log "test" SignedAppServerError
-
-
-environmentsResultToMsg : Result Http.Error (List Client.Environment) -> SignedAppMsg
-environmentsResultToMsg result =
-    case result of
-        Ok clientEnvironments ->
-            let
-                environments = List.map Client.convertEnvironmentFromBackToFront clientEnvironments
-            in
-                EnvironmentsFetched environments
-
-        Err error ->
-            Debug.log "test" SignedAppServerError
-
-upgradeModel : SignedAppModel -> SignedAppModel
-upgradeModel model =
-    case model of
-        Pending { mRequestCollection, mEnvironments } ->
-            case (mRequestCollection, mEnvironments) of
-                (Just requestCollection, Just environments) ->
-                    let
-                        newModel =
-                            Initialized <|
-                                InitializedApplication.createModel requestCollection environments
-                    in
-                        newModel
-
-                _ ->
-                    model
-
-        _ ->
-            model
-
-
--- ** update
-
-
-updateSignedApp : SignedAppMsg -> SignedAppModel -> (SignedAppModel, Cmd SignedAppMsg)
-updateSignedApp msg model =
-    case msg of
-        EnvironmentsFetched environments ->
-            let
-                newModel =
-                    case model of
-                        Unitialized ->
-                            Pending { mEnvironments = Just environments
-                                    , mRequestCollection = Nothing
-                                    }
-
-                        Pending pending ->
-                            Pending { pending | mEnvironments = Just environments } |> upgradeModel
-
-                        Initialized _ ->
-                            Debug.todo "already initialized app received initialization infos"
-            in
-                (newModel, Cmd.none)
-
-        RequestCollectionFetched requestCollection ->
-            let
-                newModel =
-                    case model of
-                        Unitialized ->
-                            Pending { mEnvironments = Nothing
-                                    , mRequestCollection = Just requestCollection
-                                    }
-
-                        Pending pending ->
-                            Pending { pending | mRequestCollection = Just requestCollection } |> upgradeModel
-
-                        Initialized _ ->
-                            Debug.todo "already initialized app received initialization infos"
-
-            in
-                (newModel, Cmd.none)
-
-        SignedAppServerError ->
-            (model, Cmd.none)
-
-        InitializedApplicationMsg subMsg ->
-            case model of
-                Pending _ ->
-                    Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
-
-                Unitialized ->
-                    Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
-
-                Initialized initializedApplication ->
-                    let
-                        (newInitializedApplication, newMsg) =
-                            InitializedApplication.update subMsg initializedApplication
-                    in
-                        ( Initialized newInitializedApplication
-                        , Cmd.map InitializedApplicationMsg newMsg
-                        )
-
-
--- ** view
-
-
-signedAppView : SignedAppModel -> Html.Html SignedAppMsg
-signedAppView model =
-    layout [] <|
-        case model of
-            Unitialized ->
-                loadingView
-
-            Pending _ ->
-                loadingView
-
-            Initialized initializedApplication ->
-                el [ width fill ] <|
-                    map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
 
 
 -- ** subscriptions
