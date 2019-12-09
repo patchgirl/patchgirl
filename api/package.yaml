@@ -38,6 +38,7 @@ dependencies:
   - aeson
   - wai
   - warp
+  - warp-tls
   - postgresql-simple
   - text
   - servant-elm

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4a70f45d9331f7474fa81a0c303bf8aff398ff9c38e4a98c497201e62e612b81
+-- hash: dc5f4d70a0066062ada02dada50fd7fa1723038bd0e10c74dca8937e6b46ac5d
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -52,6 +52,7 @@ library
     , unordered-containers
     , wai
     , warp
+    , warp-tls
   default-language: Haskell2010
 
 executable example-servant-minimal
@@ -80,6 +81,7 @@ executable example-servant-minimal
     , unordered-containers
     , wai
     , warp
+    , warp-tls
   default-language: Haskell2010
 
 test-suite spec
@@ -122,4 +124,5 @@ test-suite spec
     , unordered-containers
     , wai
     , warp >=3.2.4
+    , warp-tls
   default-language: Haskell2010

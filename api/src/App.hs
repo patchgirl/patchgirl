@@ -8,6 +8,7 @@ import AppHealth
 import Environment.App
 import Network.Wai hiding (Request)
 import Network.Wai.Handler.Warp
+import Network.Wai.Handler.WarpTLS
 import RequestNode.App
 import RequestCollection
 import RequestNode.Model
@@ -179,7 +180,8 @@ run = do
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) $
         defaultSettings
-  runSettings settings =<< mkApp
+      tlsOpts = tlsSettings "cert.pem" "key.pem"
+  runTLS tlsOpts settings =<< mkApp
 
 mkApp :: IO Application
 mkApp = do
