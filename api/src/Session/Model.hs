@@ -3,6 +3,8 @@
 module Session.Model where
 
 import Data.Aeson (FromJSON, ToJSON)
+import           Data.Aeson (ToJSON(..), genericToJSON)
+import           Data.Aeson.Types (fieldLabelModifier, defaultOptions)
 import GHC.Generics (Generic)
 import Servant.Auth.Server (ToJWT, FromJWT)
 import Model
@@ -27,7 +29,10 @@ data Session
                }
   deriving (Eq, Show, Read, Generic)
 
-instance ToJSON Session
+instance ToJSON Session where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 instance ToJWT Session
 instance FromJSON Session
 instance FromJWT Session

@@ -44,7 +44,7 @@ type Msg
     | RequestCollectionFetched BuilderApp.RequestCollection
     | EnvironmentsFetched (List Environment)
     | InitializedApplicationMsg InitializedApplication.Msg
-    | ServerError
+    | ServerError Http.Error
 
 
 -- ** init
@@ -70,7 +70,7 @@ getSessionWhoamiResult result =
                 SessionFetched newSession
 
         Err error ->
-            Debug.log "test" ServerError
+            Debug.log "whoami" (ServerError error)
 
 
 -- ** update
@@ -135,8 +135,8 @@ update msg model =
                     Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
 
 
-        _ ->
-            (model, Cmd.none)
+        ServerError error ->
+            Debug.todo "server error" error
 
 -- ** util
 
@@ -151,7 +151,7 @@ requestCollectionResultToMsg result =
                 RequestCollectionFetched newRequestCollection
 
         Err error ->
-            Debug.log "could not fetch request collection" ServerError
+            ServerError error
 
 
 
@@ -165,7 +165,7 @@ environmentsResultToMsg result =
                 EnvironmentsFetched environments
 
         Err error ->
-            Debug.log "could not fetch environments" ServerError
+            ServerError error
 
 
 upgradeModel : Model -> (Model, Cmd Msg)

@@ -14,7 +14,7 @@ import RequestNode.Model
 import Servant
 import Servant.API.ContentTypes (NoContent)
 import Servant.API.Flatten (Flat)
-import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, JWT, throwAll, SetCookie, CookieSettings, JWTSettings)
+import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, throwAll, SetCookie, CookieSettings, JWTSettings, Cookie)
 import System.IO
 import Test
 import Session.App
@@ -169,37 +169,6 @@ assetApiServer =
   serveDirectoryWebApp "../public"
 
 
--- * Proxy
-
-
-combinedApiProxy :: Proxy (CombinedApi '[JWT])
-combinedApiProxy = Proxy
-
-restApiProxy :: Proxy (RestApi '[JWT])
-restApiProxy = Proxy
-
-requestCollectionApiProxy :: Proxy RequestCollectionApi
-requestCollectionApiProxy = Proxy
-
-requestFileApiProxy :: Proxy RequestFileApi
-requestFileApiProxy = Proxy
-
-testApiProxy :: Proxy TestApi
-testApiProxy = Proxy
-
-environmentApiProxy :: Proxy EnvironmentApi
-environmentApiProxy = Proxy
-
-keyValueApiProxy :: Proxy KeyValueApi
-keyValueApiProxy = Proxy
-
-healthApiProxy :: Proxy HealthApi
-healthApiProxy = Proxy
-
-sessionApiProxy :: Proxy SessionApi
-sessionApiProxy = Proxy
-
-
 -- * APP
 
 
@@ -219,6 +188,8 @@ mkApp = do
     jwtSettings = defaultJWTSettings myKey
     cookieSettings = defaultCookieSettings
     context = cookieSettings :. jwtSettings :. EmptyContext
+    combinedApiProxy :: Proxy (CombinedApi '[Cookie])
+    combinedApiProxy = Proxy
     apiServer =
       (protectedApiServer :<|> (sessionApiServer cookieSettings jwtSettings)) :<|>
       testApiServer :<|>
