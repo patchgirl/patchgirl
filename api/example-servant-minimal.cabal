@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dc5f4d70a0066062ada02dada50fd7fa1723038bd0e10c74dca8937e6b46ac5d
+-- hash: 94a69917da1b52ded92aea51f5a7fb9474b572b8458fae2c7771131c2f6b9b26
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -43,6 +43,7 @@ library
     , postgresql-simple
     , servant
     , servant-auth
+    , servant-auth-client
     , servant-auth-server
     , servant-elm
     , servant-flatten
@@ -72,6 +73,7 @@ executable example-servant-minimal
     , postgresql-simple
     , servant
     , servant-auth
+    , servant-auth-client
     , servant-auth-server
     , servant-elm
     , servant-flatten
@@ -114,6 +116,7 @@ test-suite spec
     , postgresql-simple
     , servant
     , servant-auth
+    , servant-auth-client
     , servant-auth-server
     , servant-client
     , servant-elm

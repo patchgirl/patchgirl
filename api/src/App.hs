@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module App where
 
@@ -15,14 +16,13 @@ import RequestNode.Model
 import Servant
 import Servant.API.ContentTypes (NoContent)
 import Servant.API.Flatten (Flat)
-import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, throwAll, SetCookie, CookieSettings, JWTSettings, Cookie)
+import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, throwAll, SetCookie, CookieSettings, JWTSettings, Cookie, IsSecure(..), cookieIsSecure, cookieSameSite, SameSite(..))
 import System.IO
 import Test
 import Session.App
 import Session.Model
 
 -- * API
-
 
 type CombinedApi auths =
   (RestApi auths) :<|>
@@ -120,6 +120,7 @@ type AssetApi =
 
 -- * Server
 
+
 sessionApiServer
   :: CookieSettings
   -> JWTSettings
@@ -188,7 +189,10 @@ mkApp = do
   myKey <- generateKey
   let
     jwtSettings = defaultJWTSettings myKey
-    cookieSettings = defaultCookieSettings
+    cookieSettings =
+      defaultCookieSettings { cookieIsSecure = NotSecure
+                            , cookieSameSite = AnySite
+                            }
     context = cookieSettings :. jwtSettings :. EmptyContext
     combinedApiProxy :: Proxy (CombinedApi '[Cookie])
     combinedApiProxy = Proxy

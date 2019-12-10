@@ -18,3 +18,4 @@ Client.elm
 *~
 *.tmp
 front/bin/elm
+*.pem

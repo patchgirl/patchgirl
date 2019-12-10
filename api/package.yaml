@@ -33,6 +33,7 @@ dependencies:
   - servant-server
   - servant-auth
   - servant-auth-server
+  - servant-auth-client
   - servant-flatten
   - transformers
   - aeson
