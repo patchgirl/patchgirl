@@ -16,9 +16,17 @@
 import           Account.Model
 import           App
 import           AppHealth
+import           Control.Lens             ((&), (<>~))
 import qualified Data.Aeson               as Aeson
+import qualified Data.Text                as T
+import           Elm.Module               as Elm
+import           Elm.TyRep
+
+import           Debug.Trace
 import           ElmOption                (deriveElmDefOption)
 import           Environment.App
+import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
+                                           Symbol, TypeError, symbolVal)
 import           Http
 import           Model
 import           RequestCollection
@@ -27,19 +35,15 @@ import           Servant                  ((:<|>))
 import           Servant.API              ((:>), Capture, Get, JSON)
 import           Servant.API.ContentTypes (NoContent)
 import           Servant.API.Flatten      (Flat)
-import           Servant.Auth.Server      (JWT)
-import           Servant.Elm
-import           Session.Model
-
-import           Control.Lens             ((&), (<>~))
-import qualified Data.Text                as T
-import           Elm.Module               as Elm
-import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
-                                           Symbol, TypeError, symbolVal)
 import           Servant.Auth             (Auth (..), Cookie)
 import           Servant.Auth.Client      (Token)
+import           Servant.Auth.Server      (JWT)
 import           Servant.Elm
 import           Servant.Foreign          hiding (Static)
+import           Session.Model
+
+instance IsElmDefinition Token where
+  compileElmDef _ = ETypePrimAlias (EPrimAlias (ETypeName "Token" []) (ETyCon (ETCon "String")))
 
 type family TokenHeaderName xs :: Symbol where
   TokenHeaderName (Cookie ': xs) = "X-XSRF-TOKEN"
@@ -91,7 +95,13 @@ main =
   let
     options :: ElmOptions
     options =
-      defElmOptions { urlPrefix = Dynamic }
+      defElmOptions { urlPrefix = Dynamic
+                    , stringElmTypes =
+                      [ toElmType (Proxy @String)
+                      , toElmType (Proxy @T.Text)
+                      , toElmType (Proxy @Token)
+                      ]
+                    }
     namespace =
       [ "Api"
       , "Client"
@@ -115,6 +125,7 @@ main =
       , DefineElm (Proxy :: Proxy CaseInsensitive)
       , DefineElm (Proxy :: Proxy Account)
       , DefineElm (Proxy :: Proxy Session)
+      , DefineElm (Proxy :: Proxy Token)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
