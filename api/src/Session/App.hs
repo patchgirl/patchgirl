@@ -1,59 +1,64 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE NamedFieldPuns        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Session.App where
 
-import Control.Monad.Trans (liftIO)
-import Servant
-import Servant.Auth.Server
-import Servant.Auth.Server (SetCookie, CookieSettings, JWTSettings)
-import           Database.PostgreSQL.Simple (Connection, query)
-import Servant.Auth.Server.SetCookieOrphan ()
+import           Account.Model
+import           Control.Monad.Trans                 (liftIO)
+import           Data.Functor                        ((<&>))
+import           Data.Maybe                          (listToMaybe)
+import           Data.Text                           (Text)
+import           Data.Text.Encoding                  (decodeUtf8)
+import           Database.PostgreSQL.Simple          (Connection, query)
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
-import Account.Model
-import Data.Functor ((<&>))
-import Data.Maybe (listToMaybe)
-import Session.Model
+import           Model
+import           Servant
+import           Servant.Auth.Server
+import           Servant.Auth.Server                 (CookieSettings,
+                                                      JWTSettings, SetCookie)
+import           Servant.Auth.Server.SetCookieOrphan ()
+import           Session.Model
+import           Web.Cookie                          (setCookieValue)
 
 
 -- * who am I
 
-whoAmIHandler ::
-  CookieSettings
+whoAmIHandler
+  :: CookieSettings
   -> JWTSettings
-  -> AuthResult Session
-  -> Handler (Headers '[ Header "Set-Cookie" SetCookie
-                       , Header "Set-Cookie" SetCookie
-                       ]
-              Session)
-whoAmIHandler cookieSettings jwtSettings = \case
-  Authenticated (signedUser @ SignedUser {}) ->
-    handle signedUser
+  -> AuthResult CookieSession
+  -> Handler Session
+whoAmIHandler cookieSettings _ = \case
+  (Authenticated (SignedUserCookie { _cookieAccountId, _cookieAccountEmail })) -> do
+    csrfToken <- liftIO $ createCsrfToken
+    let (CaseInsensitive email) = _cookieAccountEmail
+    return $
 
-  _ ->
-    handle $ Visitor { _sessionId = 1 }
+      SignedUserSession { _sessionAccountId = _cookieAccountId
+                        , _sessionEmail = email
+                        , _sessionCsrfToken = csrfToken
+                        }
 
+  _ -> do
+    csrfToken <- liftIO $ createCsrfToken
+    return $
+      VisitorSession { _sessionAccountId = 1
+                     , _sessionCsrfToken = csrfToken
+                     }
   where
-    handle
-      :: Session
-      -> Handler (Headers '[ Header "Set-Cookie" SetCookie
-                           , Header "Set-Cookie" SetCookie
-                           ]
-                   Session)
-    handle session = do
-      mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings session
-      case mApplyCookies of
-        Nothing           -> throwError err401
-        Just applyCookies -> return $ applyCookies session
+    createCsrfToken :: IO Text
+    createCsrfToken = do
+      setCookie <- liftIO $ makeXsrfCookie cookieSettings
+      return $ (decodeUtf8 . setCookieValue) setCookie
 
 
 -- * sign in
@@ -69,18 +74,18 @@ createSessionHandler
 createSessionHandler cookieSettings jwtSettings login = do
   mAccount <- liftIO (getDBConnection >>= selectAccount login)
   case mAccount of
-    Just Account { _accountId, _accountEmail } -> do
-      let session =
-            SignedUser { _sessionId = _accountId
-                       , _sessionEmail = _accountEmail
-                       }
-      mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings session
+    Nothing ->
+      throwError err401
+
+    Just (Account { _accountId, _accountEmail }) -> do
+      let cookieSession =
+            SignedUserCookie { _cookieAccountId = _accountId
+                             , _cookieAccountEmail = _accountEmail
+                             }
+      mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
       case mApplyCookies of
         Nothing           -> throwError err401
         Just applyCookies -> return $ applyCookies NoContent
-
-    _ ->
-      throwError err401
 
 selectAccount :: Login -> Connection -> IO (Maybe Account)
 selectAccount (Login { email, password }) connection = do

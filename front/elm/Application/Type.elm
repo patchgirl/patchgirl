@@ -1,8 +1,13 @@
 module Application.Type exposing (..)
 
 type Session
-    = Visitor { id: Int }
-    | SignedUser { id: Int, email: String }
+    = Visitor { id: Int
+              , csrfToken: String
+              }
+    | SignedUser { id: Int
+                 , csrfToken: String
+                 , email: String
+                 }
 
 getSessionId : Session -> Int
 getSessionId session =

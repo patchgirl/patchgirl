@@ -1,26 +1,33 @@
-{-# LANGUAGE DataKinds     #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
 module App where
 
-import AppHealth
-import Environment.App
-import Network.Wai hiding (Request)
-import Network.Wai.Handler.Warp
-import Network.Wai.Handler.WarpTLS
-import RequestNode.App
-import RequestCollection
-import RequestNode.Model
-import Servant
-import Servant.API.ContentTypes (NoContent)
-import Servant.API.Flatten (Flat)
-import Servant.Auth.Server (Auth, AuthResult(..), generateKey, defaultJWTSettings, defaultCookieSettings, throwAll, SetCookie, CookieSettings, JWTSettings, Cookie, IsSecure(..), cookieIsSecure, cookieSameSite, SameSite(..))
-import System.IO
-import Test
-import Session.App
-import Session.Model
+import           AppHealth
+import           Environment.App
+import           Network.Wai                 hiding (Request)
+import           Network.Wai.Handler.Warp
+import           Network.Wai.Handler.WarpTLS
+import           RequestCollection
+import           RequestNode.App
+import           RequestNode.Model
+import           Servant
+import           Servant.API.ContentTypes    (NoContent)
+import           Servant.API.Flatten         (Flat)
+import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
+                                              CookieSettings, IsSecure (..),
+                                              JWTSettings, SameSite (..),
+                                              SetCookie, cookieIsSecure,
+                                              cookieSameSite,
+                                              defaultCookieSettings,
+                                              defaultJWTSettings, generateKey,
+                                              throwAll)
+import           Session.App
+import           Session.Model
+import           System.IO
+import           Test
 
 -- * API
 
@@ -30,8 +37,8 @@ type CombinedApi auths =
   AssetApi
 
 type RestApi auths =
-  (Auth auths Session :> ProtectedApi) :<|>
-  (Auth auths Session :> SessionApi)
+  (Auth auths CookieSession :> ProtectedApi) :<|>
+  (Auth auths CookieSession :> SessionApi)
 
 type SessionApi =
   Flat (
@@ -42,9 +49,7 @@ type SessionApi =
                                         , Header "Set-Cookie" SetCookie
                                         ] NoContent) :<|>
         "whoami" :>
-        Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                              , Header "Set-Cookie" SetCookie
-                              ] Session)
+        Get '[JSON] Session
 
 
     )
@@ -124,13 +129,13 @@ type AssetApi =
 sessionApiServer
   :: CookieSettings
   -> JWTSettings
-  -> AuthResult Session
+  -> AuthResult CookieSession
   -> Server SessionApi
-sessionApiServer cookieSettings jwtSettings sessionAuthResult =
+sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   createSessionHandler cookieSettings jwtSettings :<|>
-  whoAmIHandler cookieSettings jwtSettings sessionAuthResult
+  whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
-protectedApiServer :: AuthResult Session -> Server ProtectedApi
+protectedApiServer :: AuthResult CookieSession -> Server ProtectedApi
 protectedApiServer = \case
 
   Authenticated _ ->

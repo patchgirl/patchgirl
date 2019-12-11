@@ -49,3 +49,5 @@ dependencies:
   - lens
   - mtl
   - case-insensitive
+  - cookie
+  - bytestring

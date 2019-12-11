@@ -81,14 +81,14 @@ convertEnvironmentKeyValueFromFrontToBack storable =
 convertSessionFromBackToFront : Back.Session -> Front.Session
 convertSessionFromBackToFront backSession =
     case backSession of
-        Back.Visitor { sessionId } ->
-            Front.Visitor { id = sessionId }
+        Back.VisitorSession { sessionAccountId, sessionCsrfToken } ->
+            Front.Visitor { id = sessionAccountId
+                          , csrfToken = sessionCsrfToken
+                          }
 
-        Back.SignedUser { sessionId, sessionEmail } ->
-            let
-                (Back.CaseInsensitive email) = sessionEmail
-            in
-                Front.SignedUser
-                    { id = sessionId
-                    , email = email
-                    }
+        Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionEmail } ->
+            Front.SignedUser
+                { id = sessionAccountId
+                , csrfToken = sessionCsrfToken
+                , email = sessionEmail
+                }
