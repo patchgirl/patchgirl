@@ -16,9 +16,9 @@ import           RequestNode.Model
 import           Servant                     hiding (BadPassword, NoSuchUser)
 import           Servant.API.ContentTypes    (NoContent)
 import           Servant.API.Flatten         (Flat)
-import           Servant.Auth.Server         (Auth, AuthResult (..),
+import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
                                               CookieSettings, IsSecure (..),
-                                              JWT, JWTSettings, SameSite (..),
+                                              JWTSettings, SameSite (..),
                                               SetCookie, cookieIsSecure,
                                               cookieSameSite, cookieXsrfSetting,
                                               defaultCookieSettings,
@@ -218,8 +218,7 @@ mkApp = do
                             , sessionCookieName = "JWT"
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
-    combinedApiProxy :: Proxy (CombinedApi '[JWT])
-    combinedApiProxy = Proxy
+    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie])
     apiServer =
       (protectedApiServer :<|> (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings)) :<|>
       testApiServer :<|>

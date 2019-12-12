@@ -2,7 +2,8 @@
 
 module Session.Model where
 
-import           Data.Aeson          (FromJSON, ToJSON)
+import           Data.Aeson          (FromJSON, ToJSON, genericParseJSON,
+                                      parseJSON)
 import           Data.Aeson          (ToJSON (..), genericToJSON)
 import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
 import           Data.Text           (Text)
@@ -60,5 +61,7 @@ instance ToJSON CookieSession where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance ToJWT CookieSession
-instance FromJSON CookieSession
+instance FromJSON CookieSession where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 instance FromJWT CookieSession
