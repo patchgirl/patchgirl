@@ -13,17 +13,17 @@ import           Network.Wai.Handler.WarpTLS
 import           RequestCollection
 import           RequestNode.App
 import           RequestNode.Model
-import           Servant
+import           Servant                     hiding (BadPassword, NoSuchUser)
 import           Servant.API.ContentTypes    (NoContent)
 import           Servant.API.Flatten         (Flat)
-import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
+import           Servant.Auth.Server         (Auth, AuthResult (..),
                                               CookieSettings, IsSecure (..),
-                                              JWTSettings, SameSite (..),
+                                              JWT, JWTSettings, SameSite (..),
                                               SetCookie, cookieIsSecure,
-                                              cookieSameSite,
+                                              cookieSameSite, cookieXsrfSetting,
                                               defaultCookieSettings,
                                               defaultJWTSettings, generateKey,
-                                              throwAll)
+                                              sessionCookieName, throwAll)
 import           Session.App
 import           Session.Model
 import           System.IO
@@ -38,20 +38,23 @@ type CombinedApi auths =
 
 type RestApi auths =
   (Auth auths CookieSession :> ProtectedApi) :<|>
+  LoginApi :<|>
   (Auth auths CookieSession :> SessionApi)
 
-type SessionApi =
-  Flat (
+type LoginApi =
     "session" :> (
         "login" :>
         ReqBody '[JSON] Login :>
         PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                         , Header "Set-Cookie" SetCookie
-                                        ] NoContent) :<|>
+                                        ] NoContent)
+     )
+
+type SessionApi =
+  Flat (
+    "session" :> (
         "whoami" :>
         Get '[JSON] Session
-
-
     )
   )
 
@@ -126,17 +129,31 @@ type AssetApi =
 -- * Server
 
 
+loginApiServer
+  :: CookieSettings
+  -> JWTSettings
+  -> Server LoginApi
+loginApiServer cookieSettings jwtSettings  =
+  createSessionHandler cookieSettings jwtSettings
+
 sessionApiServer
   :: CookieSettings
   -> JWTSettings
   -> AuthResult CookieSession
   -> Server SessionApi
 sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
-  createSessionHandler cookieSettings jwtSettings :<|>
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
 protectedApiServer :: AuthResult CookieSession -> Server ProtectedApi
 protectedApiServer = \case
+  BadPassword ->
+    throwAll err402
+
+  NoSuchUser ->
+    throwAll err403
+
+  Indefinite ->
+    throwAll err405
 
   Authenticated _ ->
     requestCollectionApi :<|>
@@ -145,7 +162,7 @@ protectedApiServer = \case
     environmentApi :<|>
     getAppHealth
 
-  _ -> throwAll err401
+  --_ -> throwAll err401
 
   where
     requestCollectionApi =
@@ -195,14 +212,16 @@ mkApp = do
   let
     jwtSettings = defaultJWTSettings myKey
     cookieSettings =
-      defaultCookieSettings { cookieIsSecure = NotSecure
+      defaultCookieSettings { cookieIsSecure = Secure
                             , cookieSameSite = AnySite
+                            , cookieXsrfSetting = Nothing
+                            , sessionCookieName = "JWT"
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
-    combinedApiProxy :: Proxy (CombinedApi '[Cookie])
+    combinedApiProxy :: Proxy (CombinedApi '[JWT])
     combinedApiProxy = Proxy
     apiServer =
-      (protectedApiServer :<|> (sessionApiServer cookieSettings jwtSettings)) :<|>
+      (protectedApiServer :<|> (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings)) :<|>
       testApiServer :<|>
       assetApiServer
   return $

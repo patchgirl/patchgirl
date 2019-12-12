@@ -22,6 +22,7 @@ import Util.View as Util
 type alias Model a =
     { a
         | environments : List Environment
+        , session : Session
         , selectedEnvironmentToEditId : Maybe Int
     }
 
@@ -68,7 +69,7 @@ update msg model =
                 }
 
             newMsg =
-                Client.postEnvironment "" payload (newEnvironmentResultToMsg name)
+                Client.postEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)
         in
             (model, newMsg)
 
@@ -112,7 +113,7 @@ update msg model =
                 }
 
             newMsg =
-                Client.putEnvironmentByEnvironmentId "" id payload (updateEnvironmentResultToMsg id name)
+                Client.putEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id name)
         in
             (model, newMsg)
 
@@ -137,7 +138,7 @@ update msg model =
     AskDelete id ->
         let
             newMsg =
-                Client.deleteEnvironmentByEnvironmentId "" id (deleteEnvironmentResultToMsg id)
+                Client.deleteEnvironmentByEnvironmentId "" (getCsrfToken model.session) id (deleteEnvironmentResultToMsg id)
         in
             (model, newMsg)
 
@@ -186,7 +187,7 @@ update msg model =
                 (model, Cmd.none)
 
             Just environment ->
-                case ((updateKeyValue subMsg environment), model.selectedEnvironmentToEditId) of
+                case ((updateKeyValue subMsg (model.session, environment)), model.selectedEnvironmentToEditId) of
                     ((newEnvironment, newSubMsg), Just id) ->
                         let
                             newEnvironments =
@@ -250,8 +251,16 @@ view model =
         keyValuesEditionView =
             case mSelectedEnv of
                 Just selectedEnv ->
-                    el []
-                        <| map EnvironmentKeyValueEditionMsg (envKeyValueView selectedEnv)
+                    let
+                        subModel =
+                            { session = model.session
+                            , keyValues = selectedEnv.keyValues
+                            , name = selectedEnv.name
+                            , id = selectedEnv.id
+                            }
+                    in
+                        el []
+                            <| map EnvironmentKeyValueEditionMsg (envKeyValueView subModel)
 
                 Nothing ->
                     el [] (text "no environment selected")
@@ -361,8 +370,8 @@ type KeyValueMsg
 
 -- ** update
 
-updateKeyValue : KeyValueMsg -> Environment -> (Environment, Cmd KeyValueMsg)
-updateKeyValue msg model =
+updateKeyValue : KeyValueMsg -> (Session, Environment) -> (Environment, Cmd KeyValueMsg)
+updateKeyValue msg (session, model) =
     case msg of
         PromptKey idx newKey ->
             let
@@ -407,7 +416,7 @@ updateKeyValue msg model =
         AskDeleteKeyValue id ->
             let
                 newMsg =
-                    Client.deleteEnvironmentByEnvironmentIdKeyValueByKeyValueId "" model.id id (deleteKeyValueResultToMsg id)
+                    Client.deleteEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken session) model.id id (deleteKeyValueResultToMsg id)
             in
                 (model, newMsg)
 
@@ -428,7 +437,7 @@ updateKeyValue msg model =
                     List.map Client.convertEnvironmentKeyValueFromFrontToBack model.keyValues
 
                 newMsg =
-                    Client.putEnvironmentByEnvironmentIdKeyValue "" model.id updateKeyValues updateKeyValuesResultToMsg
+                    Client.putEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken session) model.id updateKeyValues updateKeyValuesResultToMsg
             in
                 (model, newMsg)
 

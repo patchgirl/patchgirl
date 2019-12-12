@@ -8,7 +8,9 @@ import List.Extra as List
 import Application.Type exposing (..)
 
 type alias Model =
-    { mainNavBarModel : MainNavBar.Model
+    { session : Session
+    -- NAV
+    , mainNavBarModel : MainNavBar.Model
     -- BUILDER APP
     , selectedBuilderIndex : Maybe Int
     , displayedBuilderIndex : Maybe Int
@@ -60,8 +62,8 @@ getEnvironmentKeyValuesToEdit model =
         |> Maybe.map .keyValues
         |> Maybe.withDefault []
 
-createModel : BuilderApp.RequestCollection -> List Environment -> Model
-createModel requestCollection environments =
+createModel : Session -> BuilderApp.RequestCollection -> List Environment -> Model
+createModel session requestCollection environments =
   let
       selectedBuilderIndex = Nothing
       displayedBuilderIndex = Nothing
@@ -74,7 +76,8 @@ createModel requestCollection environments =
       selectedEnvironmentToEditId = Just 0
       selectedEnvironmentToRunIndex = Just 0
   in
-      { mainNavBarModel = MainNavBar.defaultModel
+      { session = session
+      , mainNavBarModel = MainNavBar.defaultModel
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex

@@ -54,7 +54,7 @@ init : () -> (Model, Cmd Msg)
 init _ =
     let
         msg =
-            Client.getSessionWhoami "" getSessionWhoamiResult
+            Client.getSessionWhoami "" "" getSessionWhoamiResult
     in
         (defaultModel, msg)
 
@@ -88,10 +88,10 @@ update msg model =
                                    }
 
                 getRequestCollection =
-                    Client.getRequestCollectionByRequestCollectionId "" (getSessionId session) requestCollectionResultToMsg
+                    Client.getRequestCollectionByRequestCollectionId "" (getCsrfToken session) (getSessionId session) requestCollectionResultToMsg
 
                 getEnvironments =
-                    Client.getEnvironment "" environmentsResultToMsg
+                    Client.getEnvironment "" (getCsrfToken session) environmentsResultToMsg
 
                 getAppData =
                     Cmd.batch
@@ -171,13 +171,13 @@ environmentsResultToMsg result =
 upgradeModel : Model -> (Model, Cmd Msg)
 upgradeModel model =
     case model of
-        AppDataPending { mRequestCollection, mEnvironments } ->
+        AppDataPending { session, mRequestCollection, mEnvironments } ->
             case (mRequestCollection, mEnvironments) of
                 (Just requestCollection, Just environments) ->
                     let
                         newModel =
                             InitializedApp <|
-                                InitializedApplication.createModel requestCollection environments
+                                InitializedApplication.createModel session requestCollection environments
                     in
                         (newModel, Cmd.none)
 

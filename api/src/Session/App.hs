@@ -39,20 +39,20 @@ whoAmIHandler
   -> Handler Session
 whoAmIHandler cookieSettings _ = \case
   (Authenticated (SignedUserCookie { _cookieAccountId, _cookieAccountEmail })) -> do
-    csrfToken <- liftIO $ createCsrfToken
+    --csrfToken <- liftIO $ createCsrfToken
     let (CaseInsensitive email) = _cookieAccountEmail
     return $
-
       SignedUserSession { _sessionAccountId = _cookieAccountId
                         , _sessionEmail = email
-                        , _sessionCsrfToken = csrfToken
+                        , _sessionCsrfToken = "" -- csrfToken
                         }
 
-  _ -> do
-    csrfToken <- liftIO $ createCsrfToken
+  e -> do
+    liftIO $ liftIO $ print e
+    --csrfToken <- liftIO $ createCsrfToken
     return $
       VisitorSession { _sessionAccountId = 1
-                     , _sessionCsrfToken = csrfToken
+                     , _sessionCsrfToken = "" -- csrfToken
                      }
   where
     createCsrfToken :: IO Text

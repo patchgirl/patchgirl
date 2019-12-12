@@ -9,6 +9,12 @@ type Session
                  , email: String
                  }
 
+getCsrfToken : Session -> String
+getCsrfToken session =
+    case session of
+        Visitor { csrfToken } -> csrfToken
+        SignedUser { csrfToken } -> csrfToken
+
 getSessionId : Session -> Int
 getSessionId session =
     case session of
