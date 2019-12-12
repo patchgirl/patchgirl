@@ -22,6 +22,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           Model
 import           Servant
+import           Servant.API.ResponseHeaders         (noHeader)
 import           Servant.Auth.Server
 import           Servant.Auth.Server                 (CookieSettings,
                                                       JWTSettings, SetCookie)
@@ -36,24 +37,29 @@ whoAmIHandler
   :: CookieSettings
   -> JWTSettings
   -> AuthResult CookieSession
-  -> Handler Session
-whoAmIHandler cookieSettings _ = \case
+  -> Handler (Headers '[ Header "Set-Cookie" SetCookie
+                       , Header "Set-Cookie" SetCookie]
+              Session)
+whoAmIHandler cookieSettings jwtSettings = \case
   (Authenticated (SignedUserCookie { _cookieAccountId, _cookieAccountEmail })) -> do
     csrfToken <- liftIO $ createCsrfToken
     let (CaseInsensitive email) = _cookieAccountEmail
     return $
-      SignedUserSession { _sessionAccountId = _cookieAccountId
-                        , _sessionEmail = email
-                        , _sessionCsrfToken = csrfToken
-                        }
+      noHeader $ noHeader $ SignedUserSession { _sessionAccountId = _cookieAccountId
+                                              , _sessionEmail = email
+                                              , _sessionCsrfToken = csrfToken
+                                              }
 
-  e -> do
-    liftIO $ liftIO $ print e
+  _ -> do
     csrfToken <- liftIO $ createCsrfToken
-    return $
-      VisitorSession { _sessionAccountId = 1
-                     , _sessionCsrfToken = csrfToken
-                     }
+    let cookieSession =
+          VisitorCookie { _cookieAccountId = 1 }
+    mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
+    case mApplyCookies of
+      Nothing           -> throwError err401
+      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = 1
+                                                                  , _sessionCsrfToken = csrfToken
+                                                                  }
   where
     createCsrfToken :: IO Text
     createCsrfToken = do

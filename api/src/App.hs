@@ -54,7 +54,9 @@ type SessionApi =
   Flat (
     "session" :> (
         "whoami" :>
-        Get '[JSON] Session
+        Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                              , Header "Set-Cookie" SetCookie
+                              ] Session)
     )
   )
 
