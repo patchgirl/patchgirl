@@ -1,7 +1,26 @@
 module InitializedApplication.App exposing (..)
 
 import InitializedApplication.Model exposing (..)
-import InitializedApplication.Message exposing (..)
+
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
+import Html exposing (Html)
+
+import BuilderApp.BuilderTree.View as BuilderTree
+import BuilderApp.BuilderTree.Util as BuilderTree
+import Postman.View as Postman
+import EnvironmentEdition.App as EnvironmentEdition
+import EnvironmentToRunSelection.App as EnvSelection
+import MainNavBar.App as MainNavBar
+import VarApp.View as VarApp
+
+import BuilderApp.Model as BuilderApp
+import BuilderApp.View as BuilderApp
+
+import Util.List as List
+import List.Extra as List
 
 import BuilderApp.App as BuilderApp
 import BuilderApp.Model as BuilderApp
@@ -50,6 +69,23 @@ import Curl.Util as Curl
 import Http as Http
 
 import Application.Type exposing (..)
+
+
+-- * message
+
+
+type Msg
+    = BuilderTreeMsg BuilderTree.Msg
+    | BuilderAppMsg BuilderApp.Msg
+    | PostmanMsg Postman.Msg
+    | EnvironmentEditionMsg EnvironmentEdition.Msg
+    | RequestRunnerMsg RequestRunner.Msg
+    | MainNavBarMsg MainNavBar.Msg
+    | VarAppMsg VarApp.Msg
+
+
+-- * update
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -123,3 +159,39 @@ replaceEnvironmentToEdit model newEnvironment =
                     model.environments
     in
         { model | environments = newEnvironments }
+
+
+-- * view
+
+
+view : Model -> Element Msg
+view model =
+    let
+        contentView : Element Msg
+        contentView =
+            el [ width fill ] <|
+                case model.mainNavBarModel of
+                    MainNavBar.ReqTab -> builderView model
+                    MainNavBar.EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+    in
+        column [ width fill, centerY, spacing 30 ]
+            [ map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
+            , contentView
+            ]
+
+builderView : Model -> Element Msg
+builderView model =
+  let
+    envSelectionView : Element Msg
+    envSelectionView =
+        none
+--        map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
+  in
+    row [ width fill ]
+      [ el [ width fill ] (map BuilderAppMsg (BuilderApp.view model))
+      , el [] envSelectionView
+      ]
+
+--postmanView : Element Msg
+--postmanView =
+--  Html.map PostmanMsg Postman.view

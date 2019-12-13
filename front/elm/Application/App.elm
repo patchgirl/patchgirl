@@ -8,10 +8,8 @@ import Element.Font as Font
 import Element.Background as Background
 import ViewUtil exposing (..)
 import Html as Html
-import InitializedApplication.View as InitializedApplication
 
 import InitializedApplication.Model as InitializedApplication
-import InitializedApplication.Message as InitializedApplication
 import InitializedApplication.App as InitializedApplication
 import BuilderApp.Model as BuilderApp
 import Application.Type exposing (..)
