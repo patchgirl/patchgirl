@@ -1,7 +1,7 @@
 module Application.App exposing (..)
 
 import Http as Http
-import Api.Client as Client
+import Api.Generated as Client
 import Api.Converter as Client
 import Element exposing (..)
 import Element.Font as Font

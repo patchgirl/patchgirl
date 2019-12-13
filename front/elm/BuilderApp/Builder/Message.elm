@@ -4,7 +4,7 @@ import Http
 
 import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Model as BuilderApp
-import Api.Client as Client
+import Api.Generated as Client
 
 type Msg
   = UpdateUrl String

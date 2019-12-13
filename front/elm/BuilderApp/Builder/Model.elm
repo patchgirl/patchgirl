@@ -1,7 +1,7 @@
 module BuilderApp.Builder.Model exposing (..)
 
 import Http
-import Api.Client as Client
+import Api.Generated as Client
 import Application.Type exposing (..)
 import Dict as Dict
 

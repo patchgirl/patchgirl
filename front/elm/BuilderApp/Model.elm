@@ -1,7 +1,7 @@
 module BuilderApp.Model exposing (..)
 
 import Http as Http
-import Api.Client as Client
+import Api.Generated as Client
 import Application.Type exposing (..)
 import Application.Type as Type
 import VarApp.Model as VarApp

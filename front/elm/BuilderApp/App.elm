@@ -9,7 +9,7 @@ import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
 import BuilderApp.Builder.Message as Builder
-import Api.Client as Client
+import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import EnvironmentToRunSelection.App as EnvSelection

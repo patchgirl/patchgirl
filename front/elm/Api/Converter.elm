@@ -1,6 +1,6 @@
 module Api.Converter exposing(..)
 
-import Api.Client as Back
+import Api.Generated as Back
 import BuilderApp.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front

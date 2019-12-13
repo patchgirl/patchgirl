@@ -6,7 +6,7 @@ import Html.Attributes exposing (value, placeholder, href, disabled)
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Model as BuilderApp
-import Api.Client as Client
+import Api.Generated as Client
 
 methodToString : Client.Method -> String
 methodToString method =

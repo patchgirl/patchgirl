@@ -104,7 +104,7 @@ main =
                     }
     namespace =
       [ "Api"
-      , "Client"
+      , "Generated"
       ]
     targetFolder = "../front/elm"
     elmDefinitions =

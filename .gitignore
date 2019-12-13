@@ -14,7 +14,7 @@ logs
 TAGS
 .stack-work/
 api.cabal
-Client.elm
+Generated.elm
 *~
 *.tmp
 front/bin/elm

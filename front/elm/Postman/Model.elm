@@ -5,7 +5,7 @@ import Json.Decode exposing (..)
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.Method as Builder
 import BuilderApp.Model as BuilderApp
-import Api.Client as Client
+import Api.Generated as Client
 
 type alias Model = Maybe (List BuilderApp.RequestNode)
 

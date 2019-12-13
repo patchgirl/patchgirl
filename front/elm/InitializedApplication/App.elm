@@ -59,7 +59,7 @@ import VarApp.View as VarApp
 import VarApp.Message as VarApp
 import VarApp.App as VarApp
 
-import Api.Client as Client
+import Api.Generated as Client
 
 import Util.Flip exposing (..)
 import Util.List as List

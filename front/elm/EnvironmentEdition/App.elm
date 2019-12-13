@@ -9,7 +9,7 @@ import Element.Input as Input
 import Element.Events as Events
 import ViewUtil exposing (..)
 import Application.Type exposing (..)
-import Api.Client as Client
+import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import Application.Type exposing (..)

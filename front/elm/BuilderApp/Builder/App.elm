@@ -11,7 +11,7 @@ import Curl.Util as Curl
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Builder.Method as Builder
-import Api.Client as Client
+import Api.Generated as Client
 import Maybe.Extra as Maybe
 import Application.Type exposing (..)
 import RequestRunner.Util as RequestRunner
