@@ -42,7 +42,7 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import Login.App as Login
+import Signin.App as Signin
 
 import EnvironmentEdition.App as EnvironmentEdition
 
@@ -84,7 +84,7 @@ type Msg
     | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg
     | VarAppMsg VarApp.Msg
-    | LoginMsg Login.Msg
+    | SigninMsg Signin.Msg
 
 
 -- * update
@@ -148,8 +148,8 @@ update msg model =
                     , Cmd.none
                     )
 
-        LoginMsg subMsg ->
-            case Login.update subMsg model of
+        SigninMsg subMsg ->
+            case Signin.update subMsg model of
                 newModel ->
                     ( newModel
                     , Cmd.none
@@ -193,7 +193,7 @@ signedUserView model =
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    LoginTab -> map LoginMsg (Login.view model)
+                    SigninTab -> map SigninMsg (Signin.view model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -205,11 +205,11 @@ visitorView model =
     let
         contentView : Element Msg
         contentView =
-            el [ width fill ] <|
+            el [ width fill, centerX, centerY ] <|
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    LoginTab -> map LoginMsg (Login.view model)
+                    SigninTab -> map SigninMsg (Signin.view model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

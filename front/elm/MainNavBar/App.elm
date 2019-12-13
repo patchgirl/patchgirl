@@ -30,7 +30,7 @@ type alias Model a =
 type Msg
     = OpenReqTab
     | OpenEnvTab
-    | OpenLoginTab
+    | OpenSigninTab
 
 
 -- * update
@@ -45,8 +45,8 @@ update msg model =
         OpenEnvTab ->
             { model | mainNavBarModel = EnvTab }
 
-        OpenLoginTab ->
-            { model | mainNavBarModel = LoginTab }
+        OpenSigninTab ->
+            { model | mainNavBarModel = SigninTab }
 
 
 -- * view
@@ -85,9 +85,9 @@ rightView model =
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row []
-        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenLoginTab LoginTab))
-              { url = "#"
-              , label = text "Login"
+        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSigninTab SigninTab))
+              { url = "#signin"
+              , label = text "Sign in"
               }
         ]
 
@@ -114,8 +114,8 @@ signedUserRightView model =
 centerView : Model a -> Element Msg
 centerView model =
     row [ centerX, paddingXY 10 0, centerY ]
-        [ link (mainLinkAttribute model OpenReqTab ReqTab) { url = "#", label = text "Req" }
-        , link (mainLinkAttribute model OpenEnvTab EnvTab) { url = "#", label = text "Env" }
+        [ link (mainLinkAttribute model OpenReqTab ReqTab) { url = "#req", label = text "Req" }
+        , link (mainLinkAttribute model OpenEnvTab EnvTab) { url = "#env", label = text "Env" }
         ]
 
 mainLinkAttribute : Model a -> Msg -> MainNavBarModel -> List (Attribute Msg)
