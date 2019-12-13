@@ -11,32 +11,46 @@ import ViewUtil exposing (..)
 import Html as Html
 import Html.Attributes as Html
 import Util.Route exposing (..)
+import InitializedApplication.Model exposing (..)
+import Application.Type exposing (..)
 
 -- * model
 
-type Model
-    = ReqTab
-    | EnvTab
 
-defaultModel = ReqTab
+type alias Model a =
+    { a
+      | session : Session
+      , mainNavBarModel : MainNavBarModel
+    }
+
 
 -- * message
+
 
 type Msg
     = OpenReqTab
     | OpenEnvTab
+    | OpenLoginTab
+
 
 -- * update
 
-update : Msg -> Model -> Model
+
+update : Msg -> Model a -> Model a
 update msg model =
     case msg of
         OpenReqTab ->
-            ReqTab
+            { model | mainNavBarModel = ReqTab }
+
         OpenEnvTab ->
-            EnvTab
+            { model | mainNavBarModel = EnvTab }
+
+        OpenLoginTab ->
+            { model | mainNavBarModel = LoginTab }
+
 
 -- * view
+
 
 leftView : Element Msg
 leftView =
@@ -59,8 +73,26 @@ leftView =
                 , label = linkContent
                 }
 
-rightView : Element Msg
-rightView =
+rightView : Model a -> Element Msg
+rightView model =
+    case model.session of
+        Visitor _ ->
+            visitorRightView model
+
+        SignedUser _ ->
+            signedUserRightView model
+
+visitorRightView : Model a -> Element Msg
+visitorRightView model =
+    row []
+        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenLoginTab LoginTab))
+              { url = "#"
+              , label = text "Login"
+              }
+        ]
+
+signedUserRightView : Model a -> Element Msg
+signedUserRightView model =
     let
         linkContent =
             html <|
@@ -79,41 +111,43 @@ rightView =
             , label = linkContent
             }
 
-centerView : Model -> Element Msg
+centerView : Model a -> Element Msg
 centerView model =
-    let
-        activeAttribute =
-            [ Background.color <| secondaryColor
-            , Font.color <| primaryColor
-            ]
-        passiveAttribute =
-            [ Font.color <| secondaryColor
-            ]
-        attributes : Msg -> Model -> List (Attribute Msg)
-        attributes event model2 =
+    row [ centerX, paddingXY 10 0, centerY ]
+        [ link (mainLinkAttribute model OpenReqTab ReqTab) { url = "#", label = text "Req" }
+        , link (mainLinkAttribute model OpenEnvTab EnvTab) { url = "#", label = text "Env" }
+        ]
+
+mainLinkAttribute : Model a -> Msg -> MainNavBarModel -> List (Attribute Msg)
+mainLinkAttribute model event mainNavBarModel =
             let
+                activeAttribute =
+                    [ Background.color <| secondaryColor
+                    , Font.color <| primaryColor
+                    ]
+
+                passiveAttribute =
+                    [ Font.color <| secondaryColor
+                    ]
+
                 activeOrPassiveAttribute =
-                    case model == model2 of
+                    case model.mainNavBarModel == mainNavBarModel of
                         True -> activeAttribute
                         False -> passiveAttribute
+
             in
                 [ Events.onClick event
                 , Font.size 21
                 , paddingXY 15 19
                 , mouseOver activeAttribute
                 ] ++ activeOrPassiveAttribute
-    in
-        row [ centerX, paddingXY 10 0, centerY ]
-            [ link (attributes OpenReqTab ReqTab) { url = "#", label = text "Req" }
-            , link (attributes OpenEnvTab EnvTab) { url = "#", label = text "Env" }
-            ]
 
 
-view : Model -> Element Msg
+view : Model a -> Element Msg
 view model =
     el [ width fill, Background.color primaryColor ] <|
         row [ width fill]--, explain Debug.todo]
             [ el [ alignLeft, paddingXY 20 0 ] leftView
             , el [ centerX ] <| centerView model
-            , el [ alignRight ] rightView
+            , el [ alignRight ] (rightView model)
             ]

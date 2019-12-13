@@ -42,6 +42,8 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
+import Login.App as Login
+
 import EnvironmentEdition.App as EnvironmentEdition
 
 import EnvironmentToRunSelection.Message as EnvSelection
@@ -82,6 +84,7 @@ type Msg
     | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg
     | VarAppMsg VarApp.Msg
+    | LoginMsg Login.Msg
 
 
 -- * update
@@ -132,9 +135,9 @@ update msg model =
             (model, Cmd.none)
 
         MainNavBarMsg subMsg ->
-            case MainNavBar.update subMsg model.mainNavBarModel of
-                newMainNavBarModel ->
-                    ( { model | mainNavBarModel = newMainNavBarModel }
+            case MainNavBar.update subMsg model of
+                newModel ->
+                    ( newModel
                     , Cmd.none
                     )
 
@@ -142,6 +145,13 @@ update msg model =
             case VarApp.update subMsg model.varAppModel of
                 newVarAppModel ->
                     ( { model | varAppModel = newVarAppModel }
+                    , Cmd.none
+                    )
+
+        LoginMsg subMsg ->
+            case Login.update subMsg model of
+                newModel ->
+                    ( newModel
                     , Cmd.none
                     )
 
@@ -166,18 +176,46 @@ replaceEnvironmentToEdit model newEnvironment =
 
 view : Model -> Element Msg
 view model =
+    case model.session of
+        Visitor {} ->
+            visitorView model
+
+        SignedUser {} ->
+            signedUserView model
+
+
+signedUserView : Model -> Element Msg
+signedUserView model =
     let
         contentView : Element Msg
         contentView =
             el [ width fill ] <|
                 case model.mainNavBarModel of
-                    MainNavBar.ReqTab -> builderView model
-                    MainNavBar.EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                    ReqTab -> builderView model
+                    EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                    LoginTab -> map LoginMsg (Login.view model)
     in
         column [ width fill, centerY, spacing 30 ]
-            [ map MainNavBarMsg (MainNavBar.view model.mainNavBarModel)
+            [ map MainNavBarMsg (MainNavBar.view model)
             , contentView
             ]
+
+visitorView : Model -> Element Msg
+visitorView model =
+    let
+        contentView : Element Msg
+        contentView =
+            el [ width fill ] <|
+                case model.mainNavBarModel of
+                    ReqTab -> builderView model
+                    EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                    LoginTab -> map LoginMsg (Login.view model)
+    in
+        column [ width fill, centerY, spacing 30 ]
+            [ map MainNavBarMsg (MainNavBar.view model)
+            , contentView
+            ]
+
 
 builderView : Model -> Element Msg
 builderView model =

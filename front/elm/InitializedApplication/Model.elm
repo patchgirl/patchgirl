@@ -1,6 +1,5 @@
 module InitializedApplication.Model exposing (..)
 
-import MainNavBar.App as MainNavBar
 import RequestRunner.Model as RequestRunner
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
@@ -10,7 +9,7 @@ import Application.Type exposing (..)
 type alias Model =
     { session : Session
     -- NAV
-    , mainNavBarModel : MainNavBar.Model
+    , mainNavBarModel : MainNavBarModel
     -- BUILDER APP
     , selectedBuilderIndex : Maybe Int
     , displayedBuilderIndex : Maybe Int
@@ -27,6 +26,11 @@ type alias Model =
     -- RUNNER
     , runnerModel : RequestRunner.Model
     }
+
+type MainNavBarModel
+    = ReqTab
+    | EnvTab
+    | LoginTab
 
 type alias GetEnvironment a =
     { a
@@ -77,7 +81,7 @@ createModel session requestCollection environments =
       selectedEnvironmentToRunIndex = Just 0
   in
       { session = session
-      , mainNavBarModel = MainNavBar.defaultModel
+      , mainNavBarModel = LoginTab
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex
