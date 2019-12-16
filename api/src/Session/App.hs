@@ -76,7 +76,7 @@ createSessionHandler
   -> Login
   -> Handler (Headers '[ Header "Set-Cookie" SetCookie
                        , Header "Set-Cookie" SetCookie]
-              NoContent)
+              Session)
 createSessionHandler cookieSettings jwtSettings login = do
   mAccount <- liftIO (getDBConnection >>= selectAccount login)
   case mAccount of
@@ -84,14 +84,20 @@ createSessionHandler cookieSettings jwtSettings login = do
       throwError err401
 
     Just (Account { _accountId, _accountEmail }) -> do
+      let CaseInsensitive email = _accountEmail
       let cookieSession =
             SignedUserCookie { _cookieAccountId = _accountId
                              , _cookieAccountEmail = _accountEmail
                              }
+      let session =
+            SignedUserSession { _sessionAccountId = _accountId
+                              , _sessionEmail = email
+                              , _sessionCsrfToken = ""
+                              }
       mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
       case mApplyCookies of
         Nothing           -> throwError err401
-        Just applyCookies -> return $ applyCookies NoContent
+        Just applyCookies -> return $ applyCookies session
 
 selectAccount :: Login -> Connection -> IO (Maybe Account)
 selectAccount (Login { _email, _password }) connection = do

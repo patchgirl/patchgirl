@@ -1,5 +1,5 @@
 run:
 	clear; stack exec example-servant-minimal
 
-api:
+app:
 	clear; stack build
