@@ -342,7 +342,7 @@ mainActionButtonsView model =
         row rowParam
             [ Input.button inputParam
                 { onPress = Just <| AskRun
-                , label = el [ centerY] <| iconWithTextAndColor "send" "Send" primaryColor
+                , label = el [ centerY ] <| iconWithTextAndColor "send" "Send" primaryColor
                 }
             , case isBuilderDirty model of
                   True ->

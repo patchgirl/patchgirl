@@ -30,7 +30,8 @@ type alias Model a =
 type Msg
     = OpenReqTab
     | OpenEnvTab
-    | OpenSigninTab
+    | OpenSessionTab
+    | AskSignOut
 
 
 -- * update
@@ -45,8 +46,11 @@ update msg model =
         OpenEnvTab ->
             { model | mainNavBarModel = EnvTab }
 
-        OpenSigninTab ->
-            { model | mainNavBarModel = SigninTab }
+        OpenSessionTab ->
+            { model | mainNavBarModel = SessionTab }
+
+        AskSignOut ->
+            (model)
 
 
 -- * view
@@ -85,7 +89,7 @@ rightView model =
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row []
-        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSigninTab SigninTab))
+        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSessionTab SessionTab))
               { url = "#signin"
               , label = text "Sign in"
               }
@@ -93,23 +97,16 @@ visitorRightView model =
 
 signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
-    let
-        linkContent =
-            html <|
-                Html.span [ Html.style "color" (colorToString secondaryColor)
-                          ]
-                    [ Html.i
-                          [ Html.class "material-icons"
-                          , Html.style "vertical-align" "text-top"
-                          ]
-                          [ Html.text "menu" ]
-                    , Html.text "Settings"
-                    ]
-    in
-        link [ paddingXY 20 0 ]
+    row [ spacing 10 ]
+        [ link (linkAttribute model AskSignOut)
+              { url = href Settings
+              , label = text "Settings"
+              }
+        , link (linkAttribute model AskSignOut)
             { url = href Settings
-            , label = linkContent
+            , label = text "Sign out"
             }
+        ]
 
 centerView : Model a -> Element Msg
 centerView model =
@@ -117,6 +114,28 @@ centerView model =
         [ link (mainLinkAttribute model OpenReqTab ReqTab) { url = "#req", label = text "Req" }
         , link (mainLinkAttribute model OpenEnvTab EnvTab) { url = "#env", label = text "Env" }
         ]
+
+
+linkAttribute : Model a -> Msg -> List (Attribute Msg)
+linkAttribute model msg =
+    let
+        activeAttribute =
+            [ Background.color <| secondaryColor
+            , Font.color <| primaryColor
+            ]
+
+        passiveAttribute =
+            [ Font.color <| secondaryColor
+            ]
+
+    in
+        [ Events.onClick msg
+        , Font.size 21
+        , paddingXY 15 19
+        , mouseOver activeAttribute
+        ]
+
+
 
 mainLinkAttribute : Model a -> Msg -> MainNavBarModel -> List (Attribute Msg)
 mainLinkAttribute model event mainNavBarModel =

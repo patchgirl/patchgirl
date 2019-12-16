@@ -42,7 +42,7 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import Signin.App as Signin
+import Session.App as Session
 
 import EnvironmentEdition.App as EnvironmentEdition
 
@@ -84,7 +84,7 @@ type Msg
     | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg
     | VarAppMsg VarApp.Msg
-    | SigninMsg Signin.Msg
+    | SessionMsg Session.Msg
 
 
 -- * update
@@ -148,16 +148,14 @@ update msg model =
                     , Cmd.none
                     )
 
-        SigninMsg subMsg ->
-            case Signin.update subMsg model of
-                newModel ->
-                    ( newModel
-                    , Cmd.none
-                    )
+        SessionMsg subMsg ->
+            case Session.update subMsg model of
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map SessionMsg newSubMsg)
 
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Sub.none
+
+-- * util
+
 
 replaceEnvironmentToEdit : Model -> Environment -> Model
 replaceEnvironmentToEdit model newEnvironment =
@@ -169,6 +167,14 @@ replaceEnvironmentToEdit model newEnvironment =
                     model.environments
     in
         { model | environments = newEnvironments }
+
+
+-- * subscriptions
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.none
 
 
 -- * view
@@ -193,7 +199,7 @@ signedUserView model =
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SigninTab -> map SigninMsg (Signin.view model)
+                    SessionTab -> map SessionMsg (Session.view model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -209,7 +215,7 @@ visitorView model =
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SigninTab -> map SigninMsg (Signin.view model)
+                    SessionTab -> map SessionMsg (Session.view model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

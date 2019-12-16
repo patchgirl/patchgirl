@@ -33,7 +33,7 @@ type alias Model =
 type MainNavBarModel
     = ReqTab
     | EnvTab
-    | SigninTab
+    | SessionTab
 
 type alias GetEnvironment a =
     { a
@@ -86,7 +86,7 @@ createModel session requestCollection environments =
       { session = session
       , emailSignin = NotEdited ""
       , passwordSignin = NotEdited ""
-      , mainNavBarModel = SigninTab
+      , mainNavBarModel = SessionTab
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex
