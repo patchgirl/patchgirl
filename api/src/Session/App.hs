@@ -94,8 +94,8 @@ createSessionHandler cookieSettings jwtSettings login = do
         Just applyCookies -> return $ applyCookies NoContent
 
 selectAccount :: Login -> Connection -> IO (Maybe Account)
-selectAccount (Login { email, password }) connection = do
-  (query connection selectAccountQuery $ (email, password)) <&> listToMaybe
+selectAccount (Login { _email, _password }) connection = do
+  (query connection selectAccountQuery $ (_email, _password)) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|

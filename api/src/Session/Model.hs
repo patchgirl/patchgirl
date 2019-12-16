@@ -15,16 +15,21 @@ import           Servant.Auth.Server (FromJWT, ToJWT)
 
 
 data Login
-  = Login { email    :: CaseInsensitive
-          , password :: String
+  = Login { _email    :: CaseInsensitive
+          , _password :: String
           }
   deriving (Eq, Show, Read, Generic)
 
-instance ToJSON Login
-instance FromJSON Login
+instance ToJSON Login where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON Login where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
 -- * whoami
+
 
 data Session
   = VisitorSession { _sessionAccountId :: Int
