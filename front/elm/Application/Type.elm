@@ -12,6 +12,8 @@ type alias VisitorSession =
     , csrfToken: String
     , signInEmail: String
     , signInPassword: String
+    , signUpEmail: String
+    , signUpPassword: String
     }
 
 getCsrfToken : Session -> String

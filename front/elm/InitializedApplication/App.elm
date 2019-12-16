@@ -43,6 +43,7 @@ import Postman.Message as Postman
 import Postman.App as Postman
 
 import SignIn.App as SignIn
+import SignUp.App as SignUp
 
 import EnvironmentEdition.App as EnvironmentEdition
 
@@ -85,6 +86,7 @@ type Msg
     | MainNavBarMsg MainNavBar.Msg
     | VarAppMsg VarApp.Msg
     | SignInMsg SignIn.Msg
+    | SignUpMsg SignUp.Msg
 
 
 -- * update
@@ -179,6 +181,20 @@ update msg model =
                 _ ->
                     Debug.todo "cannot sign in if not a visitor"
 
+        SignUpMsg subMsg ->
+            case model.session of
+                Visitor visitorSession ->
+                    case SignUp.update subMsg visitorSession of
+                        (newVisitorSession, newSubMsg) ->
+                            let newModel =
+                                    { model | session = Visitor newVisitorSession }
+                            in
+                                (newModel, Cmd.map SignUpMsg newSubMsg)
+
+                _ ->
+                    Debug.todo "cannot sign up if not a visitor"
+
+
 
 -- * util
 
@@ -193,14 +209,6 @@ replaceEnvironmentToEdit model newEnvironment =
                     model.environments
     in
         { model | environments = newEnvironments }
-
-
--- * subscriptions
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Sub.none
 
 
 -- * view
@@ -225,7 +233,8 @@ signedUserView model =
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SignInTab -> Debug.todo "cannot signin as a signed user"
+                    SignInTab -> Debug.todo "cannot sign in as a signed user"
+                    SignUpTab -> Debug.todo "cannot sign up as a signed user"
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -242,6 +251,7 @@ visitorView model visitorSession =
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInTab -> map SignInMsg (SignIn.view visitorSession)
+                    SignUpTab -> map SignUpMsg (SignUp.view visitorSession)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -265,3 +275,11 @@ builderView model =
 --postmanView : Element Msg
 --postmanView =
 --  Html.map PostmanMsg Postman.view
+
+
+-- * subscriptions
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.none

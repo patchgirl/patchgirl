@@ -34,6 +34,7 @@ type Msg
     = OpenReqTab
     | OpenEnvTab
     | OpenSignInTab
+    | OpenSignUpTab
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
@@ -63,6 +64,13 @@ update msg model =
             let
                 newModel =
                     { model | mainNavBarModel = SignInTab }
+            in
+                (newModel, Cmd.none)
+
+        OpenSignUpTab ->
+            let
+                newModel =
+                    { model | mainNavBarModel = SignUpTab }
             in
                 (newModel, Cmd.none)
 
@@ -138,6 +146,10 @@ visitorRightView model =
               { url = "#signin"
               , label = text "Sign in"
               }
+        , link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignUpTab SignUpTab))
+            { url = "#signup"
+            , label = text "Sign up"
+            }
         ]
 
 signedUserRightView : Model a -> Element Msg

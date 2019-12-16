@@ -31,6 +31,7 @@ type MainNavBarModel
     = ReqTab
     | EnvTab
     | SignInTab
+    | SignUpTab
 
 type alias GetEnvironment a =
     { a
