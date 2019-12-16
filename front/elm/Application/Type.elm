@@ -1,13 +1,18 @@
 module Application.Type exposing (..)
 
 type Session
-    = Visitor { id: Int
-              , csrfToken: String
-              }
+    = Visitor VisitorSession
     | SignedUser { id: Int
                  , csrfToken: String
                  , email: String
                  }
+
+type alias VisitorSession =
+    { id: Int
+    , csrfToken: String
+    , signInEmail: String
+    , signInPassword: String
+    }
 
 getCsrfToken : Session -> String
 getCsrfToken session =

@@ -110,3 +110,17 @@ selectAccount (Login { _email, _password }) connection = do
           WHERE email = ?
           AND password = crypt(?, password);
           |]
+
+
+-- * sign out
+
+
+deleteSessionHandler
+  :: CookieSettings
+  -> Handler (Headers '[ Header "Set-Cookie" SetCookie
+                       , Header "Set-Cookie" SetCookie]
+              Session)
+deleteSessionHandler cookieSettings =
+  return $ clearSession cookieSettings $ VisitorSession { _sessionAccountId = 1
+                                                        , _sessionCsrfToken = ""
+                                                        }

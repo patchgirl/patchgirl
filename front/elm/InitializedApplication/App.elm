@@ -42,7 +42,7 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
-import Session.App as Session
+import SignIn.App as SignIn
 
 import EnvironmentEdition.App as EnvironmentEdition
 
@@ -84,7 +84,7 @@ type Msg
     | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg
     | VarAppMsg VarApp.Msg
-    | SessionMsg Session.Msg
+    | SignInMsg SignIn.Msg
 
 
 -- * update
@@ -134,12 +134,20 @@ update msg model =
         RequestRunnerMsg subMsg ->
             (model, Cmd.none)
 
+        MainNavBarMsg (MainNavBar.SignOutSucceed newSession) ->
+            let
+                newModel =
+                    { model
+                        | session = newSession
+                        , mainNavBarModel = SignInTab
+                    }
+            in
+                (newModel, Cmd.none)
+
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
-                newModel ->
-                    ( newModel
-                    , Cmd.none
-                    )
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map MainNavBarMsg newSubMsg)
 
         VarAppMsg subMsg ->
             case VarApp.update subMsg model.varAppModel of
@@ -148,10 +156,28 @@ update msg model =
                     , Cmd.none
                     )
 
-        SessionMsg subMsg ->
-            case Session.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map SessionMsg newSubMsg)
+        SignInMsg (SignIn.SignInSucceed newSession) ->
+            let
+                newModel =
+                    { model
+                        | session = newSession
+                        , mainNavBarModel = ReqTab
+                    }
+            in
+                (newModel, Cmd.none)
+
+        SignInMsg subMsg ->
+            case model.session of
+                Visitor visitorSession ->
+                    case SignIn.update subMsg visitorSession of
+                        (newVisitorSession, newSubMsg) ->
+                            let newModel =
+                                    { model | session = Visitor newVisitorSession }
+                            in
+                                (newModel, Cmd.map SignInMsg newSubMsg)
+
+                _ ->
+                    Debug.todo "cannot sign in if not a visitor"
 
 
 -- * util
@@ -183,8 +209,8 @@ subscriptions _ =
 view : Model -> Element Msg
 view model =
     case model.session of
-        Visitor {} ->
-            visitorView model
+        Visitor visitorSession ->
+            visitorView model visitorSession
 
         SignedUser {} ->
             signedUserView model
@@ -199,15 +225,15 @@ signedUserView model =
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SessionTab -> map SessionMsg (Session.view model)
+                    SignInTab -> Debug.todo "cannot signin as a signed user"
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
             , contentView
             ]
 
-visitorView : Model -> Element Msg
-visitorView model =
+visitorView : Model -> VisitorSession -> Element Msg
+visitorView model visitorSession =
     let
         contentView : Element Msg
         contentView =
@@ -215,7 +241,7 @@ visitorView model =
                 case model.mainNavBarModel of
                     ReqTab -> builderView model
                     EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SessionTab -> map SessionMsg (Session.view model)
+                    SignInTab -> map SignInMsg (SignIn.view visitorSession)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

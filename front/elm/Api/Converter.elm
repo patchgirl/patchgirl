@@ -84,6 +84,8 @@ convertSessionFromBackToFront backSession =
         Back.VisitorSession { sessionAccountId, sessionCsrfToken } ->
             Front.Visitor { id = sessionAccountId
                           , csrfToken = sessionCsrfToken
+                          , signInEmail = ""
+                          , signInPassword = ""
                           }
 
         Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionEmail } ->

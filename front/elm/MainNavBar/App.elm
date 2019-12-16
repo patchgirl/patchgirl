@@ -13,6 +13,9 @@ import Html.Attributes as Html
 import Util.Route exposing (..)
 import InitializedApplication.Model exposing (..)
 import Application.Type exposing (..)
+import Api.Generated as Client
+import Api.Converter as Client
+import Http as Http
 
 -- * model
 
@@ -30,27 +33,69 @@ type alias Model a =
 type Msg
     = OpenReqTab
     | OpenEnvTab
-    | OpenSessionTab
+    | OpenSignInTab
     | AskSignOut
+    | SignOutSucceed Session
+    | SignOutFailed
 
 
 -- * update
 
 
-update : Msg -> Model a -> Model a
+update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
     case msg of
         OpenReqTab ->
-            { model | mainNavBarModel = ReqTab }
+            let
+                newModel =
+                    { model | mainNavBarModel = ReqTab }
+            in
+                (newModel, Cmd.none)
 
         OpenEnvTab ->
-            { model | mainNavBarModel = EnvTab }
+            let
+                newModel =
+                    { model | mainNavBarModel = EnvTab }
+            in
+                (newModel, Cmd.none)
 
-        OpenSessionTab ->
-            { model | mainNavBarModel = SessionTab }
+        OpenSignInTab ->
+            let
+                newModel =
+                    { model | mainNavBarModel = SignInTab }
+            in
+                (newModel, Cmd.none)
 
         AskSignOut ->
-            (model)
+            let
+                newCmd =
+                    Client.deleteSessionSignout "" deleteSessionSignOutResultToMsg
+
+            in
+                (model, newCmd)
+
+        SignOutFailed ->
+            (model, Cmd.none)
+
+        SignOutSucceed _ ->
+            Debug.todo "unreachable state: sign out"
+
+
+-- * util
+
+
+deleteSessionSignOutResultToMsg : Result Http.Error Client.Session -> Msg
+deleteSessionSignOutResultToMsg result =
+    case result of
+        Ok session ->
+            let
+                newSession = Client.convertSessionFromBackToFront session
+            in
+                SignOutSucceed newSession
+
+        Err error ->
+            SignOutFailed
+
 
 
 -- * view
@@ -89,7 +134,7 @@ rightView model =
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row []
-        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSessionTab SessionTab))
+        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignInTab SignInTab))
               { url = "#signin"
               , label = text "Sign in"
               }

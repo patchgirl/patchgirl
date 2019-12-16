@@ -8,9 +8,6 @@ import Application.Type exposing (..)
 
 type alias Model =
     { session : Session
-    -- LOGIN
-    , emailSignin : Editable String
-    , passwordSignin : Editable String
     -- NAV
     , mainNavBarModel : MainNavBarModel
     -- BUILDER APP
@@ -33,7 +30,7 @@ type alias Model =
 type MainNavBarModel
     = ReqTab
     | EnvTab
-    | SessionTab
+    | SignInTab
 
 type alias GetEnvironment a =
     { a
@@ -84,9 +81,7 @@ createModel session requestCollection environments =
       selectedEnvironmentToRunIndex = Just 0
   in
       { session = session
-      , emailSignin = NotEdited ""
-      , passwordSignin = NotEdited ""
-      , mainNavBarModel = SessionTab
+      , mainNavBarModel = ReqTab
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex

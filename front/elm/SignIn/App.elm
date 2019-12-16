@@ -1,4 +1,4 @@
-module Session.App exposing (..)
+module SignIn.App exposing (..)
 
 import Application.Type exposing (..)
 
@@ -18,26 +18,22 @@ import Http as Http
 
 
 type alias Model a =
-    { a
-      | session : Session
-      , emailSignin : Editable String
-      , passwordSignin : Editable String
+    { a | id: Int
+        , csrfToken: String
+        , signInEmail: String
+        , signInPassword: String
     }
-
-
-type SigninResult
-    = SigninSucceed Session
-    | SigninFailed
 
 
 -- * message
 
 
 type Msg
-    = ChangeEmailSignin String
-    | ChangePasswordSignin String
+    = ChangeEmailSignIn String
+    | ChangePasswordSignIn String
     | AskSignIn
-    | GotSigninResult SigninResult
+    | SignInSucceed Session
+    | SignInFailed
 
 
 -- * update
@@ -47,61 +43,54 @@ update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
     case msg of
 
-        ChangeEmailSignin emailSignin ->
+        ChangeEmailSignIn newSignInEmail ->
             let
-                oldEmailSignin = model.emailSignin
-                newEmailSignin = changeEditedValue emailSignin oldEmailSignin
-                newModel = { model | emailSignin = newEmailSignin }
+                newModel =
+                    { model | signInEmail = newSignInEmail }
+
             in
                 (newModel, Cmd.none)
 
-        ChangePasswordSignin passwordSignin ->
+        ChangePasswordSignIn newSignInPassword ->
             let
-                oldPasswordSignin = model.passwordSignin
-                newPasswordSignin = changeEditedValue passwordSignin oldPasswordSignin
-                newModel = { model | passwordSignin = newPasswordSignin }
+                newModel =
+                    { model | signInPassword = newSignInPassword }
             in
                 (newModel, Cmd.none)
 
         AskSignIn ->
             let
                 login =
-                    { email = Client.CaseInsensitive <| editedOrNotEditedValue model.emailSignin
-                    , password = editedOrNotEditedValue model.passwordSignin
+                    { email = Client.CaseInsensitive model.signInEmail
+                    , password = model.signInPassword
                     }
 
                 newCmd =
-                    Client.postSessionLogin "" login postSessionLoginResultToMsg
+                    Client.postSessionSignin "" login postSessionSignInResultToMsg
             in
                 (model, newCmd)
 
-        GotSigninResult signinResult ->
-            case signinResult of
-                SigninSucceed newSession ->
-                    let
-                        newModel =
-                            { model | session = newSession }
-                    in
-                        (newModel, Cmd.none)
+        SignInFailed ->
+            (model, Cmd.none)
 
-                SigninFailed ->
-                    (model, Cmd.none)
+        SignInSucceed _ ->
+            Debug.todo "unreachable state: sign in"
 
 
 -- * util
 
 
-postSessionLoginResultToMsg : Result Http.Error Client.Session -> Msg
-postSessionLoginResultToMsg result =
+postSessionSignInResultToMsg : Result Http.Error Client.Session -> Msg
+postSessionSignInResultToMsg result =
     case result of
         Ok session ->
             let
                 newSession = Client.convertSessionFromBackToFront session
             in
-                GotSigninResult (SigninSucceed newSession)
+                SignInSucceed newSession
 
-        Err error ->
-            GotSigninResult SigninFailed
+        Err _ ->
+            SignInFailed
 
 
 -- * view
@@ -109,20 +98,6 @@ postSessionLoginResultToMsg result =
 
 view : Model a -> Element Msg
 view model =
-    case model.session of
-        Visitor {} ->
-            visitorView model
-
-        SignedUser {} ->
-            signedUserView model
-
-signedUserView : Model a -> Element Msg
-signedUserView model =
-    none
-
-
-visitorView : Model a -> Element Msg
-visitorView model =
     let
         labelInputAttributes =
             [ centerY
@@ -131,19 +106,20 @@ visitorView model =
             ]
 
         loginInput =
-            Input.text []
-                { onChange = ChangeEmailSignin
-                , text = editedOrNotEditedValue model.emailSignin
+            Input.username []
+                { onChange = ChangeEmailSignIn
+                , text = model.signInEmail
                 , placeholder = Just <| Input.placeholder [] (text "email")
                 , label = Input.labelLeft labelInputAttributes (text "email")
                 }
 
         passwordInput =
-            Input.text []
-                { onChange = ChangePasswordSignin
-                , text = editedOrNotEditedValue model.passwordSignin
+            Input.currentPassword []
+                { onChange = ChangePasswordSignIn
+                , text = model.signInPassword
                 , placeholder = Just <| Input.placeholder [] (text "password")
                 , label = Input.labelLeft labelInputAttributes (text "password")
+                , show = False
                 }
 
         submitButton =

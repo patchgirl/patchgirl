@@ -43,11 +43,16 @@ type RestApi auths =
 
 type LoginApi =
     "session" :> (
-        "login" :>
+        "signin" :>
         ReqBody '[JSON] Login :>
-        PostNoContent '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                                        , Header "Set-Cookie" SetCookie
-                                        ] Session)
+        Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                               , Header "Set-Cookie" SetCookie
+                               ] Session) :<|>
+        "signout" :>
+        Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                 , Header "Set-Cookie" SetCookie
+                                 ] Session)
+
      )
 
 type SessionApi =
@@ -136,7 +141,8 @@ loginApiServer
   -> JWTSettings
   -> Server LoginApi
 loginApiServer cookieSettings jwtSettings  =
-  createSessionHandler cookieSettings jwtSettings
+  createSessionHandler cookieSettings jwtSettings :<|>
+  deleteSessionHandler cookieSettings
 
 sessionApiServer
   :: CookieSettings
