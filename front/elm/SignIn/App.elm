@@ -110,7 +110,7 @@ view model =
                 { onChange = ChangeEmailSignIn
                 , text = model.signInEmail
                 , placeholder = Just <| Input.placeholder [] (text "email")
-                , label = Input.labelLeft labelInputAttributes (text "email")
+                , label = Input.labelLeft labelInputAttributes (text "Email:")
                 }
 
         passwordInput =
@@ -118,7 +118,7 @@ view model =
                 { onChange = ChangePasswordSignIn
                 , text = model.signInPassword
                 , placeholder = Just <| Input.placeholder [] (text "password")
-                , label = Input.labelLeft labelInputAttributes (text "password")
+                , label = Input.labelLeft labelInputAttributes (text "Password:")
                 , show = False
                 }
 
