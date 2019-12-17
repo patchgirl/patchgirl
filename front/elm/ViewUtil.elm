@@ -8,9 +8,11 @@ import Element.Events as Events
 import Element.Input as Input
 
 import Html as Html
+import Html.Events as Html
 import Html.Attributes as Html
+import Json.Decode as Json
 
--- * Color
+-- * color
 
 black : Color
 black =
@@ -69,7 +71,7 @@ colorToString color =
     in
         "rgb(" ++ rgbFloatToString(red) ++ "," ++ rgbFloatToString(green) ++ "," ++ rgbFloatToString(blue) ++ ")"
 
--- * Icon
+-- * icon
 
 icon : String -> Element a
 icon whichIcon =
@@ -113,7 +115,7 @@ sendIcon =
 addIcon =
     icon "add_circle_outline"
 
--- * Label
+-- * label
 
 labelAttrs : List(Attribute a)
 labelAttrs =
@@ -156,3 +158,17 @@ labelError labelText =
             ]
     in
         el (attributes ++ labelAttrs) (text labelText)
+
+
+-- * util
+
+onEnter : a -> Attribute a
+onEnter msg =
+  let
+    isEnter code =
+      if code == 13 then
+        Json.succeed msg
+      else
+        Json.fail "not ENTER"
+    in
+      Html.on "keydown" (Json.andThen isEnter Html.keyCode) |> htmlAttribute

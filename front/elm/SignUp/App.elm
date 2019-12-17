@@ -104,7 +104,7 @@ view model =
             ]
 
         loginInput =
-            Input.username []
+            Input.username [ onEnter AskSignUp ]
                 { onChange = ChangeEmailSignUp
                 , text = model.signUpEmail
                 , placeholder = Just <| Input.placeholder [] (text "email")
@@ -112,7 +112,7 @@ view model =
                 }
 
         passwordInput =
-            Input.newPassword []
+            Input.newPassword [ onEnter AskSignUp ]
                 { onChange = ChangePasswordSignUp
                 , text = model.signUpPassword
                 , placeholder = Just <| Input.placeholder [] (text "password")
