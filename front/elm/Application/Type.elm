@@ -12,6 +12,7 @@ type alias VisitorSession =
     , csrfToken: String
     , signInEmail: String
     , signInPassword: String
+    , signInErrors: List String
     , signUpEmail: String
     , signUpPassword: String
     }

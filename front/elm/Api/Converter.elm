@@ -86,6 +86,7 @@ convertSessionFromBackToFront backSession =
                           , csrfToken = sessionCsrfToken
                           , signInEmail = ""
                           , signInPassword = ""
+                          , signInErrors = []
                           , signUpEmail = ""
                           , signUpPassword = ""
                           }

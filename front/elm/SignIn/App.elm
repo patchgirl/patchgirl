@@ -12,7 +12,7 @@ import ViewUtil exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
-
+import Maybe.Extra as Maybe
 
 -- * model
 
@@ -22,8 +22,13 @@ type alias Model a =
         , csrfToken: String
         , signInEmail: String
         , signInPassword: String
+        , signInErrors: List String
     }
 
+type alias Login =
+    { email: Client.CaseInsensitive
+    , password: String
+    }
 
 -- * message
 
@@ -46,7 +51,10 @@ update msg model =
         ChangeEmailSignIn newSignInEmail ->
             let
                 newModel =
-                    { model | signInEmail = newSignInEmail }
+                    { model
+                        | signInEmail = newSignInEmail
+                        , signInErrors = []
+                    }
 
             in
                 (newModel, Cmd.none)
@@ -54,7 +62,10 @@ update msg model =
         ChangePasswordSignIn newSignInPassword ->
             let
                 newModel =
-                    { model | signInPassword = newSignInPassword }
+                    { model
+                        | signInPassword = newSignInPassword
+                        , signInErrors = []
+                    }
             in
                 (newModel, Cmd.none)
 
@@ -67,11 +78,23 @@ update msg model =
 
                 newCmd =
                     Client.postSessionSignin "" login postSessionSignInResultToMsg
+
+                newModel =
+                    { model | signInErrors = loginErrors login }
             in
-                (model, newCmd)
+                case List.isEmpty newModel.signInErrors of
+                    True ->
+                        (newModel, newCmd)
+
+                    False ->
+                        (newModel, Cmd.none)
 
         SignInFailed ->
-            (model, Cmd.none)
+            let
+                newModel =
+                    { model | signInErrors = [] }
+            in
+                (newModel, Cmd.none)
 
         SignInSucceed _ ->
             Debug.todo "unreachable state: sign in"
@@ -79,6 +102,29 @@ update msg model =
 
 -- * util
 
+
+loginErrors : Login -> List String
+loginErrors { email, password } =
+    let
+        (Client.CaseInsensitive ciEmail) = email
+
+        passwordError : Maybe String
+        passwordError =
+            if String.isEmpty password then
+                Just "Password can not be empty"
+            else
+                Nothing
+
+        emailError : Maybe String
+        emailError =
+            if String.isEmpty ciEmail then
+                Just "Email can not be empty"
+            else
+                Nothing
+    in
+        Maybe.values [ passwordError
+                     , emailError
+                     ]
 
 postSessionSignInResultToMsg : Result Http.Error Client.Session -> Msg
 postSessionSignInResultToMsg result =
@@ -138,9 +184,18 @@ view model =
                         [ el [] (text "Sign in")
                         ]
                 }
+
+        showErrors =
+            case model.signInErrors of
+                [] ->
+                    none
+
+                errors ->
+                    column [] <| List.map (\error -> text error) errors
     in
         column [ centerX, spacing 20 ]
             [ loginInput
             , passwordInput
+            , showErrors
             , submitButton
             ]
