@@ -185,7 +185,8 @@ signUpHandler (SignUp { _signUpEmail }) =
             throwError err400
 
           Right message -> do
-            _ <- liftIO $ sendEmail emailCtx message
+            hailgunContext <- mkHailgunContext
+            _ <- liftIO $ sendEmail hailgunContext message
             return ()
 
 emailCtx :: EmailCtx

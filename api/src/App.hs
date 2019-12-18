@@ -38,7 +38,6 @@ import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
                                               sessionCookieName, throwAll)
 import           Session.App
 import           Session.Model
-import           System.IO
 import           Test
 
 -- * api

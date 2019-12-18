@@ -1,10 +1,15 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE NamedFieldPuns      #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Mailgun.App where
 
+import           Control.Monad.Reader (MonadReader, ask)
 import           Data.ByteString.UTF8 as BSU
+import           Data.Functor         ((<&>))
 import qualified Data.Text            as T
 import qualified Mail.Hailgun         as Hailgun
+import           PatchGirl
 
 
 -- * model
@@ -23,6 +28,18 @@ data Email =
 
 
 -- * util
+
+mkHailgunContext
+  :: (MonadReader Config m)
+  => m Hailgun.HailgunContext
+mkHailgunContext = do
+  mailgunConfig :: MailgunConfig <- ask <&> mailgun
+  return $
+  -- todo convert String -> Text
+    Hailgun.HailgunContext { Hailgun.hailgunDomain = "" -- domain mailgunConfig
+                           , Hailgun.hailgunApiKey = "" -- apiKey mailgunConfig
+                           , Hailgun.hailgunProxy = Nothing
+                           }
 
 
 mkHailgunMessage :: Email -> Either Hailgun.HailgunErrorMessage Hailgun.HailgunMessage
@@ -52,15 +69,6 @@ mkHailgunMessage (Email { _emailSubject, _emailMessageContent, _emailRecipients 
 -- * send email
 
 
-sendEmail :: EmailCtx -> Hailgun.HailgunMessage -> IO (Either Hailgun.HailgunErrorResponse Hailgun.HailgunSendResponse)
-sendEmail (EmailCtx { _emailDomain, _emailApiKey }) message =
-  let
-    hailgunContext =
-      Hailgun.HailgunContext { Hailgun.hailgunDomain = _emailDomain
-                             , Hailgun.hailgunApiKey = _emailApiKey
-                             , Hailgun.hailgunProxy = Nothing
-                             }
-
-
-  in
+sendEmail :: Hailgun.HailgunContext -> Hailgun.HailgunMessage -> IO (Either Hailgun.HailgunErrorResponse Hailgun.HailgunSendResponse)
+sendEmail hailgunContext message =
     Hailgun.sendEmail hailgunContext message
