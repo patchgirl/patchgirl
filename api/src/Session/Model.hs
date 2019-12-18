@@ -70,3 +70,17 @@ instance FromJSON CookieSession where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJWT CookieSession
+
+
+-- * sign up
+
+data SignUp
+  = SignUp { _signUpEmail :: CaseInsensitive }
+  deriving (Eq, Show, Read, Generic)
+
+instance ToJSON SignUp where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON SignUp where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }

@@ -89,6 +89,8 @@ deriveElmDef deriveElmDefOption ''Login
 deriveElmDef deriveElmDefOption ''CaseInsensitive
 deriveElmDef deriveElmDefOption ''Account
 deriveElmDef deriveElmDefOption ''Session
+deriveElmDef deriveElmDefOption ''SignUp
+
 
 main :: IO ()
 main =
@@ -126,6 +128,7 @@ main =
       , DefineElm (Proxy :: Proxy Account)
       , DefineElm (Proxy :: Proxy Session)
       , DefineElm (Proxy :: Proxy Token)
+      , DefineElm (Proxy :: Proxy SignUp)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))

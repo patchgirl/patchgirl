@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23bb44a3ee3302d534266c3953e55319976aded3ed2d1e127a812f54b1ddae55
+-- hash: 5986f855d2b92b317ddc46dfd46c39a9357da27fce33fa0939a4dade8d90b4e5
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -20,6 +20,8 @@ library
       Environment.App
       Foo
       Http
+      Mailgun.App
+      Main
       Model
       RequestCollection
       RequestNode.App
@@ -40,6 +42,8 @@ library
     , case-insensitive
     , cookie
     , elm-bridge
+    , email-validate
+    , hailgun
     , lens
     , mtl
     , postgresql-simple
@@ -53,6 +57,7 @@ library
     , text
     , transformers
     , unordered-containers
+    , utf8-string
     , wai
     , warp
     , warp-tls
@@ -71,7 +76,9 @@ executable example-servant-minimal
     , case-insensitive
     , cookie
     , elm-bridge
+    , email-validate
     , example-servant-minimal
+    , hailgun
     , lens
     , mtl
     , postgresql-simple
@@ -85,6 +92,7 @@ executable example-servant-minimal
     , text
     , transformers
     , unordered-containers
+    , utf8-string
     , wai
     , warp
     , warp-tls
@@ -113,7 +121,9 @@ test-suite spec
     , case-insensitive
     , cookie
     , elm-bridge
+    , email-validate
     , example-servant-minimal
+    , hailgun
     , hspec
     , http-client
     , http-types
@@ -131,6 +141,7 @@ test-suite spec
     , text
     , transformers
     , unordered-containers
+    , utf8-string
     , wai
     , warp >=3.2.4
     , warp-tls

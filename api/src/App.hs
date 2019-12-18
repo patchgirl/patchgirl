@@ -1,12 +1,21 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase                 #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TypeOperators              #-}
 
 module App where
 
 import           AppHealth
+import           Control.Monad.Except        (ExceptT, MonadError, runExceptT)
+import           Control.Monad.IO.Class      (MonadIO)
+import           Control.Monad.Reader        (MonadReader)
+import           Control.Monad.Reader        (ReaderT, runReaderT)
+import           Control.Monad.Trans         (liftIO)
 import           Environment.App
+import           GHC.Generics                (Generic)
 import           Network.Wai                 hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Handler.WarpTLS
@@ -48,6 +57,7 @@ type LoginApi =
         Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                , Header "Set-Cookie" SetCookie
                                ] Session) :<|>
+        "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
         "signout" :>
         Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                  , Header "Set-Cookie" SetCookie
@@ -139,20 +149,21 @@ type AssetApi =
 loginApiServer
   :: CookieSettings
   -> JWTSettings
-  -> Server LoginApi
+  -> ServerT LoginApi (AppM)
 loginApiServer cookieSettings jwtSettings  =
-  createSessionHandler cookieSettings jwtSettings :<|>
+  signInHandler cookieSettings jwtSettings :<|>
+  signUpHandler :<|>
   deleteSessionHandler cookieSettings
 
 sessionApiServer
   :: CookieSettings
   -> JWTSettings
   -> AuthResult CookieSession
-  -> Server SessionApi
+  -> ServerT SessionApi (AppM)
 sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
-protectedApiServer :: AuthResult CookieSession -> Server ProtectedApi
+protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
 protectedApiServer = \case
   BadPassword ->
     throwAll err402
@@ -170,8 +181,6 @@ protectedApiServer = \case
     environmentApi :<|>
     getAppHealth
 
-  --_ -> throwAll err401
-
   where
     requestCollectionApi =
       getRequestCollectionById
@@ -187,18 +196,30 @@ protectedApiServer = \case
       updateKeyValuesHandler :<|>
       deleteKeyValueHandler
 
-testApiServer :: Server TestApi
+testApiServer :: ServerT TestApi AppM
 testApiServer =
-  testApi
-  where
-    testApi =
-      deleteNoContentHandler :<|>
-      getNotFoundHandler :<|>
-      getInternalServerErrorHandler
+  deleteNoContentHandler :<|>
+  getNotFoundHandler :<|>
+  getInternalServerErrorHandler
 
-assetApiServer :: Server AssetApi
+assetApiServer :: ServerT AssetApi AppM
 assetApiServer =
   serveDirectoryWebApp "../public"
+
+
+-- * model
+
+
+newtype AppM a =
+  AppM { unAppM :: ExceptT ServerError (ReaderT String IO) a }
+  deriving ( MonadError ServerError
+           , MonadReader String
+           , Functor
+           , Applicative
+           , Monad
+           , MonadIO
+           , Generic
+           )
 
 
 -- * APP
@@ -227,9 +248,22 @@ mkApp = do
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
     combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie])
+    apiServer :: ServerT (CombinedApi '[Cookie]) (AppM)
     apiServer =
       (protectedApiServer :<|> (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings)) :<|>
       testApiServer :<|>
       assetApiServer
+    server :: Server (CombinedApi '[Cookie])
+    server =
+      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) appMToHandler apiServer
   return $
-    serveWithContext combinedApiProxy context apiServer
+    serveWithContext combinedApiProxy context server
+
+appMToHandler
+  :: AppM a
+  -> Handler a
+appMToHandler r = do
+  eitherErrorOrResult <- liftIO $ flip runReaderT "hi" . runExceptT . unAppM $ r
+  case eitherErrorOrResult of
+    Left error   -> throwError error
+    Right result -> return result

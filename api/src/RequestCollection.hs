@@ -1,24 +1,28 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
-{-# LANGUAGE FlexibleInstances       #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveAnyClass       #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE LambdaCase           #-}
+{-# LANGUAGE NamedFieldPuns       #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE QuasiQuotes          #-}
+{-# LANGUAGE RecordWildCards      #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module RequestCollection where
 
+import           Control.Monad.Except               (MonadError)
+import           Control.Monad.IO.Class             (MonadIO)
 import           Control.Monad.IO.Class
+import           Control.Monad.Reader               (MonadReader)
 import           Data.Aeson
 import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.FromRow (FromRow(..))
+import           Database.PostgreSQL.Simple.FromRow (FromRow (..))
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
+import           RequestNode.Model
 import           Servant
-import RequestNode.Model
 
 -- * Model
 
@@ -112,7 +116,13 @@ selectRequestCollectionById requestCollectionId connection = do
 
 -- * Handler
 
-getRequestCollectionById :: Int -> Handler RequestCollection
+getRequestCollectionById
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> m RequestCollection
 getRequestCollectionById requestCollectionId = do
   liftIO (getDBConnection >>= (selectRequestCollectionById requestCollectionId)) >>= \case
     Just request -> return request

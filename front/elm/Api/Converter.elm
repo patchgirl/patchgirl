@@ -88,7 +88,8 @@ convertSessionFromBackToFront backSession =
                           , signInPassword = ""
                           , signInErrors = []
                           , signUpEmail = ""
-                          , signUpPassword = ""
+                          , signUpError = Nothing
+                          , signUpMessage = Nothing
                           }
 
         Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionEmail } ->
@@ -97,3 +98,9 @@ convertSessionFromBackToFront backSession =
                 , csrfToken = sessionCsrfToken
                 , email = sessionEmail
                 }
+
+-- * sign up
+
+convertSignUpFromFrontToBack : Front.SignUp -> Back.SignUp
+convertSignUpFromFrontToBack { email } =
+    { signUpEmail = Back.CaseInsensitive email }

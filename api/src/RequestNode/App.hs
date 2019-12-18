@@ -1,14 +1,20 @@
-{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE QuasiQuotes      #-}
 
 module RequestNode.App where
 
-import           Database.PostgreSQL.Simple (Connection, Only(..), query, execute)
+import           Control.Monad.Except             (MonadError)
+import           Control.Monad.IO.Class           (MonadIO)
+import           Control.Monad.IO.Class           (liftIO)
+import           Control.Monad.Reader             (MonadReader)
+import           Database.PostgreSQL.Simple       (Connection, Only (..),
+                                                   execute, query)
 import           Database.PostgreSQL.Simple.SqlQQ
-import           Servant (Handler, throwError, err404)
-import Servant.API.ContentTypes (NoContent(..))
-import           Control.Monad.IO.Class (liftIO)
 import           DB
-import RequestNode.Model
+import           RequestNode.Model
+import           Servant                          (err404, throwError)
+import           Servant.API.ContentTypes         (NoContent (..))
+import           Servant.Server                   (ServerError)
 
 -- * request node
 
@@ -54,7 +60,15 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
           WHERE id = ?
           |]
 
-updateRequestNodeHandler :: Int -> Int -> UpdateRequestNode -> Handler NoContent
+updateRequestNodeHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> Int
+  -> UpdateRequestNode
+  -> m NoContent
 updateRequestNodeHandler requestCollectionId requestNodeId updateRequestNode = do
   connection <- liftIO getDBConnection
   requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
@@ -82,7 +96,14 @@ insertRequestFile newRequestFile connection = do
           RETURNING id
           |]
 
-createRequestFile :: Int -> NewRequestFile -> Handler Int
+createRequestFile
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> NewRequestFile
+  -> m Int
 createRequestFile requestCollectionId newRequestFile = do
   liftIO (getDBConnection >>= (insertRequestFile newRequestFile)) >>= return
 

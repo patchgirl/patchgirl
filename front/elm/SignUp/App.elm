@@ -12,14 +12,17 @@ import ViewUtil exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
+import Regex as Regex
 
 
 -- * model
 
 
 type alias Model a =
-    { a | signUpEmail: String
-        , signUpPassword: String
+    { a
+        | signUpEmail : String
+        , signUpError : Maybe String
+        , signUpMessage : Maybe String
     }
 
 
@@ -28,9 +31,8 @@ type alias Model a =
 
 type Msg
     = ChangeEmailSignUp String
-    | ChangePasswordSignUp String
     | AskSignUp
-    | SignUpSucceed Session
+    | SignUpSucceed
     | SignUpFailed
 
 
@@ -44,48 +46,77 @@ update msg model =
         ChangeEmailSignUp newSignUpEmail ->
             let
                 newModel =
-                    { model | signUpEmail = newSignUpEmail }
+                    { model
+                        | signUpEmail = newSignUpEmail
+                        , signUpError = Nothing
+                        , signUpMessage = Nothing
+                    }
 
-            in
-                (newModel, Cmd.none)
-
-        ChangePasswordSignUp newSignUpPassword ->
-            let
-                newModel =
-                    { model | signUpPassword = newSignUpPassword }
             in
                 (newModel, Cmd.none)
 
         AskSignUp ->
             let
-                login =
-                    { email = Client.CaseInsensitive model.signUpEmail
-                    , password = model.signUpPassword
+                signUp =
+                    { email = model.signUpEmail
                     }
 
                 newCmd =
-                    Client.postSessionSignin "" login postSessionSignUpResultToMsg
+                    Client.postSessionSignup "" (Client.convertSignUpFromFrontToBack signUp) postSessionSignUpResultToMsg
+
+                newModel =
+                    { model
+                        | signUpError = Just "invalid email"
+                        , signUpMessage = Nothing
+                    }
             in
-                (model, newCmd)
+                case validEmail signUp.email of
+                    True ->
+                        (model, newCmd)
+
+                    False ->
+                        (newModel, Cmd.none)
 
         SignUpFailed ->
-            (model, Cmd.none)
+            let
+                newModel =
+                    { model
+                        | signUpError = Just "Could not sign up maybe the email is not valid/already taken ?"
+                        , signUpMessage = Nothing
+                    }
+            in
+                (newModel, Cmd.none)
 
-        SignUpSucceed _ ->
-            Debug.todo "unreachable state: sign in"
+        SignUpSucceed ->
+            let
+               newModel =
+                   { model
+                       | signUpError = Nothing
+                       , signUpMessage = Just "Sign up succeeded, check your email to create your account"
+                   }
+            in
+                (newModel, Cmd.none)
 
 
 -- * util
 
 
-postSessionSignUpResultToMsg : Result Http.Error Client.Session -> Msg
+validEmail : String -> Bool
+validEmail email =
+    let
+        emailRegex : Regex.Regex
+        emailRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    in
+        Regex.contains emailRegex email
+
+
+postSessionSignUpResultToMsg : Result Http.Error () -> Msg
 postSessionSignUpResultToMsg result =
-    case result of
-        Ok session ->
-            let
-                newSession = Client.convertSessionFromBackToFront session
-            in
-                SignUpSucceed newSession
+    case Debug.log "result" result of
+        Ok () ->
+            SignUpSucceed
 
         Err _ ->
             SignUpFailed
@@ -111,15 +142,6 @@ view model =
                 , label = Input.labelLeft labelInputAttributes (text "Email:")
                 }
 
-        passwordInput =
-            Input.newPassword [ onEnter AskSignUp ]
-                { onChange = ChangePasswordSignUp
-                , text = model.signUpPassword
-                , placeholder = Just <| Input.placeholder [] (text "password")
-                , label = Input.labelLeft labelInputAttributes (text "Password:")
-                , show = False
-                }
-
         submitButton =
             Input.button [ Border.solid
                          , Border.color secondaryColor
@@ -136,9 +158,26 @@ view model =
                         [ el [] (text "Sign up")
                         ]
                 }
+
+        showError =
+            case model.signUpError of
+                Nothing ->
+                    none
+
+                Just error  ->
+                    el [ centerX] (text error)
+
+        showMessage =
+            case model.signUpMessage of
+                Nothing ->
+                    none
+
+                Just message ->
+                    el [ centerX] (text message)
     in
         column [ centerX, spacing 20 ]
             [ loginInput
-            , passwordInput
+            , showError
+            , showMessage
             , submitButton
             ]

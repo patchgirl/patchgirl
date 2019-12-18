@@ -14,7 +14,12 @@ type alias VisitorSession =
     , signInPassword: String
     , signInErrors: List String
     , signUpEmail: String
-    , signUpPassword: String
+    , signUpError: Maybe String
+    , signUpMessage: Maybe String
+    }
+
+type alias SignUp =
+    { email : String
     }
 
 getCsrfToken : Session -> String

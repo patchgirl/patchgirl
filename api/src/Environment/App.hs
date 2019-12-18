@@ -1,49 +1,57 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE DeriveAnyClass         #-}
+{-# LANGUAGE DeriveGeneric          #-}
+{-# LANGUAGE DuplicateRecordFields  #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE NamedFieldPuns         #-}
+{-# LANGUAGE QuasiQuotes            #-}
+{-# LANGUAGE RecordWildCards        #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
 module Environment.App where
 
 -- * import
 
-import Control.Lens hiding (element)
+import           Control.Lens                     hiding (element)
 
-import Data.List (find)
-import Prelude hiding (id)
+import           Control.Lens                     (makeFieldsNoPrefix)
+import           Control.Monad.Except             (MonadError)
+import           Control.Monad.IO.Class           (MonadIO)
+import           Control.Monad.IO.Class           (liftIO)
+import           Control.Monad.Reader             (MonadReader)
+import           Data.Aeson                       (FromJSON, ToJSON (..),
+                                                   defaultOptions,
+                                                   fieldLabelModifier,
+                                                   genericToJSON, parseJSON)
+import           Data.Aeson.Types                 (genericParseJSON)
+import           Data.Foldable                    (foldl')
+import           Data.HashMap.Strict              as HashMap (HashMap, elems,
+                                                              empty, insertWith)
+import           Data.List                        (find)
+import           Database.PostgreSQL.Simple       (Connection, FromRow,
+                                                   Only (..), execute, query)
+import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
-import           Data.Aeson (ToJSON(..), FromJSON, fieldLabelModifier, genericToJSON, defaultOptions, parseJSON)
-import           Data.Aeson.Types (genericParseJSON)
-import           Servant (Handler, throwError, err404)
-import           Database.PostgreSQL.Simple (Connection, Only(..), query, FromRow, execute)
-import           Control.Monad.IO.Class (liftIO)
-import           Database.PostgreSQL.Simple.SqlQQ
-import  Data.HashMap.Strict as HashMap (HashMap, empty, insertWith, elems)
-import  Data.Foldable (foldl')
-import Control.Lens (makeFieldsNoPrefix)
+import           Prelude                          hiding (id)
+import           Servant                          (err404, throwError)
+import           Servant.Server                   (ServerError)
 
 -- * get environments
 
 
 data PGEnvironmentWithKeyValue =
-  PGEnvironmentWithKeyValue { _environmentId :: Int
+  PGEnvironmentWithKeyValue { _environmentId   :: Int
                             , _environmentName :: String
-                            , _keyValueId :: Int
-                            , _key :: String
-                            , _value :: String
+                            , _keyValueId      :: Int
+                            , _key             :: String
+                            , _value           :: String
                             } deriving (Generic, FromRow)
 
 data PGEnvironmentWithoutKeyValue =
-  PGEnvironmentWithoutKeyValue { _environmentId :: Int
+  PGEnvironmentWithoutKeyValue { _environmentId   :: Int
                                , _environmentName :: String
                                } deriving (Generic, FromRow)
 
@@ -52,8 +60,8 @@ $(makeFieldsNoPrefix ''PGEnvironmentWithKeyValue)
 $(makeFieldsNoPrefix ''PGEnvironmentWithoutKeyValue)
 
 data KeyValue =
-  KeyValue { _id :: Int
-           , _key :: String
+  KeyValue { _id    :: Int
+           , _key   :: String
            , _value :: String
            } deriving (Eq, Show, Generic, FromRow)
 
@@ -64,8 +72,8 @@ instance ToJSON KeyValue where
 $(makeFieldsNoPrefix ''KeyValue)
 
 data Environment
-  = Environment { _id :: Int
-                , _name :: String
+  = Environment { _id        :: Int
+                , _name      :: String
                 , _keyValues :: [KeyValue]
                 } deriving (Eq, Show, Generic)
 
@@ -144,7 +152,12 @@ selectEnvironments connection = do
           AND account_id = ?;
           |]
 
-getEnvironmentsHandler :: Handler [Environment]
+getEnvironmentsHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => m [Environment]
 getEnvironmentsHandler = do
   liftIO (getDBConnection >>= selectEnvironments >>= return)
 
@@ -191,7 +204,13 @@ bindEnvironmentToAccount accountId environmentId connection = do
           );
           |]
 
-createEnvironmentHandler :: NewEnvironment -> Handler Int
+createEnvironmentHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => NewEnvironment
+  -> m Int
 createEnvironmentHandler newEnvironment = do
   connection <- liftIO getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
@@ -209,7 +228,14 @@ $(makeFieldsNoPrefix ''UpdateEnvironment)
 instance FromJSON UpdateEnvironment where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-updateEnvironmentHandler :: Int -> UpdateEnvironment -> Handler ()
+updateEnvironmentHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> UpdateEnvironment
+  -> m ()
 updateEnvironmentHandler environmentId updateEnvironment = do
   liftIO (getDBConnection >>= (updateEnvironmentDB environmentId updateEnvironment))
 
@@ -229,7 +255,13 @@ updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
 -- * delete environment
 
 
-deleteEnvironmentHandler :: Int -> Handler ()
+deleteEnvironmentHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> m ()
 deleteEnvironmentHandler environmentId =
   liftIO (getDBConnection >>= (deleteEnvironmentDB environmentId))
 
@@ -248,7 +280,14 @@ deleteEnvironmentDB environmentId connection = do
 -- * delete key value
 
 
-deleteKeyValueHandler :: Int -> Int -> Handler ()
+deleteKeyValueHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> Int
+  -> m ()
 deleteKeyValueHandler environmentId keyValueId = do
   connection <- liftIO getDBConnection
   environments <- liftIO $ selectEnvironments connection
@@ -280,7 +319,7 @@ deleteKeyValueDB keyValueId connection = do
 
 
 data NewKeyValue
-  = NewKeyValue { _newKeyValueKey :: String
+  = NewKeyValue { _newKeyValueKey   :: String
                 , _newKeyValueValue :: String
                 }
   deriving (Eq, Show, Generic)
@@ -316,7 +355,12 @@ insertManyKeyValuesDB environmentId (NewKeyValue { _newKeyValueKey, _newKeyValue
           |]
 
 
-updateKeyValuesHandler :: Int -> [NewKeyValue] -> Handler [KeyValue]
+updateKeyValuesHandler
+  :: ( MonadReader String m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int -> [NewKeyValue] -> m [KeyValue]
 updateKeyValuesHandler environmentId newKeyValues = do
   connection <- liftIO getDBConnection
   environments <- liftIO $ selectEnvironments connection
