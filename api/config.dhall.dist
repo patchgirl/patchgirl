@@ -5,6 +5,7 @@ let mailgun =
 
 let config =
   { mailgun = mailgun
+  , port = 3000
   }
 
 in

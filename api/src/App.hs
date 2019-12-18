@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE TypeOperators              #-}
 
 module App where
@@ -17,6 +18,7 @@ import           Control.Monad.Reader        (ReaderT, runReaderT)
 import           Control.Monad.Trans         (liftIO)
 import           Environment.App
 import           GHC.Generics                (Generic)
+import           GHC.Natural                 (naturalToInt)
 import           Network.Wai                 hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Handler.WarpTLS
@@ -228,14 +230,11 @@ newtype AppM a =
 
 run :: IO ()
 run = do
-  config <- importConfig
-  print (config :: Config)
-  let port = 3000
-      settings =
-        setPort port $
-        setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) $
-        defaultSettings
-      tlsOpts = tlsSettings "cert.pem" "key.pem"
+  config :: Config <- importConfig
+  print config
+  let
+    settings = setPort (naturalToInt $ port config) $ defaultSettings
+    tlsOpts = tlsSettings "cert.pem" "key.pem"
   runTLS tlsOpts settings =<< mkApp config
 
 mkApp :: Config -> IO Application

@@ -16,7 +16,8 @@ data MailgunConfig
   deriving (Generic, Show)
 
 data Config
-  = Config { mailgun :: MailgunConfig
+  = Config { port    :: Natural
+           , mailgun :: MailgunConfig
            }
   deriving (Generic, Show)
 
