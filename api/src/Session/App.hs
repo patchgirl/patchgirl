@@ -12,6 +12,7 @@
 
 module Session.App where
 
+
 import           Account.Model
 import           Control.Monad.Except                (MonadError)
 import           Control.Monad.IO.Class              (MonadIO)
@@ -30,6 +31,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           Mailgun.App
 import           Model
+import           PatchGirl
 import           Servant
 import           Servant.API.ResponseHeaders         (noHeader)
 import           Servant.Auth.Server
@@ -45,7 +47,7 @@ import           Web.Cookie                          (setCookieValue)
 
 
 whoAmIHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -87,7 +89,7 @@ whoAmIHandler cookieSettings jwtSettings = \case
 
 
 signInHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -135,7 +137,7 @@ selectAccount (Login { _email, _password }) connection = do
 -- * sign out
 
 deleteSessionHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -151,7 +153,7 @@ deleteSessionHandler cookieSettings =
 -- * sign up
 
 signUpHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )

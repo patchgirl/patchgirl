@@ -11,6 +11,7 @@ import           Database.PostgreSQL.Simple       (Connection, Only (..),
                                                    execute, query)
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
+import           PatchGirl
 import           RequestNode.Model
 import           Servant                          (err404, throwError)
 import           Servant.API.ContentTypes         (NoContent (..))
@@ -61,7 +62,7 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
           |]
 
 updateRequestNodeHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -97,7 +98,7 @@ insertRequestFile newRequestFile connection = do
           |]
 
 createRequestFile
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )

@@ -21,6 +21,7 @@ import           Database.PostgreSQL.Simple.FromRow (FromRow (..))
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
+import           PatchGirl
 import           RequestNode.Model
 import           Servant
 
@@ -117,7 +118,7 @@ selectRequestCollectionById requestCollectionId connection = do
 -- * Handler
 
 getRequestCollectionById
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )

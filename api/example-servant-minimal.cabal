@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5986f855d2b92b317ddc46dfd46c39a9357da27fce33fa0939a4dade8d90b4e5
+-- hash: 3251cf92156edd0e8bf7e7a7d1d13adb930d0c9907632085db77ebc51bbe7901
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -15,6 +15,7 @@ library
       Account.Model
       App
       AppHealth
+      Config
       DB
       ElmOption
       Environment.App
@@ -23,6 +24,7 @@ library
       Mailgun.App
       Main
       Model
+      PatchGirl
       RequestCollection
       RequestNode.App
       RequestNode.Model
@@ -41,6 +43,7 @@ library
     , bytestring
     , case-insensitive
     , cookie
+    , dhall
     , elm-bridge
     , email-validate
     , hailgun
@@ -75,6 +78,7 @@ executable example-servant-minimal
     , bytestring
     , case-insensitive
     , cookie
+    , dhall
     , elm-bridge
     , email-validate
     , example-servant-minimal
@@ -120,6 +124,7 @@ test-suite spec
     , bytestring
     , case-insensitive
     , cookie
+    , dhall
     , elm-bridge
     , email-validate
     , example-servant-minimal

@@ -19,3 +19,4 @@ Generated.elm
 *.tmp
 front/bin/elm
 *.pem
+config.dhall

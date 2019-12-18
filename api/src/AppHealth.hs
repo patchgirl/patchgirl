@@ -7,6 +7,7 @@
 
 module AppHealth where
 
+import           Config
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class
 import           Control.Monad.IO.Class           (MonadIO)
@@ -17,6 +18,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
 import           Servant
+
 
 -- * Model
 
@@ -44,7 +46,7 @@ selectDBIsRunning connection = do
 -- * Handler
 
 getAppHealth
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )

@@ -9,6 +9,7 @@
 module App where
 
 import           AppHealth
+import           Config
 import           Control.Monad.Except        (ExceptT, MonadError, runExceptT)
 import           Control.Monad.IO.Class      (MonadIO)
 import           Control.Monad.Reader        (MonadReader)
@@ -38,7 +39,7 @@ import           Session.Model
 import           System.IO
 import           Test
 
--- * API
+-- * api
 
 type CombinedApi auths =
   (RestApi auths) :<|>
@@ -143,7 +144,7 @@ type AssetApi =
   "public" :> Raw
 
 
--- * Server
+-- * server
 
 
 loginApiServer
@@ -211,9 +212,9 @@ assetApiServer =
 
 
 newtype AppM a =
-  AppM { unAppM :: ExceptT ServerError (ReaderT String IO) a }
+  AppM { unAppM :: ExceptT ServerError (ReaderT Config IO) a }
   deriving ( MonadError ServerError
-           , MonadReader String
+           , MonadReader Config
            , Functor
            , Applicative
            , Monad
@@ -222,21 +223,23 @@ newtype AppM a =
            )
 
 
--- * APP
+-- * app
 
 
 run :: IO ()
 run = do
+  config <- importConfig
+  print (config :: Config)
   let port = 3000
       settings =
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) $
         defaultSettings
       tlsOpts = tlsSettings "cert.pem" "key.pem"
-  runTLS tlsOpts settings =<< mkApp
+  runTLS tlsOpts settings =<< mkApp config
 
-mkApp :: IO Application
-mkApp = do
+mkApp :: Config -> IO Application
+mkApp config = do
   myKey <- generateKey
   let
     jwtSettings = defaultJWTSettings myKey
@@ -255,15 +258,16 @@ mkApp = do
       assetApiServer
     server :: Server (CombinedApi '[Cookie])
     server =
-      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) appMToHandler apiServer
+      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
   return $
     serveWithContext combinedApiProxy context server
 
 appMToHandler
-  :: AppM a
+  :: Config
+  -> AppM a
   -> Handler a
-appMToHandler r = do
-  eitherErrorOrResult <- liftIO $ flip runReaderT "hi" . runExceptT . unAppM $ r
+appMToHandler config r = do
+  eitherErrorOrResult <- liftIO $ flip runReaderT config . runExceptT . unAppM $ r
   case eitherErrorOrResult of
     Left error   -> throwError error
     Right result -> return result

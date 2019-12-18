@@ -35,6 +35,7 @@ import           Database.PostgreSQL.Simple       (Connection, FromRow,
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
+import           PatchGirl
 import           Prelude                          hiding (id)
 import           Servant                          (err404, throwError)
 import           Servant.Server                   (ServerError)
@@ -153,7 +154,7 @@ selectEnvironments connection = do
           |]
 
 getEnvironmentsHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -205,7 +206,7 @@ bindEnvironmentToAccount accountId environmentId connection = do
           |]
 
 createEnvironmentHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -229,7 +230,7 @@ instance FromJSON UpdateEnvironment where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 updateEnvironmentHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -256,7 +257,7 @@ updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
 
 
 deleteEnvironmentHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -281,7 +282,7 @@ deleteEnvironmentDB environmentId connection = do
 
 
 deleteKeyValueHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -356,7 +357,7 @@ insertManyKeyValuesDB environmentId (NewKeyValue { _newKeyValueKey, _newKeyValue
 
 
 updateKeyValuesHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )

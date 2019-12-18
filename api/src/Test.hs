@@ -5,6 +5,7 @@ module Test where
 import           Control.Monad.Except     (MonadError)
 import           Control.Monad.IO.Class   (MonadIO)
 import           Control.Monad.Reader     (MonadReader)
+import           PatchGirl
 import           Servant                  (err404, err500, throwError)
 import           Servant.API.ContentTypes (NoContent (..))
 import           Servant.Server           (ServerError)
@@ -12,7 +13,7 @@ import           Servant.Server           (ServerError)
 -- * Handler
 
 deleteNoContentHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -21,7 +22,7 @@ deleteNoContentHandler =
   return NoContent
 
 getNotFoundHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -30,7 +31,7 @@ getNotFoundHandler =
   throwError err404
 
 getInternalServerErrorHandler
-  :: ( MonadReader String m
+  :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
