@@ -1,0 +1,11 @@
+let mailgun =
+  { domain = "someDomain"
+  , apiKey = "someApiKey"
+  }
+
+let config =
+  { mailgun = mailgun
+  }
+
+in
+  config
