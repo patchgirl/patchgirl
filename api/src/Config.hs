@@ -10,8 +10,9 @@ importConfig =
   input auto "./config.dhall"
 
 data MailgunConfig
-  = MailgunConfig { domain :: Text
-                  , apiKey :: Text
+  = MailgunConfig { domain      :: Text
+                  , apiKey      :: Text
+                  , authorEmail :: Text
                   }
   deriving (Generic, Show)
 

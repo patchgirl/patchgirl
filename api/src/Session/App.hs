@@ -179,7 +179,8 @@ signUpHandler (SignUp { _signUpEmail }) =
       if emailAlreadyUsed then
         throwError err400
       else do
-        case mkHailgunMessage (mkSignUpEmail email) of
+        hailgunMessage <- mkHailgunMessage (mkSignUpEmail email)
+        case hailgunMessage of
           Left error -> do
             liftIO $ print error
             throwError err400

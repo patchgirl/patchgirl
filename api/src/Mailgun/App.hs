@@ -8,6 +8,7 @@ import           Control.Monad.Reader (MonadReader, ask)
 import           Data.ByteString.UTF8 as BSU
 import           Data.Functor         ((<&>))
 import qualified Data.Text            as T
+import qualified Data.Text.Encoding   as T
 import qualified Mail.Hailgun         as Hailgun
 import           PatchGirl
 
@@ -35,40 +36,46 @@ mkHailgunContext
 mkHailgunContext = do
   mailgunConfig :: MailgunConfig <- ask <&> mailgun
   return $
-  -- todo convert String -> Text
-    Hailgun.HailgunContext { Hailgun.hailgunDomain = "" -- domain mailgunConfig
-                           , Hailgun.hailgunApiKey = "" -- apiKey mailgunConfig
+    Hailgun.HailgunContext { Hailgun.hailgunDomain = T.unpack (domain mailgunConfig)
+                           , Hailgun.hailgunApiKey = T.unpack (apiKey mailgunConfig)
                            , Hailgun.hailgunProxy = Nothing
                            }
 
 
-mkHailgunMessage :: Email -> Either Hailgun.HailgunErrorMessage Hailgun.HailgunMessage
-mkHailgunMessage (Email { _emailSubject, _emailMessageContent, _emailRecipients }) =
-  let
-    hailgunMessageSubject =
-      T.pack _emailSubject
+mkHailgunMessage
+  :: (MonadReader Config m)
+  => Email
+  -> m (Either Hailgun.HailgunErrorMessage Hailgun.HailgunMessage)
+mkHailgunMessage (Email { _emailSubject, _emailMessageContent, _emailRecipients }) = do
+  MailgunConfig { authorEmail } <- ask <&> mailgun
+  let hailgunAuthor :: ByteString
+      hailgunAuthor =
+        T.encodeUtf8 authorEmail
 
-    hailgunMessageContent =
-      Hailgun.TextOnly { Hailgun.textContent = BSU.fromString _emailMessageContent }
+      hailgunMessageSubject =
+        T.pack _emailSubject
 
-    hailgunAuthor =
-      BSU.fromString "mailgun@sandbox4818ed69121942ec8a93c28bef0e0edd.mailgun.org"
+      hailgunMessageContent =
+        Hailgun.TextOnly { Hailgun.textContent = BSU.fromString _emailMessageContent }
 
-    hailgunRecipients =
-      Hailgun.MessageRecipients { Hailgun.recipientsTo = BSU.fromString <$> _emailRecipients
-                                , Hailgun.recipientsCC = []
-                                , Hailgun.recipientsBCC = []
-                                }
+      hailgunRecipients =
+        Hailgun.MessageRecipients { Hailgun.recipientsTo = BSU.fromString <$> _emailRecipients
+                                  , Hailgun.recipientsCC = []
+                                  , Hailgun.recipientsBCC = []
+                                  }
 
-    hailgunAttachments =
-      []
-  in
-    Hailgun.hailgunMessage hailgunMessageSubject hailgunMessageContent hailgunAuthor hailgunRecipients hailgunAttachments
+      hailgunAttachments =
+        []
+
+  return $ Hailgun.hailgunMessage hailgunMessageSubject hailgunMessageContent hailgunAuthor hailgunRecipients hailgunAttachments
 
 
 -- * send email
 
 
-sendEmail :: Hailgun.HailgunContext -> Hailgun.HailgunMessage -> IO (Either Hailgun.HailgunErrorResponse Hailgun.HailgunSendResponse)
+sendEmail
+  :: Hailgun.HailgunContext
+  -> Hailgun.HailgunMessage
+  -> IO (Either Hailgun.HailgunErrorResponse Hailgun.HailgunSendResponse)
 sendEmail hailgunContext message =
     Hailgun.sendEmail hailgunContext message

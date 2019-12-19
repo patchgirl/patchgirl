@@ -1,6 +1,7 @@
 let mailgun =
   { domain = "someDomain"
   , apiKey = "someApiKey"
+  , authorEmail = "someEmail"
   }
 
 let config =

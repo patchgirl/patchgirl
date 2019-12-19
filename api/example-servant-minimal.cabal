@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3251cf92156edd0e8bf7e7a7d1d13adb930d0c9907632085db77ebc51bbe7901
+-- hash: 1d303b26686a9b0d2df07d9dbff9a1926bee75cca264136dfc88f1ad2214afdd
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -22,7 +22,6 @@ library
       Foo
       Http
       Mailgun.App
-      Main
       Model
       PatchGirl
       RequestCollection
