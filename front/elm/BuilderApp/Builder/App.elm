@@ -46,7 +46,6 @@ type alias Model a =
         , httpMethod : Editable Client.Method
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
-        , response : Maybe Response
         , requestComputationResult : Maybe RequestComputationResult
         , showResponseView : Bool
     }
@@ -80,7 +79,6 @@ defaultBuilder =
   , httpMethod = Client.Get
   , httpHeaders = NotEdited []
   , httpBody = NotEdited ""
-  , response = Nothing
   }
 
 defaultModel1 =
@@ -88,7 +86,6 @@ defaultModel1 =
   , httpMethod = Client.Get
   , httpHeaders = NotEdited []
   , httpBody = NotEdited ""
-  , response = Nothing
   }
 
 defaultModel =
@@ -96,7 +93,6 @@ defaultModel =
   , httpMethod = Client.Get
   , httpHeaders = NotEdited []
   , httpBody = NotEdited ""
-  , response = Nothing
   }
 
 
@@ -172,11 +168,13 @@ update msg envKeyValues varKeyValues model =
                 (newModel, Cmd.none)
 
         SetHttpBodyResponse newBody ->
-            case model.response of
-                Just response ->
+            case model.requestComputationResult of
+                Just (GotResponse response) ->
                     let
-                        newResponse = { response | body = newBody }
-                        newModel = { model | response = Just newResponse }
+                        newResponse =
+                            { response | body = newBody }
+                        newModel =
+                            { model | requestComputationResult = Just (GotResponse newResponse) }
                     in
                         (newModel, Cmd.none)
 
