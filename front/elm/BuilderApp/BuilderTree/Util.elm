@@ -6,7 +6,6 @@ import BuilderApp.BuilderTree.Message exposing (..)
 --import BuilderApp.Builder.App as Builder
 import Application.Type exposing (..)
 import BuilderApp.Model exposing (..)
-import BuilderApp.Builder.Model as Builder
 
 findRequestNode : List RequestNode -> Int -> Maybe RequestNode
 findRequestNode =

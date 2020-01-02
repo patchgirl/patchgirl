@@ -5,7 +5,6 @@ import BuilderApp.BuilderTree.Message exposing (..)
 import BuilderApp.BuilderTree.Util exposing (..)
 
 import BuilderApp.Builder.App as Builder
-import BuilderApp.Builder.Model as Builder
 
 import Util.Maybe as Maybe
 
