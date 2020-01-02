@@ -1,6 +1,5 @@
 module InitializedApplication.Model exposing (..)
 
-import RequestRunner.Model as RequestRunner
 import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
 import List.Extra as List
@@ -23,8 +22,6 @@ type alias Model =
     , environments : List Environment
     -- VARIABLE APP
     , varAppModel : VarApp.Model
-    -- RUNNER
-    , runnerModel : RequestRunner.Model
     }
 
 type MainNavBarModel
@@ -91,6 +88,5 @@ createModel session requestCollection environments =
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditId = selectedEnvironmentToEditId
       , environments = environments
-      , runnerModel = Nothing
       , varAppModel = varAppModel
       }

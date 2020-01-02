@@ -50,7 +50,6 @@ import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.Message as EnvSelection
 import EnvironmentToRunSelection.App as EnvSelection
 
-import RequestRunner.Model as RequestRunner
 import RequestRunner.Util as RequestRunner
 
 import MainNavBar.App as MainNavBar
