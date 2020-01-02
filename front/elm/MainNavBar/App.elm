@@ -156,10 +156,6 @@ signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
     row [ spacing 10 ]
         [ link (linkAttribute model AskSignOut)
-              { url = href Settings
-              , label = text "Settings"
-              }
-        , link (linkAttribute model AskSignOut)
             { url = href Settings
             , label = text "Sign out"
             }
@@ -181,13 +177,11 @@ linkAttribute model msg =
             , Font.color <| primaryColor
             ]
 
-        passiveAttribute =
-            [ Font.color <| secondaryColor
-            ]
 
     in
         [ Events.onClick msg
         , Font.size 21
+        , Font.color <| secondaryColor
         , paddingXY 15 19
         , mouseOver activeAttribute
         ]
