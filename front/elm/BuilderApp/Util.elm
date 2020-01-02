@@ -1,8 +1,6 @@
 module BuilderApp.Util exposing (..)
 
-import BuilderApp.Builder.Model as Builder
 import BuilderApp.Model exposing (..)
-import BuilderApp.Builder.Model as Builder
 
 findPrevious : List a -> a -> Maybe a
 findPrevious l a =

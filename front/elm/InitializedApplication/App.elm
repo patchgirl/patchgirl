@@ -29,7 +29,6 @@ import BuilderApp.App as BuilderApp
 import BuilderApp.Message as BuilderApp
 
 import BuilderApp.Builder.App as Builder
-import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.App as Builder
 
 import BuilderApp.BuilderTree.View as BuilderTree

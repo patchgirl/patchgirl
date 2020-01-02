@@ -5,7 +5,6 @@ import BuilderApp.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
 
-import BuilderApp.Builder.Model as Builder
 
 -- * request Collection
 

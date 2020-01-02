@@ -12,7 +12,6 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import Util.List as List
 import Util.Maybe as Maybe
 import BuilderApp.Builder.App as Builder
-import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.View as BuilderTree
 import EnvironmentToRunSelection.App as EnvSelection
 
