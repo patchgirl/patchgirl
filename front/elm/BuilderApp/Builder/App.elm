@@ -5,6 +5,8 @@ import Http
 import Debug
 import Url
 import Json.Decode as Json
+import List.Extra as List
+import Combine as Combine
 
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
@@ -12,8 +14,6 @@ import BuilderApp.Builder.Method as Builder
 import Api.Generated as Client
 import Maybe.Extra as Maybe
 import Application.Type exposing (..)
-import RequestRunner.App as RequestRunner
-
 
 import Element exposing (..)
 import Element.Background as Background
@@ -105,6 +105,10 @@ update msg envKeyValues varKeyValues model =
                 _ ->
                     (model, Cmd.none)
 
+
+-- * util
+
+
 parseHeaders : String -> List(String, String)
 parseHeaders headers =
   let
@@ -119,7 +123,7 @@ parseHeaders headers =
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues varKeyValues builder =
     let
-        request = RequestRunner.buildRequest <| RequestRunner.buildRequestInput envKeyValues varKeyValues builder
+        request = buildRequest <| buildRequestInput envKeyValues varKeyValues builder
         cmdRequest =
             { method = request.method
             , headers = request.headers
@@ -181,6 +185,107 @@ convertResultToResponse result =
 expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg
 expectStringDetailed msg =
     Http.expectStringResponse msg convertResponseStringToResult
+
+
+-- * request runner
+
+type alias RequestInput =
+    { method : String
+    , headers : List (String, String)
+    , url : String
+    , body : String
+    }
+
+type alias Request =
+    { method : String
+    , headers : List Http.Header
+    , url : String
+    , body : Http.Body
+    }
+
+buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestInput
+buildRequestInput envKeyValues varKeyValues builder =
+    { method = Builder.methodToString <| editedOrNotEditedValue builder.httpMethod
+    , headers = editedOrNotEditedValue builder.httpHeaders
+    , url = interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
+    , body = editedOrNotEditedValue builder.httpBody
+    }
+
+buildRequest : RequestInput -> Request
+buildRequest requestInput =
+    { method = requestInput.method
+    , headers = List.map mkHeader requestInput.headers
+    , url = requestInput.url
+    , body = Http.stringBody "application/json" requestInput.body
+    }
+
+mkHeader : (String, String) -> Http.Header
+mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
+
+interpolate : List (Storable NewKeyValue KeyValue) -> List KeyValue -> String -> String
+interpolate envKeys varKeyValues str =
+  let
+    build : TemplatedString -> String
+    build templatedString =
+      case templatedString of
+        Sentence c -> c
+        Key k ->
+          case List.find (\sEnvKey ->
+                              case sEnvKey of
+                                  New { key } ->
+                                      key == k
+
+                                  Saved { key } ->
+                                      key == k
+
+                                  Edited2 _ { key } ->
+                                      key == k
+                         ) envKeys of
+            Just sEnvKey ->
+                case sEnvKey of
+                    New { value } ->
+                        value
+
+                    Saved { value } ->
+                        value
+
+                    Edited2 _ { value } ->
+                        value
+            Nothing ->
+                case List.find (\varKeyValue -> varKeyValue.key == k) varKeyValues of
+                    Just  { value } -> value
+                    Nothing -> k
+  in
+    case toRaw str of
+      Ok result -> List.map build result |> List.foldr (++) ""
+      Err errors -> Debug.log errors str
+
+toRaw : String -> Result String (List TemplatedString)
+toRaw str =
+  case Combine.parse templatedStringParser str of
+    Ok (_, _, result) ->
+      Ok result
+
+    Err (_, stream, errors) ->
+      Err (String.join " or " errors)
+
+type TemplatedString
+    = Sentence String
+    | Key String
+
+templatedStringParser : Combine.Parser s (List TemplatedString)
+templatedStringParser = Combine.many (Combine.or keyParser anychar)
+
+anychar : Combine.Parser s TemplatedString
+anychar = Combine.regex "." |> Combine.map Sentence
+
+keyParser : Combine.Parser s TemplatedString
+keyParser =
+  let
+    envKey : Combine.Parser s TemplatedString
+    envKey = Combine.regex "([a-zA-Z]|[0-9])+" |> Combine.map Key
+  in
+    Combine.between (Combine.string "{{") (Combine.string "}}") envKey
 
 
 -- * view

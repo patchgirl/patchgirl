@@ -15,7 +15,6 @@ import Http as Http
 import EnvironmentToRunSelection.App as EnvSelection
 import RequestInput.Model as RequestInput
 import BuilderApp.Builder.Model as Builder
-import BuilderApp.Builder.Util as Builder
 import BuilderApp.Builder.Method as Builder
 import List.Extra as List
 import InitializedApplication.Model as InitializedApplication
