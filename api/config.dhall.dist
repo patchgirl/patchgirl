@@ -1,12 +1,10 @@
-let mailgun =
-  { domain = "someDomain"
-  , apiKey = "someApiKey"
-  , authorEmail = "someEmail"
-  }
-
 let config =
-  { mailgun = mailgun
-  , port = 3000
+  { port = 3000
+  , mailgun = {
+    domain = "someDomain"
+    , apiKey = "someApiKey"
+    , authorEmail = "authoremail@email.com"
+    }
   }
 
 in
