@@ -200,17 +200,24 @@ buildRequestToRun : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Mod
 buildRequestToRun envKeyValues varKeyValues builder =
     let
         request = buildRequest <| buildRequestInput envKeyValues varKeyValues builder
-        cmdRequest =
-            { method = request.method
-            , headers = request.headers
-            , url = request.url
-            , body = request.body
-            , expect = expectStringDetailed ComputationDone
-            , timeout = Nothing
-            , tracker = Nothing
-            }
     in
-        Http.request cmdRequest
+        case True {-isLocal request.url-} of
+            True ->
+                let
+                    cmdRequest =
+                        { method = request.method
+                        , headers = request.headers
+                        , url = request.url
+                        , body = request.body
+                        , expect = expectStringDetailed ComputationDone
+                        , timeout = Nothing
+                        , tracker = Nothing
+                        }
+                in
+                    Http.request cmdRequest
+
+            False ->
+                Cmd.none
 
 
 convertResponseStringToResult : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
