@@ -12,7 +12,7 @@ import BuilderApp.Builder.Method as Builder
 import Api.Generated as Client
 import Maybe.Extra as Maybe
 import Application.Type exposing (..)
-import RequestRunner.Util as RequestRunner
+import RequestRunner.App as RequestRunner
 
 
 import Element exposing (..)

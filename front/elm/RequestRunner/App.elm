@@ -1,12 +1,10 @@
-module RequestRunner.Util exposing (..)
+module RequestRunner.App exposing (..)
 
 import Http as Http
 import Combine exposing (..)
 import List.Extra as List
 
 import Util.KeyValue.Model as KeyValue
-
-import RequestRunner.Model exposing (..)
 
 import BuilderApp.Builder.Method as Builder
 import BuilderApp.Builder.Util as Builder
@@ -16,6 +14,15 @@ import RequestInput.Model as RequestInput
 
 import VarApp.Model as VarApp
 import Application.Type exposing (..)
+
+
+type alias Request =
+    { method : String
+    , headers : List Http.Header
+    , url : String
+    , body : Http.Body
+    }
+
 
 buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Builder.Model a -> RequestInput.Model
 buildRequestInput envKeyValues varKeyValues builder =
