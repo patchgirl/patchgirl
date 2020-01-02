@@ -3,7 +3,6 @@ module Postman.Model exposing (..)
 import Json.Decode exposing (..)
 
 import BuilderApp.Builder.Model as Builder
-import BuilderApp.Builder.Method as Builder
 import BuilderApp.Model as BuilderApp
 import Api.Generated as Client
 

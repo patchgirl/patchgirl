@@ -10,7 +10,6 @@ import Combine as Combine
 
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
-import BuilderApp.Builder.Method as Builder
 import Api.Generated as Client
 import Maybe.Extra as Maybe
 import Application.Type exposing (..)
@@ -205,7 +204,7 @@ type alias Request =
 
 buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestInput
 buildRequestInput envKeyValues varKeyValues builder =
-    { method = Builder.methodToString <| editedOrNotEditedValue builder.httpMethod
+    { method = methodToString <| editedOrNotEditedValue builder.httpMethod
     , headers = editedOrNotEditedValue builder.httpHeaders
     , url = interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
     , body = editedOrNotEditedValue builder.httpBody
@@ -286,6 +285,33 @@ keyParser =
     envKey = Combine.regex "([a-zA-Z]|[0-9])+" |> Combine.map Key
   in
     Combine.between (Combine.string "{{") (Combine.string "}}") envKey
+
+
+-- * method util
+
+
+methodToString : Client.Method -> String
+methodToString method =
+  case method of
+    Client.Get -> "GET"
+    Client.Post -> "POST"
+    Client.Put -> "PUT"
+    Client.Delete -> "DELETE"
+    Client.Patch -> "PATCH"
+    Client.Head -> "HEAD"
+    _ -> "OPTIONS"
+
+fromString : String -> Maybe Client.Method
+fromString method =
+  case method of
+    "GET" -> Just Client.Get
+    "POST" -> Just Client.Post
+    "PUT" -> Just Client.Put
+    "DELETE" -> Just Client.Delete
+    "PATCH" -> Just Client.Patch
+    "HEAD" -> Just Client.Head
+    "OPTIONS" -> Just Client.Options
+    _ -> Nothing
 
 
 -- * view
