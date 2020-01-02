@@ -6,8 +6,6 @@ import Debug
 import Url
 import Json.Decode as Json
 
-import Curl.Util as Curl
-
 import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import BuilderApp.Builder.Method as Builder
@@ -94,9 +92,6 @@ update msg envKeyValues varKeyValues model =
                     { model | response = Just (convertResultToResponse result) }
             in
                 (newModel, Cmd.none)
-
-        ShowRequestAsCurl ->
-            (model, Cmd.none)
 
         SetHttpBodyResponse newBody ->
             case model.response of

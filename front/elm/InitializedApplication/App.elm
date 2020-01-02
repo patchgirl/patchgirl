@@ -50,8 +50,6 @@ import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.Message as EnvSelection
 import EnvironmentToRunSelection.App as EnvSelection
 
-import RequestRunner.App as RequestRunner
-import RequestRunner.Message as RequestRunner
 import RequestRunner.Model as RequestRunner
 import RequestRunner.Util as RequestRunner
 
@@ -68,7 +66,6 @@ import Util.Flip exposing (..)
 import Util.List as List
 import List.Extra as List
 
-import Curl.Util as Curl
 import Http as Http
 
 import Application.Type exposing (..)
@@ -82,7 +79,6 @@ type Msg
     | BuilderAppMsg BuilderApp.Msg
     | PostmanMsg Postman.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
-    | RequestRunnerMsg RequestRunner.Msg
     | MainNavBarMsg MainNavBar.Msg
     | VarAppMsg VarApp.Msg
     | SignInMsg SignIn.Msg
@@ -115,9 +111,6 @@ update msg model =
                         Nothing ->-}
 
 
-                BuilderApp.BuilderMsg (Builder.ShowRequestAsCurl) ->
-                    (model, Cmd.none)
-
                 _ ->
                     let
                         (newModel, newMsg) = BuilderApp.update subMsg model
@@ -132,9 +125,6 @@ update msg model =
         PostmanMsg subMsg ->
             case Postman.update subMsg model.postmanModel of
                 (_, _) -> (model, Cmd.none)
-
-        RequestRunnerMsg subMsg ->
-            (model, Cmd.none)
 
         MainNavBarMsg (MainNavBar.SignOutSucceed newSession) ->
             let

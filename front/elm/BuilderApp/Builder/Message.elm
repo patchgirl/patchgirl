@@ -14,5 +14,4 @@ type Msg
   | SetHttpBodyResponse String
   | AskRun
   | ServerOk (Result ErrorDetailed ( Http.Metadata, String ))
-  | ShowRequestAsCurl
   | AskSave

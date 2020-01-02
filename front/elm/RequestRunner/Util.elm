@@ -6,7 +6,6 @@ import List.Extra as List
 
 import Util.KeyValue.Model as KeyValue
 
-import RequestRunner.Message exposing (..)
 import RequestRunner.Model exposing (..)
 
 import BuilderApp.Builder.Method as Builder
