@@ -30,8 +30,11 @@ import Application.Type exposing (..)
 import Dict as Dict
 import Json.Print as Json
 
+import PrivateAddress exposing (..)
+
 
 -- * model
+
 
 type RequestComputationResult
     = RequestTimeout
@@ -201,7 +204,7 @@ buildRequestToRun envKeyValues varKeyValues builder =
     let
         request = buildRequest <| buildRequestInput envKeyValues varKeyValues builder
     in
-        case True {-isLocal request.url-} of
+        case isPrivateAddress request.url of
             True ->
                 let
                     cmdRequest =
@@ -285,6 +288,8 @@ type alias Request =
     , url : String
     , body : Http.Body
     }
+
+
 
 buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestInput
 buildRequestInput envKeyValues varKeyValues builder =
