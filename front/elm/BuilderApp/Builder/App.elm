@@ -8,7 +8,6 @@ import Json.Decode as Json
 import List.Extra as List
 import Combine as Combine
 
-import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import Api.Generated as Client
 import Maybe.Extra as Maybe
@@ -27,12 +26,25 @@ import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
 
-import BuilderApp.Builder.Message exposing (..)
 import BuilderApp.Builder.Model exposing (..)
 import Util.View as Util
 import Application.Type exposing (..)
 import Dict as Dict
 import Json.Print as Json
+
+
+-- * message
+
+
+type Msg
+  = UpdateUrl String
+  | SetHttpMethod Client.Method
+  | UpdateHeaders String
+  | SetHttpBody String
+  | SetHttpBodyResponse String
+  | AskRun
+  | ServerOk (Result ErrorDetailed ( Http.Metadata, String ))
+  | AskSave
 
 
 -- * update

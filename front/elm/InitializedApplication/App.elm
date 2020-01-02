@@ -31,7 +31,6 @@ import BuilderApp.Message as BuilderApp
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.Builder.App as Builder
-import BuilderApp.Builder.Message as Builder
 
 import BuilderApp.BuilderTree.View as BuilderTree
 import BuilderApp.BuilderTree.Message as BuilderTree

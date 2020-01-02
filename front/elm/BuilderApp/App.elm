@@ -8,7 +8,6 @@ import BuilderApp.BuilderTree.Util as BuilderTree
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
-import BuilderApp.Builder.Message as Builder
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
