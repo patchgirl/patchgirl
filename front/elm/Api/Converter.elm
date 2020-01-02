@@ -36,6 +36,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         , httpHeaders = NotEdited file.httpHeaders
                         , httpBody = NotEdited file.httpBody
                         , response = Nothing
+                        , requestComputationResult = Nothing
                         , showResponseView = False
                         }
     in

@@ -38,6 +38,7 @@ type alias File =
   , httpMethod : Editable Client.Method
   , httpHeaders : Editable (List (String, String))
   , httpBody : Editable String
+  , requestComputationResult : Maybe Builder.RequestComputationResult
   , response : Maybe Builder.Response
   , showResponseView : Bool
   }
@@ -57,7 +58,9 @@ defaultFile =
               , httpBody = NotEdited ""
               , response = Nothing
               , showResponseView = False
+              , requestComputationResult = Nothing
               }
+
 
 emptyBuilderTree =
     [ RequestFolder

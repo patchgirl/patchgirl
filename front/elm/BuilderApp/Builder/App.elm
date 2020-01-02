@@ -33,6 +33,11 @@ import Json.Print as Json
 
 -- * model
 
+type RequestComputationResult
+    = RequestTimeout
+    | RequestNetworkError
+    | RequestBadUrl
+    | GotResponse Response
 
 type alias Model a =
     { a
@@ -42,6 +47,7 @@ type alias Model a =
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
         , response : Maybe Response
+        , requestComputationResult : Maybe RequestComputationResult
         , showResponseView : Bool
     }
 
@@ -104,7 +110,7 @@ type Msg
   | SetHttpBody String
   | SetHttpBodyResponse String
   | AskRun
-  | ServerOk (Result ErrorDetailed ( Http.Metadata, String ))
+  | ComputationDone (Result ErrorDetailed ( Http.Metadata, String ))
   | AskSave
 
 
@@ -158,10 +164,10 @@ update msg envKeyValues varKeyValues model =
             in
                 (newModel, Debug.log "test" newMsg)
 
-        ServerOk result ->
+        ComputationDone result ->
             let
                 newModel =
-                    { model | response = Just (convertResultToResponse result) }
+                    { model | requestComputationResult = Just (convertResultToResponse result) }
             in
                 (newModel, Cmd.none)
 
@@ -201,7 +207,7 @@ buildRequestToRun envKeyValues varKeyValues builder =
             , headers = request.headers
             , url = request.url
             , body = request.body
-            , expect = expectStringDetailed ServerOk
+            , expect = expectStringDetailed ComputationDone
             , timeout = Nothing
             , tracker = Nothing
             }
@@ -227,31 +233,31 @@ convertResponseStringToResult httpResponse =
         Http.GoodStatus_ metadata body ->
             Ok ( metadata, body )
 
-convertResultToResponse : Result ErrorDetailed (Http.Metadata, String) -> Response
+convertResultToResponse : Result ErrorDetailed (Http.Metadata, String) -> RequestComputationResult
 convertResultToResponse result =
     case result of
         Err (BadUrl url) ->
-            Debug.todo "bad url"
+            RequestBadUrl
 
         Err Timeout ->
-            Debug.todo "timeout"
+            RequestTimeout
 
         Err NetworkError ->
-            Debug.todo "network error"
+            RequestNetworkError
 
         Err (BadStatus metadata body) ->
-            { statusCode = metadata.statusCode
-            , statusText = metadata.statusText
-            , headers = metadata.headers
-            , body = body
-            }
+            GotResponse { statusCode = metadata.statusCode
+                        , statusText = metadata.statusText
+                        , headers = metadata.headers
+                        , body = body
+                        }
 
         Ok (metadata, body) ->
-            { statusCode = metadata.statusCode
-            , statusText = metadata.statusText
-            , headers = metadata.headers
-            , body = body
-            }
+            GotResponse { statusCode = metadata.statusCode
+                        , statusText = metadata.statusText
+                        , headers = metadata.headers
+                        , body = body
+                        }
 
 
 expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg
@@ -463,7 +469,6 @@ responseView model =
                             , statusLabel
                             ]
 
-
         headersResponseView : Response -> Element Msg
         headersResponseView response =
             let
@@ -493,17 +498,32 @@ responseView model =
                         , placeholder = Nothing                                , label = labelInputView "body: "
                         , spellcheck = False
                         }
+
+        errorAttributes =
+            [ centerX
+            , centerY
+            ]
+
     in
-        case model.response of
+        case model.requestComputationResult of
             Nothing ->
                 none
 
-            Just response ->
+            Just (GotResponse response) ->
                 column [ spacing 10 ]
                     [ statusResponseView response
                     , bodyResponseView response
                     , headersResponseView response
                     ]
+
+            Just RequestTimeout ->
+                el errorAttributes (text "timeout")
+
+            Just RequestNetworkError ->
+                el errorAttributes (text "network error")
+
+            Just RequestBadUrl ->
+                el errorAttributes (text "bad url")
 
 
 urlView : Model a -> Element Msg
@@ -541,7 +561,7 @@ mainActionButtonsView model =
         row rowParam
             [ Input.button inputParam
                 { onPress = Just <| AskRun
-                , label = el [ centerY ] <| iconWithTextAndColor "send" "Send" primaryColor
+                , label = el [ centerY ] <| iconWithTextAndColor "send" "Run" primaryColor
                 }
             , case isBuilderDirty model of
                   True ->
