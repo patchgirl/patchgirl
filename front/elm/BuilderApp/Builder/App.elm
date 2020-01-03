@@ -7,6 +7,7 @@ import Url
 import Json.Decode as Json
 import List.Extra as List
 import Combine as Combine
+import Regex as Regex
 
 import Api.Generated as Client
 import Maybe.Extra as Maybe
@@ -276,11 +277,16 @@ expectStringDetailed msg =
 -- * request runner
 
 type alias RequestInput =
-    { method : String
+    { scheme : Scheme
+    , method : String
     , headers : List (String, String)
     , url : String
     , body : String
     }
+
+type Scheme
+    = HTTP
+    | HTTPS
 
 type alias Request =
     { method : String
@@ -290,14 +296,30 @@ type alias Request =
     }
 
 
-
 buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestInput
 buildRequestInput envKeyValues varKeyValues builder =
-    { method = methodToString <| editedOrNotEditedValue builder.httpMethod
-    , headers = editedOrNotEditedValue builder.httpHeaders
-    , url = interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
-    , body = editedOrNotEditedValue builder.httpBody
+    { scheme =
+          schemeFromUrl (editedOrNotEditedValue builder.httpUrl)
+    , method =
+        methodToString (editedOrNotEditedValue builder.httpMethod)
+    , headers =
+        editedOrNotEditedValue builder.httpHeaders
+    , url =
+        cleanUrl <|
+            interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
+    , body =
+        editedOrNotEditedValue builder.httpBody
     }
+
+
+schemeFromUrl : String -> Scheme
+schemeFromUrl url =
+    case String.startsWith "https://" url of
+        True ->
+            HTTPS
+
+        False ->
+            HTTP
 
 buildRequest : RequestInput -> Request
 buildRequest requestInput =
@@ -309,6 +331,23 @@ buildRequest requestInput =
 
 mkHeader : (String, String) -> Http.Header
 mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
+
+cleanUrl : String -> String
+cleanUrl url =
+    removeSchemeFromUrl (String.trimLeft url)
+
+removeSchemeFromUrl : String -> String
+removeSchemeFromUrl url =
+    let
+        schemeRegex : Regex.Regex
+        schemeRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromStringWith { caseInsensitive = False
+                                     , multiline = False
+                                     } "^https?://"
+    in
+        Regex.replace schemeRegex (\_ -> "") url
+
 
 interpolate : List (Storable NewKeyValue KeyValue) -> List KeyValue -> String -> String
 interpolate envKeys varKeyValues str =
