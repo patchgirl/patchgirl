@@ -12,7 +12,6 @@ import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import EnvironmentToRunSelection.App as EnvSelection
-import RequestInput.Model as RequestInput
 import List.Extra as List
 import InitializedApplication.Model as InitializedApplication
 

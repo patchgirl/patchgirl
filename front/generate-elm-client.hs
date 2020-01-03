@@ -30,6 +30,7 @@ import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
 import           Http
 import           Model
 import           RequestCollection
+import           RequestComputation.App
 import           RequestNode.Model
 import           Servant                  ((:<|>))
 import           Servant.API              ((:>), Capture, Get, JSON)
@@ -90,6 +91,8 @@ deriveElmDef deriveElmDefOption ''CaseInsensitive
 deriveElmDef deriveElmDefOption ''Account
 deriveElmDef deriveElmDefOption ''Session
 deriveElmDef deriveElmDefOption ''SignUp
+deriveElmDef deriveElmDefOption ''RequestComputationInput
+deriveElmDef deriveElmDefOption ''RequestComputationOutput
 
 
 main :: IO ()
@@ -129,6 +132,8 @@ main =
       , DefineElm (Proxy :: Proxy Session)
       , DefineElm (Proxy :: Proxy Token)
       , DefineElm (Proxy :: Proxy SignUp)
+      , DefineElm (Proxy :: Proxy RequestComputationInput)
+      , DefineElm (Proxy :: Proxy RequestComputationOutput)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
