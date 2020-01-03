@@ -203,12 +203,23 @@ parseHeaders headers =
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues varKeyValues builder =
     let
-        request = buildRequest <| buildRequestInput envKeyValues varKeyValues builder
+        --request = buildRequest <| buildRequestInput envKeyValues varKeyValues builder
+        request = buildRequestInput envKeyValues varKeyValues builder
     in
         case isPrivateAddress request.url of
             True ->
                 let
                     cmdRequest =
+                        { method = request.method
+                        , headers = List.map mkHeader request.headers
+                        , url = (schemeToString request.scheme) ++ "://" ++ request.url
+                        , body = Http.stringBody "application/json" request.body
+                        , expect = expectStringDetailed ComputationDone
+                        , timeout = Nothing
+                        , tracker = Nothing
+                        }
+
+                    {-cmdRequest2 =
                         { method = request.method
                         , headers = request.headers
                         , url = request.url
@@ -216,7 +227,7 @@ buildRequestToRun envKeyValues varKeyValues builder =
                         , expect = expectStringDetailed ComputationDone
                         , timeout = Nothing
                         , tracker = Nothing
-                        }
+                        }-}
                 in
                     Http.request cmdRequest
 
@@ -287,6 +298,15 @@ type alias RequestInput =
 type Scheme
     = HTTP
     | HTTPS
+
+schemeToString : Scheme -> String
+schemeToString scheme =
+    case scheme of
+        HTTP ->
+            "http"
+
+        HTTPS ->
+            "https"
 
 type alias Request =
     { method : String

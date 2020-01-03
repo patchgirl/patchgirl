@@ -13,10 +13,12 @@ suite =
             [ test "works with 'localhost'" <|
                 \_ ->
                     let
-                        input =
-                            "localhost"
+                        inputs = [ "localhost:3000"
+                                 , "localhost/whatever"
+                                 , "localhost"
+                                 ]
                     in
-                        Expect.equal (isPrivateAddress input) True
+                        Expect.equal (List.all isPrivateAddress inputs) True
 
             , test "works with class A network" <|
                 \_ ->
@@ -65,13 +67,14 @@ suite =
                             [ "9.255.255.255"
                             , "11.0.0.1"
                             , "172.15.0.1"
-                            , "127.255.255.255"
+                            , "128.255.255.255"
                             , "192.167.0.1"
                             , "192.169.0.1"
                             , "128.0.0.1"
                             , "whatever"
+                            , "localhost.com"
                             ]
                     in
-                        Expect.equal (List.all (isPrivateAddress >> not) inputs) False
+                        Expect.equal (List.all (not << isPrivateAddress) inputs) True
             ]
         ]

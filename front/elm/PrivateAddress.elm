@@ -2,7 +2,7 @@ module PrivateAddress exposing (..)
 
 import IP as IP
 import Subnet as Subnet
-
+import Regex as Regex
 
 isPrivateAddress : String -> Bool
 isPrivateAddress url =
@@ -30,7 +30,15 @@ isPrivateAddress url =
 
 
         isLocalhost =
-            url == "localhost"
+            let
+                localhostRegex : Regex.Regex
+                localhostRegex =
+                    Maybe.withDefault Regex.never <|
+                        Regex.fromStringWith { caseInsensitive = True
+                                             , multiline = False
+                                             } "^localhost(:|/|$)"
+            in
+                (Regex.contains localhostRegex url)
 
     in
         (isIP && isPrivateIP) || isLocalhost

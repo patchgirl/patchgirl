@@ -93,6 +93,7 @@ deriveElmDef deriveElmDefOption ''Session
 deriveElmDef deriveElmDefOption ''SignUp
 deriveElmDef deriveElmDefOption ''RequestComputationInput
 deriveElmDef deriveElmDefOption ''RequestComputationOutput
+deriveElmDef deriveElmDefOption ''Scheme
 
 
 main :: IO ()
@@ -134,6 +135,7 @@ main =
       , DefineElm (Proxy :: Proxy SignUp)
       , DefineElm (Proxy :: Proxy RequestComputationInput)
       , DefineElm (Proxy :: Proxy RequestComputationOutput)
+      , DefineElm (Proxy :: Proxy Scheme)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
