@@ -5,7 +5,7 @@ import Api.Generated as Client
 import Application.Type exposing (..)
 import Application.Type as Type
 import VarApp.Model as VarApp
-import BuilderApp.Builder.App as Builder
+import BuilderApp.Builder.Model as Builder
 
 type alias Model a =
     { a

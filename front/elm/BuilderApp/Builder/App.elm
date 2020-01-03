@@ -10,6 +10,8 @@ import Combine as Combine
 import Regex as Regex
 
 import Api.Generated as Client
+import Api.Converter as Client
+import BuilderApp.Builder.Model exposing (..)
 import Maybe.Extra as Maybe
 import Application.Type exposing (..)
 
@@ -34,72 +36,6 @@ import Json.Print as Json
 import PrivateAddress exposing (..)
 
 
--- * model
-
-
-type RequestComputationResult
-    = RequestTimeout
-    | RequestNetworkError
-    | RequestBadUrl
-    | GotResponse Response
-
-type alias Model a =
-    { a
-        | name : Editable String
-        , httpUrl : Editable String
-        , httpMethod : Editable Client.Method
-        , httpHeaders : Editable (List (String, String))
-        , httpBody : Editable String
-        , requestComputationResult : Maybe RequestComputationResult
-        , showResponseView : Bool
-    }
-
-isBuilderDirty : Model a -> Bool
-isBuilderDirty model =
-    isDirty model.httpMethod ||
-        isDirty model.httpHeaders ||
-            List.any isDirty [model.name, model.httpUrl, model.httpBody]
-
-
-type alias Response =
-    { statusCode : Int
-    , statusText : String
-    , headers : Dict.Dict String String
-    , body : String
-    }
-
-type Status
-    = Success
-    | Failure
-
-type ErrorDetailed
-    = BadUrl String
-    | Timeout
-    | NetworkError
-    | BadStatus Http.Metadata String
-
-defaultBuilder =
-  { httpUrl = NotEdited ""
-  , httpMethod = Client.Get
-  , httpHeaders = NotEdited []
-  , httpBody = NotEdited ""
-  }
-
-defaultModel1 =
-  { httpUrl = NotEdited "{{url}}/api/people/1"
-  , httpMethod = Client.Get
-  , httpHeaders = NotEdited []
-  , httpBody = NotEdited ""
-  }
-
-defaultModel =
-  { httpUrl = NotEdited "swapi.co/api/people/2"
-  , httpMethod = Client.Get
-  , httpHeaders = NotEdited []
-  , httpBody = NotEdited ""
-  }
-
-
 -- * message
 
 
@@ -110,7 +46,9 @@ type Msg
   | SetHttpBody String
   | SetHttpBodyResponse String
   | AskRun
-  | ComputationDone (Result ErrorDetailed ( Http.Metadata, String ))
+  | LocalComputationDone (Result ErrorDetailed ( Http.Metadata, String )) -- request ran from the browser
+  | RemoteComputationDone Response -- request ran from the server
+  | ServerError
   | AskSave
 
 
@@ -164,10 +102,17 @@ update msg envKeyValues varKeyValues model =
             in
                 (newModel, Debug.log "test" newMsg)
 
-        ComputationDone result ->
+        LocalComputationDone result ->
             let
                 newModel =
                     { model | requestComputationResult = Just (convertResultToResponse result) }
+            in
+                (newModel, Cmd.none)
+
+        RemoteComputationDone response ->
+            let
+                newModel =
+                    { model | requestComputationResult = Just (GotResponse response) }
             in
                 (newModel, Cmd.none)
 
@@ -185,8 +130,22 @@ update msg envKeyValues varKeyValues model =
                 _ ->
                     (model, Cmd.none)
 
+        ServerError ->
+            Debug.todo "server error"
+
 
 -- * util
+
+
+remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationOutput -> Msg
+remoteComputationDoneToMsg result =
+    case result of
+        Ok clientRequestComputationOutput ->
+            RemoteComputationDone <|
+                Client.convertRequestComputationOutputFromBackToFront clientRequestComputationOutput
+
+        Err error ->
+            Debug.log "test" ServerError
 
 
 parseHeaders : String -> List(String, String)
@@ -203,7 +162,6 @@ parseHeaders headers =
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues varKeyValues builder =
     let
-        --request = buildRequest <| buildRequestInput envKeyValues varKeyValues builder
         request = buildRequestInput envKeyValues varKeyValues builder
     in
         case isPrivateAddress request.url of
@@ -214,20 +172,11 @@ buildRequestToRun envKeyValues varKeyValues builder =
                         , headers = List.map mkHeader request.headers
                         , url = (schemeToString request.scheme) ++ "://" ++ request.url
                         , body = Http.stringBody "application/json" request.body
-                        , expect = expectStringDetailed ComputationDone
+                        , expect = expectStringDetailed LocalComputationDone
                         , timeout = Nothing
                         , tracker = Nothing
                         }
 
-                    {-cmdRequest2 =
-                        { method = request.method
-                        , headers = request.headers
-                        , url = request.url
-                        , body = request.body
-                        , expect = expectStringDetailed ComputationDone
-                        , timeout = Nothing
-                        , tracker = Nothing
-                        }-}
                 in
                     Http.request cmdRequest
 

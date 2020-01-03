@@ -2,6 +2,7 @@ module Api.Converter exposing(..)
 
 import Api.Generated as Back
 import BuilderApp.Model as Front
+import BuilderApp.Builder.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
 
@@ -103,3 +104,14 @@ convertSessionFromBackToFront backSession =
 convertSignUpFromFrontToBack : Front.SignUp -> Back.SignUp
 convertSignUpFromFrontToBack { email } =
     { signUpEmail = Back.CaseInsensitive email }
+
+
+-- * request computation
+
+convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.Response
+convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
+    { statusCode = 200
+    , statusText = "yeah"
+    , headers = Debug.todo "headers"
+    , body = ""
+    }

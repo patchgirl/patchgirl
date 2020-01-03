@@ -17,7 +17,9 @@ import Util.View as Util
 
 -- * environment edition
 
+
 -- ** model
+
 
 type alias Model a =
     { a
@@ -37,6 +39,7 @@ defaultEnvironment =
 
 -- ** message
 
+
 type Msg
   = SelectEnvToEdit Int
   | EnvironmentKeyValueEditionMsg KeyValueMsg
@@ -50,7 +53,9 @@ type Msg
   | EnvServerError
   | ShowRenameInput Int
 
+
 -- ** update
+
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
