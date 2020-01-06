@@ -35,7 +35,7 @@ type alias File =
   { name : Editable String
   , isSaved : Bool
   , httpUrl : Editable String
-  , httpMethod : Editable Client.Method
+  , httpMethod : Editable Builder.Method
   , httpHeaders : Editable (List (String, String))
   , httpBody : Editable String
   , requestComputationResult : Maybe Builder.RequestComputationResult
@@ -52,18 +52,9 @@ defaultFile =
   RequestFile { name = NotEdited "new file"
               , isSaved = False
               , httpUrl = NotEdited ""
-              , httpMethod = NotEdited Client.Get
+              , httpMethod = NotEdited Builder.Get
               , httpHeaders = NotEdited []
               , httpBody = NotEdited ""
               , showResponseView = False
               , requestComputationResult = Nothing
               }
-
-
-emptyBuilderTree =
-    [ RequestFolder
-          { name = NotEdited "root"
-          , open = False
-          , children = []
-          }
-    ]

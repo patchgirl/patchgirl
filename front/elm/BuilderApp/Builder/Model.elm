@@ -5,6 +5,27 @@ import Application.Type exposing (..)
 import Api.Generated as Client
 import Http as Http
 
+type alias RequestInput =
+    { scheme : Scheme
+    , method : Method
+    , headers : List (String, String)
+    , url : String
+    , body : String
+    }
+
+type Scheme
+    = Http
+    | Https
+
+type Method
+    = Get
+    | Post
+    | Put
+    | Delete
+    | Patch
+    | Head
+    | Options
+
 
 type RequestComputationResult
     = RequestTimeout
@@ -16,7 +37,7 @@ type alias Model a =
     { a
         | name : Editable String
         , httpUrl : Editable String
-        , httpMethod : Editable Client.Method
+        , httpMethod : Editable Method
         , httpHeaders : Editable (List (String, String))
         , httpBody : Editable String
         , requestComputationResult : Maybe RequestComputationResult
@@ -29,6 +50,12 @@ isBuilderDirty model =
         isDirty model.httpHeaders ||
             List.any isDirty [model.name, model.httpUrl, model.httpBody]
 
+type alias Request =
+    { method : Method
+    , headers : List Http.Header
+    , url : String
+    , body : Http.Body
+    }
 
 type alias Response =
     { statusCode : Int

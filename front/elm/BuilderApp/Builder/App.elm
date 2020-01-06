@@ -41,7 +41,7 @@ import PrivateAddress exposing (..)
 
 type Msg
   = UpdateUrl String
-  | SetHttpMethod Client.Method
+  | SetHttpMethod Method
   | UpdateHeaders String
   | SetHttpBody String
   | SetHttpBodyResponse String
@@ -168,7 +168,7 @@ buildRequestToRun envKeyValues varKeyValues builder =
             True ->
                 let
                     cmdRequest =
-                        { method = request.method
+                        { method = methodToString request.method
                         , headers = List.map mkHeader request.headers
                         , url = (schemeToString request.scheme) ++ "://" ++ request.url
                         , body = Http.stringBody "application/json" request.body
@@ -181,7 +181,11 @@ buildRequestToRun envKeyValues varKeyValues builder =
                     Http.request cmdRequest
 
             False ->
-                Cmd.none
+                let
+                    cmd = Debug.todo ""
+                in
+                    Client.postRequestComputation "" "" (Debug.todo "") (Debug.todo "")
+
 
 
 convertResponseStringToResult : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
@@ -236,41 +240,21 @@ expectStringDetailed msg =
 
 -- * request runner
 
-type alias RequestInput =
-    { scheme : Scheme
-    , method : String
-    , headers : List (String, String)
-    , url : String
-    , body : String
-    }
-
-type Scheme
-    = HTTP
-    | HTTPS
-
 schemeToString : Scheme -> String
 schemeToString scheme =
     case scheme of
-        HTTP ->
+        Http ->
             "http"
 
-        HTTPS ->
+        Https ->
             "https"
-
-type alias Request =
-    { method : String
-    , headers : List Http.Header
-    , url : String
-    , body : Http.Body
-    }
-
 
 buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestInput
 buildRequestInput envKeyValues varKeyValues builder =
     { scheme =
           schemeFromUrl (editedOrNotEditedValue builder.httpUrl)
     , method =
-        methodToString (editedOrNotEditedValue builder.httpMethod)
+        editedOrNotEditedValue builder.httpMethod
     , headers =
         editedOrNotEditedValue builder.httpHeaders
     , url =
@@ -285,10 +269,10 @@ schemeFromUrl : String -> Scheme
 schemeFromUrl url =
     case String.startsWith "https://" url of
         True ->
-            HTTPS
+            Https
 
         False ->
-            HTTP
+            Http
 
 buildRequest : RequestInput -> Request
 buildRequest requestInput =
@@ -387,27 +371,27 @@ keyParser =
 -- * method util
 
 
-methodToString : Client.Method -> String
+methodToString : Method -> String
 methodToString method =
   case method of
-    Client.Get -> "GET"
-    Client.Post -> "POST"
-    Client.Put -> "PUT"
-    Client.Delete -> "DELETE"
-    Client.Patch -> "PATCH"
-    Client.Head -> "HEAD"
-    _ -> "OPTIONS"
+    Get -> "GET"
+    Post -> "POST"
+    Put -> "PUT"
+    Delete -> "DELETE"
+    Patch -> "PATCH"
+    Head -> "HEAD"
+    Options -> "OPTIONS"
 
-fromString : String -> Maybe Client.Method
+fromString : String -> Maybe Method
 fromString method =
   case method of
-    "GET" -> Just Client.Get
-    "POST" -> Just Client.Post
-    "PUT" -> Just Client.Put
-    "DELETE" -> Just Client.Delete
-    "PATCH" -> Just Client.Patch
-    "HEAD" -> Just Client.Head
-    "OPTIONS" -> Just Client.Options
+    "GET" -> Just Get
+    "POST" -> Just Post
+    "PUT" -> Just Put
+    "DELETE" -> Just Delete
+    "PATCH" -> Just Patch
+    "HEAD" -> Just Head
+    "OPTIONS" -> Just Options
     _ -> Nothing
 
 
@@ -599,13 +583,13 @@ methodView model =
         , selected = Just <| editedOrNotEditedValue model.httpMethod
         , label = labelInputView "Method: "
         , options =
-              [ Input.option Client.Get (text "Get")
-              , Input.option Client.Post (text "Post")
-              , Input.option Client.Put (text "Put")
-              , Input.option Client.Delete (text "Delete")
-              , Input.option Client.Patch (text "Patch")
-              , Input.option Client.Head (text "Head")
-              , Input.option Client.Options (text "Options")
+              [ Input.option Get (text "Get")
+              , Input.option Post (text "Post")
+              , Input.option Put (text "Put")
+              , Input.option Delete (text "Delete")
+              , Input.option Patch (text "Patch")
+              , Input.option Head (text "Head")
+              , Input.option Options (text "Options")
               ]
         }
 
