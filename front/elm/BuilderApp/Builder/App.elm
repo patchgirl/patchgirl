@@ -47,7 +47,7 @@ type Msg
   | SetHttpBodyResponse String
   | AskRun
   | LocalComputationDone (Result ErrorDetailed ( Http.Metadata, String )) -- request ran from the browser
-  | RemoteComputationDone Response -- request ran from the server
+  | RemoteComputationDone RequestComputationOutput -- request ran from the server
   | ServerError
   | AskSave
 
@@ -112,18 +112,18 @@ update msg envKeyValues varKeyValues model =
         RemoteComputationDone response ->
             let
                 newModel =
-                    { model | requestComputationResult = Just (GotResponse response) }
+                    { model | requestComputationResult = Just (GotRequestComputationOutput response) }
             in
                 (newModel, Cmd.none)
 
         SetHttpBodyResponse newBody ->
             case model.requestComputationResult of
-                Just (GotResponse response) ->
+                Just (GotRequestComputationOutput response) ->
                     let
-                        newResponse =
+                        newRequestComputationOutput =
                             { response | body = newBody }
                         newModel =
-                            { model | requestComputationResult = Just (GotResponse newResponse) }
+                            { model | requestComputationResult = Just (GotRequestComputationOutput newRequestComputationOutput) }
                     in
                         (newModel, Cmd.none)
 
@@ -162,7 +162,7 @@ parseHeaders headers =
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues varKeyValues builder =
     let
-        request = buildRequestInput envKeyValues varKeyValues builder
+        request = buildRequestComputationInput envKeyValues varKeyValues builder
     in
         case isPrivateAddress request.url of
             True ->
@@ -219,14 +219,14 @@ convertResultToResponse result =
             RequestNetworkError
 
         Err (BadStatus metadata body) ->
-            GotResponse { statusCode = metadata.statusCode
+            GotRequestComputationOutput { statusCode = metadata.statusCode
                         , statusText = metadata.statusText
                         , headers = metadata.headers
                         , body = body
                         }
 
         Ok (metadata, body) ->
-            GotResponse { statusCode = metadata.statusCode
+            GotRequestComputationOutput { statusCode = metadata.statusCode
                         , statusText = metadata.statusText
                         , headers = metadata.headers
                         , body = body
@@ -249,8 +249,8 @@ schemeToString scheme =
         Https ->
             "https"
 
-buildRequestInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestInput
-buildRequestInput envKeyValues varKeyValues builder =
+buildRequestComputationInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestComputationInput
+buildRequestComputationInput envKeyValues varKeyValues builder =
     { scheme =
           schemeFromUrl (editedOrNotEditedValue builder.httpUrl)
     , method =
@@ -274,7 +274,7 @@ schemeFromUrl url =
         False ->
             Http
 
-buildRequest : RequestInput -> Request
+buildRequest : RequestComputationInput -> Request
 buildRequest requestInput =
     { method = requestInput.method
     , headers = List.map mkHeader requestInput.headers
@@ -451,17 +451,17 @@ responseView model =
                         False -> body
                 _ -> body
 
-        statusResponseView : Response -> Element Msg
-        statusResponseView response =
+        statusResponseView : RequestComputationOutput -> Element Msg
+        statusResponseView requestComputationOutput =
             let
                 statusText =
-                    String.fromInt response.statusCode ++ " - " ++ response.statusText
+                    String.fromInt requestComputationOutput.statusCode ++ " - " ++ requestComputationOutput.statusText
                 statusLabel =
-                    if response.statusCode >= 200 && response.statusCode < 300 then
+                    if requestComputationOutput.statusCode >= 200 && requestComputationOutput.statusCode < 300 then
                         labelSuccess statusText
-                    else if response.statusCode >= 400 && response.statusCode < 500 then
+                    else if requestComputationOutput.statusCode >= 400 && requestComputationOutput.statusCode < 500 then
                         labelWarning statusText
-                    else if response.statusCode >= 500 then
+                    else if requestComputationOutput.statusCode >= 500 then
                         labelError statusText
                     else
                         labelWarning statusText
@@ -471,11 +471,11 @@ responseView model =
                             , statusLabel
                             ]
 
-        headersResponseView : Response -> Element Msg
-        headersResponseView response =
+        headersResponseView : RequestComputationOutput -> Element Msg
+        headersResponseView requestComputationOutput =
             let
                 headers =
-                    Dict.toList response.headers
+                    Dict.toList requestComputationOutput.headers
                         |> List.map (joinTuple ": ")
                         |> String.join "\n"
             in
@@ -487,16 +487,16 @@ responseView model =
                     , spellcheck = False
                     }
 
-        bodyResponseView : Response -> Element Msg
-        bodyResponseView response =
-            case response.body of
+        bodyResponseView : RequestComputationOutput -> Element Msg
+        bodyResponseView requestComputationOutput =
+            case requestComputationOutput.body of
                 "" ->
                     none
 
                 _ ->
                     Input.multiline []
                         { onChange = SetHttpBodyResponse
-                        , text = bodyResponseText response.body response.headers
+                        , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
                         , placeholder = Nothing                                , label = labelInputView "body: "
                         , spellcheck = False
                         }
@@ -511,11 +511,11 @@ responseView model =
             Nothing ->
                 none
 
-            Just (GotResponse response) ->
+            Just (GotRequestComputationOutput requestComputationOutput) ->
                 column [ spacing 10 ]
-                    [ statusResponseView response
-                    , bodyResponseView response
-                    , headersResponseView response
+                    [ statusResponseView requestComputationOutput
+                    , bodyResponseView requestComputationOutput
+                    , headersResponseView requestComputationOutput
                     ]
 
             Just RequestTimeout ->

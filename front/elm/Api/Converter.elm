@@ -108,7 +108,7 @@ convertSignUpFromFrontToBack { email } =
 
 -- * request computation
 
-convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.Response
+convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
 convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
     { statusCode = 200
     , statusText = "yeah"
@@ -116,7 +116,7 @@ convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
     , body = ""
     }
 
-convertRequestComputationInputFromFrontToFromBack : Front.RequestInput -> Back.RequestComputationInput
+convertRequestComputationInputFromFrontToFromBack : Front.RequestComputationInput -> Back.RequestComputationInput
 convertRequestComputationInputFromFrontToFromBack frontRequestInput =
    { requestComputationInputMethod = convertMethodFromFrontToBack frontRequestInput.method
    , requestComputationInputHeaders = frontRequestInput.headers

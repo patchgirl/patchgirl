@@ -5,7 +5,7 @@ import Application.Type exposing (..)
 import Api.Generated as Client
 import Http as Http
 
-type alias RequestInput =
+type alias RequestComputationInput =
     { scheme : Scheme
     , method : Method
     , headers : List (String, String)
@@ -26,12 +26,11 @@ type Method
     | Head
     | Options
 
-
 type RequestComputationResult
     = RequestTimeout
     | RequestNetworkError
     | RequestBadUrl
-    | GotResponse Response
+    | GotRequestComputationOutput RequestComputationOutput
 
 type alias Model a =
     { a
@@ -57,7 +56,7 @@ type alias Request =
     , body : Http.Body
     }
 
-type alias Response =
+type alias RequestComputationOutput =
     { statusCode : Int
     , statusText : String
     , headers : Dict.Dict String String
