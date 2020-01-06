@@ -73,24 +73,3 @@ type ErrorDetailed
     | Timeout
     | NetworkError
     | BadStatus Http.Metadata String
-
-defaultBuilder =
-  { httpUrl = NotEdited ""
-  , httpMethod = Client.Get
-  , httpHeaders = NotEdited []
-  , httpBody = NotEdited ""
-  }
-
-defaultModel1 =
-  { httpUrl = NotEdited "{{url}}/api/people/1"
-  , httpMethod = Client.Get
-  , httpHeaders = NotEdited []
-  , httpBody = NotEdited ""
-  }
-
-defaultModel =
-  { httpUrl = NotEdited "swapi.co/api/people/2"
-  , httpMethod = Client.Get
-  , httpHeaders = NotEdited []
-  , httpBody = NotEdited ""
-  }
