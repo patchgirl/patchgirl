@@ -64,12 +64,6 @@ type RequestComputationResult
     | RequestBadUrl
     | GotRequestComputationOutput RequestComputationOutput
 
-type ErrorDetailed
-    = BadUrl String
-    | Timeout
-    | NetworkError
-    | BadStatus Http.Metadata String
-
 
 -- * request computation output
 

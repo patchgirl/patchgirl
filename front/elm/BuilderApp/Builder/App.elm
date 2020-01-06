@@ -46,7 +46,7 @@ type Msg
   | SetHttpBody String
   | SetHttpBodyResponse String
   | AskRun
-  | LocalComputationDone (Result ErrorDetailed ( Http.Metadata, String )) -- request ran from the browser
+  | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
   | RemoteComputationDone RequestComputationOutput -- request ran from the server
   | ServerError
   | AskSave
@@ -186,9 +186,13 @@ buildRequestToRun envKeyValues varKeyValues builder =
                 in
                     Client.postRequestComputation "" "" (Debug.todo "") (Debug.todo "")
 
+type DetailedError
+    = BadUrl String
+    | Timeout
+    | NetworkError
+    | BadStatus Http.Metadata String
 
-
-convertResponseStringToResult : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
+convertResponseStringToResult : Http.Response String -> Result DetailedError ( Http.Metadata, String )
 convertResponseStringToResult httpResponse =
     case httpResponse of
         Http.BadUrl_ url ->
@@ -206,7 +210,7 @@ convertResponseStringToResult httpResponse =
         Http.GoodStatus_ metadata body ->
             Ok ( metadata, body )
 
-convertResultToResponse : Result ErrorDetailed (Http.Metadata, String) -> RequestComputationResult
+convertResultToResponse : Result DetailedError (Http.Metadata, String) -> RequestComputationResult
 convertResultToResponse result =
     case result of
         Err (BadUrl url) ->
@@ -232,13 +236,13 @@ convertResultToResponse result =
                         , body = body
                         }
 
-
-expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg
+expectStringDetailed : (Result DetailedError ( Http.Metadata, String ) -> msg) -> Http.Expect msg
 expectStringDetailed msg =
     Http.expectStringResponse msg convertResponseStringToResult
 
 
 -- * request runner
+
 
 schemeToString : Scheme -> String
 schemeToString scheme =
