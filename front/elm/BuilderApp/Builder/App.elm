@@ -47,7 +47,7 @@ type Msg
   | SetHttpBodyResponse String
   | AskRun
   | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
-  | RemoteComputationDone RequestComputationOutput -- request ran from the server
+  | RemoteComputationDone RequestComputationResult -- request ran from the server
   | ServerError
   | AskSave
 
@@ -109,10 +109,10 @@ update msg envKeyValues varKeyValues model =
             in
                 (newModel, Cmd.none)
 
-        RemoteComputationDone response ->
+        RemoteComputationDone remoteComputationResult ->
             let
                 newModel =
-                    { model | requestComputationResult = Just (GotRequestComputationOutput response) }
+                    { model | requestComputationResult = Just remoteComputationResult }
             in
                 (newModel, Cmd.none)
 
@@ -137,16 +137,15 @@ update msg envKeyValues varKeyValues model =
 -- * util
 
 
-remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationOutput -> Msg
+remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -> Msg
 remoteComputationDoneToMsg result =
     case result of
-        Ok clientRequestComputationOutput ->
+        Ok backRequestComputationResult ->
             RemoteComputationDone <|
-                Client.convertRequestComputationOutputFromBackToFront clientRequestComputationOutput
+                Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
 
         Err error ->
             Debug.log "test" ServerError
-
 
 parseHeaders : String -> List(String, String)
 parseHeaders headers =
@@ -182,9 +181,11 @@ buildRequestToRun envKeyValues varKeyValues builder =
 
             False ->
                 let
-                    cmd = Debug.todo ""
+                    backRequestComputationInput =
+                        Client.convertRequestComputationInputFromFrontToFromBack request
                 in
-                    Client.postRequestComputation "" "" (Debug.todo "") (Debug.todo "")
+                    Client.postRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
+
 
 type DetailedError
     = BadUrl String

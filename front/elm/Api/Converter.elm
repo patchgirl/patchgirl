@@ -108,6 +108,10 @@ convertSignUpFromFrontToBack { email } =
 
 -- * request computation
 
+convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
+convertRequestComputationResultFromBackToFront backRequestComputationResult =
+    Front.RequestBadUrl
+
 convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
 convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
     { statusCode = 200
