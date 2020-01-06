@@ -274,14 +274,6 @@ schemeFromUrl url =
         False ->
             Http
 
-buildRequest : RequestComputationInput -> Request
-buildRequest requestInput =
-    { method = requestInput.method
-    , headers = List.map mkHeader requestInput.headers
-    , url = requestInput.url
-    , body = Http.stringBody "application/json" requestInput.body
-    }
-
 mkHeader : (String, String) -> Http.Header
 mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
 
