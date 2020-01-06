@@ -56,3 +56,6 @@ dependencies:
   - email-validate
   - mtl
   - dhall
+  - http-client
+  - http-conduit
+  - http-types

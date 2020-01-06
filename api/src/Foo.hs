@@ -1,15 +1,26 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE DuplicateRecordFields  #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
 module Foo where
 
-import Control.Lens hiding (element)
-import Control.Lens.TH
+import           Network.HTTP.Simple
 
-data A = A { _foo :: String } deriving (Show)
-data B = B { _foo :: String } deriving (Show)
+main :: IO ()
+main = do
+    request' <- parseRequest "http://httpbin.org/post"
+    let request
+            = setRequestMethod "PUT"
+            $ setRequestPath "/put"
+            $ setRequestQueryString [("hello", Just "world")]
+            $ setRequestBodyLBS "This is my request body"
+            $ setRequestSecure True
+            $ setRequestPort 443
+            $ request'
+    response <- httpBS request
 
-$(makeFieldsNoPrefix ''A)
-$(makeFieldsNoPrefix ''B)
+    putStrLn $ "The status code was: " ++
+               show (getResponseStatusCode response)
+    print $ getResponseHeader "Content-Type" response

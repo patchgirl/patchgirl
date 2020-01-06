@@ -23,6 +23,7 @@ import           Network.Wai                 hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Handler.WarpTLS
 import           RequestCollection
+import           RequestComputation.App
 import           RequestNode.App
 import           RequestNode.Model
 import           Servant                     hiding (BadPassword, NoSuchUser)
@@ -82,6 +83,7 @@ type ProtectedApi =
   RequestNodeApi :<|>
   RequestFileApi :<|>
   EnvironmentApi :<|>
+  RequestComputationApi :<|>
   HealthApi
 
 type RequestCollectionApi =
@@ -116,6 +118,13 @@ type EnvironmentApi =
         Delete '[JSON] () :<|>
         KeyValueApi -- deleteEnvironment
       )
+    )
+  )
+
+type RequestComputationApi =
+  Flat (
+    "requestComputation" :> (
+      ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
     )
   )
 
@@ -181,6 +190,7 @@ protectedApiServer = \case
     requestNodeApi :<|>
     requestFileApi :<|>
     environmentApi :<|>
+    runRequestComputationHandler :<|>
     getAppHealth
 
   where

@@ -1,6 +1,7 @@
 resolver: lts-14.4
 packages:
   - '.'
+
 extra-deps:
   - servant-flatten-0.2
   - servant-elm-0.7.1
@@ -9,6 +10,7 @@ extra-deps:
   - dhall-1.28.0
   - atomic-write-0.2.0.7
   - prettyprinter-1.5.1
+
 
 nix:
   enable: true
