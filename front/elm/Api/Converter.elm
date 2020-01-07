@@ -5,7 +5,7 @@ import BuilderApp.Model as Front
 import BuilderApp.Builder.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
-
+import Dict as Dict
 
 -- * request Collection
 
@@ -110,7 +110,25 @@ convertSignUpFromFrontToBack { email } =
 
 convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
 convertRequestComputationResultFromBackToFront backRequestComputationResult =
-    Front.RequestBadUrl
+    case backRequestComputationResult of
+        Back.RequestTimeout ->
+            Front.RequestTimeout
+
+        Back.RequestNetworkError ->
+            Front.RequestNetworkError
+
+        Back.RequestBadUrl ->
+            Front.RequestBadUrl
+
+        Back.GotRequestComputationOutput { requestComputationOutputStatusCode
+                                         , requestComputationOutputHeaders
+                                         , requestComputationOutputBody
+                                         } ->
+            Front.GotRequestComputationOutput { statusCode = requestComputationOutputStatusCode
+            , statusText = ""
+            , headers = Dict.fromList requestComputationOutputHeaders
+            , body = requestComputationOutputBody
+            }
 
 convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
 convertRequestComputationOutputFromBackToFront backRequestComputationOutput =

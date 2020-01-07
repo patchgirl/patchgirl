@@ -139,13 +139,13 @@ update msg envKeyValues varKeyValues model =
 
 remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -> Msg
 remoteComputationDoneToMsg result =
-    case result of
+    case Debug.log "test" result of
         Ok backRequestComputationResult ->
             RemoteComputationDone <|
                 Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
 
         Err error ->
-            Debug.log "test" ServerError
+            ServerError
 
 parseHeaders : String -> List(String, String)
 parseHeaders headers =
