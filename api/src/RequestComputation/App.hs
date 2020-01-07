@@ -24,6 +24,7 @@ import qualified Data.ByteString.UTF8      as BSU
 import qualified Data.CaseInsensitive      as CI
 import           GHC.Generics              (Generic)
 import           Http
+import qualified Network.HTTP.Client.TLS   as Tls
 import qualified Network.HTTP.Simple       as Http
 import qualified Network.HTTP.Types.Header as Http
 import           PatchGirl
@@ -65,16 +66,18 @@ data RequestComputationResult
     | GotRequestComputationOutput RequestComputationOutput
     deriving (Generic)
 
-instance ToJSON RequestComputationResult
+instance ToJSON RequestComputationResult where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
 -- ** request computation output
 
 
 data RequestComputationOutput
-  = RequestComputationOutput { statusCode :: Int
-                             , headers    :: [(String, String)]
-                             , body       :: String
+  = RequestComputationOutput { _requestComputationOutputStatusCode :: Int
+                             , _requestComputationOutputHeaders    :: [(String, String)]
+                             , _requestComputationOutputBody       :: String
                              }
   deriving (Eq, Show, Read, Generic)
 
@@ -98,6 +101,7 @@ runRequestComputationHandler
   -> m RequestComputationResult
 runRequestComputationHandler requestComputationInput = do
   response <- runRequest requestComputationInput
+  liftIO $ print response
   return $ GotRequestComputationOutput $ createRequestComputationOutput response
 
 
@@ -112,12 +116,18 @@ runRequest (RequestComputationInput { _requestComputationInputMethod
                                     , _requestComputationInputUrl
                                     , _requestComputationInputBody
                                     }) = do
-  parsedRequest <- liftIO $ Http.parseRequest _requestComputationInputUrl
+  let url = (schemeToString _requestComputationInputScheme) <> "://" <> _requestComputationInputUrl
+  manager <- Tls.newTlsManager
+  liftIO $ Tls.setGlobalManager manager
+  liftIO $ print url
+  parsedRequest <- liftIO $ Http.parseRequest url
+  liftIO $ print $ show parsedRequest
   let request
         = Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
         $ setPortAndSecure
         $ Http.setRequestBodyLBS (BLU.fromString _requestComputationInputBody)
+        $ Http.setRequestManager manager
         $ parsedRequest
   liftIO $ Http.httpBS request
   where
@@ -125,17 +135,19 @@ runRequest (RequestComputationInput { _requestComputationInputMethod
     setPortAndSecure =
       case _requestComputationInputScheme of
         Http ->
-          (Http.setRequestSecure True) . (Http.setRequestPort 80)
+          (Http.setRequestSecure False) . (Http.setRequestPort 80)
 
         Https ->
-          (Http.setRequestSecure False) . (Http.setRequestPort 443)
+          (Http.setRequestSecure True) . (Http.setRequestPort 443)
+
 
 createRequestComputationOutput :: Http.Response BSU.ByteString -> RequestComputationOutput
 createRequestComputationOutput response =
-  RequestComputationOutput { statusCode = Http.getResponseStatusCode response
-                           , headers    = parseResponseHeaders response
-                           , body       = BSU.toString $ Http.getResponseBody response
-                           }
+  RequestComputationOutput
+    { _requestComputationOutputStatusCode = Http.getResponseStatusCode response
+    , _requestComputationOutputHeaders    = parseResponseHeaders response
+    , _requestComputationOutputBody       = BSU.toString $ Http.getResponseBody response
+    }
 
 parseResponseHeaders :: Http.Response BSU.ByteString -> [(String,String)]
 parseResponseHeaders response =

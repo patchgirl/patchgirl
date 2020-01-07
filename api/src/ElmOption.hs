@@ -1,9 +1,9 @@
 module ElmOption where
 
-import Data.Aeson
+import           Data.Aeson
 
 deriveElmDefOption :: Options
 deriveElmDefOption =
-  defaultOptions { sumEncoding = TaggedObject "tag" "tag"
+  defaultOptions { sumEncoding = TaggedObject "tag" "contents"
                  , fieldLabelModifier = drop 1
                  }

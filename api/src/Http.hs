@@ -53,3 +53,8 @@ data Scheme
 
 instance ToJSON Scheme
 instance FromJSON Scheme
+
+schemeToString :: Scheme -> String
+schemeToString = \case
+  Http -> "http"
+  Https -> "https"

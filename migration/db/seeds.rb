@@ -47,7 +47,7 @@ request_nodes = [
   insert_request_folder(2, nil, 'RequestFolder', "2/"),
   insert_request_folder(3, 1, 'RequestFolder', "1.1/"),
   insert_request_file(4, 3, 'RequestFile', "1.1.1", "https://{{host}}/requestCollection/1", "Get", headers, ""),
-  insert_request_file(5, 3, 'RequestFile', "1.1.2", "api.com", "Post", empty_headers, ""),
+  insert_request_file(5, 3, 'RequestFile', "swapi/people", "https://swapi.co/api/people/1/", "Get", empty_headers, ""),
   insert_request_file(6, 1, 'RequestFile', "delete - no content", "https://{{host}}/test/deleteNoContent", "Delete", headers, ""),
   insert_request_file(7, 1, 'RequestFile', "get - not found", "https://{{host}}/test/getNotFound", "Get", headers, ""),
   insert_request_file(8, 1, 'RequestFile', "get - internal server error", "https://{{host}}/test/getInternalServerError", "Get", headers, ""),

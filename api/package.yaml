@@ -57,5 +57,6 @@ dependencies:
   - mtl
   - dhall
   - http-client
+  - http-client-tls
   - http-conduit
   - http-types

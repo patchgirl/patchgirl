@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8251efac090379af698d20035ba280eb0abc5e79c20aa2e6f0097a8b6a20ed05
+-- hash: 6f535cf62e5983fc4e295712f5cacab58fbcb0c1644e093a0f149c8f90e08fe5
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -48,6 +48,7 @@ library
     , email-validate
     , hailgun
     , http-client
+    , http-client-tls
     , http-conduit
     , http-types
     , lens
@@ -87,6 +88,7 @@ executable example-servant-minimal
     , example-servant-minimal
     , hailgun
     , http-client
+    , http-client-tls
     , http-conduit
     , http-types
     , lens
@@ -137,6 +139,7 @@ test-suite spec
     , hailgun
     , hspec
     , http-client
+    , http-client-tls
     , http-conduit
     , http-types
     , lens
