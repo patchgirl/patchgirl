@@ -452,7 +452,7 @@ responseView model =
         statusResponseView requestComputationOutput =
             let
                 statusText =
-                    String.fromInt requestComputationOutput.statusCode ++ " - " ++ requestComputationOutput.statusText
+                    String.fromInt requestComputationOutput.statusCode
                 statusLabel =
                     if requestComputationOutput.statusCode >= 200 && requestComputationOutput.statusCode < 300 then
                         labelSuccess statusText
