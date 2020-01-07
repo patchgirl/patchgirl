@@ -100,7 +100,7 @@ update msg envKeyValues varKeyValues model =
                         | showResponseView = True
                     }
             in
-                (newModel, Debug.log "test" newMsg)
+                (newModel, newMsg)
 
         LocalComputationDone result ->
             let
@@ -139,7 +139,7 @@ update msg envKeyValues varKeyValues model =
 
 remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -> Msg
 remoteComputationDoneToMsg result =
-    case Debug.log "test" result of
+    case result of
         Ok backRequestComputationResult ->
             RemoteComputationDone <|
                 Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
@@ -443,7 +443,7 @@ responseView model =
         bodyResponseText body responseHeaders =
             case Dict.get "content-type" responseHeaders of
                 Just contentType ->
-                    case String.contains "application/json" contentType of
+                    case Debug.log "json?" <| String.contains "application/json" contentType of
                         True -> Result.withDefault body (Json.prettyString { indent = 4, columns = 4 } body)
                         False -> body
                 _ -> body

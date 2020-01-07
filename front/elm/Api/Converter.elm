@@ -6,6 +6,7 @@ import BuilderApp.Builder.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
 import Dict as Dict
+import Tuple as Tuple
 
 -- * request Collection
 
@@ -124,19 +125,12 @@ convertRequestComputationResultFromBackToFront backRequestComputationResult =
                                          , requestComputationOutputHeaders
                                          , requestComputationOutputBody
                                          } ->
-            Front.GotRequestComputationOutput { statusCode = requestComputationOutputStatusCode
-            , statusText = ""
-            , headers = Dict.fromList requestComputationOutputHeaders
-            , body = requestComputationOutputBody
-            }
-
-convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
-convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
-    { statusCode = 200
-    , statusText = "yeah"
-    , headers = Debug.todo "headers"
-    , body = ""
-    }
+            Front.GotRequestComputationOutput
+                { statusCode = requestComputationOutputStatusCode
+                , statusText = ""
+                , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) requestComputationOutputHeaders
+                , body = requestComputationOutputBody
+                }
 
 convertRequestComputationInputFromFrontToFromBack : Front.RequestComputationInput -> Back.RequestComputationInput
 convertRequestComputationInputFromFrontToFromBack frontRequestInput =
