@@ -5,14 +5,14 @@
 {-# LANGUAGE TemplateHaskell        #-}
 
 module Foo where
-
+{-
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 import           Network.HTTP.Simple
 
-main :: IO ()
-main = do
+foo :: IO ()
+foo = do
     request' <- parseRequest "http://httpbin.org/post"
     let request
             = setRequestMethod "PUT"
@@ -42,3 +42,4 @@ main = do
                show (getResponseStatusCode response)
     print $ getResponseHeader "Content-Type" response
     --L8.putStrLn $ getResponseBody response
+-}

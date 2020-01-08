@@ -32,7 +32,8 @@ import           DB
 import           Mailgun.App
 import           Model
 import           PatchGirl
-import           Servant
+import           Servant                             (Header, Headers, err400,
+                                                      err401, throwError)
 import           Servant.API.ResponseHeaders         (noHeader)
 import           Servant.Auth.Server
 import           Servant.Auth.Server                 (CookieSettings,
@@ -143,14 +144,18 @@ deleteSessionHandler
      )
   => CookieSettings
   -> m (Headers '[ Header "Set-Cookie" SetCookie
-                 , Header "Set-Cookie" SetCookie]
+                 , Header "Set-Cookie" SetCookie
+                 ]
          Session)
-deleteSessionHandler cookieSettings =
-  return $ clearSession cookieSettings $ VisitorSession { _sessionAccountId = 1
-                                                        , _sessionCsrfToken = ""
-                                                        }
+deleteSessionHandler cookieSettings = do
+  return $
+    clearSession cookieSettings $ VisitorSession { _sessionAccountId = 1
+                                                 , _sessionCsrfToken = ""
+                                                 }
+
 
 -- * sign up
+
 
 signUpHandler
   :: ( MonadReader Config m

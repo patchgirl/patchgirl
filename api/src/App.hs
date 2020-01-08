@@ -160,7 +160,7 @@ type AssetApi =
 loginApiServer
   :: CookieSettings
   -> JWTSettings
-  -> ServerT LoginApi (AppM)
+  -> ServerT LoginApi AppM
 loginApiServer cookieSettings jwtSettings  =
   signInHandler cookieSettings jwtSettings :<|>
   signUpHandler :<|>

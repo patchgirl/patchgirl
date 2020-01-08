@@ -4,7 +4,7 @@ module Session.Model where
 
 import           Data.Aeson          (FromJSON, ToJSON, genericParseJSON,
                                       parseJSON)
-import           Data.Aeson          (ToJSON (..), genericToJSON)
+import           Data.Aeson          (FromJSON (..), ToJSON (..), genericToJSON)
 import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
 import           Data.Text           (Text)
 import           GHC.Generics        (Generic)
@@ -46,7 +46,10 @@ instance ToJSON Session where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance ToJWT Session
-instance FromJSON Session
+instance FromJSON Session where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 instance FromJWT Session
 
 
@@ -83,4 +86,5 @@ instance ToJSON SignUp where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJSON SignUp where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }

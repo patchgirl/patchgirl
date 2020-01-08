@@ -2,12 +2,12 @@
 
 module Helper.DB (cleanDBAfter) where
 
-import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.Types (Identifier (..))
-import DB (getDBConnection)
-import Data.Text (Text)
 import           Control.Exception                (finally)
 import           Control.Monad                    (void)
+import           Data.Text                        (Text)
+import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.Types (Identifier (..))
+import           DB                               (getDBConnection)
 
 cleanDBAfter :: (Connection -> IO a) -> IO a
 cleanDBAfter f =
@@ -21,7 +21,7 @@ listTables :: Connection -> IO [Text]
 listTables c =
   map fromOnly `fmap` query_ c q
   where
-    q = mconcat [ "SELECT c.relname FROM pg_catalog.pg_class c"
+    q = mconcat [ " SELECT c.relname FROM pg_catalog.pg_class c"
                 , " LEFT JOIN pg_catalog.pg_namespace n"
                 , " ON c.relnamespace = n.oid"
                 , " WHERE c.relkind IN ('r', '')"
