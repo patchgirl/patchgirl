@@ -1,36 +1,43 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveAnyClass         #-}
+{-# LANGUAGE DeriveGeneric          #-}
+{-# LANGUAGE DuplicateRecordFields  #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE FlexibleInstances       #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE NamedFieldPuns         #-}
+{-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE RecordWildCards        #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
 module RequestNode.Model where
 
+import           Control.Lens                         (makeFieldsNoPrefix)
+import           Data.Aeson                           (FromJSON (..),
+                                                       ToJSON (..),
+                                                       constructorTagModifier,
+                                                       genericToJSON,
+                                                       withObject, (.:))
+import           Data.Aeson                           (Value, parseJSON)
+import           Data.Aeson.Types                     (Parser, camelTo2,
+                                                       defaultOptions,
+                                                       fieldLabelModifier,
+                                                       genericParseJSON)
+import           Data.Aeson.Types                     (parseEither)
 import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
-import Http
-import           Data.Aeson (withObject, FromJSON(..), ToJSON(..), (.:), constructorTagModifier, genericToJSON)
-import           Data.Aeson.Types (Parser, camelTo2, fieldLabelModifier, genericParseJSON, defaultOptions)
-import           Database.PostgreSQL.Simple.FromField hiding (name)
-import           Data.Aeson (Value, parseJSON)
-import Data.Aeson.Types (parseEither)
-import Control.Lens (makeFieldsNoPrefix)
+import           Http
 
 data UpdateRequestNode
   = UpdateRequestFolder { _name :: String
                         }
-  | UpdateRequestFile { _name :: String
-                      , _httpUrl :: String
-                      , _httpMethod :: Method
+  | UpdateRequestFile { _name        :: String
+                      , _httpUrl     :: String
+                      , _httpMethod  :: Method
                       , _httpHeaders :: [(String, String)]
-                      , _httpBody :: String
+                      , _httpBody    :: String
                       }
   deriving (Eq, Show, Generic, FromJSON)
 
@@ -51,16 +58,16 @@ instance ToField UpdateRequestNode where
          ]
 
 data RequestNode
-  = RequestFolder { _id :: Int
-                  , _name :: String
-                  , _children :: [RequestNode]
+  = RequestFolder { _requestNodeId       :: Int
+                  , _requestNodeName     :: String
+                  , _requestNodeChildren :: [RequestNode]
                   }
-  | RequestFile { _id :: Int
-                , _name :: String
-                , _httpUrl :: String
-                , _httpMethod :: Method
-                , _httpHeaders :: [(String, String)]
-                , _httpBody :: String
+  | RequestFile { _requestNodeId          :: Int
+                , _requestNodeName        :: String
+                , _requestNodeHttpUrl     :: String
+                , _requestNodeHttpMethod  :: Method
+                , _requestNodeHttpHeaders :: [(String, String)]
+                , _requestNodeHttpBody    :: String
                 }
   deriving (Eq, Show, Generic)
 
@@ -85,18 +92,18 @@ instance FromJSON RequestNodeFromPG where
     case requestNodeType of
       RequestFileType -> do
         pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
-        let _httpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
-        _id <- o .: "id"
-        _name <- o .: "name"
-        _httpUrl <- o .: "http_url"
-        _httpMethod <- o .: "http_method"
-        _httpBody <- o .: "http_body"
+        let _requestNodeHttpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
+        _requestNodeId <- o .: "id"
+        _requestNodeName <- o .: "name"
+        _requestNodeHttpUrl <- o .: "http_url"
+        _requestNodeHttpMethod <- o .: "http_method"
+        _requestNodeHttpBody <- o .: "http_body"
         return $ RequestNodeFromPG $ RequestFile{..}
       RequestFolderType -> do
         pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
-        _id <- o .: "id"
-        _name <- o .: "name"
-        let _children = fromPgRequestNodeToRequestNode <$> pgChildren
+        _requestNodeId <- o .: "id"
+        _requestNodeName <- o .: "name"
+        let _requestNodeChildren = fromPgRequestNodeToRequestNode <$> pgChildren
         return $ RequestNodeFromPG $ RequestFolder{..}
 
 instance FromField [RequestNodeFromPG] where
@@ -108,7 +115,7 @@ instance FromField [RequestNodeFromPG] where
 fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
 fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode
 
-data PGHeader = PGHeader { headerKey :: String
+data PGHeader = PGHeader { headerKey   :: String
                          , headerValue :: String
                          } deriving (Eq, Show)
 
@@ -136,9 +143,9 @@ data ParentNodeId
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 data NewRequestFile =
-  NewRequestFile { _name :: String
+  NewRequestFile { _name         :: String
                  , _parentNodeId :: ParentNodeId
-                 , _httpMethod :: Method
+                 , _httpMethod   :: Method
                  } deriving (Eq, Show, Generic, FromJSON)
 
 instance ToJSON NewRequestFile where
@@ -171,7 +178,7 @@ instance ToRow NewRequestFile where
                 )
 
 data NewRequestFolder =
-  NewRequestFolder { _name :: String
+  NewRequestFolder { _name         :: String
                    , _parentNodeId :: ParentNodeId
                    } deriving (Eq, Show, Generic)
 

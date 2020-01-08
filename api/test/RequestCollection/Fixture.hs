@@ -1,34 +1,38 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module RequestCollection.Fixture where
 
-import RequestCollection
-import Data.Aeson (Value)
-import Data.Aeson.QQ
-import Http
+import           Data.Aeson        (Value)
+import           Data.Aeson.QQ
+import           Http
+import           RequestCollection
+import           RequestNode.Model
 
 requestCollectionSample1 :: RequestCollection
 requestCollectionSample1 =
   RequestCollection 1 requestNodesTopLevel
   where
     requestNodesTopLevel =
-      [ RequestFile { name = "someRequest1"
-                    , url = "someUrl1"
-                    , method = Get
-                    , headers = []
-                    , body = ""
+      [ RequestFile { _requestNodeId = 1
+                    , _requestNodeName = "someRequest1"
+                    , _requestNodeHttpUrl = "someUrl1"
+                    , _requestNodeHttpMethod = Get
+                    , _requestNodeHttpHeaders = []
+                    , _requestNodeHttpBody = ""
                     }
-      , RequestFolder { name = "someFolder1"
-                      , children = requestNodesSubLevel
+      , RequestFolder { _requestNodeId = 0
+                      , _requestNodeName = "someFolder1"
+                      , _requestNodeChildren = requestNodesSubLevel
                       }
       ]
     requestNodesSubLevel =
-      [ RequestFile { name = "someRequest2"
-                    , url = "someUrl2"
-                    , method = Get
-                    , headers = []
-                    , body = ""
+      [ RequestFile { _requestNodeId = 2
+                    , _requestNodeName = "someRequest2"
+                    , _requestNodeHttpUrl = "someUrl2"
+                    , _requestNodeHttpMethod = Get
+                    , _requestNodeHttpHeaders = []
+                    , _requestNodeHttpBody = ""
                     }
       ]
 
