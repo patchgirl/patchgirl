@@ -60,3 +60,5 @@ dependencies:
   - http-client-tls
   - http-conduit
   - http-types
+  - time
+  - jose

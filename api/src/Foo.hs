@@ -5,6 +5,18 @@
 {-# LANGUAGE TemplateHaskell        #-}
 
 module Foo where
+
+import           Data.ByteString
+import           Data.ByteString.UTF8 as BSU
+import           Data.Text.Encoding   as TSE
+import           Servant.Auth.Server  as Jose
+{-
+--main :: IO ByteString
+main = do
+  secret <- Jose.generateSecret
+  print $ BSU.toString secret
+-}
+  --Jose.writeKey "foo"
 {-
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Network.HTTP.Client

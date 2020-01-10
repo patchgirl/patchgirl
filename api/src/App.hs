@@ -16,6 +16,7 @@ import           Control.Monad.IO.Class      (MonadIO)
 import           Control.Monad.Reader        (MonadReader)
 import           Control.Monad.Reader        (ReaderT, runReaderT)
 import           Control.Monad.Trans         (liftIO)
+import           Data.ByteString.UTF8        as BSU
 import           Environment.App
 import           GHC.Generics                (Generic)
 import           GHC.Natural                 (naturalToInt)
@@ -31,19 +32,24 @@ import           Servant.API.ContentTypes    (NoContent)
 import           Servant.API.Flatten         (Flat)
 import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
                                               CookieSettings, IsSecure (..),
-                                              JWTSettings, SameSite (..),
+                                              JWT, JWTSettings, SameSite (..),
                                               SetCookie, cookieIsSecure,
                                               cookieSameSite, cookieXsrfSetting,
                                               defaultCookieSettings,
-                                              defaultJWTSettings, generateKey,
-                                              sessionCookieName, throwAll)
+                                              defaultJWTSettings, fromSecret,
+                                              generateKey, sessionCookieName,
+                                              throwAll)
 import           Session.App
 import           Session.Model
 import           Test
 
 -- * api
 
+type Foo auths = Auth auths CookieSession :> Bar
+type Bar = "session2" :> Get '[JSON] Int
+
 type CombinedApi auths =
+  Foo auths :<|>
   (RestApi auths) :<|>
   TestApi :<|>
   AssetApi
@@ -157,6 +163,22 @@ type AssetApi =
 -- * server
 
 
+session3ApiServer -- :: Int
+  :: AuthResult CookieSession
+  -> ServerT Bar AppM
+session3ApiServer = \case
+  BadPassword ->
+    throwAll err402
+
+  NoSuchUser ->
+    throwAll err403
+
+  Indefinite ->
+    throwAll err405
+
+  Authenticated _ ->
+    return 1
+
 loginApiServer
   :: CookieSettings
   -> JWTSettings
@@ -233,43 +255,6 @@ newtype AppM a =
            , Generic
            )
 
-
--- * app
-
-
-run :: IO ()
-run = do
-  config :: Config <- importConfig
-  print config
-  let
-    settings = setPort (naturalToInt $ port config) $ defaultSettings
-    tlsOpts = tlsSettings "cert.pem" "key.pem"
-  runTLS tlsOpts settings =<< mkApp config
-
-mkApp :: Config -> IO Application
-mkApp config = do
-  myKey <- generateKey
-  let
-    jwtSettings = defaultJWTSettings myKey
-    cookieSettings =
-      defaultCookieSettings { cookieIsSecure = Secure
-                            , cookieSameSite = AnySite
-                            , cookieXsrfSetting = Nothing
-                            , sessionCookieName = "JWT"
-                            }
-    context = cookieSettings :. jwtSettings :. EmptyContext
-    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie])
-    apiServer :: ServerT (CombinedApi '[Cookie]) (AppM)
-    apiServer =
-      (protectedApiServer :<|> (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings)) :<|>
-      testApiServer :<|>
-      assetApiServer
-    server :: Server (CombinedApi '[Cookie])
-    server =
-      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
-  return $
-    serveWithContext combinedApiProxy context server
-
 appMToHandler
   :: Config
   -> AppM a
@@ -279,3 +264,45 @@ appMToHandler config r = do
   case eitherErrorOrResult of
     Left error   -> throwError error
     Right result -> return result
+
+-- * app
+
+
+run :: IO ()
+run = do
+  config :: Config <- importConfig
+  print config
+  key <- generateKey
+  let
+    settings = setPort (naturalToInt $ port config) $ defaultSettings
+    tlsOpts = tlsSettings "cert.pem" "key.pem"
+  runTLS tlsOpts settings =<< mkApp config
+
+mkApp :: Config -> IO Application
+mkApp config = do
+  let
+    key = fromSecret $ BSU.fromString $ appKey config
+    jwtSettings = defaultJWTSettings key
+    cookieSettings =
+      defaultCookieSettings { cookieIsSecure = Secure
+                            , cookieSameSite = AnySite
+                            , cookieXsrfSetting = Nothing
+                            , sessionCookieName = "JWT"
+                            }
+    context = cookieSettings :. jwtSettings :. EmptyContext
+    combinedApiProxy = Proxy :: Proxy (CombinedApi '[JWT])
+--    apiServer :: ServerT (CombinedApi '[Cookie]) (AppM)
+    apiServer =
+      session3ApiServer :<|>
+      ( protectedApiServer :<|>
+        ( loginApiServer cookieSettings jwtSettings :<|>
+          sessionApiServer cookieSettings jwtSettings
+        )
+      ) :<|>
+      testApiServer :<|>
+      assetApiServer
+--    server :: Server (CombinedApi '[Cookie])
+    server =
+      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
+  return $
+    serveWithContext combinedApiProxy context server

@@ -23,15 +23,18 @@ import           Control.Monad.Reader   (MonadReader)
 import           Data.Functor           ((<&>))
 import           Helper.App
 import           Helper.DB              (cleanDBAfter)
+import           Model
 import           PatchGirl
 import           Servant
 import           Servant                (Header, Headers, Proxy, err400)
-import           Servant.Auth.Server    (CookieSettings, JWTSettings, SetCookie)
-import           Servant.Client
+import           Servant.Auth.Client
+import           Servant.Auth.Server    (Cookie, CookieSettings, JWT,
+                                         JWTSettings, SetCookie, fromSecret,
+                                         makeJWT)
+import           Servant.Client         (ClientM, client)
 import           Servant.Server         (ServerError)
 import           Session.Model
 import           Test.Hspec
-
 
 -- * client
 
@@ -42,12 +45,25 @@ signOut :: ClientM (Headers '[ Header "Set-Cookie" SetCookie
 signin :<|> signup :<|> signOut =
   client (Proxy :: Proxy LoginApi)
 
+foo :: Token -> ClientM Int
+foo =
+  client (Proxy :: Proxy (Foo '[JWT]))
+
 
 -- * spec
 
 
 spec :: Spec
 spec = do
+  describe "foo" $ do
+    withClient (mkApp defaultConfig) $ do
+      it "foo" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          token <- signedUserToken id
+          a <- try clientEnv (foo token)
+          True `shouldBe` True
+
+
   describe "sign out" $ do
     withClient (mkApp defaultConfig) $ do
       it "always return a visitor session and clean the cookies" $ \clientEnv ->

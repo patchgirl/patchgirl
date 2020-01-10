@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 855cd801cd83f14f25bf18a7b18d2151ed03d50b529f333f2cabf711796f6f72
+-- hash: d7fe6658d07452ae00d169956c05f17ec635c12ee14bc1ef5dda2cd2c7e4b491
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -51,6 +51,7 @@ library
     , http-client-tls
     , http-conduit
     , http-types
+    , jose
     , lens
     , mtl
     , postgresql-simple
@@ -62,6 +63,7 @@ library
     , servant-flatten
     , servant-server
     , text
+    , time
     , transformers
     , unordered-containers
     , utf8-string
@@ -91,6 +93,7 @@ executable example-servant-minimal
     , http-client-tls
     , http-conduit
     , http-types
+    , jose
     , lens
     , mtl
     , postgresql-simple
@@ -102,6 +105,7 @@ executable example-servant-minimal
     , servant-flatten
     , servant-server
     , text
+    , time
     , transformers
     , unordered-containers
     , utf8-string
@@ -116,6 +120,7 @@ test-suite spec
   other-modules:
       Helper.App
       Helper.DB
+      RequestCollection.AppSpec
       RequestCollection.DBSpec
       RequestCollection.Fixture
       RequestCollection.HandlerSpec
@@ -143,6 +148,7 @@ test-suite spec
     , http-client-tls
     , http-conduit
     , http-types
+    , jose
     , lens
     , mtl
     , postgresql-simple
@@ -155,6 +161,7 @@ test-suite spec
     , servant-flatten
     , servant-server
     , text
+    , time
     , transformers
     , unordered-containers
     , utf8-string

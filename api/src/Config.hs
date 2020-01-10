@@ -18,6 +18,7 @@ data MailgunConfig
 
 data Config
   = Config { port    :: Natural
+           , appKey  :: String
            , mailgun :: MailgunConfig
            }
   deriving (Generic, Show)
