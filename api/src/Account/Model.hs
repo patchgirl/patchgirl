@@ -1,27 +1,29 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Account.Model where
 
-import           Data.Aeson (ToJSON(..), genericToJSON)
-import           Data.Aeson.Types (fieldLabelModifier, defaultOptions)
-import  Model
-import GHC.Generics (Generic)
-import           Database.PostgreSQL.Simple (FromRow)
+import           Data.Aeson                       (ToJSON (..), genericToJSON)
+import           Data.Aeson.Types                 (defaultOptions,
+                                                   fieldLabelModifier)
+import           Database.PostgreSQL.Simple       (FromRow)
+import           Database.PostgreSQL.Simple.ToRow
+import           GHC.Generics                     (Generic)
+import           Model
 
 
--- * model
+-- * account
 
 
 data Account =
-  Account { _accountId :: Int
+  Account { _accountId    :: Int
           , _accountEmail :: CaseInsensitive
           }
   deriving (Eq, Show, Generic, FromRow)
@@ -29,3 +31,23 @@ data Account =
 instance ToJSON Account where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * new account
+
+
+data NewAccount =
+  NewAccount { _newAccountEmail :: CaseInsensitive
+             }
+  deriving (Eq, Show, Generic, FromRow, ToRow)
+
+
+-- * account created
+
+
+data CreatedAccount =
+  CreatedAccount { _accountCreatedId          :: Int
+                 , _accountCreatedEmail       :: CaseInsensitive
+                 , _accountCreatedSignUpToken :: String
+                 }
+  deriving (Eq, Show, Generic, FromRow)

@@ -130,7 +130,8 @@ CREATE FUNCTION public.request_node_as_js(somerow public.request_node) RETURNS j
 CREATE TABLE public.account (
     id integer NOT NULL,
     email public.citext NOT NULL,
-    password text NOT NULL
+    signup_token text DEFAULT md5((random())::text) NOT NULL,
+    password text
 );
 
 

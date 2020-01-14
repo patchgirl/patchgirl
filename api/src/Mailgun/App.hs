@@ -22,10 +22,10 @@ data EmailCtx =
            }
 
 data Email =
-  Email { _emailSubject         :: String
-         , _emailMessageContent :: String
-         , _emailRecipients     :: [String]
-         }
+  Email { _emailSubject        :: String
+        , _emailMessageContent :: String
+        , _emailRecipients     :: [String]
+        }
 
 
 -- * util

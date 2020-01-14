@@ -82,6 +82,18 @@ ActiveRecord::Migration[5.2].execute %{
 }
 
 ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO account (
+      id,
+      email,
+      password
+    ) values (
+      2,
+      'signup@mail.com',
+      NULL
+    );
+}
+
+ActiveRecord::Migration[5.2].execute %{
     INSERT INTO environment (
       name
     ) values (

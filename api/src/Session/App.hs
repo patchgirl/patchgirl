@@ -26,7 +26,10 @@ import           Data.Maybe                          (isJust)
 import           Data.Text                           (Text)
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Database.PostgreSQL.Simple          (Connection, Only (..),
+                                                      execute, query)
+import           Database.PostgreSQL.Simple          (Connection, Only (..),
                                                       query)
+import           Database.PostgreSQL.Simple.SqlQQ
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           Mailgun.App
@@ -186,7 +189,9 @@ signUpHandler (SignUp { _signUpEmail }) =
     case invalid of
       True -> throwError err400
       False -> do
-        hailgunMessage <- mkHailgunMessage (mkSignUpEmail email)
+        let newAccount = NewAccount { _newAccountEmail = _signUpEmail }
+        createdAccount <- liftIO $ getDBConnection >>= insertAccount newAccount
+        hailgunMessage <- mkHailgunMessage (mkSignUpEmail createdAccount)
         case hailgunMessage of
           Left error -> do
             liftIO $ print error
@@ -203,11 +208,16 @@ emailCtx =
            , _emailApiKey = ""
            }
 
-mkSignUpEmail :: String -> Email
-mkSignUpEmail _ =
-  Email { _emailSubject = "coucou"
-        , _emailMessageContent = "inscris toi mon coco"
-        , _emailRecipients = ["matsuhar@gmail.com"]
+mkSignUpEmail :: CreatedAccount -> Email
+mkSignUpEmail (CreatedAccount { _accountCreatedId
+                              , _accountCreatedEmail
+                              , _accountCreatedSignUpToken
+                              }) =
+  let CaseInsensitive email = _accountCreatedEmail
+  in
+    Email { _emailSubject = "Finish your signing up"
+          , _emailMessageContent = "Howdy!<br/> You're almost done. Set your password <a href=\"patchgirl.com/signup?id=" <> (show _accountCreatedId) <> "&signup_token=" <> _accountCreatedSignUpToken <> "\">here</a>"
+        , _emailRecipients = [email]
         }
 
 selectAccountFromEmail :: CaseInsensitive -> Connection -> IO (Maybe Account)
@@ -219,4 +229,15 @@ selectAccountFromEmail email connection = do
           SELECT id, email
           FROM account
           WHERE email = ?
+          |]
+
+insertAccount :: NewAccount -> Connection -> IO CreatedAccount
+insertAccount newAccount connection = do
+  [accountCreated] <- query connection rawQuery newAccount
+  return accountCreated
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO account (email) VALUES (?)
+          RETURNING id, email, signup_token
           |]

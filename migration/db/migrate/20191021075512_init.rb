@@ -36,7 +36,8 @@ class Init < ActiveRecord::Migration[5.2]
       CREATE TABLE account(
           id SERIAL PRIMARY KEY,
           email CITEXT NOT NULL UNIQUE,
-          password TEXT NOT NULL
+          signup_token TEXT NOT NULL DEFAULT MD5(random()::text),
+          password TEXT
       );
 
       CREATE TABLE environment(
