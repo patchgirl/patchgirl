@@ -16,6 +16,7 @@
 
 module Session.AppSpec where
 
+import           Account.Model
 import           App
 import           Control.Monad.Except   (MonadError)
 import           Control.Monad.IO.Class (MonadIO)
@@ -34,9 +35,9 @@ import           Servant.Auth.Server    (Cookie, CookieSettings, JWT,
                                          makeJWT)
 import           Servant.Client         (ClientM, client)
 import           Servant.Server         (ServerError)
+import           Session.App
 import           Session.Model
 import           Test.Hspec
-
 
 -- * client
 
@@ -103,9 +104,10 @@ spec = do
 
       it "returns 400 on already used email" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
+          let newAccount = NewAccount { _newAccountEmail = CaseInsensitive "foo@mail.com" }
+          _ <- insertAccount newAccount connection
           let signupPayload = SignUp { _signUpEmail = CaseInsensitive "foo@mail.com" }
           try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
-
 
 
 -- ** sign out

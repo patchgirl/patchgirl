@@ -77,6 +77,7 @@ instance FromJWT CookieSession
 
 -- * sign up
 
+
 data SignUp
   = SignUp { _signUpEmail :: CaseInsensitive }
   deriving (Eq, Show, Read, Generic)
