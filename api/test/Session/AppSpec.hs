@@ -41,20 +41,24 @@ import           Test.Hspec
 
 -- * client
 
-
+signIn
+  :: Login
+  -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
+                       , Header "Set-Cookie" SetCookie]
+               Session)
+signUp :: SignUp -> ClientM ()
 signOut :: ClientM (Headers '[ Header "Set-Cookie" SetCookie
                              , Header "Set-Cookie" SetCookie]
                      Session)
-signin :<|> signUp :<|> signOut =
+signIn :<|> signUp :<|> signOut =
   client (Proxy :: Proxy SessionApi)
 
-foo :: Token -> ClientM Int
-foo =
-  client (Proxy :: Proxy (Foo '[JWT]))
 
-whoAmI :: Token -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
-                                     , Header "Set-Cookie" SetCookie
-                                     ] Session)
+whoAmI
+  :: Token
+  -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
+                       , Header "Set-Cookie" SetCookie
+                       ] Session)
 whoAmI =
   client (Proxy :: Proxy (PSessionApi '[JWT]))
 
