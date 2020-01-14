@@ -1,20 +1,20 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
 
 module Model where
 
-import           Data.Aeson (FromJSON(..), ToJSON(..))
-import           Database.PostgreSQL.Simple.ToField
+import           Data.Aeson                           (FromJSON (..),
+                                                       ToJSON (..))
+import           Data.CaseInsensitive                 (CI, original)
+import           Data.Text                            (Text, unpack)
 import           Database.PostgreSQL.Simple.FromField
-import GHC.Generics (Generic)
-import Data.CaseInsensitive (CI, original)
-import Data.Text (Text, unpack)
-
+import           Database.PostgreSQL.Simple.ToField
+import           GHC.Generics                         (Generic)
 
 data CaseInsensitive
   = CaseInsensitive String

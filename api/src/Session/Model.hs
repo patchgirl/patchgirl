@@ -2,21 +2,24 @@
 
 module Session.Model where
 
-import           Data.Aeson          (FromJSON, ToJSON, genericParseJSON,
-                                      parseJSON)
-import           Data.Aeson          (FromJSON (..), ToJSON (..), genericToJSON)
-import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
-import           Data.Text           (Text)
-import           GHC.Generics        (Generic)
+import           Data.Aeson                       (FromJSON, ToJSON,
+                                                   genericParseJSON, parseJSON)
+import           Data.Aeson                       (FromJSON (..), ToJSON (..),
+                                                   genericToJSON)
+import           Data.Aeson.Types                 (defaultOptions,
+                                                   fieldLabelModifier)
+import           Data.Text                        (Text)
+import           Database.PostgreSQL.Simple.ToRow
+import           GHC.Generics                     (Generic)
 import           Model
-import           Servant.Auth.Server (FromJWT, ToJWT)
+import           Servant.Auth.Server              (FromJWT, ToJWT)
 
 -- * login
 
 
 data Login
-  = Login { _email    :: CaseInsensitive
-          , _password :: String
+  = Login { _loginEmail    :: CaseInsensitive
+          , _loginPassword :: String
           }
   deriving (Eq, Show, Read, Generic)
 

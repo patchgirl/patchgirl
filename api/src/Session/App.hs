@@ -43,6 +43,7 @@ import           Servant.Auth.Server                 (CookieSettings,
                                                       JWTSettings, SetCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()
 import           Servant.Server                      (ServerError)
+import           Session.DB
 import           Session.Model
 import qualified Text.Email.Validate                 as Email
 import           Web.Cookie                          (setCookieValue)
@@ -104,7 +105,9 @@ signInHandler
                  , Header "Set-Cookie" SetCookie]
          Session)
 signInHandler cookieSettings jwtSettings login = do
+  liftIO $ putStrLn $ show login
   mAccount <- liftIO (getDBConnection >>= selectAccount login)
+  liftIO $ putStrLn $ show mAccount
   case mAccount of
     Nothing ->
       throwError err401
@@ -126,8 +129,8 @@ signInHandler cookieSettings jwtSettings login = do
         Just applyCookies -> return $ applyCookies session
 
 selectAccount :: Login -> Connection -> IO (Maybe Account)
-selectAccount (Login { _email, _password }) connection = do
-  (query connection selectAccountQuery $ (_email, _password)) <&> listToMaybe
+selectAccount (Login { _loginEmail, _loginPassword }) connection = do
+  (query connection selectAccountQuery $ (_loginEmail, _loginPassword)) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|

@@ -25,7 +25,7 @@ import           Data.Functor           ((<&>))
 import           Helper.App
 import           Helper.DB              (cleanDBAfter)
 import           Model
-import           Network.HTTP.Types     (badRequest400)
+import           Network.HTTP.Types     (badRequest400, unauthorized401)
 import           PatchGirl
 import           Servant
 import           Servant                (Header, Headers, Proxy, err400)
@@ -36,6 +36,7 @@ import           Servant.Auth.Server    (Cookie, CookieSettings, JWT,
 import           Servant.Client         (ClientM, client)
 import           Servant.Server         (ServerError)
 import           Session.App
+import           Session.DB
 import           Session.Model
 import           Test.Hspec
 
@@ -68,22 +69,63 @@ whoAmI =
 
 spec :: Spec
 spec = do
+  withClient (mkApp defaultConfig) $ do
+
+
+-- ** sign in
+
+
+    describe "sign in" $ do
+      it "should returns 401 when user account doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          let payload = Login { _loginEmail = CaseInsensitive "whatever@mail.com"
+                              , _loginPassword = "whatever"
+                              }
+          try clientEnv (signIn payload) `shouldThrow` errorsWithStatus unauthorized401
+
+      it "should returns 401 when password is incorrect" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          let fakeAccount =
+                FakeAccount { _fakeAccountEmail = CaseInsensitive "foo@mail.com"
+                            , _fakeAccountPassword = "password1"
+                            }
+          _ <- insertFakeAccount fakeAccount connection
+          let payload = Login { _loginEmail = _fakeAccountEmail fakeAccount
+                              , _loginPassword = "password2"
+                              }
+          try clientEnv (signIn payload) `shouldThrow` errorsWithStatus unauthorized401
+
+      it "should returns signed user session when credentials are valid " $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          let fakeAccount =
+                FakeAccount { _fakeAccountEmail = CaseInsensitive "foo@mail.com"
+                            , _fakeAccountPassword = "password"
+                            }
+          accountId <- insertFakeAccount fakeAccount connection
+          let payload = Login { _loginEmail = _fakeAccountEmail fakeAccount
+                              , _loginPassword = "password"
+                              }
+
+          session <- try clientEnv (signIn payload) <&> getResponse
+          session `shouldBe` SignedUserSession { _sessionAccountId = accountId
+                                               , _sessionCsrfToken = ""
+                                               , _sessionEmail = "foo@mail.com"
+                                               }
 
 
 -- ** who am i
 
 
-  describe "who am I" $ do
-    withClient (mkApp defaultConfig) $ do
+    describe "who am I" $ do
       context "when signed in" $ do
         it "should return a signed user session" $ \clientEnv ->
           cleanDBAfter $ \connection -> do
-            token <- signedUserToken 1
-            (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
-            session `shouldBe` SignedUserSession { _sessionAccountId = 1
-                                                 , _sessionCsrfToken = ""
-                                                 , _sessionEmail = "foo@mail.com"
-                                                 }
+          token <- signedUserToken 1
+          (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
+          session `shouldBe` SignedUserSession { _sessionAccountId = 1
+                                               , _sessionCsrfToken = ""
+                                               , _sessionEmail = "foo@mail.com"
+                                               }
 
       context "when unsigned" $ do
         it "should return a signed user session" $ \clientEnv ->
@@ -98,8 +140,7 @@ spec = do
 -- ** sign up
 
 
-  describe "sign up" $ do
-    withClient (mkApp defaultConfig) $ do
+    describe "sign up" $ do
       it "returns 400 on malformed email" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           let signupPayload = SignUp { _signUpEmail = CaseInsensitive "whatever" }
@@ -117,8 +158,7 @@ spec = do
 -- ** sign out
 
 
-  describe "sign out" $ do
-    withClient (mkApp defaultConfig) $ do
+    describe "sign out" $ do
       it "always return a visitor session and clean the cookies" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           ([(headerName, headerValue), _], session) <- try clientEnv signOut <&> (\r -> (getHeaders r, getResponse r))
