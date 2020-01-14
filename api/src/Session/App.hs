@@ -169,21 +169,23 @@ signUpHandler (SignUp { _signUpEmail }) =
     CaseInsensitive email =
       _signUpEmail
 
-    invalidEmail :: Bool
-    invalidEmail =
+    malformedEmail :: Bool
+    malformedEmail =
       isLeft $ Email.validate (BSU.fromString email)
 
     ioEmailAlreadyUsed :: IO Bool
     ioEmailAlreadyUsed = do
       (getDBConnection >>= selectAccountFromEmail _signUpEmail) <&> isJust
-  in
-    if invalidEmail then
-      throwError err400
-    else do
-      emailAlreadyUsed <- liftIO ioEmailAlreadyUsed
-      if emailAlreadyUsed then
-        throwError err400
-      else do
+
+    invalidEmail :: IO Bool
+    invalidEmail =
+      if malformedEmail then pure True else ioEmailAlreadyUsed
+
+  in do
+    invalid <- liftIO invalidEmail
+    case invalid of
+      True -> throwError err400
+      False -> do
         hailgunMessage <- mkHailgunMessage (mkSignUpEmail email)
         case hailgunMessage of
           Left error -> do

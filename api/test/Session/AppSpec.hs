@@ -24,6 +24,7 @@ import           Data.Functor           ((<&>))
 import           Helper.App
 import           Helper.DB              (cleanDBAfter)
 import           Model
+import           Network.HTTP.Types     (badRequest400)
 import           PatchGirl
 import           Servant
 import           Servant                (Header, Headers, Proxy, err400)
@@ -36,18 +37,25 @@ import           Servant.Server         (ServerError)
 import           Session.Model
 import           Test.Hspec
 
+
 -- * client
 
 
 signOut :: ClientM (Headers '[ Header "Set-Cookie" SetCookie
                              , Header "Set-Cookie" SetCookie]
                      Session)
-signin :<|> signup :<|> signOut =
-  client (Proxy :: Proxy LoginApi)
+signin :<|> signUp :<|> signOut =
+  client (Proxy :: Proxy SessionApi)
 
 foo :: Token -> ClientM Int
 foo =
   client (Proxy :: Proxy (Foo '[JWT]))
+
+whoAmI :: Token -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
+                                     , Header "Set-Cookie" SetCookie
+                                     ] Session)
+whoAmI =
+  client (Proxy :: Proxy (PSessionApi '[JWT]))
 
 
 -- * spec
@@ -55,13 +63,52 @@ foo =
 
 spec :: Spec
 spec = do
-  describe "foo" $ do
+
+
+-- ** who am i
+
+
+  describe "who am I" $ do
     withClient (mkApp defaultConfig) $ do
-      it "foo" $ \clientEnv ->
+      context "when signed in" $ do
+        it "should return a signed user session" $ \clientEnv ->
+          cleanDBAfter $ \connection -> do
+            token <- signedUserToken 1
+            (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
+            session `shouldBe` SignedUserSession { _sessionAccountId = 1
+                                                 , _sessionCsrfToken = ""
+                                                 , _sessionEmail = "foo@mail.com"
+                                                 }
+
+      context "when unsigned" $ do
+        it "should return a signed user session" $ \clientEnv ->
+          cleanDBAfter $ \connection -> do
+            token <- visitorToken
+            (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
+            session `shouldBe` VisitorSession { _sessionAccountId = 1
+                                              , _sessionCsrfToken = ""
+                                              }
+
+
+-- ** sign up
+
+
+  describe "sign up" $ do
+    withClient (mkApp defaultConfig) $ do
+      it "returns 400 on malformed email" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          token <- signedUserToken id
-          a <- try clientEnv (foo token)
-          True `shouldBe` True
+          let signupPayload = SignUp { _signUpEmail = CaseInsensitive "whatever" }
+          try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
+
+
+      it "returns 400 on already used email" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          let signupPayload = SignUp { _signUpEmail = CaseInsensitive "foo@mail.com" }
+          try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
+
+
+
+-- ** sign out
 
 
   describe "sign out" $ do

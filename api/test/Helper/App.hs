@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken) where
+module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken) where
 
 import           Config
 import           Control.Exception        (throwIO)
@@ -44,13 +44,19 @@ withClient app innerSpec =
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)
 
-signedUserToken :: (CookieSession -> CookieSession) -> IO Token
-signedUserToken f = do
+signedUserToken :: Int -> IO Token
+signedUserToken id = do
   let cookieSession =
-        SignedUserCookie { _cookieAccountId    = 1
+        SignedUserCookie { _cookieAccountId    = id
                          , _cookieAccountEmail = CaseInsensitive "foo@mail.com"
                          }
-  mkToken (f cookieSession) Nothing
+  mkToken cookieSession Nothing
+
+visitorToken :: IO Token
+visitorToken = do
+  let cookieSession = VisitorCookie { _cookieAccountId = 1 }
+  mkToken cookieSession Nothing
+
 
 mkToken :: CookieSession -> Maybe UTCTime -> IO Token
 mkToken cookieSession mexp = do

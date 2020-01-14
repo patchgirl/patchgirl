@@ -56,33 +56,26 @@ type CombinedApi auths =
 
 type RestApi auths =
   (Auth auths CookieSession :> ProtectedApi) :<|>
-  LoginApi :<|>
-  (Auth auths CookieSession :> SessionApi)
-
-type LoginApi =
-    "session" :> (
-        "signin" :>
-        ReqBody '[JSON] Login :>
-        Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                               , Header "Set-Cookie" SetCookie
-                               ] Session) :<|>
-        "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
-        "signout" :>
-        Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                                 , Header "Set-Cookie" SetCookie
-                                 ] Session)
-
-     )
+  SessionApi :<|> PSessionApi auths
 
 type SessionApi =
-  Flat (
-    "session" :> (
-        "whoami" :>
-        Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                              , Header "Set-Cookie" SetCookie
-                              ] Session)
-    )
+  "session" :> (
+    "signin" :> ReqBody '[JSON] Login :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                                                , Header "Set-Cookie" SetCookie
+                                                                ] Session) :<|>
+    "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
+    "signout" :> Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                          , Header "Set-Cookie" SetCookie
+                                          ] Session)
   )
+
+type WhoAmiApi =
+  Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                        , Header "Set-Cookie" SetCookie
+                        ] Session)
+
+type PSessionApi auths =
+  Auth auths CookieSession :> "session" :> "whoami" :> WhoAmiApi
 
 type ProtectedApi =
   RequestCollectionApi :<|>
@@ -182,7 +175,7 @@ session3ApiServer = \case
 loginApiServer
   :: CookieSettings
   -> JWTSettings
-  -> ServerT LoginApi AppM
+  -> ServerT SessionApi AppM
 loginApiServer cookieSettings jwtSettings  =
   signInHandler cookieSettings jwtSettings :<|>
   signUpHandler :<|>
@@ -192,7 +185,7 @@ sessionApiServer
   :: CookieSettings
   -> JWTSettings
   -> AuthResult CookieSession
-  -> ServerT SessionApi (AppM)
+  -> ServerT WhoAmiApi (AppM)
 sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
@@ -291,7 +284,6 @@ mkApp config = do
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
     combinedApiProxy = Proxy :: Proxy (CombinedApi '[JWT])
---    apiServer :: ServerT (CombinedApi '[Cookie]) (AppM)
     apiServer =
       session3ApiServer :<|>
       ( protectedApiServer :<|>
@@ -301,7 +293,6 @@ mkApp config = do
       ) :<|>
       testApiServer :<|>
       assetApiServer
---    server :: Server (CombinedApi '[Cookie])
     server =
       hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
   return $
