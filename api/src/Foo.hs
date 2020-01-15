@@ -13,8 +13,9 @@ import           Servant.Auth.Server  as Jose
 {-
 --main :: IO ByteString
 main = do
-  secret <- Jose.generateSecret
-  print $ BSU.toString secret
+  secret <- Jose.writeKey ".appKey.test"
+  return ()
+  --print $ BSU.toString secret
 -}
   --Jose.writeKey "foo"
 {-

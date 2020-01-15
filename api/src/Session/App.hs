@@ -95,7 +95,7 @@ signInHandler
      )
   => CookieSettings
   -> JWTSettings
-  -> Login
+  -> SignIn
   -> m (Headers '[ Header "Set-Cookie" SetCookie
                  , Header "Set-Cookie" SetCookie]
          Session)
@@ -123,9 +123,9 @@ signInHandler cookieSettings jwtSettings login = do
         Nothing           -> throwError err401
         Just applyCookies -> return $ applyCookies session
 
-selectAccount :: Login -> Connection -> IO (Maybe Account)
-selectAccount (Login { _loginEmail, _loginPassword }) connection = do
-  (query connection selectAccountQuery $ (_loginEmail, _loginPassword)) <&> listToMaybe
+selectAccount :: SignIn -> Connection -> IO (Maybe Account)
+selectAccount (SignIn { _signInEmail, _signInPassword }) connection = do
+  (query connection selectAccountQuery $ (_signInEmail, _signInPassword)) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|

@@ -3,6 +3,7 @@ module SignIn.App exposing (..)
 import Application.Type exposing (..)
 
 import Element exposing (..)
+import SignIn.Model exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
@@ -25,10 +26,6 @@ type alias Model a =
         , signInErrors: List String
     }
 
-type alias Login =
-    { email: Client.CaseInsensitive
-    , password: String
-    }
 
 -- * message
 
@@ -71,16 +68,16 @@ update msg model =
 
         AskSignIn ->
             let
-                login =
+                signIn =
                     { email = Client.CaseInsensitive model.signInEmail
                     , password = model.signInPassword
                     }
 
                 newCmd =
-                    Client.postSessionSignin "" login postSessionSignInResultToMsg
+                    Client.postSessionSignin "" (Client.convertSignInFromFrontToBack signIn) postSessionSignInResultToMsg
 
                 newModel =
-                    { model | signInErrors = loginErrors login }
+                    { model | signInErrors = signInErrors signIn }
             in
                 case List.isEmpty newModel.signInErrors of
                     True ->
@@ -103,8 +100,8 @@ update msg model =
 -- * util
 
 
-loginErrors : Login -> List String
-loginErrors { email, password } =
+signInErrors : SignIn -> List String
+signInErrors { email, password } =
     let
         (Client.CaseInsensitive ciEmail) = email
 

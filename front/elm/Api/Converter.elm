@@ -2,6 +2,7 @@ module Api.Converter exposing(..)
 
 import Api.Generated as Back
 import BuilderApp.Model as Front
+import SignIn.Model as Front
 import BuilderApp.Builder.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
@@ -25,18 +26,18 @@ convertRequestNodesFromBackToFront backRequestNodes =
             case backRequestNode of
                 Back.RequestFolder folder ->
                     Front.RequestFolder
-                        { name = NotEdited folder.name
-                        , open = not <| List.isEmpty folder.children
-                        , children = convertRequestNodesFromBackToFront folder.children
+                        { name = NotEdited folder.requestNodeName
+                        , open = not <| List.isEmpty folder.requestNodeChildren
+                        , children = convertRequestNodesFromBackToFront folder.requestNodeChildren
                         }
                 Back.RequestFile file ->
                     Front.RequestFile
-                        { name = NotEdited file.name
+                        { name = NotEdited file.requestNodeName
                         , isSaved = True
-                        , httpUrl = NotEdited file.httpUrl
-                        , httpMethod = NotEdited (convertMethodFromBackToFront file.httpMethod)
-                        , httpHeaders = NotEdited file.httpHeaders
-                        , httpBody = NotEdited file.httpBody
+                        , httpUrl = NotEdited file.requestNodeHttpUrl
+                        , httpMethod = NotEdited (convertMethodFromBackToFront file.requestNodeHttpMethod)
+                        , httpHeaders = NotEdited file.requestNodeHttpHeaders
+                        , httpBody = NotEdited file.requestNodeHttpBody
                         , requestComputationResult = Nothing
                         , showResponseView = False
                         }
@@ -105,6 +106,16 @@ convertSessionFromBackToFront backSession =
 convertSignUpFromFrontToBack : Front.SignUp -> Back.SignUp
 convertSignUpFromFrontToBack { email } =
     { signUpEmail = Back.CaseInsensitive email }
+
+
+-- * sign in
+
+
+convertSignInFromFrontToBack : Front.SignIn -> Back.SignIn
+convertSignInFromFrontToBack { email, password } =
+       { signInEmail = email
+       , signInPassword = password
+       }
 
 
 -- * request computation

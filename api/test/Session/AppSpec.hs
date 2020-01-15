@@ -45,7 +45,7 @@ import           Test.Hspec
 
 
 signIn
-  :: Login
+  :: SignIn
   -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
                        , Header "Set-Cookie" SetCookie]
                Session)
@@ -80,9 +80,9 @@ spec = do
     describe "sign in" $ do
       it "should returns 401 when user account doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          let payload = Login { _loginEmail = CaseInsensitive "whatever@mail.com"
-                              , _loginPassword = "whatever"
-                              }
+          let payload = SignIn { _signInEmail = CaseInsensitive "whatever@mail.com"
+                               , _signInPassword = "whatever"
+                               }
           try clientEnv (signIn payload) `shouldThrow` errorsWithStatus unauthorized401
 
       it "should returns 401 when password is incorrect" $ \clientEnv ->
@@ -92,9 +92,9 @@ spec = do
                                , _newFakeAccountPassword = "password1"
                                }
           _ <- insertFakeAccount fakeAccount connection
-          let payload = Login { _loginEmail = _newFakeAccountEmail fakeAccount
-                              , _loginPassword = "password2"
-                              }
+          let payload = SignIn { _signInEmail = _newFakeAccountEmail fakeAccount
+                               , _signInPassword = "password2"
+                               }
           try clientEnv (signIn payload) `shouldThrow` errorsWithStatus unauthorized401
 
       it "should returns signed user session when credentials are valid " $ \clientEnv ->
@@ -104,9 +104,9 @@ spec = do
                                , _newFakeAccountPassword = "password"
                                }
           (accountId, _) <- insertFakeAccount fakeAccount connection
-          let payload = Login { _loginEmail = _newFakeAccountEmail fakeAccount
-                              , _loginPassword = "password"
-                              }
+          let payload = SignIn { _signInEmail = _newFakeAccountEmail fakeAccount
+                               , _signInPassword = "password"
+                               }
 
           session <- try clientEnv (signIn payload) <&> getResponse
           session `shouldBe` SignedUserSession { _sessionAccountId = accountId

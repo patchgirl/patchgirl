@@ -29,8 +29,8 @@ import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
                                               SetCookie, cookieIsSecure,
                                               cookieSameSite, cookieXsrfSetting,
                                               defaultCookieSettings,
-                                              defaultJWTSettings, fromSecret,
-                                              generateKey, sessionCookieName,
+                                              defaultJWTSettings, generateKey,
+                                              readKey, sessionCookieName,
                                               throwAll)
 
 import           Account.App
@@ -48,11 +48,7 @@ import           Test
 
 -- * api
 
-type Foo auths = Auth auths CookieSession :> Bar
-type Bar = "session2" :> Get '[JSON] Int
-
 type CombinedApi auths =
-  Foo auths :<|>
   (RestApi auths) :<|>
   TestApi :<|>
   AssetApi
@@ -64,9 +60,9 @@ type RestApi auths =
 
 type SessionApi =
   "session" :> (
-    "signin" :> ReqBody '[JSON] Login :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                                                                , Header "Set-Cookie" SetCookie
-                                                                ] Session) :<|>
+    "signin" :> ReqBody '[JSON] SignIn :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                                                 , Header "Set-Cookie" SetCookie
+                                                                 ] Session) :<|>
     "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
     "signout" :> Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                           , Header "Set-Cookie" SetCookie
@@ -165,21 +161,13 @@ type AssetApi =
 -- * server
 
 
-session3ApiServer -- :: Int
-  :: AuthResult CookieSession
-  -> ServerT Bar AppM
-session3ApiServer = \case
-  BadPassword ->
-    throwAll err402
-
-  NoSuchUser ->
-    throwAll err403
-
-  Indefinite ->
-    throwAll err405
-
-  Authenticated _ ->
-    return 1
+sessionApiServer
+  :: CookieSettings
+  -> JWTSettings
+  -> AuthResult CookieSession
+  -> ServerT WhoAmiApi (AppM)
+sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
+  whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
 loginApiServer
   :: CookieSettings
@@ -189,14 +177,6 @@ loginApiServer cookieSettings jwtSettings  =
   signInHandler cookieSettings jwtSettings :<|>
   signUpHandler :<|>
   deleteSessionHandler cookieSettings
-
-sessionApiServer
-  :: CookieSettings
-  -> JWTSettings
-  -> AuthResult CookieSession
-  -> ServerT WhoAmiApi (AppM)
-sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
-  whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
 accountApiServer :: ServerT AccountApi AppM
 accountApiServer =
@@ -286,8 +266,8 @@ run = do
 
 mkApp :: Config -> IO Application
 mkApp config = do
+  key <- readKey $ appKeyFilePath config
   let
-    key = fromSecret $ BSU.fromString $ appKey config
     jwtSettings = defaultJWTSettings key
     cookieSettings =
       defaultCookieSettings { cookieIsSecure = Secure
@@ -296,15 +276,10 @@ mkApp config = do
                             , sessionCookieName = "JWT"
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
-    combinedApiProxy = Proxy :: Proxy (CombinedApi '[JWT])
+    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie])
     apiServer =
-      session3ApiServer :<|>
-      ( protectedApiServer :<|>
-        ( loginApiServer cookieSettings jwtSettings :<|>
-          sessionApiServer cookieSettings jwtSettings :<|>
-          accountApiServer
-        )
-      ) :<|>
+      (protectedApiServer :<|>
+      (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
       testApiServer :<|>
       assetApiServer
     server =

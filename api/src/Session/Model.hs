@@ -17,17 +17,17 @@ import           Servant.Auth.Server              (FromJWT, ToJWT)
 -- * login
 
 
-data Login
-  = Login { _loginEmail    :: CaseInsensitive
-          , _loginPassword :: String
-          }
+data SignIn
+  = SignIn { _signInEmail    :: CaseInsensitive
+           , _signInPassword :: String
+           }
   deriving (Eq, Show, Read, Generic)
 
-instance ToJSON Login where
+instance ToJSON SignIn where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-instance FromJSON Login where
+instance FromJSON SignIn where
   parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
