@@ -43,7 +43,6 @@ import           Servant.Auth.Server                 (CookieSettings,
                                                       JWTSettings, SetCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()
 import           Servant.Server                      (ServerError)
-import           Session.DB
 import           Session.Model
 import qualified Text.Email.Validate                 as Email
 import           Web.Cookie                          (setCookieValue)
