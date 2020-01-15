@@ -14,7 +14,6 @@ import           Control.Monad.IO.Class      (MonadIO)
 import           Control.Monad.Reader        (MonadReader)
 import           Control.Monad.Reader        (ReaderT, runReaderT)
 import           Control.Monad.Trans         (liftIO)
-import           Data.ByteString.UTF8        as BSU
 import           GHC.Generics                (Generic)
 import           GHC.Natural                 (naturalToInt)
 import           Network.Wai                 hiding (Request)
@@ -275,8 +274,7 @@ mkApp config = do
                             , sessionCookieName = "JWT"
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
-
-    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT])
+    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT]) -- JWT is needed for the tests to run
     apiServer =
       (protectedApiServer :<|>
       (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>

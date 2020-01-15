@@ -23,23 +23,11 @@ data MailgunConfig
 instance FromDhall MailgunConfig
 
 
--- * mode
-
-
-data Mode
-  = Dev
-  | Test
-  deriving (Generic, Show)
-
-instance FromDhall Mode
-
-
 -- * config
 
 
 data Config
-  = Config { mode           :: Mode
-           , port           :: Natural
+  = Config { port           :: Natural
            , appKeyFilePath :: String
            , mailgun        :: MailgunConfig
            }
