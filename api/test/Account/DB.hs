@@ -6,7 +6,7 @@
 {-# LANGUAGE QuasiQuotes            #-}
 {-# LANGUAGE TemplateHaskell        #-}
 
-module Session.DB where
+module Account.DB where
 
 import           Control.Lens                     (makeFieldsNoPrefix)
 import           Data.Functor                     ((<&>))

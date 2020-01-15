@@ -16,6 +16,7 @@
 
 module Account.AppSpec where
 
+import           Account.DB
 import           Account.Model
 import           App
 import           Control.Lens             ((^.), (^?))
@@ -39,7 +40,6 @@ import           Servant.Auth.Server      (Cookie, CookieSettings, JWT,
 import           Servant.Client           (ClientM, client)
 import           Servant.Server           (ServerError)
 import           Session.App
-import           Session.DB
 import           Session.Model
 import           Test.Hspec
 

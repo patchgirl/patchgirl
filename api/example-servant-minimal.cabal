@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 85746e1cb804fc2ba8d9cb5a3f08e357cd7eaa3e1afc203abba91bff0ba6061d
+-- hash: eefa0c149ceb66bd40fb6e5c73930a8fdfd4a290d7b7b6fdc8ccc324061e64a6
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -120,6 +120,7 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       Account.AppSpec
+      Account.DB
       Helper.App
       Helper.DB
       RequestCollection.AppSpec
@@ -129,7 +130,6 @@ test-suite spec
       RequestCollection.ModelSpec
       RequestNode.HandlerSpec
       Session.AppSpec
-      Session.DB
       Paths_example_servant_minimal
   hs-source-dirs:
       test
