@@ -70,7 +70,8 @@ mkToken cookieSession mexp = do
 
 defaultConfig :: Config
 defaultConfig =
-  Config { port    = 3001
+  Config { mode = Test
+         , port = 3001
          , appKeyFilePath = ".appKey.test"
          , mailgun = MailgunConfig { domain      = "whatever"
                                    , apiKey      = "whatever"

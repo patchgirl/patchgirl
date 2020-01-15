@@ -258,7 +258,6 @@ run :: IO ()
 run = do
   config :: Config <- importConfig
   print config
-  key <- generateKey
   let
     settings = setPort (naturalToInt $ port config) $ defaultSettings
     tlsOpts = tlsSettings "cert.pem" "key.pem"
@@ -276,7 +275,8 @@ mkApp config = do
                             , sessionCookieName = "JWT"
                             }
     context = cookieSettings :. jwtSettings :. EmptyContext
-    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie])
+
+    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT])
     apiServer =
       (protectedApiServer :<|>
       (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>

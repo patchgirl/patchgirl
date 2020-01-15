@@ -9,6 +9,10 @@ importConfig :: IO Config
 importConfig =
   input auto "./config.dhall"
 
+
+-- * mailgun
+
+
 data MailgunConfig
   = MailgunConfig { domain      :: Text
                   , apiKey      :: Text
@@ -16,12 +20,29 @@ data MailgunConfig
                   }
   deriving (Generic, Show)
 
+instance FromDhall MailgunConfig
+
+
+-- * mode
+
+
+data Mode
+  = Dev
+  | Test
+  deriving (Generic, Show)
+
+instance FromDhall Mode
+
+
+-- * config
+
+
 data Config
-  = Config { port           :: Natural
+  = Config { mode           :: Mode
+           , port           :: Natural
            , appKeyFilePath :: String
            , mailgun        :: MailgunConfig
            }
   deriving (Generic, Show)
 
 instance FromDhall Config
-instance FromDhall MailgunConfig
