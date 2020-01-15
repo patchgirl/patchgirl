@@ -203,7 +203,7 @@ protectedApiServer = \case
 
   where
     requestCollectionApi =
-      getRequestCollectionById
+      getRequestCollectionHandler
     requestNodeApi =
       updateRequestNodeHandler
     requestFileApi =

@@ -117,14 +117,14 @@ selectRequestCollectionById requestCollectionId connection = do
 
 -- * Handler
 
-getRequestCollectionById
+getRequestCollectionHandler
   :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
   => Int
   -> m RequestCollection
-getRequestCollectionById requestCollectionId = do
+getRequestCollectionHandler requestCollectionId = do
   liftIO (getDBConnection >>= (selectRequestCollectionById requestCollectionId)) >>= \case
     Just request -> return request
     Nothing      -> throwError err404
