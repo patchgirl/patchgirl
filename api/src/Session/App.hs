@@ -21,15 +21,11 @@ import           Control.Monad.Trans                 (liftIO)
 import           Data.ByteString.UTF8                as BSU
 import           Data.Either                         (isLeft)
 import           Data.Functor                        ((<&>))
-import           Data.Maybe                          (listToMaybe)
-import           Data.Maybe                          (isJust)
+import           Data.Maybe                          (isJust, listToMaybe)
 import           Data.Text                           (Text)
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Database.PostgreSQL.Simple          (Connection, Only (..),
                                                       execute, query)
-import           Database.PostgreSQL.Simple          (Connection, Only (..),
-                                                      query)
-import           Database.PostgreSQL.Simple.SqlQQ
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           Mailgun.App

@@ -86,11 +86,11 @@ spec = do
       it "should returns 401 when password is incorrect" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           let fakeAccount =
-                FakeAccount { _fakeAccountEmail = CaseInsensitive "foo@mail.com"
-                            , _fakeAccountPassword = "password1"
-                            }
+                NewFakeAccount { _newFakeAccountEmail = CaseInsensitive "foo@mail.com"
+                               , _newFakeAccountPassword = "password1"
+                               }
           _ <- insertFakeAccount fakeAccount connection
-          let payload = Login { _loginEmail = _fakeAccountEmail fakeAccount
+          let payload = Login { _loginEmail = _newFakeAccountEmail fakeAccount
                               , _loginPassword = "password2"
                               }
           try clientEnv (signIn payload) `shouldThrow` errorsWithStatus unauthorized401
@@ -98,11 +98,11 @@ spec = do
       it "should returns signed user session when credentials are valid " $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           let fakeAccount =
-                FakeAccount { _fakeAccountEmail = CaseInsensitive "foo@mail.com"
-                            , _fakeAccountPassword = "password"
-                            }
-          accountId <- insertFakeAccount fakeAccount connection
-          let payload = Login { _loginEmail = _fakeAccountEmail fakeAccount
+                NewFakeAccount { _newFakeAccountEmail = CaseInsensitive "foo@mail.com"
+                               , _newFakeAccountPassword = "password"
+                               }
+          (accountId, _) <- insertFakeAccount fakeAccount connection
+          let payload = Login { _loginEmail = _newFakeAccountEmail fakeAccount
                               , _loginPassword = "password"
                               }
 

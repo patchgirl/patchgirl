@@ -10,7 +10,9 @@
 
 module Account.Model where
 
-import           Data.Aeson                       (ToJSON (..), genericToJSON)
+import           Data.Aeson                       (FromJSON, ToJSON (..),
+                                                   genericParseJSON,
+                                                   genericToJSON, parseJSON)
 import           Data.Aeson.Types                 (defaultOptions,
                                                    fieldLabelModifier)
 import           Database.PostgreSQL.Simple       (FromRow)
@@ -51,3 +53,23 @@ data CreatedAccount =
                  , _accountCreatedSignUpToken :: String
                  }
   deriving (Eq, Show, Generic, FromRow)
+
+
+-- * initialize password
+
+
+data InitializePassword =
+  InitializePassword { _initializePasswordAccountId :: Int
+                     , _initializePasswordEmail     :: CaseInsensitive
+                     , _initializePasswordPassword  :: String
+                     , _initializePasswordToken     :: String
+                     }
+  deriving (Eq, Show, Generic, FromRow)
+
+instance FromJSON InitializePassword where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance ToJSON InitializePassword where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3910810d6862421aef577f4a5c88157bc13e04e0e26405c04d60ca65e0aef0cd
+-- hash: 85746e1cb804fc2ba8d9cb5a3f08e357cd7eaa3e1afc203abba91bff0ba6061d
 
 name:           example-servant-minimal
 version:        0.0.0
@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Account.App
       Account.Model
       App
       AppHealth
@@ -118,6 +119,7 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Account.AppSpec
       Helper.App
       Helper.DB
       RequestCollection.AppSpec

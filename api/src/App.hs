@@ -9,24 +9,17 @@
 
 module App where
 
-import           AppHealth
-import           Config
 import           Control.Monad.Except        (ExceptT, MonadError, runExceptT)
 import           Control.Monad.IO.Class      (MonadIO)
 import           Control.Monad.Reader        (MonadReader)
 import           Control.Monad.Reader        (ReaderT, runReaderT)
 import           Control.Monad.Trans         (liftIO)
 import           Data.ByteString.UTF8        as BSU
-import           Environment.App
 import           GHC.Generics                (Generic)
 import           GHC.Natural                 (naturalToInt)
 import           Network.Wai                 hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Handler.WarpTLS
-import           RequestCollection
-import           RequestComputation.App
-import           RequestNode.App
-import           RequestNode.Model
 import           Servant                     hiding (BadPassword, NoSuchUser)
 import           Servant.API.ContentTypes    (NoContent)
 import           Servant.API.Flatten         (Flat)
@@ -39,6 +32,16 @@ import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
                                               defaultJWTSettings, fromSecret,
                                               generateKey, sessionCookieName,
                                               throwAll)
+
+import           Account.App
+import           Account.Model
+import           AppHealth
+import           Config
+import           Environment.App
+import           RequestCollection
+import           RequestComputation.App
+import           RequestNode.App
+import           RequestNode.Model
 import           Session.App
 import           Session.Model
 import           Test
@@ -56,7 +59,8 @@ type CombinedApi auths =
 
 type RestApi auths =
   (Auth auths CookieSession :> ProtectedApi) :<|>
-  SessionApi :<|> PSessionApi auths
+  SessionApi :<|> PSessionApi auths :<|>
+  AccountApi
 
 type SessionApi =
   "session" :> (
@@ -67,6 +71,11 @@ type SessionApi =
     "signout" :> Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                           , Header "Set-Cookie" SetCookie
                                           ] Session)
+  )
+
+type AccountApi =
+  "account" :> (
+    "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] ()
   )
 
 type WhoAmiApi =
@@ -189,6 +198,10 @@ sessionApiServer
 sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
+accountApiServer :: ServerT AccountApi AppM
+accountApiServer =
+  initializePasswordHandler
+
 protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
 protectedApiServer = \case
   BadPassword ->
@@ -288,7 +301,8 @@ mkApp config = do
       session3ApiServer :<|>
       ( protectedApiServer :<|>
         ( loginApiServer cookieSettings jwtSettings :<|>
-          sessionApiServer cookieSettings jwtSettings
+          sessionApiServer cookieSettings jwtSettings :<|>
+          accountApiServer
         )
       ) :<|>
       testApiServer :<|>
