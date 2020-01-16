@@ -44,7 +44,7 @@ data NewAccount =
   deriving (Eq, Show, Generic, FromRow, ToRow)
 
 
--- * account created
+-- * created account
 
 
 data CreatedAccount =

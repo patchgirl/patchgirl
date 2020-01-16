@@ -197,14 +197,13 @@ signUpHandler (SignUp { _signUpEmail }) =
 
           Right message -> do
             hailgunContext <- mkHailgunContext
-            _ <- liftIO $ sendEmail hailgunContext message
-            return ()
+            emailRes <- liftIO $ sendEmail hailgunContext message
+            case emailRes of
+              Left error -> do
+                liftIO $ putStrLn $ show error
+              Right _    -> do
+                return ()
 
-emailCtx :: EmailCtx
-emailCtx =
-  EmailCtx { _emailDomain = ""
-           , _emailApiKey = ""
-           }
 
 mkSignUpEmail :: CreatedAccount -> Email
 mkSignUpEmail (CreatedAccount { _accountCreatedId
@@ -214,9 +213,10 @@ mkSignUpEmail (CreatedAccount { _accountCreatedId
   let CaseInsensitive email = _accountCreatedEmail
   in
     Email { _emailSubject = "Finish your signing up"
-          , _emailMessageContent = "Howdy!<br/> You're almost done. Set your password <a href=\"patchgirl.com/signup?id=" <> (show _accountCreatedId) <> "&signup_token=" <> _accountCreatedSignUpToken <> "\">here</a>"
-        , _emailRecipients = [email]
-        }
+          , _emailTextMessageContent = "Howdy! You're almost done. finalize your subscription by setting your password here: patchgirl.com/signup?id=" <> (show _accountCreatedId) <> "&signup_token=" <> _accountCreatedSignUpToken
+          , _emailHtmlMessageContent = "Howdy!<br/> You're almost done. finalize your subscription by setting your password <a href=\"patchgirl.com/signup?id=" <> (show _accountCreatedId) <> "&signup_token=" <> _accountCreatedSignUpToken <> "\">here</a>"
+          , _emailRecipients = [email]
+          }
 
 selectAccountFromEmail :: CaseInsensitive -> Connection -> IO (Maybe Account)
 selectAccountFromEmail email connection = do
@@ -230,8 +230,8 @@ selectAccountFromEmail email connection = do
           |]
 
 insertAccount :: NewAccount -> Connection -> IO CreatedAccount
-insertAccount newAccount connection = do
-  [accountCreated] <- query connection rawQuery newAccount
+insertAccount (NewAccount { _newAccountEmail }) connection = do
+  [accountCreated] <- query connection rawQuery (Only _newAccountEmail)
   return accountCreated
   where
     rawQuery =

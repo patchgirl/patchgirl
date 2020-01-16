@@ -22,9 +22,10 @@ data EmailCtx =
            }
 
 data Email =
-  Email { _emailSubject        :: String
-        , _emailMessageContent :: String
-        , _emailRecipients     :: [String]
+  Email { _emailSubject            :: String
+        , _emailTextMessageContent :: String
+        , _emailHtmlMessageContent :: String
+        , _emailRecipients         :: [String]
         }
 
 
@@ -47,7 +48,10 @@ mkHailgunMessage
   :: (MonadReader Config m)
   => Email
   -> m (Either Hailgun.HailgunErrorMessage Hailgun.HailgunMessage)
-mkHailgunMessage (Email { _emailSubject, _emailMessageContent, _emailRecipients }) = do
+mkHailgunMessage (Email { _emailSubject
+                        , _emailTextMessageContent
+                        , _emailHtmlMessageContent
+                        , _emailRecipients }) = do
   MailgunConfig { authorEmail } <- ask <&> mailgun
   let hailgunAuthor :: ByteString
       hailgunAuthor =
@@ -57,7 +61,9 @@ mkHailgunMessage (Email { _emailSubject, _emailMessageContent, _emailRecipients 
         T.pack _emailSubject
 
       hailgunMessageContent =
-        Hailgun.TextOnly { Hailgun.textContent = BSU.fromString _emailMessageContent }
+        Hailgun.TextAndHTML { Hailgun.textContent = BSU.fromString _emailTextMessageContent
+                            , Hailgun.htmlContent = BSU.fromString _emailHtmlMessageContent
+                            }
 
       hailgunRecipients =
         Hailgun.MessageRecipients { Hailgun.recipientsTo = BSU.fromString <$> _emailRecipients
