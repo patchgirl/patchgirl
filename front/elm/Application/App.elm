@@ -13,15 +13,21 @@ import InitializedApplication.Model as InitializedApplication
 import InitializedApplication.App as InitializedApplication
 import BuilderApp.Model as BuilderApp
 import Application.Type exposing (..)
-
-
--- * session
+import Url as Url
+import Browser exposing (UrlRequest(..))
+import Browser.Navigation as Navigation
+import Tuple as Tuple
+import Page exposing (..)
+import Url.Parser as Url exposing ((</>))
 
 
 -- ** model
 
 
-type Model
+type alias Model = (Page, AppState)
+
+
+type AppState
     = SessionPending
     | AppDataPending
       { session : Session
@@ -30,8 +36,9 @@ type Model
       }
     | InitializedApp InitializedApplication.Model
 
-defaultModel : Model
-defaultModel = SessionPending
+
+
+
 
 
 -- ** message
@@ -39,6 +46,8 @@ defaultModel = SessionPending
 
 type Msg
     = SessionFetched Session
+    | LinkClicked UrlRequest
+    | UrlChange Url.Url
     | RequestCollectionFetched BuilderApp.RequestCollection
     | EnvironmentsFetched (List Environment)
     | InitializedApplicationMsg InitializedApplication.Msg
@@ -48,14 +57,19 @@ type Msg
 -- ** init
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
+init : () -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
+init _ url key =
     let
         msg =
-            Client.getSessionWhoami "" "" getSessionWhoamiResult
-    in
-        (defaultModel, msg)
+            Client.getApiSessionWhoami "" "" getSessionWhoamiResult
 
+        page =
+            urlToPage url
+
+        appState =
+            SessionPending
+    in
+        ((page, appState), msg)
 
 getSessionWhoamiResult : Result Http.Error Client.Session -> Msg
 getSessionWhoamiResult result =
@@ -79,17 +93,17 @@ update msg model =
     case msg of
         SessionFetched session ->
             let
-                newModel =
+                newAppState =
                     AppDataPending { session = session
                                    , mRequestCollection = Nothing
                                    , mEnvironments = Nothing
                                    }
 
                 getRequestCollection =
-                    Client.getRequestCollectionByRequestCollectionId "" (getCsrfToken session) (getSessionId session) requestCollectionResultToMsg
+                    Client.getApiRequestCollectionByRequestCollectionId "" (getCsrfToken session) (getSessionId session) requestCollectionResultToMsg
 
                 getEnvironments =
-                    Client.getEnvironment "" (getCsrfToken session) environmentsResultToMsg
+                    Client.getApiEnvironment "" (getCsrfToken session) environmentsResultToMsg
 
                 getAppData =
                     Cmd.batch
@@ -98,36 +112,47 @@ update msg model =
                         ]
 
             in
-                (newModel, getAppData)
+                ( Tuple.mapSecond (\_ -> newAppState) model
+                , getAppData
+                )
 
         EnvironmentsFetched environments ->
-            case model of
+            case Tuple.second model of
                 AppDataPending pending ->
-                    AppDataPending { pending | mEnvironments = Just environments }
-                        |> upgradeModel
+                    let
+                        newState =
+                            AppDataPending { pending | mEnvironments = Just environments }
+                    in
+                        Tuple.mapSecond (\_ -> newState) model |> upgradeModel
 
                 _ ->
                     Debug.todo "already initialized app received initialization infos"
 
         RequestCollectionFetched requestCollection ->
-            case model of
+            case Tuple.second model of
                 AppDataPending pending ->
-                    AppDataPending { pending | mRequestCollection = Just requestCollection }
-                        |> upgradeModel
+                    let
+                        newState =
+                            AppDataPending { pending | mRequestCollection = Just requestCollection }
+                    in
+                        Tuple.mapSecond (\_ -> newState) model
+                            |> upgradeModel
 
                 _ ->
                     Debug.todo "already initialized app received initialization infos"
 
         InitializedApplicationMsg subMsg ->
-            case model of
+            case Tuple.second model of
                 InitializedApp initializedApplication ->
                     let
                         (newInitializedApplication, newMsg) =
                             InitializedApplication.update subMsg initializedApplication
+
+                        newModel =
+                            Tuple.mapSecond (\_ -> InitializedApp newInitializedApplication) model
+
                     in
-                        ( InitializedApp newInitializedApplication
-                        , Cmd.map InitializedApplicationMsg newMsg
-                        )
+                        (newModel, Cmd.map InitializedApplicationMsg newMsg)
 
                 _ ->
                     Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
@@ -135,6 +160,10 @@ update msg model =
 
         ServerError error ->
             Debug.todo "server error" error
+
+        _ ->
+            Debug.todo "server error"
+
 
 -- ** util
 
@@ -167,17 +196,17 @@ environmentsResultToMsg result =
 
 
 upgradeModel : Model -> (Model, Cmd Msg)
-upgradeModel model =
-    case model of
+upgradeModel ((page, appState) as model) =
+    case appState of
         AppDataPending { session, mRequestCollection, mEnvironments } ->
             case (mRequestCollection, mEnvironments) of
                 (Just requestCollection, Just environments) ->
                     let
-                        newModel =
+                        newAppState =
                             InitializedApp <|
-                                InitializedApplication.createModel session requestCollection environments
+                                InitializedApplication.createModel page session requestCollection environments
                     in
-                        (newModel, Cmd.none)
+                        ((page, newAppState), Cmd.none)
 
                 _ ->
                     (model, Cmd.none)
@@ -189,19 +218,25 @@ upgradeModel model =
 -- ** view
 
 
-view : Model -> Html.Html Msg
-view model =
-    layout [] <|
-        case model of
-            SessionPending ->
-                loadingView
+view : Model -> Browser.Document Msg
+view (_, appState) =
+    let
+        body =
+            layout [] <|
+                case appState of
+                    SessionPending ->
+                        loadingView
 
-            AppDataPending _ ->
-                loadingView
+                    AppDataPending _ ->
+                        loadingView
 
-            InitializedApp initializedApplication ->
-                el [ width fill ] <|
-                    map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
+                    InitializedApp initializedApplication ->
+                        el [ width fill ] <|
+                            map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
+    in
+        { title = "test"
+        , body = [body]
+        }
 
 
 unsignedView : Element Msg

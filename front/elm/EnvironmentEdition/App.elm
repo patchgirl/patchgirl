@@ -74,7 +74,7 @@ update msg model =
                 }
 
             newMsg =
-                Client.postEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)
+                Client.postApiEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)
         in
             (model, newMsg)
 
@@ -118,7 +118,7 @@ update msg model =
                 }
 
             newMsg =
-                Client.putEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id name)
+                Client.putApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id name)
         in
             (model, newMsg)
 
@@ -143,7 +143,7 @@ update msg model =
     AskDelete id ->
         let
             newMsg =
-                Client.deleteEnvironmentByEnvironmentId "" (getCsrfToken model.session) id (deleteEnvironmentResultToMsg id)
+                Client.deleteApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id (deleteEnvironmentResultToMsg id)
         in
             (model, newMsg)
 
@@ -421,7 +421,7 @@ updateKeyValue msg (session, model) =
         AskDeleteKeyValue id ->
             let
                 newMsg =
-                    Client.deleteEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken session) model.id id (deleteKeyValueResultToMsg id)
+                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken session) model.id id (deleteKeyValueResultToMsg id)
             in
                 (model, newMsg)
 
@@ -442,7 +442,7 @@ updateKeyValue msg (session, model) =
                     List.map Client.convertEnvironmentKeyValueFromFrontToBack model.keyValues
 
                 newMsg =
-                    Client.putEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken session) model.id updateKeyValues updateKeyValuesResultToMsg
+                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken session) model.id updateKeyValues updateKeyValuesResultToMsg
             in
                 (model, newMsg)
 

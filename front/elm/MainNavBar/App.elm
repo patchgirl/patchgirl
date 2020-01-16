@@ -77,7 +77,7 @@ update msg model =
         AskSignOut ->
             let
                 newCmd =
-                    Client.deleteSessionSignout "" deleteSessionSignOutResultToMsg
+                    Client.deleteApiSessionSignout "" deleteSessionSignOutResultToMsg
 
             in
                 (model, newCmd)

@@ -74,7 +74,7 @@ update msg model =
                     }
 
                 newCmd =
-                    Client.postSessionSignin "" (Client.convertSignInFromFrontToBack signIn) postSessionSignInResultToMsg
+                    Client.postApiSessionSignin "" (Client.convertSignInFromFrontToBack signIn) postSessionSignInResultToMsg
 
                 newModel =
                     { model | signInErrors = signInErrors signIn }

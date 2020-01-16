@@ -4,9 +4,11 @@ import VarApp.Model as VarApp
 import BuilderApp.Model as BuilderApp
 import List.Extra as List
 import Application.Type exposing (..)
+import Page exposing(..)
 
 type alias Model =
     { session : Session
+    , page : Page
     -- NAV
     , mainNavBarModel : MainNavBarModel
     -- BUILDER APP
@@ -64,8 +66,8 @@ getEnvironmentKeyValuesToEdit model =
         |> Maybe.map .keyValues
         |> Maybe.withDefault []
 
-createModel : Session -> BuilderApp.RequestCollection -> List Environment -> Model
-createModel session requestCollection environments =
+createModel : Page -> Session -> BuilderApp.RequestCollection -> List Environment -> Model
+createModel page session requestCollection environments =
   let
       selectedBuilderIndex = Nothing
       displayedBuilderIndex = Nothing
@@ -79,6 +81,7 @@ createModel session requestCollection environments =
       selectedEnvironmentToRunIndex = Just 0
   in
       { session = session
+      , page = Debug.log "page" page
       , mainNavBarModel = ReqTab
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex

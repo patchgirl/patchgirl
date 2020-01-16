@@ -184,7 +184,7 @@ buildRequestToRun envKeyValues varKeyValues builder =
                     backRequestComputationInput =
                         Client.convertRequestComputationInputFromFrontToFromBack request
                 in
-                    Client.postRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
+                    Client.postApiRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError
