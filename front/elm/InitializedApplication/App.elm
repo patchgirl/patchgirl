@@ -220,8 +220,9 @@ signedUserView model =
                     HomePage -> builderView model
                     ReqPage -> builderView model
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SignInPage -> Debug.todo "cannot sign in as a signed user"
-                    SignUpPage -> Debug.todo "cannot sign up as a signed user"
+                    SignInPage -> builderView model
+                    SignUpPage -> builderView model
+                    InitializePasswordPage accountId signUpToken -> builderView model
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -240,6 +241,7 @@ visitorView model visitorSession =
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> map SignInMsg (SignIn.view visitorSession)
                     SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
+                    InitializePasswordPage accountId signUpToken -> map SignUpMsg (SignUp.view visitorSession)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

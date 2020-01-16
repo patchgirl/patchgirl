@@ -9,6 +9,7 @@ type Page
     | EnvPage
     | SignInPage
     | SignUpPage
+    | InitializePasswordPage Int String
 
 
 urlToPage : Url.Url -> Page
@@ -37,4 +38,5 @@ urlParser =
         , Url.map EnvPage (Url.s "env")
         , Url.map SignInPage (Url.s "signIn")
         , Url.map SignUpPage (Url.s "signUp")
+        , Url.map InitializePasswordPage (Url.s "account" </> Url.int </> Url.s "initializePassword" </> Url.string)
         ]
