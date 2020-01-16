@@ -53,9 +53,11 @@ type CombinedApi auths =
   AssetApi
 
 type RestApi auths =
-  (Auth auths CookieSession :> ProtectedApi) :<|>
-  SessionApi :<|> PSessionApi auths :<|>
-  AccountApi
+  "api" :> (
+    (Auth auths CookieSession :> ProtectedApi) :<|>
+    SessionApi :<|> PSessionApi auths :<|>
+    AccountApi
+  )
 
 type SessionApi =
   "session" :> (
