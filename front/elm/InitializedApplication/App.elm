@@ -57,6 +57,7 @@ import VarApp.App as VarApp
 
 import Api.Generated as Client
 
+import Page exposing (..)
 import Util.Flip exposing (..)
 import Util.List as List
 import List.Extra as List
@@ -126,7 +127,7 @@ update msg model =
                 newModel =
                     { model
                         | session = newSession
-                        , mainNavBarModel = SignInTab
+                        , page = SignInPage
                     }
             in
                 (newModel, Cmd.none)
@@ -148,7 +149,7 @@ update msg model =
                 newModel =
                     { model
                         | session = newSession
-                        , mainNavBarModel = ReqTab
+                        , page = ReqPage
                     }
             in
                 (newModel, Cmd.none)
@@ -215,11 +216,12 @@ signedUserView model =
         contentView : Element Msg
         contentView =
             el [ width fill ] <|
-                case model.mainNavBarModel of
-                    ReqTab -> builderView model
-                    EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SignInTab -> Debug.todo "cannot sign in as a signed user"
-                    SignUpTab -> Debug.todo "cannot sign up as a signed user"
+                case model.page of
+                    HomePage -> builderView model
+                    ReqPage -> builderView model
+                    EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                    SignInPage -> Debug.todo "cannot sign in as a signed user"
+                    SignUpPage -> Debug.todo "cannot sign up as a signed user"
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -232,11 +234,12 @@ visitorView model visitorSession =
         contentView : Element Msg
         contentView =
             el [ width fill, centerX, centerY ] <|
-                case model.mainNavBarModel of
-                    ReqTab -> builderView model
-                    EnvTab -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SignInTab -> map SignInMsg (SignIn.view visitorSession)
-                    SignUpTab -> map SignUpMsg (SignUp.view visitorSession)
+                case model.page of
+                    HomePage -> builderView model
+                    ReqPage -> builderView model
+                    EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                    SignInPage -> map SignInMsg (SignIn.view visitorSession)
+                    SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

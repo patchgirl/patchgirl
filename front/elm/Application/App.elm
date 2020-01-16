@@ -24,7 +24,7 @@ import Url.Parser as Url exposing ((</>))
 -- ** model
 
 
-type alias Model = (Page, AppState)
+type alias Model = ((Page, Navigation.Key), AppState)
 
 
 type AppState
@@ -47,7 +47,7 @@ type AppState
 type Msg
     = SessionFetched Session
     | LinkClicked UrlRequest
-    | UrlChange Url.Url
+    | UrlChanged Url.Url
     | RequestCollectionFetched BuilderApp.RequestCollection
     | EnvironmentsFetched (List Environment)
     | InitializedApplicationMsg InitializedApplication.Msg
@@ -58,18 +58,19 @@ type Msg
 
 
 init : () -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
-init _ url key =
+init _ url navKey =
     let
         msg =
             Client.getApiSessionWhoami "" "" getSessionWhoamiResult
 
         page =
-            urlToPage url
+            urlToPage (Debug.log "haha" <| url)
 
         appState =
             SessionPending
+
     in
-        ((page, appState), msg)
+        (((page, navKey), appState), msg)
 
 getSessionWhoamiResult : Result Http.Error Client.Session -> Msg
 getSessionWhoamiResult result =
@@ -161,9 +162,26 @@ update msg model =
         ServerError error ->
             Debug.todo "server error" error
 
-        _ ->
-            Debug.todo "server error"
+        UrlChanged url ->
+            let
+                newPage =
+                    urlToPage url
 
+                newModel =
+                    Tuple.mapFirst (Tuple.mapFirst (\_ -> newPage)) model
+            in
+                (newModel, Cmd.none)
+
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Internal url ->
+                    let
+                        ((_, navKey), _) = model
+                    in
+                        (model, Navigation.pushUrl navKey <| Url.toString url)
+
+                External url ->
+                    (model, Navigation.load url)
 
 -- ** util
 
@@ -196,7 +214,7 @@ environmentsResultToMsg result =
 
 
 upgradeModel : Model -> (Model, Cmd Msg)
-upgradeModel ((page, appState) as model) =
+upgradeModel (((page, navKey), appState) as model) =
     case appState of
         AppDataPending { session, mRequestCollection, mEnvironments } ->
             case (mRequestCollection, mEnvironments) of
@@ -206,7 +224,7 @@ upgradeModel ((page, appState) as model) =
                             InitializedApp <|
                                 InitializedApplication.createModel page session requestCollection environments
                     in
-                        ((page, newAppState), Cmd.none)
+                        (((page, navKey), newAppState), Cmd.none)
 
                 _ ->
                     (model, Cmd.none)

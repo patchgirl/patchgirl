@@ -9,8 +9,6 @@ import Page exposing(..)
 type alias Model =
     { session : Session
     , page : Page
-    -- NAV
-    , mainNavBarModel : MainNavBarModel
     -- BUILDER APP
     , selectedBuilderIndex : Maybe Int
     , displayedBuilderIndex : Maybe Int
@@ -26,11 +24,6 @@ type alias Model =
     , varAppModel : VarApp.Model
     }
 
-type MainNavBarModel
-    = ReqTab
-    | EnvTab
-    | SignInTab
-    | SignUpTab
 
 type alias GetEnvironment a =
     { a
@@ -82,7 +75,6 @@ createModel page session requestCollection environments =
   in
       { session = session
       , page = Debug.log "page" page
-      , mainNavBarModel = ReqTab
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex

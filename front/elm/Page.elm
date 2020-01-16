@@ -7,6 +7,8 @@ type Page
     = HomePage
     | ReqPage
     | EnvPage
+    | SignInPage
+    | SignUpPage
 
 
 urlToPage : Url.Url -> Page
@@ -33,4 +35,6 @@ urlParser =
         [ Url.map HomePage Url.top
         , Url.map ReqPage (Url.s "req")
         , Url.map EnvPage (Url.s "env")
+        , Url.map SignInPage (Url.s "signIn")
+        , Url.map SignUpPage (Url.s "signUp")
         ]

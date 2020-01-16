@@ -11,5 +11,5 @@ main =
     , subscriptions = Application.subscriptions
     , view = Application.view
     , onUrlRequest = Application.LinkClicked
-    , onUrlChange = Application.UrlChange
+    , onUrlChange = Application.UrlChanged
     }

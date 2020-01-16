@@ -16,6 +16,7 @@ import Application.Type exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
+import Page exposing(..)
 
 -- * model
 
@@ -23,7 +24,7 @@ import Http as Http
 type alias Model a =
     { a
       | session : Session
-      , mainNavBarModel : MainNavBarModel
+      , page : Page
     }
 
 
@@ -31,10 +32,10 @@ type alias Model a =
 
 
 type Msg
-    = OpenReqTab
-    | OpenEnvTab
-    | OpenSignInTab
-    | OpenSignUpTab
+    = OpenReqPage
+    | OpenEnvPage
+    | OpenSignInPage
+    | OpenSignUpPage
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
@@ -46,31 +47,31 @@ type Msg
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
     case msg of
-        OpenReqTab ->
+        OpenReqPage ->
             let
                 newModel =
-                    { model | mainNavBarModel = ReqTab }
+                    { model | page = ReqPage }
             in
                 (newModel, Cmd.none)
 
-        OpenEnvTab ->
+        OpenEnvPage ->
             let
                 newModel =
-                    { model | mainNavBarModel = EnvTab }
+                    { model | page = EnvPage }
             in
                 (newModel, Cmd.none)
 
-        OpenSignInTab ->
+        OpenSignInPage ->
             let
                 newModel =
-                    { model | mainNavBarModel = SignInTab }
+                    { model | page = SignInPage }
             in
                 (newModel, Cmd.none)
 
-        OpenSignUpTab ->
+        OpenSignUpPage ->
             let
                 newModel =
-                    { model | mainNavBarModel = SignUpTab }
+                    { model | page = SignUpPage }
             in
                 (newModel, Cmd.none)
 
@@ -142,12 +143,12 @@ rightView model =
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row []
-        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignInTab SignInTab))
-              { url = "#signin"
+        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignInPage SignInPage))
+              { url = "#signIn"
               , label = text "Sign in"
               }
-        , link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignUpTab SignUpTab))
-            { url = "#signup"
+        , link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignUpPage SignUpPage))
+            { url = "#signUp"
             , label = text "Sign up"
             }
         ]
@@ -164,8 +165,8 @@ signedUserRightView model =
 centerView : Model a -> Element Msg
 centerView model =
     row [ centerX, paddingXY 10 0, centerY ]
-        [ link (mainLinkAttribute model OpenReqTab ReqTab) { url = "#req", label = text "Req" }
-        , link (mainLinkAttribute model OpenEnvTab EnvTab) { url = "#env", label = text "Env" }
+        [ link (mainLinkAttribute model OpenReqPage ReqPage) { url = "#req", label = text "Req" }
+        , link (mainLinkAttribute model OpenEnvPage EnvPage) { url = "#env", label = text "Env" }
         ]
 
 
@@ -188,8 +189,8 @@ linkAttribute model msg =
 
 
 
-mainLinkAttribute : Model a -> Msg -> MainNavBarModel -> List (Attribute Msg)
-mainLinkAttribute model event mainNavBarModel =
+mainLinkAttribute : Model a -> Msg -> Page -> List (Attribute Msg)
+mainLinkAttribute model event page =
             let
                 activeAttribute =
                     [ Background.color <| secondaryColor
@@ -201,7 +202,7 @@ mainLinkAttribute model event mainNavBarModel =
                     ]
 
                 activeOrPassiveAttribute =
-                    case model.mainNavBarModel == mainNavBarModel of
+                    case model.page == page of
                         True -> activeAttribute
                         False -> passiveAttribute
 
