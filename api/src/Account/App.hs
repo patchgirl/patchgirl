@@ -163,6 +163,7 @@ selectAccountFromInitializePassword (InitializePassword { _initializePasswordAcc
           SELECT id, email
           FROM account
           WHERE id = ?
+          AND password IS NULL
           AND signup_token = ?
           |]
 

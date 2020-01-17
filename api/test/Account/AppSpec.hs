@@ -106,6 +106,18 @@ spec = do
                                           }
           try clientEnv (initializePassword newPayload) `shouldThrow` errorsWithStatus badRequest400
 
+      it "should returns 400 when password is already set" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, signupToken) <- insertFakeAccountWithoutPassword newFakeAccount connection
+          mAccount <- selectFakeAccount accountId connection
+          let newPayload =
+                initializePasswordPayload { _initializePasswordAccountId = accountId
+                                          , _initializePasswordToken = signupToken
+                                          , _initializePasswordPassword = "howdy!"
+                                          }
+          _ <- try clientEnv (initializePassword newPayload)
+          try clientEnv (initializePassword newPayload) `shouldThrow` errorsWithStatus badRequest400
+
       it "should set the account password " $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, signupToken) <- insertFakeAccountWithoutPassword newFakeAccount connection
