@@ -40,6 +40,8 @@ import Postman.Model as Postman
 import Postman.Message as Postman
 import Postman.App as Postman
 
+import InitializePassword.App as InitializePassword
+
 import SignIn.App as SignIn
 import SignUp.App as SignUp
 
@@ -79,6 +81,7 @@ type Msg
     | VarAppMsg VarApp.Msg
     | SignInMsg SignIn.Msg
     | SignUpMsg SignUp.Msg
+    | InitializePasswordMsg InitializePassword.Msg
 
 
 -- * update
@@ -180,6 +183,11 @@ update msg model =
                 _ ->
                     Debug.todo "cannot sign up if not a visitor"
 
+        InitializePasswordMsg subMsg ->
+            case InitializePassword.update subMsg model of
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map InitializePasswordMsg newSubMsg)
+
 
 
 -- * util
@@ -222,7 +230,7 @@ signedUserView model =
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> builderView model
                     SignUpPage -> builderView model
-                    InitializePasswordPage accountId signUpToken -> builderView model
+                    InitializePasswordPage accountId signUpToken -> map InitializePasswordMsg (InitializePassword.view model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -241,7 +249,7 @@ visitorView model visitorSession =
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> map SignInMsg (SignIn.view visitorSession)
                     SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
-                    InitializePasswordPage accountId signUpToken -> map SignUpMsg (SignUp.view visitorSession)
+                    InitializePasswordPage accountId signUpToken -> map InitializePasswordMsg (InitializePassword.view model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

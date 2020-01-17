@@ -118,7 +118,19 @@ convertSignInFromFrontToBack { email, password } =
        }
 
 
+-- * initializePassword
+
+
+convertInitializePasswordBackToFront : String -> String -> Int -> Back.InitializePassword
+convertInitializePasswordBackToFront password signUpToken accountId =
+   { initializePasswordAccountId = accountId
+   , initializePasswordPassword = password
+   , initializePasswordToken = signUpToken
+   }
+
+
 -- * request computation
+
 
 convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
 convertRequestComputationResultFromBackToFront backRequestComputationResult =

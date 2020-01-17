@@ -9,6 +9,10 @@ import Page exposing(..)
 type alias Model =
     { session : Session
     , page : Page
+    -- INITIALIZE PASSWORD
+    , initializePassword1 : String
+    , initializePassword2 : String
+    , initialiazePasswordError : Maybe String
     -- BUILDER APP
     , selectedBuilderIndex : Maybe Int
     , displayedBuilderIndex : Maybe Int
@@ -75,6 +79,9 @@ createModel page session requestCollection environments =
   in
       { session = session
       , page = Debug.log "page" page
+      , initializePassword1 = ""
+      , initializePassword2 = ""
+      , initialiazePasswordError = Nothing
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex
