@@ -11,8 +11,7 @@ module App where
 
 import           Control.Monad.Except        (ExceptT, MonadError, runExceptT)
 import           Control.Monad.IO.Class      (MonadIO)
-import           Control.Monad.Reader        (MonadReader)
-import           Control.Monad.Reader        (ReaderT, runReaderT)
+import           Control.Monad.Reader        (MonadReader, ReaderT, runReaderT)
 import           Control.Monad.Trans         (liftIO)
 import           GHC.Generics                (Generic)
 import           GHC.Natural                 (naturalToInt)
@@ -48,7 +47,7 @@ import           Test
 -- * api
 
 type CombinedApi auths =
-  (RestApi auths) :<|>
+  RestApi auths :<|>
   TestApi :<|>
   AssetApi
 
@@ -135,9 +134,7 @@ type KeyValueApi =
   Flat (
     "keyValue" :> (
       ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
-      Capture "keyValueId" Int :> (
-        Delete '[JSON] ()
-      )
+      Capture "keyValueId" Int :> Delete '[JSON] ()
     )
   )
 
@@ -164,7 +161,7 @@ pSessionApiServer
   :: CookieSettings
   -> JWTSettings
   -> AuthResult CookieSession
-  -> ServerT WhoAmiApi (AppM)
+  -> ServerT WhoAmiApi AppM
 pSessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
@@ -258,7 +255,7 @@ run = do
   config :: Config <- importConfig
   print config
   let
-    settings = setPort (naturalToInt $ port config) $ defaultSettings
+    settings = setPort (naturalToInt $ port config) defaultSettings
     tlsOpts = tlsSettings "cert.pem" "key.pem"
   runTLS tlsOpts settings =<< mkApp config
 
