@@ -60,7 +60,6 @@ data CreatedAccount =
 
 data InitializePassword =
   InitializePassword { _initializePasswordAccountId :: Int
-                     , _initializePasswordEmail     :: CaseInsensitive
                      , _initializePasswordPassword  :: String
                      , _initializePasswordToken     :: String
                      }

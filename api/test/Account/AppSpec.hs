@@ -16,6 +16,7 @@
 
 module Account.AppSpec where
 
+import           Account.App
 import           Account.DB
 import           Account.Model
 import           App
@@ -47,10 +48,9 @@ import           Test.Hspec
 -- * client
 
 
-initializePassword
-  :: InitializePassword
-  -> ClientM ()
-initializePassword =
+signUp :: SignUp -> ClientM ()
+initializePassword :: InitializePassword -> ClientM ()
+signUp :<|> initializePassword =
   client (Proxy :: Proxy AccountApi)
 
 
@@ -62,6 +62,24 @@ spec = do
   withClient (mkApp defaultConfig) $ do
 
 
+-- ** sign up
+
+
+    describe "sign up" $ do
+      it "returns 400 on malformed email" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          let signupPayload = SignUp { _signUpEmail = CaseInsensitive "whatever" }
+          try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
+
+
+      it "returns 400 on already used email" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          let newAccount = NewAccount { _newAccountEmail = CaseInsensitive "foo@mail.com" }
+          _ <- insertAccount newAccount connection
+          let signupPayload = SignUp { _signUpEmail = CaseInsensitive "foo@mail.com" }
+          try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
+
+
 -- ** initialize password
     let email = CaseInsensitive "foo@mail.com"
 
@@ -70,7 +88,6 @@ spec = do
 
     let initializePasswordPayload =
           InitializePassword { _initializePasswordAccountId = 1
-                             , _initializePasswordEmail = email
                              , _initializePasswordPassword = "whatever"
                              , _initializePasswordToken = "whatever"
                              }

@@ -11,7 +11,6 @@ type Page
     | SignUpPage
     | InitializePasswordPage Int String
 
-
 urlToPage : Url.Url -> Page
 urlToPage url =
     {-

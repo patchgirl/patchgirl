@@ -49,11 +49,10 @@ signIn
   -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
                        , Header "Set-Cookie" SetCookie]
                Session)
-signUp :: SignUp -> ClientM ()
 signOut :: ClientM (Headers '[ Header "Set-Cookie" SetCookie
                              , Header "Set-Cookie" SetCookie]
                      Session)
-signIn :<|> signUp :<|> signOut =
+signIn :<|> signOut =
   client (Proxy :: Proxy SessionApi)
 
 
@@ -137,24 +136,6 @@ spec = do
             session `shouldBe` VisitorSession { _sessionAccountId = 1
                                               , _sessionCsrfToken = ""
                                               }
-
-
--- ** sign up
-
-
-    describe "sign up" $ do
-      it "returns 400 on malformed email" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          let signupPayload = SignUp { _signUpEmail = CaseInsensitive "whatever" }
-          try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
-
-
-      it "returns 400 on already used email" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          let newAccount = NewAccount { _newAccountEmail = CaseInsensitive "foo@mail.com" }
-          _ <- insertAccount newAccount connection
-          let signupPayload = SignUp { _signUpEmail = CaseInsensitive "foo@mail.com" }
-          try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
 
 
 -- ** sign out

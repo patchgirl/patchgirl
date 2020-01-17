@@ -230,7 +230,8 @@ signedUserView model =
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> builderView model
                     SignUpPage -> builderView model
-                    InitializePasswordPage accountId signUpToken -> map InitializePasswordMsg (InitializePassword.view model)
+                    InitializePasswordPage accountId signUpToken ->
+                        map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)
@@ -243,13 +244,14 @@ visitorView model visitorSession =
         contentView : Element Msg
         contentView =
             el [ width fill, centerX, centerY ] <|
-                case model.page of
+                case Debug.log "haha" model.page of
                     HomePage -> builderView model
                     ReqPage -> builderView model
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> map SignInMsg (SignIn.view visitorSession)
                     SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
-                    InitializePasswordPage accountId signUpToken -> map InitializePasswordMsg (InitializePassword.view model)
+                    InitializePasswordPage accountId signUpToken ->
+                        map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
     in
         column [ width fill, centerY, spacing 30 ]
             [ map MainNavBarMsg (MainNavBar.view model)

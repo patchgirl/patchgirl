@@ -71,11 +71,9 @@ ActiveRecord::Migration[5.2].execute %{
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
-      id,
       email,
       password
     ) values (
-      1,
       'foo@mail.com',
       crypt('123', gen_salt('bf', 8))
     );
@@ -83,11 +81,9 @@ ActiveRecord::Migration[5.2].execute %{
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
-      id,
       email,
       password
     ) values (
-      2,
       'signup@mail.com',
       NULL
     );

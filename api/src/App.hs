@@ -53,25 +53,23 @@ type CombinedApi auths =
   AssetApi
 
 type RestApi auths =
-  "api" :> (
-    (Auth auths CookieSession :> ProtectedApi) :<|>
-    SessionApi :<|> PSessionApi auths :<|>
-    AccountApi
-  )
+  (Auth auths CookieSession :> ProtectedApi) :<|>
+  SessionApi :<|> PSessionApi auths :<|>
+  AccountApi
 
 type SessionApi =
-  "session" :> (
+  "api" :> "session" :> (
     "signin" :> ReqBody '[JSON] SignIn :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                                                  , Header "Set-Cookie" SetCookie
                                                                  ] Session) :<|>
-    "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
     "signout" :> Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                           , Header "Set-Cookie" SetCookie
                                           ] Session)
   )
 
 type AccountApi =
-  "account" :> (
+  "api" :> "account" :> (
+    "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
     "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] ()
   )
 
@@ -81,7 +79,7 @@ type WhoAmiApi =
                         ] Session)
 
 type PSessionApi auths =
-  Auth auths CookieSession :> "session" :> "whoami" :> WhoAmiApi
+  Auth auths CookieSession :> "api" :> "session" :> "whoami" :> WhoAmiApi
 
 type ProtectedApi =
   RequestCollectionApi :<|>
@@ -92,20 +90,20 @@ type ProtectedApi =
   HealthApi
 
 type RequestCollectionApi =
-  "requestCollection" :> (
+  "api" :> "requestCollection" :> (
     -- getRequestCollectionById
     Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
   )
 
 type RequestNodeApi =
   Flat (
-    "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
       ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] NoContent
     )
   )
 
 type RequestFileApi = Flat (
-  "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
+  "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
     -- createRequestFile
     ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int -- :<|>
     -- updateRequestFile
@@ -115,7 +113,7 @@ type RequestFileApi = Flat (
 
 type EnvironmentApi =
   Flat (
-    "environment" :> (
+    "api" :> "environment" :> (
       ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
       Get '[JSON] [Environment] :<|> -- getEnvironments
       Capture "environmentId" Int :> (
@@ -128,7 +126,7 @@ type EnvironmentApi =
 
 type RequestComputationApi =
   Flat (
-    "requestComputation" :> (
+    "api" :> "requestComputation" :> (
       ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
     )
   )
@@ -153,7 +151,7 @@ type TestApi =
   )
 
 type HealthApi =
-  "health" :> Get '[JSON] AppHealth
+  "api" :> "health" :> Get '[JSON] AppHealth
 
 type AssetApi =
   "public" :> Raw
@@ -162,25 +160,25 @@ type AssetApi =
 -- * server
 
 
-sessionApiServer
+pSessionApiServer
   :: CookieSettings
   -> JWTSettings
   -> AuthResult CookieSession
   -> ServerT WhoAmiApi (AppM)
-sessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
+pSessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
-loginApiServer
+sessionApiServer
   :: CookieSettings
   -> JWTSettings
   -> ServerT SessionApi AppM
-loginApiServer cookieSettings jwtSettings  =
+sessionApiServer cookieSettings jwtSettings  =
   signInHandler cookieSettings jwtSettings :<|>
-  signUpHandler :<|>
   deleteSessionHandler cookieSettings
 
 accountApiServer :: ServerT AccountApi AppM
 accountApiServer =
+  signUpHandler :<|>
   initializePasswordHandler
 
 protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
@@ -279,7 +277,7 @@ mkApp config = do
     combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT]) -- JWT is needed for the tests to run
     apiServer =
       (protectedApiServer :<|>
-      (loginApiServer cookieSettings jwtSettings :<|> sessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
+      (sessionApiServer cookieSettings jwtSettings :<|> pSessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
       testApiServer :<|>
       assetApiServer
     server =

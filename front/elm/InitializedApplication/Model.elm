@@ -12,7 +12,7 @@ type alias Model =
     -- INITIALIZE PASSWORD
     , initializePassword1 : String
     , initializePassword2 : String
-    , initialiazePasswordError : Maybe String
+    , initializePasswordState : InitializePasswordState
     -- BUILDER APP
     , selectedBuilderIndex : Maybe Int
     , displayedBuilderIndex : Maybe Int
@@ -28,6 +28,11 @@ type alias Model =
     , varAppModel : VarApp.Model
     }
 
+type InitializePasswordState
+    = InitialPasswordState
+    | FilledPasswordState
+    | FailedPasswordState String
+    | SucceededPasswordState
 
 type alias GetEnvironment a =
     { a
@@ -81,7 +86,7 @@ createModel page session requestCollection environments =
       , page = Debug.log "page" page
       , initializePassword1 = ""
       , initializePassword2 = ""
-      , initialiazePasswordError = Nothing
+      , initializePasswordState = InitialPasswordState
       , selectedBuilderIndex = selectedBuilderIndex
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex

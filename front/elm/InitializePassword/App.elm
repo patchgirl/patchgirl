@@ -13,7 +13,7 @@ import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import Regex as Regex
-
+import InitializedApplication.Model exposing(..)
 
 -- * model
 
@@ -22,7 +22,7 @@ type alias Model a =
         | session : Session
         , initializePassword1 : String
         , initializePassword2 : String
-        , initialiazePasswordError : Maybe String
+        , initializePasswordState : InitializePasswordState
     }
 
 
@@ -30,7 +30,7 @@ type alias Model a =
 
 
 type Msg
-    = AskInitializePassword String Int
+    = AskInitializePassword Int String
     | ChangePassword1 String
     | ChangePassword2 String
     | InitializePasswordSucceeded
@@ -57,10 +57,10 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        AskInitializePassword email signUpToken accountId ->
+        AskInitializePassword accountId signUpToken ->
             let
                 initializePassword =
-                    Client.convertInitializePasswordBackToFront model.password1Input signUpToken accountId
+                    Client.convertInitializePasswordBackToFront model.initializePassword1 signUpToken accountId
 
                 newCmd =
                     Client.postApiAccountInitializePassword "" initializePassword postInitializePasswordResultToMsg
@@ -68,8 +68,20 @@ update msg model =
             in
                 (model, newCmd)
 
-        _ ->
-            (model, Cmd.none)
+        InitializePasswordFailed ->
+            let
+                newModel =
+                    { model | initializePasswordState = FailedPasswordState "we could not initialize your password" }
+            in
+                (newModel, Cmd.none)
+
+        InitializePasswordSucceeded ->
+            let
+                newModel =
+                    { model | initializePasswordState = SucceededPasswordState }
+            in
+                (newModel, Cmd.none)
+
 
 
 -- * util
@@ -79,15 +91,20 @@ addError : Model a -> Model a
 addError model =
     case model.initializePassword1 /= model.initializePassword2 of
         True ->
-            { model | initialiazePasswordError = Just "passwords do not match" }
+            { model | initializePasswordState = FailedPasswordState "passwords do not match" }
 
         False ->
-            { model | initialiazePasswordError = Nothing }
+            case model.initializePassword1 == "" of
+                True ->
+                    { model | initializePasswordState = InitialPasswordState }
+
+                False ->
+                    { model | initializePasswordState = FilledPasswordState }
 
 
 postInitializePasswordResultToMsg : Result Http.Error () -> Msg
 postInitializePasswordResultToMsg result =
-    case Debug.log "result" result of
+    case result of
         Ok () ->
             InitializePasswordSucceeded
 
@@ -108,8 +125,8 @@ errorViewWhenAlreadySignedIn =
     , el [ centerX ] (text "Please sign out before proceeding")
     ]
 
-view : Model a -> Element Msg
-view model =
+view : Int -> String -> Model a -> Element Msg
+view accountId signUpToken model =
     let
         labelInputAttributes =
             [ centerY
@@ -118,7 +135,7 @@ view model =
             ]
 
         password1Input =
-            Input.newPassword [ onEnter AskInitializePassword ]
+            Input.newPassword []
                 { onChange = ChangePassword1
                 , text = model.initializePassword1
                 , placeholder = Just <| Input.placeholder [] (text "password")
@@ -127,7 +144,7 @@ view model =
                 }
 
         password2Input =
-            Input.newPassword [ onEnter AskInitializePassword ]
+            Input.newPassword []
                 { onChange = ChangePassword2
                 , text = model.initializePassword2
                 , placeholder = Just <| Input.placeholder [] (text "password")
@@ -135,30 +152,42 @@ view model =
                 , show = False
                 }
 
-        showError =
-            case model.initialiazePasswordError of
-                Just error ->
+        showMessage =
+            case model.initializePasswordState of
+                FailedPasswordState error ->
                     el [ centerX ] (text error)
 
-                Nothing ->
+                InitialPasswordState ->
                     none
 
+                FilledPasswordState ->
+                    none
+
+                SucceededPasswordState ->
+                    el [centerX] (text "Password initialized successfuly, try signing in!")
+
+
         submitButton =
-            Input.button [ Border.solid
-                         , Border.color secondaryColor
-                         , Border.width 1
-                         , Border.rounded 5
-                         , alignBottom
-                         , Background.color secondaryColor
-                         , paddingXY 10 10
-                         , centerX
-                         ]
-                { onPress = Just AskInitializePassword
-                , label =
-                    row [ centerX ]
-                        [ el [] (text "Initialize Password")
-                        ]
-                }
+            case model.initializePasswordState of
+                FilledPasswordState ->
+                    Input.button [ Border.solid
+                                 , Border.color secondaryColor
+                                 , Border.width 1
+                                 , Border.rounded 5
+                                 , alignBottom
+                                 , Background.color secondaryColor
+                                 , paddingXY 10 10
+                                 , centerX
+                                 ]
+                        { onPress = Just (AskInitializePassword accountId signUpToken)
+                        , label =
+                            row [ centerX ]
+                                [ el [] (text "Initialize Password")
+                                ]
+                        }
+
+                _ ->
+                    none
 
     in
         case model.session of
@@ -166,7 +195,7 @@ view model =
                 column [ centerX, spacing 20 ]
                     [ password1Input
                     , password2Input
-                    , showError
+                    , showMessage
                     , submitButton
                     ]
 

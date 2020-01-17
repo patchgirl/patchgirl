@@ -43,6 +43,93 @@ import           Session.Model
 import qualified Text.Email.Validate                 as Email
 import           Web.Cookie                          (setCookieValue)
 
+
+-- * sign up
+
+
+signUpHandler
+  :: ( MonadReader Config m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => SignUp
+  -> m ()
+signUpHandler (SignUp { _signUpEmail }) =
+  let
+    CaseInsensitive email =
+      _signUpEmail
+
+    malformedEmail :: Bool
+    malformedEmail =
+      isLeft $ Email.validate (BSU.fromString email)
+
+    ioEmailAlreadyUsed :: IO Bool
+    ioEmailAlreadyUsed = do
+      (getDBConnection >>= selectAccountFromEmail _signUpEmail) <&> isJust
+
+    invalidEmail :: IO Bool
+    invalidEmail =
+      if malformedEmail then pure True else ioEmailAlreadyUsed
+
+  in do
+    invalid <- liftIO invalidEmail
+    case invalid of
+      True -> throwError err400
+      False -> do
+        let newAccount = NewAccount { _newAccountEmail = _signUpEmail }
+        createdAccount <- liftIO $ getDBConnection >>= insertAccount newAccount
+        hailgunMessage <- mkHailgunMessage (mkSignUpEmail createdAccount)
+        case hailgunMessage of
+          Left error -> do
+            liftIO $ print error
+            throwError err400
+
+          Right message -> do
+            hailgunContext <- mkHailgunContext
+            emailRes <- liftIO $ sendEmail hailgunContext message
+            case emailRes of
+              Left error -> do
+                liftIO $ putStrLn $ show error
+              Right _    -> do
+                return ()
+
+
+mkSignUpEmail :: CreatedAccount -> Email
+mkSignUpEmail (CreatedAccount { _accountCreatedId
+                              , _accountCreatedEmail
+                              , _accountCreatedSignUpToken
+                              }) =
+  let CaseInsensitive email = _accountCreatedEmail
+  in
+    Email { _emailSubject = "Finish your signing up"
+          , _emailTextMessageContent = "Howdy! You're almost done. Finalize your subscription by setting your password here: patchgirl.io/#account/" <> (show _accountCreatedId) <> "/initializePassword/" <> _accountCreatedSignUpToken
+          , _emailHtmlMessageContent = "Howdy!<br/> You're almost done. Finalize your subscription by setting your password <a href=\"patchgirl.io/#account/" <> (show _accountCreatedId) <> "/initializePassword/" <> _accountCreatedSignUpToken <> "\">here.</a>"
+          , _emailRecipients = [email]
+          }
+
+selectAccountFromEmail :: CaseInsensitive -> Connection -> IO (Maybe Account)
+selectAccountFromEmail email connection = do
+  (query connection selectAccountQuery (Only email)) <&> listToMaybe
+  where
+    selectAccountQuery =
+      [sql|
+          SELECT id, email
+          FROM account
+          WHERE email = ?
+          |]
+
+insertAccount :: NewAccount -> Connection -> IO CreatedAccount
+insertAccount (NewAccount { _newAccountEmail }) connection = do
+  [accountCreated] <- query connection rawQuery (Only _newAccountEmail)
+  return accountCreated
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO account (email) VALUES (?)
+          RETURNING id, email, signup_token
+          |]
+
+
 -- * initialize password
 
 
@@ -66,10 +153,8 @@ initializePasswordHandler initializePassword = do
 
 selectAccountFromInitializePassword :: InitializePassword -> Connection -> IO (Maybe Account)
 selectAccountFromInitializePassword (InitializePassword { _initializePasswordAccountId
-                                                        , _initializePasswordEmail
                                                         , _initializePasswordToken }) connection = do
   (query connection selectAccountQuery ( _initializePasswordAccountId
-                                       , _initializePasswordEmail
                                        , _initializePasswordToken
                                        )) <&> listToMaybe
   where
@@ -78,7 +163,6 @@ selectAccountFromInitializePassword (InitializePassword { _initializePasswordAcc
           SELECT id, email
           FROM account
           WHERE id = ?
-          AND email = ?
           AND signup_token = ?
           |]
 

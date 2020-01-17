@@ -24,8 +24,11 @@ import Url.Parser as Url exposing ((</>))
 -- ** model
 
 
-type alias Model = ((Page, Navigation.Key), AppState)
-
+type alias Model =
+    { page : Page
+    , navigationKey : Navigation.Key
+    , appState : AppState
+    }
 
 type AppState
     = SessionPending
@@ -35,10 +38,6 @@ type AppState
       , mEnvironments : Maybe (List Environment)
       }
     | InitializedApp InitializedApplication.Model
-
-
-
-
 
 
 -- ** message
@@ -64,13 +63,19 @@ init _ url navKey =
             Client.getApiSessionWhoami "" "" getSessionWhoamiResult
 
         page =
-            urlToPage (Debug.log "haha" <| url)
+            urlToPage url
 
         appState =
             SessionPending
 
+        model =
+            { page = page
+            , navigationKey = navKey
+            , appState = appState
+            }
+
     in
-        (((page, navKey), appState), msg)
+        (model, msg)
 
 getSessionWhoamiResult : Result Http.Error Client.Session -> Msg
 getSessionWhoamiResult result =
@@ -112,45 +117,47 @@ update msg model =
                         , getEnvironments
                         ]
 
+                newModel =
+                    { model | appState = newAppState }
+
             in
-                ( Tuple.mapSecond (\_ -> newAppState) model
-                , getAppData
-                )
+                (newModel, getAppData)
 
         EnvironmentsFetched environments ->
-            case Tuple.second model of
+            case model.appState of
                 AppDataPending pending ->
                     let
                         newState =
                             AppDataPending { pending | mEnvironments = Just environments }
                     in
-                        Tuple.mapSecond (\_ -> newState) model |> upgradeModel
+                        { model | appState = newState }
+                            |> upgradeModel
 
                 _ ->
                     Debug.todo "already initialized app received initialization infos"
 
         RequestCollectionFetched requestCollection ->
-            case Tuple.second model of
+            case model.appState of
                 AppDataPending pending ->
                     let
                         newState =
                             AppDataPending { pending | mRequestCollection = Just requestCollection }
                     in
-                        Tuple.mapSecond (\_ -> newState) model
+                        { model | appState = newState }
                             |> upgradeModel
 
                 _ ->
                     Debug.todo "already initialized app received initialization infos"
 
         InitializedApplicationMsg subMsg ->
-            case Tuple.second model of
+            case model.appState of
                 InitializedApp initializedApplication ->
                     let
                         (newInitializedApplication, newMsg) =
                             InitializedApplication.update subMsg initializedApplication
 
                         newModel =
-                            Tuple.mapSecond (\_ -> InitializedApp newInitializedApplication) model
+                            { model | appState = InitializedApp newInitializedApplication }
 
                     in
                         (newModel, Cmd.map InitializedApplicationMsg newMsg)
@@ -168,22 +175,21 @@ update msg model =
                     urlToPage url
 
                 newModel =
-                    Tuple.mapFirst (Tuple.mapFirst (\_ -> newPage)) model
+                    { model | page = newPage }
+
             in
                 (newModel, Cmd.none)
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Internal url ->
-                    let
-                        ((_, navKey), _) = model
-                    in
-                        (model, Navigation.pushUrl navKey <| Url.toString url)
+                    (model, Navigation.pushUrl model.navigationKey <| Url.toString url)
 
                 External url ->
                     (model, Navigation.load url)
 
 -- ** util
+
 
 requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> Msg
 requestCollectionResultToMsg result =
@@ -198,8 +204,6 @@ requestCollectionResultToMsg result =
         Err error ->
             ServerError error
 
-
-
 environmentsResultToMsg : Result Http.Error (List Client.Environment) -> Msg
 environmentsResultToMsg result =
     case result of
@@ -212,19 +216,21 @@ environmentsResultToMsg result =
         Err error ->
             ServerError error
 
-
 upgradeModel : Model -> (Model, Cmd Msg)
-upgradeModel (((page, navKey), appState) as model) =
-    case appState of
+upgradeModel model =
+    case model.appState of
         AppDataPending { session, mRequestCollection, mEnvironments } ->
             case (mRequestCollection, mEnvironments) of
                 (Just requestCollection, Just environments) ->
                     let
                         newAppState =
                             InitializedApp <|
-                                InitializedApplication.createModel page session requestCollection environments
+                                InitializedApplication.createModel model.page session requestCollection environments
+
+                        newModel =
+                            { model | appState = newAppState }
                     in
-                        (((page, navKey), newAppState), Cmd.none)
+                        (newModel, Cmd.none)
 
                 _ ->
                     (model, Cmd.none)
@@ -237,11 +243,11 @@ upgradeModel (((page, navKey), appState) as model) =
 
 
 view : Model -> Browser.Document Msg
-view (_, appState) =
+view model =
     let
         body =
             layout [] <|
-                case appState of
+                case model.appState of
                     SessionPending ->
                         loadingView
 
