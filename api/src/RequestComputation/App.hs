@@ -110,12 +110,12 @@ runRequest
   :: MonadIO m
   => RequestComputationInput
   -> m (Http.Response BSU.ByteString)
-runRequest (RequestComputationInput { _requestComputationInputMethod
-                                    , _requestComputationInputHeaders
-                                    , _requestComputationInputScheme
-                                    , _requestComputationInputUrl
-                                    , _requestComputationInputBody
-                                    }) = do
+runRequest RequestComputationInput { _requestComputationInputMethod
+                                   , _requestComputationInputHeaders
+                                   , _requestComputationInputScheme
+                                   , _requestComputationInputUrl
+                                   , _requestComputationInputBody
+                                   } = do
   let url = (schemeToString _requestComputationInputScheme) <> "://" <> _requestComputationInputUrl
   manager <- Tls.newTlsManager
   liftIO $ Tls.setGlobalManager manager

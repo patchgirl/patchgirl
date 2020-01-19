@@ -176,7 +176,7 @@ instance FromJSON NewEnvironment where
 $(makeFieldsNoPrefix ''NewEnvironment)
 
 insertEnvironment :: NewEnvironment -> Connection -> IO Int
-insertEnvironment (NewEnvironment { _name }) connection = do
+insertEnvironment NewEnvironment { _name } connection = do
   [Only id] <- query connection insertEnvironmentQuery $ (Only _name)
   return id
   where
@@ -241,7 +241,7 @@ updateEnvironmentHandler environmentId updateEnvironment = do
   liftIO (getDBConnection >>= (updateEnvironmentDB environmentId updateEnvironment))
 
 updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
-updateEnvironmentDB environmentId (UpdateEnvironment { _name }) connection = do
+updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
   _ <- execute connection updateEnvironmentQuery $ (_name, environmentId)
   return ()
   where
@@ -344,7 +344,7 @@ deleteKeyValuesDB environmentId connection = do
           |]
 
 insertManyKeyValuesDB :: Int -> NewKeyValue -> Connection -> IO KeyValue
-insertManyKeyValuesDB environmentId (NewKeyValue { _newKeyValueKey, _newKeyValueValue }) connection = do
+insertManyKeyValuesDB environmentId NewKeyValue { _newKeyValueKey, _newKeyValueValue } connection = do
   [keyValue] <- query connection insertKeyValueQuery $ (environmentId, _newKeyValueKey, _newKeyValueValue)
   return keyValue
   where

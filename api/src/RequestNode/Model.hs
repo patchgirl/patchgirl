@@ -48,9 +48,9 @@ instance ToJSON UpdateRequestNode where
 $(makeFieldsNoPrefix ''UpdateRequestNode)
 
 instance ToField UpdateRequestNode where
-  toField (UpdateRequestFolder { _name }) =
+  toField UpdateRequestFolder { _name } =
     toField (show _name)
-  toField (UpdateRequestFile { _name, _httpUrl, _httpMethod, _httpBody }) =
+  toField UpdateRequestFile { _name, _httpUrl, _httpMethod, _httpBody } =
     Many [ toField _name
          , toField _httpUrl
          , toField _httpMethod
@@ -153,10 +153,10 @@ instance ToJSON NewRequestFile where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance ToRow NewRequestFile where
-  toRow (NewRequestFile { _name
-                        , _parentNodeId
-                        , _httpMethod
-                        }) =
+  toRow NewRequestFile { _name
+                       , _parentNodeId
+                       , _httpMethod
+                       } =
     let
       tag = "RequestFile" :: String
       noId = Nothing :: Maybe Int
@@ -183,9 +183,9 @@ data NewRequestFolder =
                    } deriving (Eq, Show, Generic)
 
 instance ToRow NewRequestFolder where
-  toRow (NewRequestFolder { _name
-                          , _parentNodeId
-                          }) =
+  toRow NewRequestFolder { _name
+                         , _parentNodeId
+                         } =
     let
       tag = "RequestFolder" :: String
       noId = Nothing :: Maybe Int

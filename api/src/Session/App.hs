@@ -59,7 +59,7 @@ whoAmIHandler
                  ]
          Session)
 whoAmIHandler cookieSettings jwtSettings = \case
-  (Authenticated (SignedUserCookie { _cookieAccountId, _cookieAccountEmail })) -> do
+  Authenticated (SignedUserCookie { _cookieAccountId, _cookieAccountEmail }) -> do
     csrfToken <- liftIO $ createCsrfToken
     let (CaseInsensitive email) = _cookieAccountEmail
     return $

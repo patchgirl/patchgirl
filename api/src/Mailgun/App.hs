@@ -48,10 +48,11 @@ mkHailgunMessage
   :: (MonadReader Config m)
   => Email
   -> m (Either Hailgun.HailgunErrorMessage Hailgun.HailgunMessage)
-mkHailgunMessage (Email { _emailSubject
-                        , _emailTextMessageContent
-                        , _emailHtmlMessageContent
-                        , _emailRecipients }) = do
+mkHailgunMessage Email { _emailSubject
+                       , _emailTextMessageContent
+                       , _emailHtmlMessageContent
+                       , _emailRecipients
+                       } = do
   MailgunConfig { authorEmail } <- ask <&> mailgun
   let hailgunAuthor :: ByteString
       hailgunAuthor =
