@@ -51,7 +51,7 @@ getAppHealth
      , MonadError ServerError m
      )
   => m AppHealth
-getAppHealth = do
+getAppHealth =
   liftIO (getDBConnection >>= selectDBIsRunning) >>= \case
     True -> return $
       AppHealth { isAppRunning = True

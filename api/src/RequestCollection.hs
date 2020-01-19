@@ -34,7 +34,7 @@ data RequestCollection =
 -- * DB
 
 selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
-selectRequestCollectionById requestCollectionId connection = do
+selectRequestCollectionById requestCollectionId connection =
   query connection collectionExistsSql (Only requestCollectionId) >>= \case
     [Only True] -> do
       [(_, requestNodesFromPG)] <- query connection selectRequestCollectionSql (requestCollectionId, requestCollectionId) :: IO[(Int, [RequestNodeFromPG])]
@@ -124,7 +124,7 @@ getRequestCollectionHandler
      )
   => Int
   -> m RequestCollection
-getRequestCollectionHandler requestCollectionId = do
+getRequestCollectionHandler requestCollectionId =
   liftIO (getDBConnection >>= (selectRequestCollectionById requestCollectionId)) >>= \case
     Just request -> return request
     Nothing      -> throwError err404

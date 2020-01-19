@@ -159,7 +159,7 @@ getEnvironmentsHandler
      , MonadError ServerError m
      )
   => m [Environment]
-getEnvironmentsHandler = do
+getEnvironmentsHandler =
   liftIO $ getDBConnection >>= selectEnvironments
 
 
@@ -237,7 +237,7 @@ updateEnvironmentHandler
   => Int
   -> UpdateEnvironment
   -> m ()
-updateEnvironmentHandler environmentId updateEnvironment = do
+updateEnvironmentHandler environmentId updateEnvironment =
   liftIO (getDBConnection >>= (updateEnvironmentDB environmentId updateEnvironment))
 
 updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()

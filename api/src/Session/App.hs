@@ -124,7 +124,7 @@ signInHandler cookieSettings jwtSettings login = do
         Just applyCookies -> return $ applyCookies session
 
 selectAccount :: SignIn -> Connection -> IO (Maybe Account)
-selectAccount SignIn { _signInEmail, _signInPassword } connection = do
+selectAccount SignIn { _signInEmail, _signInPassword } connection =
   (query connection selectAccountQuery $ (_signInEmail, _signInPassword)) <&> listToMaybe
   where
     selectAccountQuery =
@@ -148,7 +148,7 @@ deleteSessionHandler
                  , Header "Set-Cookie" SetCookie
                  ]
          Session)
-deleteSessionHandler cookieSettings = do
+deleteSessionHandler cookieSettings =
   return $
     clearSession cookieSettings $ VisitorSession { _sessionAccountId = 1
                                                  , _sessionCsrfToken = ""

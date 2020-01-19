@@ -107,7 +107,7 @@ createRequestFile
   => Int
   -> NewRequestFile
   -> m Int
-createRequestFile requestCollectionId newRequestFile = do
+createRequestFile requestCollectionId newRequestFile =
   liftIO $ getDBConnection >>= insertRequestFile newRequestFile
 
 -- * folder

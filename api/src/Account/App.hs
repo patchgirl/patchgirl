@@ -64,7 +64,7 @@ signUpHandler SignUp { _signUpEmail } =
       isLeft $ Email.validate (BSU.fromString email)
 
     ioEmailAlreadyUsed :: IO Bool
-    ioEmailAlreadyUsed = do
+    ioEmailAlreadyUsed =
       (getDBConnection >>= selectAccountFromEmail _signUpEmail) <&> isJust
 
     invalidEmail :: IO Bool
@@ -88,9 +88,9 @@ signUpHandler SignUp { _signUpEmail } =
             hailgunContext <- mkHailgunContext
             emailRes <- liftIO $ sendEmail hailgunContext message
             case emailRes of
-              Left error -> do
+              Left error ->
                 liftIO $ putStrLn $ show error
-              Right _    -> do
+              Right _    ->
                 return ()
 
 
@@ -108,7 +108,7 @@ mkSignUpEmail CreatedAccount { _accountCreatedId
           }
 
 selectAccountFromEmail :: CaseInsensitive -> Connection -> IO (Maybe Account)
-selectAccountFromEmail email connection = do
+selectAccountFromEmail email connection =
   (query connection selectAccountQuery (Only email)) <&> listToMaybe
   where
     selectAccountQuery =
@@ -154,7 +154,7 @@ initializePasswordHandler initializePassword = do
 selectAccountFromInitializePassword :: InitializePassword -> Connection -> IO (Maybe Account)
 selectAccountFromInitializePassword InitializePassword { _initializePasswordAccountId
                                                        , _initializePasswordToken
-                                                       } connection = do
+                                                       } connection =
   (query connection selectAccountQuery ( _initializePasswordAccountId
                                        , _initializePasswordToken
                                        )) <&> listToMaybe
