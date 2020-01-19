@@ -54,7 +54,7 @@ signUpHandler
      )
   => SignUp
   -> m ()
-signUpHandler (SignUp { _signUpEmail }) =
+signUpHandler SignUp { _signUpEmail } =
   let
     CaseInsensitive email =
       _signUpEmail
@@ -95,10 +95,10 @@ signUpHandler (SignUp { _signUpEmail }) =
 
 
 mkSignUpEmail :: CreatedAccount -> Email
-mkSignUpEmail (CreatedAccount { _accountCreatedId
-                              , _accountCreatedEmail
-                              , _accountCreatedSignUpToken
-                              }) =
+mkSignUpEmail CreatedAccount { _accountCreatedId
+                             , _accountCreatedEmail
+                             , _accountCreatedSignUpToken
+                             } =
   let CaseInsensitive email = _accountCreatedEmail
   in
     Email { _emailSubject = "Finish your signing up"
@@ -119,7 +119,7 @@ selectAccountFromEmail email connection = do
           |]
 
 insertAccount :: NewAccount -> Connection -> IO CreatedAccount
-insertAccount (NewAccount { _newAccountEmail }) connection = do
+insertAccount NewAccount { _newAccountEmail } connection = do
   [accountCreated] <- query connection rawQuery (Only _newAccountEmail)
   return accountCreated
   where
@@ -152,8 +152,9 @@ initializePasswordHandler initializePassword = do
       throwError err400
 
 selectAccountFromInitializePassword :: InitializePassword -> Connection -> IO (Maybe Account)
-selectAccountFromInitializePassword (InitializePassword { _initializePasswordAccountId
-                                                        , _initializePasswordToken }) connection = do
+selectAccountFromInitializePassword InitializePassword { _initializePasswordAccountId
+                                                       , _initializePasswordToken
+                                                       } connection = do
   (query connection selectAccountQuery ( _initializePasswordAccountId
                                        , _initializePasswordToken
                                        )) <&> listToMaybe
@@ -168,8 +169,9 @@ selectAccountFromInitializePassword (InitializePassword { _initializePasswordAcc
           |]
 
 setPassword :: InitializePassword -> Connection -> IO ()
-setPassword (InitializePassword { _initializePasswordPassword
-                                , _initializePasswordAccountId }) connection = do
+setPassword InitializePassword { _initializePasswordPassword
+                               , _initializePasswordAccountId
+                               } connection = do
   _ <- execute connection selectAccountQuery ( _initializePasswordPassword
                                              , _initializePasswordAccountId
                                              )
