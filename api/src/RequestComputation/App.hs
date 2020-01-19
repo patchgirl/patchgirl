@@ -1,12 +1,9 @@
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveAnyClass        #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE NamedFieldPuns        #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE QuasiQuotes           #-}
 
 module RequestComputation.App where
 
@@ -15,9 +12,9 @@ import           Control.Monad.Except      (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Reader      (MonadReader)
 import           Control.Monad.Trans       (liftIO)
-import           Data.Aeson                (FromJSON, ToJSON, genericParseJSON,
+import           Data.Aeson                (FromJSON, ToJSON (..),
+                                            genericParseJSON, genericToJSON,
                                             parseJSON)
-import           Data.Aeson                (ToJSON (..), genericToJSON)
 import           Data.Aeson.Types          (defaultOptions, fieldLabelModifier)
 import qualified Data.ByteString.Lazy.UTF8 as BLU
 import qualified Data.ByteString.UTF8      as BSU

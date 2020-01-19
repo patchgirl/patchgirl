@@ -12,14 +12,15 @@
 
 module Environment.App where
 
+
 -- * import
+
 
 import           Control.Lens                     hiding (element)
 
 import           Control.Lens                     (makeFieldsNoPrefix)
 import           Control.Monad.Except             (MonadError)
-import           Control.Monad.IO.Class           (MonadIO)
-import           Control.Monad.IO.Class           (liftIO)
+import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Data.Aeson                       (FromJSON, ToJSON (..),
                                                    defaultOptions,

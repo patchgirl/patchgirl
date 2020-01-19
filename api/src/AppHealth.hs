@@ -9,8 +9,7 @@ module AppHealth where
 
 import           Config
 import           Control.Monad.Except             (MonadError)
-import           Control.Monad.IO.Class
-import           Control.Monad.IO.Class           (MonadIO)
+import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Data.Aeson
 import           Database.PostgreSQL.Simple

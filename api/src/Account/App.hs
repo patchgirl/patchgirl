@@ -19,8 +19,7 @@ import           Control.Monad.Trans                 (liftIO)
 import           Data.ByteString.UTF8                as BSU
 import           Data.Either                         (isLeft)
 import           Data.Functor                        ((<&>))
-import           Data.Maybe                          (listToMaybe)
-import           Data.Maybe                          (isJust)
+import           Data.Maybe                          (isJust, listToMaybe)
 import           Data.Text                           (Text)
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Database.PostgreSQL.Simple          (Connection, Only (..),
@@ -34,7 +33,6 @@ import           PatchGirl
 import           Servant                             (Header, Headers, err400,
                                                       err401, throwError)
 import           Servant.API.ResponseHeaders         (noHeader)
-import           Servant.Auth.Server
 import           Servant.Auth.Server                 (CookieSettings,
                                                       JWTSettings, SetCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()

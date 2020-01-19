@@ -4,8 +4,7 @@
 module RequestNode.App where
 
 import           Control.Monad.Except             (MonadError)
-import           Control.Monad.IO.Class           (MonadIO)
-import           Control.Monad.IO.Class           (liftIO)
+import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Database.PostgreSQL.Simple       (Connection, Only (..),
                                                    execute, query)

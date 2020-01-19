@@ -1,10 +1,6 @@
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveAnyClass        #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns        #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE QuasiQuotes           #-}
 
 module Model where
 
@@ -16,7 +12,7 @@ import           Database.PostgreSQL.Simple.FromField
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics                         (Generic)
 
-data CaseInsensitive
+newtype CaseInsensitive
   = CaseInsensitive String
   deriving (Eq, Show, Read, Generic)
 
