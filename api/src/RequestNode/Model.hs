@@ -80,7 +80,7 @@ instance FromJSON RequestNode where
 instance FromField [RequestNode] where
   fromField field mdata = do
     value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNode]
+    let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNode]
     either (returnError ConversionFailed field) return errorOrRequestNodes
 
 newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
@@ -108,7 +108,7 @@ instance FromJSON RequestNodeFromPG where
 instance FromField [RequestNodeFromPG] where
   fromField field mdata = do
     value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = (parseEither parseJSON) value :: Either String [RequestNodeFromPG]
+    let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNodeFromPG]
     either (returnError ConversionFailed field) return errorOrRequestNodes
 
 fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
@@ -133,7 +133,7 @@ instance FromJSON RequestNodeType where
   parseJSON = genericParseJSON defaultOptions
     { constructorTagModifier = \s ->
         let suffixToRemove = "Type" :: String
-        in take ((length s) - (length suffixToRemove)) s
+        in take (length s - length suffixToRemove) s
     }
 
 data ParentNodeId

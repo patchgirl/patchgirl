@@ -265,7 +265,7 @@ deleteEnvironmentHandler
   => Int
   -> m ()
 deleteEnvironmentHandler environmentId =
-  liftIO (getDBConnection >>= (deleteEnvironmentDB environmentId))
+  liftIO $ getDBConnection >>= deleteEnvironmentDB environmentId
 
 deleteEnvironmentDB :: Int -> Connection -> IO ()
 deleteEnvironmentDB environmentId connection = do

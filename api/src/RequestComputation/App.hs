@@ -113,7 +113,7 @@ runRequest RequestComputationInput { _requestComputationInputMethod
                                    , _requestComputationInputUrl
                                    , _requestComputationInputBody
                                    } = do
-  let url = (schemeToString _requestComputationInputScheme) <> "://" <> _requestComputationInputUrl
+  let url = schemeToString _requestComputationInputScheme <> "://" <> _requestComputationInputUrl
   manager <- Tls.newTlsManager
   liftIO $ Tls.setGlobalManager manager
   liftIO $ print url
@@ -131,10 +131,10 @@ runRequest RequestComputationInput { _requestComputationInputMethod
     setPortAndSecure =
       case _requestComputationInputScheme of
         Http ->
-          (Http.setRequestSecure False) . (Http.setRequestPort 80)
+          Http.setRequestSecure False . Http.setRequestPort 80
 
         Https ->
-          (Http.setRequestSecure True) . (Http.setRequestPort 443)
+          Http.setRequestSecure True . Http.setRequestPort 443
 
 
 createRequestComputationOutput :: Http.Response BSU.ByteString -> RequestComputationOutput

@@ -127,7 +127,7 @@ signInHandler cookieSettings jwtSettings login = do
 
 selectAccount :: SignIn -> Connection -> IO (Maybe Account)
 selectAccount SignIn { _signInEmail, _signInPassword } connection =
-  (query connection selectAccountQuery (_signInEmail, _signInPassword)) <&> listToMaybe
+  query connection selectAccountQuery (_signInEmail, _signInPassword) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|

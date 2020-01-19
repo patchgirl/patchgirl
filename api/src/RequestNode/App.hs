@@ -76,7 +76,7 @@ updateRequestNodeHandler requestCollectionId requestNodeId updateRequestNode = d
   requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
   case requestNodeId `elem` requestNodeIds of
     True ->
-      liftIO $ (updateRequestNodeDB requestNodeId updateRequestNode connection) >> return NoContent
+      liftIO $ updateRequestNodeDB requestNodeId updateRequestNode connection >> return NoContent
     False -> throwError err404
 
 -- * file
