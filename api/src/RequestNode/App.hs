@@ -108,7 +108,7 @@ createRequestFile
   -> NewRequestFile
   -> m Int
 createRequestFile requestCollectionId newRequestFile = do
-  liftIO (getDBConnection >>= (insertRequestFile newRequestFile)) >>= return
+  liftIO $ getDBConnection >>= insertRequestFile newRequestFile
 
 -- * folder
 

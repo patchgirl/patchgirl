@@ -160,7 +160,7 @@ getEnvironmentsHandler
      )
   => m [Environment]
 getEnvironmentsHandler = do
-  liftIO (getDBConnection >>= selectEnvironments >>= return)
+  liftIO $ getDBConnection >>= selectEnvironments
 
 
 -- * create environment
