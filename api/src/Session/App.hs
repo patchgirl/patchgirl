@@ -34,9 +34,11 @@ import           PatchGirl
 import           Servant                             (Header, Headers, err400,
                                                       err401, throwError)
 import           Servant.API.ResponseHeaders         (noHeader)
-import           Servant.Auth.Server
-import           Servant.Auth.Server                 (CookieSettings,
-                                                      JWTSettings, SetCookie)
+import           Servant.Auth.Server                 (AuthResult (..),
+                                                      CookieSettings,
+                                                      JWTSettings, SetCookie,
+                                                      acceptLogin, clearSession,
+                                                      makeXsrfCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()
 import           Servant.Server                      (ServerError)
 import           Session.Model

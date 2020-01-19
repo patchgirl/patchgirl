@@ -2,10 +2,10 @@
 
 module Session.Model where
 
-import           Data.Aeson                       (FromJSON, ToJSON,
-                                                   genericParseJSON, parseJSON)
-import           Data.Aeson                       (FromJSON (..), ToJSON (..),
-                                                   genericToJSON)
+import           Data.Aeson                       (FromJSON (..), FromJSON,
+                                                   ToJSON (..), ToJSON,
+                                                   genericParseJSON,
+                                                   genericToJSON, parseJSON)
 import           Data.Aeson.Types                 (defaultOptions,
                                                    fieldLabelModifier)
 import           Data.Text                        (Text)

@@ -12,17 +12,16 @@
 module RequestNode.Model where
 
 import           Control.Lens                         (makeFieldsNoPrefix)
-import           Data.Aeson                           (FromJSON (..),
-                                                       ToJSON (..),
-                                                       constructorTagModifier,
-                                                       genericToJSON,
-                                                       withObject, (.:))
 import           Data.Aeson                           (Value, parseJSON)
-import           Data.Aeson.Types                     (Parser, camelTo2,
+import           Data.Aeson.Types                     (FromJSON (..), Parser,
+                                                       ToJSON (..), camelTo2,
+                                                       constructorTagModifier,
                                                        defaultOptions,
                                                        fieldLabelModifier,
-                                                       genericParseJSON)
-import           Data.Aeson.Types                     (parseEither)
+                                                       genericParseJSON,
+                                                       genericToJSON,
+                                                       parseEither, withObject,
+                                                       (.:))
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
