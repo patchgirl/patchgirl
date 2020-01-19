@@ -59,7 +59,7 @@ whoAmIHandler
                  ]
          Session)
 whoAmIHandler cookieSettings jwtSettings = \case
-  Authenticated (SignedUserCookie { _cookieAccountId, _cookieAccountEmail }) -> do
+  Authenticated SignedUserCookie { _cookieAccountId, _cookieAccountEmail } -> do
     csrfToken <- liftIO $ createCsrfToken
     let (CaseInsensitive email) = _cookieAccountEmail
     return $
@@ -107,7 +107,7 @@ signInHandler cookieSettings jwtSettings login = do
     Nothing ->
       throwError err401
 
-    Just (Account { _accountId, _accountEmail }) -> do
+    Just Account { _accountId, _accountEmail } -> do
       let CaseInsensitive email = _accountEmail
       let cookieSession =
             SignedUserCookie { _cookieAccountId = _accountId
@@ -124,7 +124,7 @@ signInHandler cookieSettings jwtSettings login = do
         Just applyCookies -> return $ applyCookies session
 
 selectAccount :: SignIn -> Connection -> IO (Maybe Account)
-selectAccount (SignIn { _signInEmail, _signInPassword }) connection = do
+selectAccount SignIn { _signInEmail, _signInPassword } connection = do
   (query connection selectAccountQuery $ (_signInEmail, _signInPassword)) <&> listToMaybe
   where
     selectAccountQuery =

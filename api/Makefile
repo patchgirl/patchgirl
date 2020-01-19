@@ -9,3 +9,6 @@ watch-test:
 
 check-dhall:
 	clear; dhall --explain --file ./config.dhall
+
+check-hlint:
+	hlint --report src/
