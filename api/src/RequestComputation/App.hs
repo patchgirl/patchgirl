@@ -124,8 +124,7 @@ runRequest RequestComputationInput { _requestComputationInputMethod
         $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
         $ setPortAndSecure
         $ Http.setRequestBodyLBS (BLU.fromString _requestComputationInputBody)
-        $ Http.setRequestManager manager
-        $ parsedRequest
+        $ Http.setRequestManager manager parsedRequest
   liftIO $ Http.httpBS request
   where
     setPortAndSecure :: Http.Request -> Http.Request

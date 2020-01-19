@@ -52,7 +52,7 @@ requestNodeIdsFromCollectionId requestCollectionId connection = do
 updateRequestNodeDB :: Int -> UpdateRequestNode -> Connection -> IO ()
 updateRequestNodeDB requestNodeId updateRequestNode connection = do
   -- todo search func with : m a -> m b
-  _ <- execute connection updateQuery $ (updateRequestNode, requestNodeId)
+  _ <- execute connection updateQuery (updateRequestNode, requestNodeId)
   return ()
   where
     updateQuery =
@@ -75,14 +75,15 @@ updateRequestNodeHandler requestCollectionId requestNodeId updateRequestNode = d
   connection <- liftIO getDBConnection
   requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
   case requestNodeId `elem` requestNodeIds of
-    True -> (liftIO $ updateRequestNodeDB requestNodeId updateRequestNode connection) >> return NoContent
+    True ->
+      liftIO $ (updateRequestNodeDB requestNodeId updateRequestNode connection) >> return NoContent
     False -> throwError err404
 
 -- * file
 
 insertRequestFile :: NewRequestFile -> Connection -> IO Int
 insertRequestFile newRequestFile connection = do
-  [Only id] <- query connection rawQuery $ newRequestFile
+  [Only id] <- query connection rawQuery newRequestFile
   return id
   where
     rawQuery =
@@ -113,7 +114,7 @@ createRequestFile requestCollectionId newRequestFile =
 
 insertRequestFolder :: NewRequestFolder -> Connection -> IO Int
 insertRequestFolder newRequestFolder connection = do
-  [Only id] <- query connection rawQuery $ newRequestFolder
+  [Only id] <- query connection rawQuery newRequestFolder
   return id
   where
     rawQuery =

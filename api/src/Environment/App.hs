@@ -87,8 +87,8 @@ $(makeFieldsNoPrefix ''Environment)
 
 selectEnvironments :: Connection -> IO [Environment]
 selectEnvironments connection = do
-  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues $ (Only 1 :: Only Int)
-  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues $ (Only 1 :: Only Int)
+  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues (Only 1 :: Only Int)
+  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues (Only 1 :: Only Int)
 
   let
     environmentsWithKeyValues =
@@ -178,7 +178,7 @@ $(makeFieldsNoPrefix ''NewEnvironment)
 
 insertEnvironment :: NewEnvironment -> Connection -> IO Int
 insertEnvironment NewEnvironment { _name } connection = do
-  [Only id] <- query connection insertEnvironmentQuery $ (Only _name)
+  [Only id] <- query connection insertEnvironmentQuery (Only _name)
   return id
   where
     insertEnvironmentQuery =
@@ -192,7 +192,7 @@ insertEnvironment NewEnvironment { _name } connection = do
 
 bindEnvironmentToAccount :: Int -> Int -> Connection -> IO ()
 bindEnvironmentToAccount accountId environmentId connection = do
-  _ <- execute connection bindEnvironmentToAccountQuery $ (accountId, environmentId)
+  _ <- execute connection bindEnvironmentToAccountQuery (accountId, environmentId)
   return ()
   where
     bindEnvironmentToAccountQuery =
@@ -239,11 +239,11 @@ updateEnvironmentHandler
   -> UpdateEnvironment
   -> m ()
 updateEnvironmentHandler environmentId updateEnvironment =
-  liftIO (getDBConnection >>= (updateEnvironmentDB environmentId updateEnvironment))
+  liftIO (getDBConnection >>= updateEnvironmentDB environmentId updateEnvironment)
 
 updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
 updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
-  _ <- execute connection updateEnvironmentQuery $ (_name, environmentId)
+  _ <- execute connection updateEnvironmentQuery (_name, environmentId)
   return ()
   where
     updateEnvironmentQuery =
@@ -346,7 +346,7 @@ deleteKeyValuesDB environmentId connection = do
 
 insertManyKeyValuesDB :: Int -> NewKeyValue -> Connection -> IO KeyValue
 insertManyKeyValuesDB environmentId NewKeyValue { _newKeyValueKey, _newKeyValueValue } connection = do
-  [keyValue] <- query connection insertKeyValueQuery $ (environmentId, _newKeyValueKey, _newKeyValueValue)
+  [keyValue] <- query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue)
   return keyValue
   where
     insertKeyValueQuery =

@@ -62,7 +62,7 @@ whoAmIHandler
          Session)
 whoAmIHandler cookieSettings jwtSettings = \case
   Authenticated SignedUserCookie { _cookieAccountId, _cookieAccountEmail } -> do
-    csrfToken <- liftIO $ createCsrfToken
+    csrfToken <- liftIO createCsrfToken
     let (CaseInsensitive email) = _cookieAccountEmail
     return $
       noHeader $ noHeader $ SignedUserSession { _sessionAccountId = _cookieAccountId
@@ -71,7 +71,7 @@ whoAmIHandler cookieSettings jwtSettings = \case
                                               }
 
   _ -> do
-    csrfToken <- liftIO $ createCsrfToken
+    csrfToken <- liftIO createCsrfToken
     let cookieSession =
           VisitorCookie { _cookieAccountId = 1 }
     mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
@@ -102,9 +102,9 @@ signInHandler
                  , Header "Set-Cookie" SetCookie]
          Session)
 signInHandler cookieSettings jwtSettings login = do
-  liftIO $ putStrLn $ show login
+  liftIO $ print login
   mAccount <- liftIO (getDBConnection >>= selectAccount login)
-  liftIO $ putStrLn $ show mAccount
+  liftIO $ print mAccount
   case mAccount of
     Nothing ->
       throwError err401
@@ -127,7 +127,7 @@ signInHandler cookieSettings jwtSettings login = do
 
 selectAccount :: SignIn -> Connection -> IO (Maybe Account)
 selectAccount SignIn { _signInEmail, _signInPassword } connection =
-  (query connection selectAccountQuery $ (_signInEmail, _signInPassword)) <&> listToMaybe
+  (query connection selectAccountQuery (_signInEmail, _signInPassword)) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|

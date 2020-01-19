@@ -87,7 +87,7 @@ signUpHandler SignUp { _signUpEmail } =
             emailRes <- liftIO $ sendEmail hailgunContext message
             case emailRes of
               Left error ->
-                liftIO $ putStrLn $ show error
+                liftIO $ print error
               Right _    ->
                 return ()
 
@@ -100,14 +100,14 @@ mkSignUpEmail CreatedAccount { _accountCreatedId
   let CaseInsensitive email = _accountCreatedEmail
   in
     Email { _emailSubject = "Finish your signing up"
-          , _emailTextMessageContent = "Howdy! You're almost done. Finalize your subscription by setting your password here: patchgirl.io/#account/" <> (show _accountCreatedId) <> "/initializePassword/" <> _accountCreatedSignUpToken
-          , _emailHtmlMessageContent = "Howdy!<br/> You're almost done. Finalize your subscription by setting your password <a href=\"patchgirl.io/#account/" <> (show _accountCreatedId) <> "/initializePassword/" <> _accountCreatedSignUpToken <> "\">here.</a>"
+          , _emailTextMessageContent = "Howdy! You're almost done. Finalize your subscription by setting your password here: patchgirl.io/#account/" <> show _accountCreatedId <> "/initializePassword/" <> _accountCreatedSignUpToken
+          , _emailHtmlMessageContent = "Howdy!<br/> You're almost done. Finalize your subscription by setting your password <a href=\"patchgirl.io/#account/" <> show _accountCreatedId <> "/initializePassword/" <> _accountCreatedSignUpToken <> "\">here.</a>"
           , _emailRecipients = [email]
           }
 
 selectAccountFromEmail :: CaseInsensitive -> Connection -> IO (Maybe Account)
 selectAccountFromEmail email connection =
-  (query connection selectAccountQuery (Only email)) <&> listToMaybe
+  query connection selectAccountQuery (Only email) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|
@@ -153,9 +153,9 @@ selectAccountFromInitializePassword :: InitializePassword -> Connection -> IO (M
 selectAccountFromInitializePassword InitializePassword { _initializePasswordAccountId
                                                        , _initializePasswordToken
                                                        } connection =
-  (query connection selectAccountQuery ( _initializePasswordAccountId
-                                       , _initializePasswordToken
-                                       )) <&> listToMaybe
+  query connection selectAccountQuery ( _initializePasswordAccountId
+                                      , _initializePasswordToken
+                                      ) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|
