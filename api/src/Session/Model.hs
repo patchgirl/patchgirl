@@ -2,8 +2,7 @@
 
 module Session.Model where
 
-import           Data.Aeson                       (FromJSON (..), FromJSON,
-                                                   ToJSON (..), ToJSON,
+import           Data.Aeson                       (FromJSON (..), ToJSON (..),
                                                    genericParseJSON,
                                                    genericToJSON, parseJSON)
 import           Data.Aeson.Types                 (defaultOptions,
@@ -81,7 +80,7 @@ instance FromJWT CookieSession
 -- * sign up
 
 
-data SignUp
+newtype SignUp
   = SignUp { _signUpEmail :: CaseInsensitive }
   deriving (Eq, Show, Read, Generic)
 

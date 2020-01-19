@@ -167,7 +167,7 @@ getEnvironmentsHandler =
 -- * create environment
 
 
-data NewEnvironment
+newtype NewEnvironment
   = NewEnvironment { _name :: String
                    } deriving (Eq, Show, Generic)
 
@@ -221,7 +221,7 @@ createEnvironmentHandler newEnvironment = do
 -- * update environment
 
 
-data UpdateEnvironment
+newtype UpdateEnvironment
   = UpdateEnvironment { _name :: String }
   deriving (Eq, Show, Generic)
 

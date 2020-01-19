@@ -8,12 +8,12 @@
 
 # Warnings currently triggered by your code
 - ignore: {name: "Eta reduce"}
+- ignore: {name: "Use if"}
 #- ignore: {name: "Use fewer imports"}
 #- ignore: {name: "Redundant do"}
 #- ignore: {name: "Unused LANGUAGE pragma"}
 #- ignore: {name: "Use newtype instead of data"}
 #- ignore: {name: "Redundant bracket"}
-#- ignore: {name: "Use if"}
 #- ignore: {name: "Use print"}
 #- ignore: {name: "Redundant $"}
 #- ignore: {name: "Monad law, right identity"}

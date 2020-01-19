@@ -35,7 +35,7 @@ instance ToJSON Account where
 -- * new account
 
 
-data NewAccount =
+newtype NewAccount =
   NewAccount { _newAccountEmail :: CaseInsensitive
              }
   deriving (Eq, Show, Generic, FromRow, ToRow)
