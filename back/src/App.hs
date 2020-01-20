@@ -27,9 +27,8 @@ import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
                                               SetCookie, cookieIsSecure,
                                               cookieSameSite, cookieXsrfSetting,
                                               defaultCookieSettings,
-                                              defaultJWTSettings, generateKey,
-                                              readKey, sessionCookieName,
-                                              throwAll)
+                                              defaultJWTSettings, readKey,
+                                              sessionCookieName, throwAll)
 
 import           Account.App
 import           Account.Model

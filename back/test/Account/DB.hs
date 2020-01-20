@@ -12,8 +12,6 @@ import           Data.Functor                     ((<&>))
 import           Data.Maybe                       (listToMaybe)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
-import           Database.PostgreSQL.Simple.ToRow
-import           DB
 import           GHC.Generics
 import           Model
 

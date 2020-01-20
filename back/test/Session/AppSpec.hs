@@ -11,24 +11,15 @@
 module Session.AppSpec where
 
 import           Account.DB
-import           Account.Model
 import           App
-import           Control.Monad.Except   (MonadError)
-import           Control.Monad.IO.Class (MonadIO)
-import           Control.Monad.Reader   (MonadReader)
-import           Data.Functor           ((<&>))
+import           Data.Functor        ((<&>))
 import           Helper.App
 import           Model
-import           Network.HTTP.Types     (badRequest400, unauthorized401)
-import           PatchGirl
+import           Network.HTTP.Types  (unauthorized401)
 import           Servant
 import           Servant.Auth.Client
-import           Servant.Auth.Server    (Cookie, CookieSettings, JWT,
-                                         JWTSettings, SetCookie, fromSecret,
-                                         makeJWT)
-import           Servant.Client         (ClientM, client)
-import           Servant.Server         (ServerError)
-import           Session.App
+import           Servant.Auth.Server (JWT, SetCookie)
+import           Servant.Client      (ClientM, client)
 import           Session.Model
 import           Test.Hspec
 
@@ -70,7 +61,7 @@ spec =
 
     describe "sign in" $ do
       it "should returns 401 when user account doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
+        cleanDBAfter $ \_ -> do
           let payload = SignIn { _signInEmail = CaseInsensitive "whatever@mail.com"
                                , _signInPassword = "whatever"
                                }
@@ -112,7 +103,7 @@ spec =
     describe "who am I" $ do
       context "when signed in" $
         it "should return a signed user session" $ \clientEnv ->
-          cleanDBAfter $ \connection -> do
+          cleanDBAfter $ \_ -> do
           token <- signedUserToken 1
           (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
           session `shouldBe` SignedUserSession { _sessionAccountId = 1
@@ -122,7 +113,7 @@ spec =
 
       context "when unsigned" $
         it "should return a signed user session" $ \clientEnv ->
-          cleanDBAfter $ \connection -> do
+          cleanDBAfter $ \_ -> do
             token <- visitorToken
             (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
             session `shouldBe` VisitorSession { _sessionAccountId = 1
@@ -135,7 +126,7 @@ spec =
 
     describe "sign out" $
       it "always return a visitor session and clean the cookies" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
+        cleanDBAfter $ \_ -> do
           ([(headerName, headerValue), _], session) <- try clientEnv signOut <&> (\r -> (getHeaders r, getResponse r))
           headerName `shouldBe` "Set-Cookie"
           headerValue `shouldBe` "JWT=value; Path=/; Expires=Tue, 10-Oct-1995 00:00:00 GMT; Max-Age=0; HttpOnly; Secure"

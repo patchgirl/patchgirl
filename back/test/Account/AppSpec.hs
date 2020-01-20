@@ -14,25 +14,13 @@ import           Account.App
 import           Account.DB
 import           Account.Model
 import           App
-import           Control.Lens             ((^.), (^?))
-import           Control.Lens.Combinators (_Just)
-import           Control.Monad.Except     (MonadError)
-import           Control.Monad.IO.Class   (MonadIO)
-import           Control.Monad.Reader     (MonadReader)
-import           Data.Functor             ((<&>))
-import           Data.Maybe               (isJust, isNothing)
+import           Control.Lens       ((^.))
+import           Data.Maybe         (isJust, isNothing)
 import           Helper.App
 import           Model
-import           Network.HTTP.Types       (badRequest400, unauthorized401)
-import           PatchGirl
+import           Network.HTTP.Types (badRequest400)
 import           Servant
-import           Servant.Auth.Client
-import           Servant.Auth.Server      (Cookie, CookieSettings, JWT,
-                                           JWTSettings, SetCookie, fromSecret,
-                                           makeJWT)
-import           Servant.Client           (ClientM, client)
-import           Servant.Server           (ServerError)
-import           Session.App
+import           Servant.Client     (ClientM, client)
 import           Session.Model
 import           Test.Hspec
 
@@ -59,7 +47,7 @@ spec =
 
     describe "sign up" $ do
       it "returns 400 on malformed email" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
+        cleanDBAfter $ \_ -> do
           let signupPayload = SignUp { _signUpEmail = CaseInsensitive "whatever" }
           try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
 
@@ -101,7 +89,6 @@ spec =
       it "should returns 400 when password is already set" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, signupToken) <- insertFakeAccountWithoutPassword newFakeAccount connection
-          mAccount <- selectFakeAccount accountId connection
           let newPayload =
                 initializePasswordPayload { _initializePasswordAccountId = accountId
                                           , _initializePasswordToken = signupToken

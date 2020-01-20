@@ -107,7 +107,7 @@ createRequestFile
   => Int
   -> NewRequestFile
   -> m Int
-createRequestFile requestCollectionId newRequestFile = do
+createRequestFile _ newRequestFile = do
   connection <- getDBConnection
   liftIO $ insertRequestFile newRequestFile connection
 

@@ -2,16 +2,14 @@
 
 module Session.Model where
 
-import           Data.Aeson                       (FromJSON (..), ToJSON (..),
-                                                   genericParseJSON,
-                                                   genericToJSON, parseJSON)
-import           Data.Aeson.Types                 (defaultOptions,
-                                                   fieldLabelModifier)
-import           Data.Text                        (Text)
-import           Database.PostgreSQL.Simple.ToRow
-import           GHC.Generics                     (Generic)
+import           Data.Aeson          (FromJSON (..), ToJSON (..),
+                                      genericParseJSON, genericToJSON,
+                                      parseJSON)
+import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
+import           Data.Text           (Text)
+import           GHC.Generics        (Generic)
 import           Model
-import           Servant.Auth.Server              (FromJWT, ToJWT)
+import           Servant.Auth.Server (FromJWT, ToJWT)
 
 -- * login
 

@@ -370,7 +370,7 @@ updateKeyValuesHandler environmentId newKeyValues = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments connection
   let
-    environment = find (\environment -> environment ^. id == environmentId) environments
+    environment = find (\env -> env ^. id == environmentId) environments
   case environment of
     Just _ -> do
       liftIO $ deleteKeyValuesDB environmentId connection

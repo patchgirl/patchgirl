@@ -1,10 +1,6 @@
 
 module Foo where
 
-import           Data.ByteString
-import           Data.ByteString.UTF8 as BSU
-import           Data.Text.Encoding   as TSE
-import           Servant.Auth.Server  as Jose
 {-
 --main :: IO ByteString
 main = do

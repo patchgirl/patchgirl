@@ -11,12 +11,8 @@ import           DB                               (getDBConnection)
 
 import           Config
 import           Control.Exception                (finally, throwIO)
-import           Control.Monad.Trans              (liftIO)
-import           Crypto.JOSE                      as Jose
 import qualified Data.ByteString.Lazy             as BSL
-import           Data.ByteString.UTF8             as BSU
-import           Data.Time                        (UTCTime, defaultTimeLocale,
-                                                   parseTimeOrError)
+import           Data.Time                        (UTCTime)
 import           Model
 import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
@@ -24,9 +20,8 @@ import           Network.HTTP.Types               (Status)
 import           Network.Wai.Handler.Warp         (testWithApplication)
 import           Servant
 import           Servant.Auth.Client
-import           Servant.Auth.Server              (defaultJWTSettings,
-                                                   fromSecret, generateKey,
-                                                   makeJWT, readKey)
+import           Servant.Auth.Server              (defaultJWTSettings, makeJWT,
+                                                   readKey)
 import           Servant.Client
 import           Session.Model
 import           Test.Hspec                       (SpecWith, aroundWith,
@@ -50,6 +45,7 @@ withClient :: IO Application -> SpecWith ClientEnv -> SpecWith ()
 withClient app innerSpec =
   beforeAll (newManager defaultManagerSettings) $
     flip aroundWith innerSpec $ \action httpManager ->
+
       testWithApplication app $ \ port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)

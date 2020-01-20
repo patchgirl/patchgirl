@@ -12,35 +12,26 @@
 module Account.App where
 
 import           Account.Model
-import           Control.Monad.Except                (MonadError)
-import           Control.Monad.IO.Class              (MonadIO)
-import           Control.Monad.Reader                (MonadReader)
-import           Control.Monad.Trans                 (liftIO)
-import           Data.ByteString.UTF8                as BSU
-import           Data.Either                         (isLeft)
-import           Data.Functor                        ((<&>))
-import           Data.Maybe                          (isJust, listToMaybe)
-import           Data.Text                           (Text)
-import           Data.Text.Encoding                  (decodeUtf8)
-import           Database.PostgreSQL.Simple          (Connection, Only (..),
-                                                      execute, query)
-import qualified Database.PostgreSQL.Simple          as PG
-import           Database.PostgreSQL.Simple.FromRow  (FromRow (..))
+import           Control.Monad.Except             (MonadError)
+import           Control.Monad.IO.Class           (MonadIO)
+import           Control.Monad.Reader             (MonadReader)
+import           Control.Monad.Trans              (liftIO)
+import           Data.ByteString.UTF8             as BSU
+import           Data.Either                      (isLeft)
+import           Data.Functor                     ((<&>))
+import           Data.Maybe                       (isJust, listToMaybe)
+import           Database.PostgreSQL.Simple       (Connection, Only (..),
+                                                   execute, query)
+import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           Mailgun.App
 import           Model
 import           PatchGirl
-import           Servant                             (Header, Headers, err400,
-                                                      err401, throwError)
-import           Servant.API.ResponseHeaders         (noHeader)
-import           Servant.Auth.Server                 (CookieSettings,
-                                                      JWTSettings, SetCookie)
-import           Servant.Auth.Server.SetCookieOrphan ()
-import           Servant.Server                      (ServerError)
+import           Servant                          (err400, throwError)
+import           Servant.Server                   (ServerError)
 import           Session.Model
-import qualified Text.Email.Validate                 as Email
-import           Web.Cookie                          (setCookieValue)
+import qualified Text.Email.Validate              as Email
 
 
 -- * sign up

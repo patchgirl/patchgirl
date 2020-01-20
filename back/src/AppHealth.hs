@@ -34,8 +34,8 @@ instance FromJSON AppHealth
 
 selectDBIsRunning :: Connection -> IO Bool
 selectDBIsRunning connection = do
-  [Only isDBUp] <- query_ connection rawQuery
-  return isDBUp
+  [Only dbUp] <- query_ connection rawQuery
+  return dbUp
   where
     rawQuery =
       [sql|

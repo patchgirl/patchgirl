@@ -18,21 +18,16 @@ import           Control.Monad.Except                (MonadError)
 import           Control.Monad.IO.Class              (MonadIO)
 import           Control.Monad.Reader                (MonadReader)
 import           Control.Monad.Trans                 (liftIO)
-import           Data.ByteString.UTF8                as BSU
-import           Data.Either                         (isLeft)
 import           Data.Functor                        ((<&>))
-import           Data.Maybe                          (isJust, listToMaybe)
+import           Data.Maybe                          (listToMaybe)
 import           Data.Text                           (Text)
 import           Data.Text.Encoding                  (decodeUtf8)
-import           Database.PostgreSQL.Simple          (Connection, Only (..),
-                                                      execute, query)
+import           Database.PostgreSQL.Simple          (Connection, query)
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
-import           Mailgun.App
 import           Model
 import           PatchGirl
-import           Servant                             (Header, Headers, err400,
-                                                      err401, throwError)
+import           Servant
 import           Servant.API.ResponseHeaders         (noHeader)
 import           Servant.Auth.Server                 (AuthResult (..),
                                                       CookieSettings,
@@ -42,7 +37,6 @@ import           Servant.Auth.Server                 (AuthResult (..),
 import           Servant.Auth.Server.SetCookieOrphan ()
 import           Servant.Server                      (ServerError)
 import           Session.Model
-import qualified Text.Email.Validate                 as Email
 import           Web.Cookie                          (setCookieValue)
 
 -- * who am I
