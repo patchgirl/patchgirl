@@ -12,9 +12,6 @@ cache:
 services:
   - "postgresql"
 
-env:
-  - DB_NAME=test DB_HOST=localhost DB_USER=test DB_PASSWORD=test DB_PORT=5433
-
 # Ensure necessary system libraries are present
 addons:
   apt:
@@ -33,7 +30,7 @@ install:
 - stack --no-nix --no-terminal --install-ghc test --only-dependencies
 
 before_script:
-  - psql -c "CREATE DATABASE test;" -U test
+  - psql -c "CREATE DATABASE test;" -U root
 
 script:
 # Build the package, its tests, and its docs and run the tests
