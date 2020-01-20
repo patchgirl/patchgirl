@@ -69,7 +69,7 @@ update msg model =
         AskSignIn ->
             let
                 signIn =
-                    { email = Client.CaseInsensitive model.signInEmail
+                    { email = model.signInEmail
                     , password = model.signInPassword
                     }
 
@@ -103,8 +103,6 @@ update msg model =
 signInErrors : SignIn -> List String
 signInErrors { email, password } =
     let
-        (Client.CaseInsensitive ciEmail) = email
-
         passwordError : Maybe String
         passwordError =
             if String.isEmpty password then
@@ -114,7 +112,7 @@ signInErrors { email, password } =
 
         emailError : Maybe String
         emailError =
-            if String.isEmpty ciEmail then
+            if String.isEmpty email then
                 Just "Email can not be empty"
             else
                 Nothing

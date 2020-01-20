@@ -28,7 +28,7 @@ import           Environment.App
 import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
                                            Symbol, TypeError, symbolVal)
 import           Http
-import           Model
+import           Model                    (CaseInsensitive)
 import           RequestCollection
 import           RequestComputation.App
 import           RequestNode.Model

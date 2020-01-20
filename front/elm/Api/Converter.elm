@@ -105,7 +105,7 @@ convertSessionFromBackToFront backSession =
 
 convertSignUpFromFrontToBack : Front.SignUp -> Back.SignUp
 convertSignUpFromFrontToBack { email } =
-    { signUpEmail = Back.CaseInsensitive email }
+    Back.SignUp { signUpEmail = email }
 
 
 -- * sign in
