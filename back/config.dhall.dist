@@ -1,10 +1,16 @@
 let config =
   { port = 3000
-  , appKeyFilePath = ".appKey.test"
+  , appKeyFilePath = ""
+  , dbConfig = {
+    dbPort = 5433
+    , dbName = ""
+    , dbUser = ""
+    , dbPassword = ""
+    }
   , mailgun = {
-    domain = "someDomain"
-    , apiKey = "someApiKey"
-    , authorEmail = "mailgun@sandbox4818ed69121942ec8a93c28bef0e0edd.mailgun.org"
+    domain = ""
+    , apiKey = ""
+    , authorEmail = ""
     }
   }
 
