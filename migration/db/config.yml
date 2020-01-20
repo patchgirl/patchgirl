@@ -1,9 +1,8 @@
 test:
   adapter: postgresql
-  port: 5433
+  port: 5432
   host: localhost
   database: test
-  username: test
-  password: test
+  username: postgres
   pool: 5
   timeout: 5000
