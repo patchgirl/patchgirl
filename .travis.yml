@@ -31,6 +31,9 @@ install:
 
 before_script:
   - psql -U postgres -c "CREATE DATABASE test;"
+  - cd migration
+  - bundle
+  - RAILS_ENV=test rake db:drop db:create db:migrate
 
 script:
 # Build the package, its tests, and its docs and run the tests
