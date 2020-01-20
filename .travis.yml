@@ -8,6 +8,7 @@ language: generic
 cache:
   directories:
   - $HOME/.stack
+  - /home/travis/.rvm/
 
 services:
   - "postgresql"
@@ -37,4 +38,5 @@ before_script:
 
 script:
 # Build the package, its tests, and its docs and run the tests
+- cd ../api
 - stack --no-nix --no-terminal test
