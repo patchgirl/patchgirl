@@ -2,7 +2,6 @@
 {-# LANGUAGE DeriveGeneric          #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE QuasiQuotes            #-}
 {-# LANGUAGE TemplateHaskell        #-}
 
@@ -44,7 +43,7 @@ insertFakeAccount newFakeAccount connection = do
 -- * fake account without password
 
 
-data NewFakeAccountWithoutPassword =
+newtype NewFakeAccountWithoutPassword =
   NewFakeAccountWithoutPassword { _newFakeAccountWithoutPasswordEmail :: CaseInsensitive }
   deriving (Eq, Show, Read, Generic, ToRow)
 

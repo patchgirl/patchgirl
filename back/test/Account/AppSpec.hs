@@ -1,18 +1,12 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveAnyClass             #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE DuplicateRecordFields      #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase                 #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NamedFieldPuns             #-}
-{-# LANGUAGE NoMonomorphismRestriction  #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE DataKinds                 #-}
+{-# LANGUAGE DuplicateRecordFields     #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE MultiParamTypeClasses     #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeOperators             #-}
 
 module Account.AppSpec where
 
@@ -32,7 +26,6 @@ import           Model
 import           Network.HTTP.Types       (badRequest400, unauthorized401)
 import           PatchGirl
 import           Servant
-import           Servant                  (Header, Headers, Proxy, err400)
 import           Servant.Auth.Client
 import           Servant.Auth.Server      (Cookie, CookieSettings, JWT,
                                            JWTSettings, SetCookie, fromSecret,
@@ -57,7 +50,7 @@ signUp :<|> initializePassword =
 
 
 spec :: Spec
-spec = do
+spec =
   withClient (mkApp defaultConfig) $ do
 
 
@@ -93,7 +86,7 @@ spec = do
 
     describe "initialize password" $ do
       it "should returns 400 when account is not found" $ \clientEnv ->
-        cleanDBAfter $ \_ -> do
+        cleanDBAfter $ \_ ->
           try clientEnv (initializePassword initializePasswordPayload) `shouldThrow` errorsWithStatus badRequest400
 
       it "should returns 400 when signupToken doesnt match account token" $ \clientEnv ->
@@ -121,7 +114,7 @@ spec = do
         cleanDBAfter $ \connection -> do
           (accountId, signupToken) <- insertFakeAccountWithoutPassword newFakeAccount connection
           mAccount <- selectFakeAccount accountId connection
-          (mAccount >>= ((^. fakeAccountPassword))) `shouldSatisfy` isNothing
+          (mAccount >>= (^. fakeAccountPassword)) `shouldSatisfy` isNothing
           let newPayload =
                 initializePasswordPayload { _initializePasswordAccountId = accountId
                                           , _initializePasswordToken = signupToken
@@ -129,5 +122,5 @@ spec = do
                                           }
           _ <- try clientEnv (initializePassword newPayload)
           mAccount <- selectFakeAccount accountId connection
-          let password = (mAccount >>= ((^. fakeAccountPassword)))
+          let password = mAccount >>= (^. fakeAccountPassword)
           password `shouldSatisfy` isJust

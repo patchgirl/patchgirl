@@ -1,18 +1,12 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveAnyClass             #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE DuplicateRecordFields      #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase                 #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NamedFieldPuns             #-}
-{-# LANGUAGE NoMonomorphismRestriction  #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE DataKinds                 #-}
+{-# LANGUAGE DuplicateRecordFields     #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE MultiParamTypeClasses     #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeOperators             #-}
 
 module Session.AppSpec where
 
@@ -28,7 +22,6 @@ import           Model
 import           Network.HTTP.Types     (badRequest400, unauthorized401)
 import           PatchGirl
 import           Servant
-import           Servant                (Header, Headers, Proxy, err400)
 import           Servant.Auth.Client
 import           Servant.Auth.Server    (Cookie, CookieSettings, JWT,
                                          JWTSettings, SetCookie, fromSecret,
@@ -68,7 +61,7 @@ whoAmI =
 
 
 spec :: Spec
-spec = do
+spec =
   withClient (mkApp defaultConfig) $ do
 
 
@@ -117,7 +110,7 @@ spec = do
 
 
     describe "who am I" $ do
-      context "when signed in" $ do
+      context "when signed in" $
         it "should return a signed user session" $ \clientEnv ->
           cleanDBAfter $ \connection -> do
           token <- signedUserToken 1
@@ -127,7 +120,7 @@ spec = do
                                                , _sessionEmail = "foo@mail.com"
                                                }
 
-      context "when unsigned" $ do
+      context "when unsigned" $
         it "should return a signed user session" $ \clientEnv ->
           cleanDBAfter $ \connection -> do
             token <- visitorToken
@@ -140,7 +133,7 @@ spec = do
 -- ** sign out
 
 
-    describe "sign out" $ do
+    describe "sign out" $
       it "always return a visitor session and clean the cookies" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           ([(headerName, headerValue), _], session) <- try clientEnv signOut <&> (\r -> (getHeaders r, getResponse r))

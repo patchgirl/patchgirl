@@ -1,18 +1,12 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveAnyClass             #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE DuplicateRecordFields      #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase                 #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NamedFieldPuns             #-}
-{-# LANGUAGE NoMonomorphismRestriction  #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE DataKinds                 #-}
+{-# LANGUAGE DuplicateRecordFields     #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE MultiParamTypeClasses     #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeOperators             #-}
 
 module RequestCollection.AppSpec where
 
@@ -26,7 +20,6 @@ import           Network.HTTP.Types
 import           PatchGirl
 import           RequestCollection      (RequestCollection (..))
 import           Servant
-import           Servant                (Header, Headers, Proxy, err400)
 import           Servant.Auth.Server    (CookieSettings, JWTSettings, SetCookie)
 import           Servant.Client
 import           Servant.Server         (ServerError)
@@ -44,10 +37,10 @@ getRequestCollectionById =
 
 
 spec :: Spec
-spec = do
-  describe "get request collection by id" $ do
-    withClient (mkApp defaultConfig) $ do
+spec =
+  describe "get request collection by id" $
+    withClient (mkApp defaultConfig) $
       it "returns 404 when requestCollection does not exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
+        cleanDBAfter $ \connection ->
           True `shouldBe` True
           --try clientEnv (getRequestCollectionById 10000) `shouldThrow` errorsWithStatus notFound405

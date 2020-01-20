@@ -2,7 +2,6 @@
 
 module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter) where
 
-import           Control.Exception                (finally)
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
 import           Data.Text                        (Text)
@@ -11,7 +10,7 @@ import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
 
 import           Config
-import           Control.Exception                (throwIO)
+import           Control.Exception                (finally, throwIO)
 import           Control.Monad.Trans              (liftIO)
 import           Crypto.JOSE                      as Jose
 import qualified Data.ByteString.Lazy             as BSL
@@ -49,8 +48,8 @@ errorsWithStatus status servantError =
 
 withClient :: IO Application -> SpecWith ClientEnv -> SpecWith ()
 withClient app innerSpec =
-  beforeAll (newManager defaultManagerSettings) $ do
-    flip aroundWith innerSpec $ \ action -> \ httpManager -> do
+  beforeAll (newManager defaultManagerSettings) $
+    flip aroundWith innerSpec $ \action httpManager ->
       testWithApplication app $ \ port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)

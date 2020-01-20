@@ -5,8 +5,8 @@ module RequestCollection.DBSpec where
 import           Test.Hspec
 
 spec :: Spec
-spec = do
-  it "true" $ do
+spec =
+  it "true" $
     True `shouldBe` True
 
 

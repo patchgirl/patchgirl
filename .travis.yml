@@ -8,6 +8,7 @@ language: generic
 cache:
   directories:
   - $HOME/.stack
+  - $HOME/.hlint
   - /home/travis/.rvm/
 
 services:
@@ -24,6 +25,7 @@ before_install:
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+- curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s - curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s
 
 install:
 # Build dependencies

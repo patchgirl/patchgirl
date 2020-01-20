@@ -63,12 +63,12 @@ signUpHandler SignUp { _signUpEmail } =
       isLeft $ Email.validate (BSU.fromString email)
 
     ioEmailAlreadyUsed :: PG.Connection -> IO Bool
-    ioEmailAlreadyUsed connection = do
+    ioEmailAlreadyUsed connection =
       liftIO $ selectAccountFromEmail _signUpEmail connection <&> isJust
 
     invalidEmail :: PG.Connection -> IO Bool
     invalidEmail connection =
-      if malformedEmail then pure True else (ioEmailAlreadyUsed connection)
+      if malformedEmail then pure True else ioEmailAlreadyUsed connection
 
   in do
     connection <- getDBConnection
