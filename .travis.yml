@@ -23,7 +23,7 @@ before_install:
 
 install:
 # Build dependencies
-- cd apiTester/api/
+- cd api/
 - stack --no-terminal --install-ghc test --only-dependencies
 
 script:
