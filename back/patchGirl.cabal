@@ -4,9 +4,9 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d132563332c37d7546485fd2393005f3aa8a4c3d1931424aa07d1060a812494
+-- hash: b077a6cd7856cc64ecb501b9c148baec2f5255b988e653287b1e5fc2a7597c11
 
-name:           example-servant-minimal
+name:           patchGirl
 version:        0.0.0
 build-type:     Simple
 
@@ -33,7 +33,7 @@ library
       Session.Model
       Test
   other-modules:
-      Paths_example_servant_minimal
+      Paths_patchGirl
   hs-source-dirs:
       src
   ghc-options: -Wall -fno-warn-name-shadowing
@@ -73,10 +73,10 @@ library
     , warp-tls
   default-language: Haskell2010
 
-executable example-servant-minimal
+executable patchGirl
   main-is: exe/Main.hs
   other-modules:
-      Paths_example_servant_minimal
+      Paths_patchGirl
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
@@ -88,7 +88,6 @@ executable example-servant-minimal
     , dhall
     , elm-bridge
     , email-validate
-    , example-servant-minimal
     , hailgun
     , http-client
     , http-client-tls
@@ -97,6 +96,7 @@ executable example-servant-minimal
     , jose
     , lens
     , mtl
+    , patchGirl
     , postgresql-simple
     , servant
     , servant-auth
@@ -129,7 +129,7 @@ test-suite spec
       RequestCollection.ModelSpec
       RequestNode.HandlerSpec
       Session.AppSpec
-      Paths_example_servant_minimal
+      Paths_patchGirl
   hs-source-dirs:
       test
   ghc-options: -Wall -fno-warn-name-shadowing
@@ -143,7 +143,6 @@ test-suite spec
     , dhall
     , elm-bridge
     , email-validate
-    , example-servant-minimal
     , hailgun
     , hspec
     , http-client
@@ -153,6 +152,7 @@ test-suite spec
     , jose
     , lens
     , mtl
+    , patchGirl
     , postgresql-simple
     , servant
     , servant-auth

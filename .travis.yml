@@ -27,7 +27,7 @@ before_install:
 
 install:
 # Build dependencies
-- cd api/
+- cd back/
 - stack --no-nix --no-terminal --install-ghc test --only-dependencies
 
 before_script:
@@ -38,5 +38,5 @@ before_script:
 
 script:
 # Build the package, its tests, and its docs and run the tests
-- cd ../api
+- cd ../back
 - stack --no-nix --no-terminal test

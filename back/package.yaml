@@ -1,4 +1,4 @@
-name: example-servant-minimal
+name: patchGirl
 
 ghc-options:
   - -Wall
@@ -11,7 +11,7 @@ tests:
       - test
     dependencies:
       - hspec
-      - example-servant-minimal
+      - patchGirl
       - servant-client
       - warp >= 3.2.4
       - http-client
@@ -22,10 +22,10 @@ library:
     - src
 
 executables:
-  example-servant-minimal:
+  patchGirl:
     main: exe/Main.hs
     dependencies:
-      - example-servant-minimal
+      - patchGirl
 
 dependencies:
   - base
