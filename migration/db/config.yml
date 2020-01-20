@@ -6,3 +6,12 @@ test:
   username: postgres
   pool: 5
   timeout: 5000
+
+dev:
+  adapter: postgresql
+  port: 5433
+  host: localhost
+  database: dev
+  username: dev
+  pool: 5
+  timeout: 5000
