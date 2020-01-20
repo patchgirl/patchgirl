@@ -4,6 +4,9 @@ run:
 app:
 	clear; stack build
 
+check:
+	clear; stack build --ghc-options="-Wall -Werror"
+
 watch-test:
 	ghcid --command 'stack ghci --test --main-is patchGirl:test:spec' --test ':main' --warnings
 
