@@ -9,6 +9,12 @@ cache:
   directories:
   - $HOME/.stack
 
+services:
+  - "postgresql"
+
+env:
+  - DB_NAME=test DB_HOST=localhost DB_USER=test DB_PASSWORD=test DB_PORT=5433
+
 # Ensure necessary system libraries are present
 addons:
   apt:
@@ -26,6 +32,9 @@ install:
 - cd api/
 - stack --no-nix --no-terminal --install-ghc test --only-dependencies
 
+before_script:
+  - psql -c "CREATE DATABASE test;" -U test
+
 script:
 # Build the package, its tests, and its docs and run the tests
-- stack --no-nix --no-terminal test --haddock --no-haddock-deps
+- stack --no-nix --no-terminal test
