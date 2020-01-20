@@ -30,7 +30,7 @@ install:
 - stack --no-nix --no-terminal --install-ghc test --only-dependencies
 
 before_script:
-  - psql -c "CREATE DATABASE test;" -U root
+  - psql -U postgres -c "CREATE DATABASE test;"
 
 script:
 # Build the package, its tests, and its docs and run the tests
