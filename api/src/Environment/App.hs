@@ -160,8 +160,9 @@ getEnvironmentsHandler
      , MonadError ServerError m
      )
   => m [Environment]
-getEnvironmentsHandler =
-  liftIO $ getDBConnection >>= selectEnvironments
+getEnvironmentsHandler = do
+  connection <- getDBConnection
+  liftIO $ selectEnvironments connection
 
 
 -- * create environment
@@ -214,7 +215,7 @@ createEnvironmentHandler
   => NewEnvironment
   -> m Int
 createEnvironmentHandler newEnvironment = do
-  connection <- liftIO getDBConnection
+  connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
   liftIO $ bindEnvironmentToAccount 1 environmentId connection >> return environmentId
 
@@ -238,8 +239,9 @@ updateEnvironmentHandler
   => Int
   -> UpdateEnvironment
   -> m ()
-updateEnvironmentHandler environmentId updateEnvironment =
-  liftIO (getDBConnection >>= updateEnvironmentDB environmentId updateEnvironment)
+updateEnvironmentHandler environmentId updateEnvironment = do
+  connection <- getDBConnection
+  liftIO $ updateEnvironmentDB environmentId updateEnvironment connection
 
 updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
 updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
@@ -264,8 +266,9 @@ deleteEnvironmentHandler
      )
   => Int
   -> m ()
-deleteEnvironmentHandler environmentId =
-  liftIO $ getDBConnection >>= deleteEnvironmentDB environmentId
+deleteEnvironmentHandler environmentId = do
+  connection <- getDBConnection
+  liftIO $ deleteEnvironmentDB environmentId connection
 
 deleteEnvironmentDB :: Int -> Connection -> IO ()
 deleteEnvironmentDB environmentId connection = do
@@ -291,7 +294,7 @@ deleteKeyValueHandler
   -> Int
   -> m ()
 deleteKeyValueHandler environmentId keyValueId = do
-  connection <- liftIO getDBConnection
+  connection <- getDBConnection
   environments <- liftIO $ selectEnvironments connection
   let
     mKeyValue = do
@@ -364,7 +367,7 @@ updateKeyValuesHandler
      )
   => Int -> [NewKeyValue] -> m [KeyValue]
 updateKeyValuesHandler environmentId newKeyValues = do
-  connection <- liftIO getDBConnection
+  connection <- getDBConnection
   environments <- liftIO $ selectEnvironments connection
   let
     environment = find (\environment -> environment ^. id == environmentId) environments

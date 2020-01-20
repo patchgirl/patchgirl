@@ -122,7 +122,8 @@ getRequestCollectionHandler
      )
   => Int
   -> m RequestCollection
-getRequestCollectionHandler requestCollectionId =
-  liftIO (getDBConnection >>= selectRequestCollectionById requestCollectionId) >>= \case
+getRequestCollectionHandler requestCollectionId = do
+  connection <- getDBConnection
+  liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case
     Just request -> return request
     Nothing      -> throwError err404

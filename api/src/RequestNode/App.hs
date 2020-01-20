@@ -72,7 +72,7 @@ updateRequestNodeHandler
   -> UpdateRequestNode
   -> m NoContent
 updateRequestNodeHandler requestCollectionId requestNodeId updateRequestNode = do
-  connection <- liftIO getDBConnection
+  connection <- getDBConnection
   requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
   case requestNodeId `elem` requestNodeIds of
     True ->
@@ -107,8 +107,9 @@ createRequestFile
   => Int
   -> NewRequestFile
   -> m Int
-createRequestFile requestCollectionId newRequestFile =
-  liftIO $ getDBConnection >>= insertRequestFile newRequestFile
+createRequestFile requestCollectionId newRequestFile = do
+  connection <- getDBConnection
+  liftIO $ insertRequestFile newRequestFile connection
 
 -- * folder
 

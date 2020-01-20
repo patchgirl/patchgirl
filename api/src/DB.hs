@@ -1,11 +1,25 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns   #-}
+
 module DB where
 
+import           Config
+import           Control.Monad.IO.Class     (MonadIO, liftIO)
+import           Control.Monad.Reader       (MonadReader, ask)
+import           Data.Functor               ((<&>))
+import           Data.Text                  as TS
 import qualified Database.PostgreSQL.Simple as PG
+import           GHC.Natural                (naturalToInt)
 
-getDBConnection :: IO PG.Connection
-getDBConnection = PG.connect PG.defaultConnectInfo
-  { PG.connectDatabase = "test"
-  , PG.connectUser = "test"
-  , PG.connectPort = 5433
-  , PG.connectPassword = "test"
-  }
+getDBConnection
+  :: ( MonadReader Config m
+     , MonadIO m
+     )
+  => m PG.Connection
+getDBConnection = do
+  DBConfig { dbPort, dbName, dbUser, dbPassword } <- ask <&> dbConfig
+  liftIO $ PG.connect PG.defaultConnectInfo { PG.connectDatabase = TS.unpack dbName
+                                            , PG.connectUser = TS.unpack dbUser
+                                            , PG.connectPort = (fromInteger $ toInteger $ naturalToInt dbPort)
+                                            , PG.connectPassword = TS.unpack dbPassword
+                                            }

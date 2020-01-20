@@ -24,6 +24,7 @@ import           Data.Text                           (Text)
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Database.PostgreSQL.Simple          (Connection, Only (..),
                                                       execute, query)
+import qualified Database.PostgreSQL.Simple          as PG
 import           Database.PostgreSQL.Simple.FromRow  (FromRow (..))
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
@@ -61,21 +62,22 @@ signUpHandler SignUp { _signUpEmail } =
     malformedEmail =
       isLeft $ Email.validate (BSU.fromString email)
 
-    ioEmailAlreadyUsed :: IO Bool
-    ioEmailAlreadyUsed =
-      (getDBConnection >>= selectAccountFromEmail _signUpEmail) <&> isJust
+    ioEmailAlreadyUsed :: PG.Connection -> IO Bool
+    ioEmailAlreadyUsed connection = do
+      liftIO $ selectAccountFromEmail _signUpEmail connection <&> isJust
 
-    invalidEmail :: IO Bool
-    invalidEmail =
-      if malformedEmail then pure True else ioEmailAlreadyUsed
+    invalidEmail :: PG.Connection -> IO Bool
+    invalidEmail connection =
+      if malformedEmail then pure True else (ioEmailAlreadyUsed connection)
 
   in do
-    invalid <- liftIO invalidEmail
+    connection <- getDBConnection
+    invalid <- liftIO $ invalidEmail connection
     case invalid of
       True -> throwError err400
       False -> do
         let newAccount = NewAccount { _newAccountEmail = _signUpEmail }
-        createdAccount <- liftIO $ getDBConnection >>= insertAccount newAccount
+        createdAccount <- liftIO $ insertAccount newAccount connection
         hailgunMessage <- mkHailgunMessage (mkSignUpEmail createdAccount)
         case hailgunMessage of
           Left error -> do
@@ -139,7 +141,7 @@ initializePasswordHandler
   => InitializePassword
   -> m ()
 initializePasswordHandler initializePassword = do
-  connection <- liftIO getDBConnection
+  connection <- getDBConnection
   mAccount <- liftIO $ selectAccountFromInitializePassword initializePassword connection
   case mAccount of
     Just _ -> do

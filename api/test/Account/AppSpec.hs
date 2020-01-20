@@ -28,7 +28,6 @@ import           Control.Monad.Reader     (MonadReader)
 import           Data.Functor             ((<&>))
 import           Data.Maybe               (isJust, isNothing)
 import           Helper.App
-import           Helper.DB                (cleanDBAfter)
 import           Model
 import           Network.HTTP.Types       (badRequest400, unauthorized401)
 import           PatchGirl

@@ -24,7 +24,6 @@ import           Control.Monad.IO.Class (MonadIO)
 import           Control.Monad.Reader   (MonadReader)
 import           Data.Functor           ((<&>))
 import           Helper.App
-import           Helper.DB              (cleanDBAfter)
 import           Model
 import           Network.HTTP.Types     (badRequest400, unauthorized401)
 import           PatchGirl

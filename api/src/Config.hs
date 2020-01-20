@@ -23,12 +23,26 @@ data MailgunConfig
 instance FromDhall MailgunConfig
 
 
+-- * db
+
+
+data DBConfig
+  = DBConfig { dbPort     :: Natural
+             , dbName     :: Text
+             , dbUser     :: Text
+             , dbPassword :: Text
+             }
+  deriving (Generic, Show)
+
+instance FromDhall DBConfig
+
 -- * config
 
 
 data Config
   = Config { port           :: Natural
            , appKeyFilePath :: String
+           , dbConfig       :: DBConfig
            , mailgun        :: MailgunConfig
            }
   deriving (Generic, Show)
