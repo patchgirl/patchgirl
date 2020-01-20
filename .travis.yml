@@ -45,5 +45,5 @@ before_script:
 script:
 # Build the package, its tests, and its docs and run the tests
 - cd back
-- stack --no-nix --no-terminal test --ghc-options="-Wall -Werror"
+- stack --no-nix --no-terminal test --ghc-options="-Wall -Werror -fno-warn-name-shadowing"
 - cd ..
