@@ -47,16 +47,16 @@ import           Session.Model
 
 
 data PGEnvironmentWithKeyValue =
-  PGEnvironmentWithKeyValue { _environmentId   :: Int
-                            , _environmentName :: String
-                            , _keyValueId      :: Int
-                            , _key             :: String
-                            , _value           :: String
+  PGEnvironmentWithKeyValue { _pgEnvironmentWithKeyValueEnvironmentId   :: Int
+                            , _pgEnvironmentWithKeyValueEnvironmentName :: String
+                            , _pgEnvironmentWithKeyValueKeyValueId      :: Int
+                            , _pgEnvironmentWithKeyValueKey             :: String
+                            , _pgEnvironmentWithKeyValueValue           :: String
                             } deriving (Generic, FromRow)
 
 data PGEnvironmentWithoutKeyValue =
-  PGEnvironmentWithoutKeyValue { _environmentId   :: Int
-                               , _environmentName :: String
+  PGEnvironmentWithoutKeyValue { _pgEnvironmentWithoutKeyValueEnvironmentId   :: Int
+                               , _pgEnvironmentWithoutKeyValueEnvironmentName :: String
                                } deriving (Generic, FromRow)
 
 
@@ -64,9 +64,9 @@ $(makeFieldsNoPrefix ''PGEnvironmentWithKeyValue)
 $(makeFieldsNoPrefix ''PGEnvironmentWithoutKeyValue)
 
 data KeyValue =
-  KeyValue { _id    :: Int
-           , _key   :: String
-           , _value :: String
+  KeyValue { _keyValueId    :: Int
+           , _keyValueKey   :: String
+           , _keyValueValue :: String
            } deriving (Eq, Show, Generic, FromRow)
 
 instance FromJSON KeyValue where
@@ -80,9 +80,9 @@ instance ToJSON KeyValue where
 $(makeFieldsNoPrefix ''KeyValue)
 
 data Environment
-  = Environment { _id        :: Int
-                , _name      :: String
-                , _keyValues :: [KeyValue]
+  = Environment { _environmentId        :: Int
+                , _environmentName      :: String
+                , _environmentKeyValues :: [KeyValue]
                 } deriving (Eq, Show, Generic)
 
 instance FromJSON Environment where
@@ -95,10 +95,10 @@ instance ToJSON Environment where
 
 $(makeFieldsNoPrefix ''Environment)
 
-selectEnvironments :: Connection -> IO [Environment]
-selectEnvironments connection = do
-  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues (Only 1 :: Only Int)
-  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues (Only 1 :: Only Int)
+selectEnvironments :: Int -> Connection -> IO [Environment]
+selectEnvironments accountId connection = do
+  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues (Only accountId)
+  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues (Only accountId)
 
   let
     environmentsWithKeyValues =
@@ -110,33 +110,33 @@ selectEnvironments connection = do
   where
     convertPgEnvironmentsToHashMap :: [PGEnvironmentWithKeyValue] -> HashMap Int Environment
     convertPgEnvironmentsToHashMap pgEnvironments =
-      foldl' (\acc pgEnv -> insertWith mergeValue (pgEnv ^. environmentId) (convertPGEnviromentToEnvironment pgEnv) acc) HashMap.empty pgEnvironments
+      foldl' (\acc pgEnv -> insertWith mergeValue (pgEnv ^. pgEnvironmentWithKeyValueEnvironmentId) (convertPGEnviromentToEnvironment pgEnv) acc) HashMap.empty pgEnvironments
 
     convertPGEnviromentToEnvironment :: PGEnvironmentWithKeyValue -> Environment
     convertPGEnviromentToEnvironment pgEnv =
       let
         keyValue :: KeyValue
         keyValue =
-          KeyValue { _id = pgEnv ^. keyValueId
-                   , _key = pgEnv ^. key
-                   , _value = pgEnv ^. value
+          KeyValue { _keyValueId = pgEnv ^. pgEnvironmentWithKeyValueKeyValueId
+                   , _keyValueKey = pgEnv ^. pgEnvironmentWithKeyValueKey
+                   , _keyValueValue = pgEnv ^. pgEnvironmentWithKeyValueValue
                    }
       in
-        Environment { _id = pgEnv ^. environmentId
-                    , _name = pgEnv ^. environmentName
-                    , _keyValues = [ keyValue ]
+        Environment { _environmentId = pgEnv ^. pgEnvironmentWithKeyValueEnvironmentId
+                    , _environmentName = pgEnv ^. pgEnvironmentWithKeyValueEnvironmentName
+                    , _environmentKeyValues = [ keyValue ]
                     }
 
     convertPGEnviromentWithoutKeyValuesToEnvironment :: PGEnvironmentWithoutKeyValue -> Environment
     convertPGEnviromentWithoutKeyValuesToEnvironment pgEnv =
-        Environment { _id = pgEnv ^. environmentId
-                    , _name = pgEnv ^. environmentName
-                    , _keyValues = []
+        Environment { _environmentId = pgEnv ^. pgEnvironmentWithoutKeyValueEnvironmentId
+                    , _environmentName = pgEnv ^. pgEnvironmentWithoutKeyValueEnvironmentName
+                    , _environmentKeyValues = []
                     }
 
     mergeValue :: Environment -> Environment -> Environment
     mergeValue oldEnv newEnv =
-      oldEnv & keyValues %~ (++) (newEnv ^. keyValues)
+      oldEnv & environmentKeyValues %~ (++) (newEnv ^. environmentKeyValues)
 
     selectEnvironmentQueryWithKeyValues =
       [sql|
@@ -169,11 +169,11 @@ getEnvironmentsHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => CookieSession
+  => Int
   -> m [Environment]
-getEnvironmentsHandler _ = do
+getEnvironmentsHandler accountId = do
   connection <- getDBConnection
-  liftIO $ selectEnvironments connection
+  liftIO $ selectEnvironments accountId connection
 
 
 -- * create environment
@@ -259,13 +259,17 @@ updateEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => CookieSession
+  => Int
   -> Int
   -> UpdateEnvironment
   -> m ()
-updateEnvironmentHandler _ environmentId updateEnvironment = do
+updateEnvironmentHandler accountId environmentId updateEnvironment = do
   connection <- getDBConnection
-  liftIO $ updateEnvironmentDB environmentId updateEnvironment connection
+  environments <- liftIO $ selectEnvironments accountId connection
+  case environmentId `elem` map _environmentId environments  of
+    False -> throwError err404
+    True ->
+      liftIO $ updateEnvironmentDB environmentId updateEnvironment connection
 
 updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
 updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
@@ -288,7 +292,7 @@ deleteEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => CookieSession
+  => Int
   -> Int
   -> m ()
 deleteEnvironmentHandler _ environmentId = do
@@ -315,20 +319,20 @@ deleteKeyValueHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => CookieSession
+  => Int
   -> Int
   -> Int
   -> m ()
-deleteKeyValueHandler _ environmentId keyValueId = do
+deleteKeyValueHandler accountId environmentId' keyValueId' = do
   connection <- getDBConnection
-  environments <- liftIO $ selectEnvironments connection
+  environments <- liftIO $ selectEnvironments accountId connection
   let
     mKeyValue = do
-      environment <- find (\environment -> environment ^. id == environmentId) environments
-      find (\keyValue -> keyValue ^. id == keyValueId) $ environment ^. keyValues
+      environment <- find (\environment -> environment ^. environmentId == environmentId') environments
+      find (\keyValue -> keyValue ^. keyValueId == keyValueId') $ environment ^. environmentKeyValues
   case mKeyValue of
     Just keyValue ->
-      liftIO $ deleteKeyValueDB (keyValue ^. id) connection
+      liftIO $ deleteKeyValueDB (keyValue ^. keyValueId) connection
     Nothing -> throwError err404
 
 deleteKeyValueDB :: Int -> Connection -> IO ()
@@ -371,8 +375,8 @@ $(makeFieldsNoPrefix ''NewKeyValue)
 
 
 deleteKeyValuesDB :: Int -> Connection -> IO ()
-deleteKeyValuesDB environmentId connection = do
-  _ <- execute connection deleteKeyValuesQuery (Only environmentId)
+deleteKeyValuesDB environmentId' connection = do
+  _ <- execute connection deleteKeyValuesQuery (Only environmentId')
   return ()
   where
     deleteKeyValuesQuery =
@@ -399,18 +403,18 @@ updateKeyValuesHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => CookieSession
+  => Int
   -> Int
   -> [NewKeyValue]
   -> m [KeyValue]
-updateKeyValuesHandler _ environmentId newKeyValues = do
+updateKeyValuesHandler accountId environmentId' newKeyValues = do
   connection <- getDBConnection
-  environments <- liftIO $ selectEnvironments connection
+  environments <- liftIO $ selectEnvironments accountId connection
   let
-    environment = find (\env -> env ^. id == environmentId) environments
+    environment = find (\env -> env ^. environmentId == environmentId') environments
   case environment of
     Just _ -> do
-      liftIO $ deleteKeyValuesDB environmentId connection
-      liftIO $ mapM (flip (insertManyKeyValuesDB environmentId) connection) newKeyValues
+      liftIO $ deleteKeyValuesDB environmentId' connection
+      liftIO $ mapM (flip (insertManyKeyValuesDB environmentId') connection) newKeyValues
     Nothing ->
       throwError err404

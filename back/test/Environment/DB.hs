@@ -53,3 +53,26 @@ selectFakeAccountEnvironments accountId connection = do
           FROM account_environment
           WHERE account_id = ?
           |]
+
+
+-- * insert fake environment key value
+
+
+data NewFakeKeyValue =
+  NewFakeKeyValue { _fakeKeyValueEnvironmentId :: Int
+                  , _fakeKeyValueKey           :: String
+                  , _fakeKeyValueValue         :: String
+                  }
+  deriving (Eq, Show, Read, Generic, ToRow)
+
+insertNewFakeKeyValue :: NewFakeKeyValue -> Connection -> IO Int
+insertNewFakeKeyValue newFakeKeyValue connection = do
+  [Only fakeKeyValueId] <- query connection rawQuery newFakeKeyValue
+  return fakeKeyValueId
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO key_value (environment_id, key, value)
+          VALUES (?, ?, ?)
+          RETURNING id;
+          |]

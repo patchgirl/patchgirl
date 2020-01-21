@@ -220,11 +220,11 @@ environmentApiServer
   :<|> (AuthResult CookieSession -> Int -> Int -> AppM ())))))
 environmentApiServer =
   (    authorizeWithAccountId createEnvironmentHandler
-  :<|> authorize getEnvironmentsHandler
-  :<|> authorize updateEnvironmentHandler
-  :<|> authorize deleteEnvironmentHandler
-  :<|> authorize updateKeyValuesHandler
-  :<|> authorize deleteKeyValueHandler
+  :<|> authorizeWithAccountId getEnvironmentsHandler
+  :<|> authorizeWithAccountId updateEnvironmentHandler
+  :<|> authorizeWithAccountId deleteEnvironmentHandler
+  :<|> authorizeWithAccountId updateKeyValuesHandler
+  :<|> authorizeWithAccountId deleteKeyValueHandler
   )
 
 {-
