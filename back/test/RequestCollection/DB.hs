@@ -7,13 +7,9 @@
 
 module RequestCollection.DB where
 
-import           Control.Lens                     (makeFieldsNoPrefix)
-import           Data.Functor                     ((<&>))
-import           Data.Maybe                       (listToMaybe)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
-import           Model
 
 -- * new fake request collection
 

@@ -20,7 +20,6 @@ import           RequestCollection.DB
 import           Servant
 import qualified Servant.Auth.Client   as Auth
 import           Servant.Auth.Server   (JWT)
-import qualified Servant.Auth.Server   as Auth
 import           Servant.Client
 import           Test.Hspec
 
