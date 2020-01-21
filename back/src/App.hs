@@ -178,6 +178,9 @@ accountApiServer =
   signUpHandler :<|>
   initializePasswordHandler
 
+authorizeWithAccountId
+  :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
+  => (Int -> p) -> AuthResult CookieSession -> p
 authorizeWithAccountId f = \case
   BadPassword ->
     throwAll err402

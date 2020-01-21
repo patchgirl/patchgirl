@@ -5,10 +5,7 @@ app:
 	clear; stack build
 
 check:
-	clear; stack build --ghc-options="-Wall -Werror -fno-warn-name-shadowing"
-
-check-test:
-	clear; stack test --ghc-options="-Wall -Werror -fno-warn-name-shadowing"
+	clear; ghcid --command 'stack ghci --test --main-is patchGirl:test:spec --ghc-options="-Wall -Werror -fno-warn-name-shadowing"' --test ':main' --warnings
 
 watch-test:
 	ghcid --command 'stack ghci --test --main-is patchGirl:test:spec' --test ':main' --warnings

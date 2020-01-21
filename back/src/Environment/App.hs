@@ -40,7 +40,6 @@ import           PatchGirl
 import           Prelude                          hiding (id)
 import           Servant                          (err404, throwError)
 import           Servant.Server                   (ServerError)
-import           Session.Model
 
 
 -- * get environments

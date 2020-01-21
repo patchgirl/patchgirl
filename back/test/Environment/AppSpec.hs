@@ -11,23 +11,16 @@
 
 module Environment.AppSpec where
 
-import           Account.App
 import           Account.DB
-import           Account.Model
 import           App
-import           Control.Lens        ((^.))
-import           Data.Maybe          (isJust, isNothing)
 import           Environment.App
 import           Environment.DB
 import           Helper.App
-import           Model
-import           Network.HTTP.Types  (badRequest400)
 import qualified Network.HTTP.Types  as HTTP
 import           Servant
 import qualified Servant.Auth.Client as Auth
 import qualified Servant.Auth.Server as Auth
 import           Servant.Client      (ClientM, client)
-import           Session.Model
 import           Test.Hspec
 
 
@@ -37,6 +30,9 @@ import           Test.Hspec
 createEnvironment :: Auth.Token -> NewEnvironment -> ClientM Int
 getEnvironments :: Auth.Token -> ClientM [Environment]
 updateEnvironment :: Auth.Token -> Int -> UpdateEnvironment -> ClientM ()
+deleteEnvironment :: Auth.Token -> Int -> ClientM ()
+updateKeyValues :: Auth.Token -> Int -> [NewKeyValue] -> ClientM [KeyValue]
+deleteKeyValue :: Auth.Token -> Int -> Int -> ClientM ()
 createEnvironment
   :<|> getEnvironments
   :<|> updateEnvironment
@@ -57,7 +53,7 @@ spec =
 -- ** create environment
 
 
-    describe "create environment" $ do
+    describe "create environment" $
       it "should create an environment and bind it to an account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
@@ -71,13 +67,13 @@ spec =
                 FakeAccountEnvironment { _fakeAccountEnvironmentAccountId = accountId
                                        , _fakeAccountEnvironmentEnvironmentId = environmentId
                                        }
-          fakeAccountEnvironments `shouldSatisfy` (elem expectedFakeAccountEnvironment)
+          fakeAccountEnvironments `shouldSatisfy` elem expectedFakeAccountEnvironment
 
 
 -- ** get environments
 
 
-    describe "get environments" $ do
+    describe "get environments" $
       it "should get environments bound to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
