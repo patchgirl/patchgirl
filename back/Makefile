@@ -5,7 +5,7 @@ app:
 	clear; stack build
 
 check:
-	clear; stack build --ghc-options="-Wall -Werror"
+	clear; stack build --ghc-options="-Wall -Werror -fno-warn-name-shadowing"
 
 check-test:
 	clear; stack test --ghc-options="-Wall -Werror -fno-warn-name-shadowing"

@@ -9,26 +9,35 @@
 
 module App where
 
-import           Control.Monad.Except        (ExceptT, MonadError, runExceptT)
-import           Control.Monad.IO.Class      (MonadIO)
-import           Control.Monad.Reader        (MonadReader, ReaderT, runReaderT)
-import           Control.Monad.Trans         (liftIO)
-import           GHC.Generics                (Generic)
-import           GHC.Natural                 (naturalToInt)
-import           Network.Wai                 hiding (Request)
+import           Control.Monad.Except                  (ExceptT, MonadError,
+                                                        runExceptT)
+import           Control.Monad.IO.Class                (MonadIO)
+import           Control.Monad.Reader                  (MonadReader, ReaderT,
+                                                        runReaderT)
+import           Control.Monad.Trans                   (liftIO)
+import           GHC.Generics                          (Generic)
+import           GHC.Natural                           (naturalToInt)
+import           Network.Wai                           hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Handler.WarpTLS
-import           Servant                     hiding (BadPassword, NoSuchUser)
-import           Servant.API.ContentTypes    (NoContent)
-import           Servant.API.Flatten         (Flat)
-import           Servant.Auth.Server         (Auth, AuthResult (..), Cookie,
-                                              CookieSettings, IsSecure (..),
-                                              JWT, JWTSettings, SameSite (..),
-                                              SetCookie, cookieIsSecure,
-                                              cookieSameSite, cookieXsrfSetting,
-                                              defaultCookieSettings,
-                                              defaultJWTSettings, readKey,
-                                              sessionCookieName, throwAll)
+import           Servant                               hiding (BadPassword,
+                                                        NoSuchUser)
+import           Servant.API.ContentTypes              (NoContent)
+import           Servant.API.Flatten                   (Flat)
+import           Servant.Auth.Server                   (Auth, AuthResult (..),
+                                                        Cookie, CookieSettings,
+                                                        IsSecure (..), JWT,
+                                                        JWTSettings,
+                                                        SameSite (..),
+                                                        SetCookie,
+                                                        cookieIsSecure,
+                                                        cookieSameSite,
+                                                        cookieXsrfSetting,
+                                                        defaultCookieSettings,
+                                                        defaultJWTSettings,
+                                                        readKey,
+                                                        sessionCookieName,
+                                                        throwAll)
 
 import           Account.App
 import           Account.Model
@@ -37,11 +46,12 @@ import           Config
 import           Environment.App
 import           RequestCollection.App
 import           RequestComputation.App
-import           RequestNode.App
 import           RequestNode.Model
+import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
 import           Session.App
 import           Session.Model
 import           Test
+
 
 -- * api
 
@@ -51,9 +61,15 @@ type CombinedApi auths =
   AssetApi
 
 type RestApi auths =
-  (Auth auths CookieSession :> ProtectedApi) :<|>
+  PRequestCollectionApi auths :<|>
   SessionApi :<|> PSessionApi auths :<|>
   AccountApi
+
+type PRequestCollectionApi auths =
+  Auth auths CookieSession :> RequestCollectionApi
+
+type RequestCollectionApi =
+  "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
 
 type SessionApi =
   "api" :> "session" :> (
@@ -65,6 +81,10 @@ type SessionApi =
                                           ] Session)
   )
 
+type PSessionApi auths =
+  Auth auths CookieSession :> "api" :> "session" :> "whoami" :> WhoAmiApi
+
+
 type AccountApi =
   "api" :> "account" :> (
     "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
@@ -75,23 +95,6 @@ type WhoAmiApi =
   Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                         , Header "Set-Cookie" SetCookie
                         ] Session)
-
-type PSessionApi auths =
-  Auth auths CookieSession :> "api" :> "session" :> "whoami" :> WhoAmiApi
-
-type ProtectedApi =
-  RequestCollectionApi :<|>
-  RequestNodeApi :<|>
-  RequestFileApi :<|>
-  EnvironmentApi :<|>
-  RequestComputationApi :<|>
-  HealthApi
-
-type RequestCollectionApi =
-  "api" :> "requestCollection" :> (
-    -- getRequestCollectionById
-    Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
-  )
 
 type RequestNodeApi =
   Flat (
@@ -177,6 +180,28 @@ accountApiServer =
   signUpHandler :<|>
   initializePasswordHandler
 
+authorize
+  :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
+  => (t -> p) -> AuthResult t -> p
+authorize f = \case
+  BadPassword ->
+    throwAll err402
+
+  NoSuchUser ->
+    throwAll err403
+
+  Indefinite ->
+    throwAll err405
+
+  Authenticated cookieSession ->
+    f cookieSession
+
+requestCollectionApiServer :: AuthResult CookieSession -> ServerT RequestCollectionApi AppM
+requestCollectionApiServer =
+  authorize getRequestCollectionHandler
+
+
+{-
 protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
 protectedApiServer = \case
   BadPassword ->
@@ -210,6 +235,7 @@ protectedApiServer = \case
       deleteEnvironmentHandler :<|>
       updateKeyValuesHandler :<|>
       deleteKeyValueHandler
+-}
 
 testApiServer :: ServerT TestApi AppM
 testApiServer =
@@ -272,7 +298,7 @@ mkApp config = do
     context = cookieSettings :. jwtSettings :. EmptyContext
     combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT]) -- JWT is needed for the tests to run
     apiServer =
-      (protectedApiServer :<|>
+      (requestCollectionApiServer :<|>
       (sessionApiServer cookieSettings jwtSettings :<|> pSessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
       testApiServer :<|>
       assetApiServer

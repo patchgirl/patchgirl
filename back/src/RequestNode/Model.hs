@@ -3,6 +3,7 @@
 {-# LANGUAGE DuplicateRecordFields  #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE LambdaCase             #-}
 {-# LANGUAGE NamedFieldPuns         #-}
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE RecordWildCards        #-}
@@ -107,9 +108,13 @@ instance FromJSON RequestNodeFromPG where
 
 instance FromField [RequestNodeFromPG] where
   fromField field mdata = do
-    value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNodeFromPG]
-    either (returnError ConversionFailed field) return errorOrRequestNodes
+    (fromField field mdata :: Conversion (Maybe Value)) >>= \case
+      Nothing ->
+        return []
+      Just value -> do
+        let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNodeFromPG]
+        either (returnError ConversionFailed field) return errorOrRequestNodes
+
 
 fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
 fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode

@@ -1,9 +1,23 @@
 class Init < ActiveRecord::Migration[5.2]
   def up
     execute %{
-
       CREATE EXTENSION CITEXT;
       CREATE EXTENSION PGCRYPTO;
+
+
+      -- account
+
+
+      CREATE TABLE account(
+          id SERIAL PRIMARY KEY,
+          email CITEXT NOT NULL UNIQUE,
+          signup_token TEXT NOT NULL DEFAULT MD5(random()::text),
+          password TEXT
+      );
+
+
+      -- request node
+
 
       CREATE TYPE request_node_type AS ENUM ('RequestFolder', 'RequestFile');
       CREATE TYPE http_method_type AS ENUM ('Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options');
@@ -27,18 +41,24 @@ class Init < ActiveRecord::Migration[5.2]
         )
       );
 
+
+      -- request collection
+
+
+      CREATE TABLE request_collection(
+        id SERIAL PRIMARY KEY,
+        account_id INTEGER REFERENCES account(id) ON DELETE CASCADE
+      );
+
       CREATE TABLE request_collection_to_request_node(
         request_collection_id INTEGER,
         request_node_id INTEGER REFERENCES request_node(id) ON DELETE CASCADE,
         PRIMARY KEY (request_collection_id, request_node_id)
       );
 
-      CREATE TABLE account(
-          id SERIAL PRIMARY KEY,
-          email CITEXT NOT NULL UNIQUE,
-          signup_token TEXT NOT NULL DEFAULT MD5(random()::text),
-          password TEXT
-      );
+
+      -- environment
+
 
       CREATE TABLE environment(
           id SERIAL PRIMARY KEY,
@@ -57,6 +77,10 @@ class Init < ActiveRecord::Migration[5.2]
           key TEXT NOT NULL,
           value TEXT NOT NULL
       );
+
+
+      -- util
+
 
       CREATE OR REPLACE FUNCTION request_node_as_js(someRow request_node) RETURNS jsonb AS $$
       BEGIN

@@ -240,6 +240,36 @@ ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 
 
 --
+-- Name: request_collection; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.request_collection (
+    id integer NOT NULL,
+    account_id integer
+);
+
+
+--
+-- Name: request_collection_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.request_collection_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: request_collection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.request_collection_id_seq OWNED BY public.request_collection.id;
+
+
+--
 -- Name: request_collection_to_request_node; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -300,6 +330,13 @@ ALTER TABLE ONLY public.key_value ALTER COLUMN id SET DEFAULT nextval('public.ke
 
 
 --
+-- Name: request_collection id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.request_collection ALTER COLUMN id SET DEFAULT nextval('public.request_collection_id_seq'::regclass);
+
+
+--
 -- Name: request_node id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -355,6 +392,14 @@ ALTER TABLE ONLY public.key_value
 
 
 --
+-- Name: request_collection request_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.request_collection
+    ADD CONSTRAINT request_collection_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: request_collection_to_request_node request_collection_to_request_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -400,6 +445,14 @@ ALTER TABLE ONLY public.account_environment
 
 ALTER TABLE ONLY public.key_value
     ADD CONSTRAINT key_value_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id) ON DELETE CASCADE;
+
+
+--
+-- Name: request_collection request_collection_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.request_collection
+    ADD CONSTRAINT request_collection_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
 
 
 --
