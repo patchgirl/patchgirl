@@ -12,7 +12,7 @@ module RequestCollection.AppSpec where
 
 import           App
 import           Helper.App
-import           RequestCollection (RequestCollection (..))
+import           RequestCollection.App (RequestCollection (..))
 import           Servant
 import           Servant.Client
 import           Test.Hspec

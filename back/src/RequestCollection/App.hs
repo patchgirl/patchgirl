@@ -8,7 +8,7 @@
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
 
-module RequestCollection where
+module RequestCollection.App where
 
 import           Control.Monad.Except               (MonadError)
 import           Control.Monad.IO.Class             (MonadIO, liftIO)
@@ -23,13 +23,17 @@ import           PatchGirl
 import           RequestNode.Model
 import           Servant
 
+
 -- * Model
+
 
 data RequestCollection =
   RequestCollection Int [RequestNode]
   deriving (Eq, Show, Generic, ToJSON, FromJSON, FromRow)
 
+
 -- * DB
+
 
 selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
 selectRequestCollectionById requestCollectionId connection =
@@ -113,7 +117,9 @@ selectRequestCollectionById requestCollectionId connection =
           WHERE request_node_parent_id IS NULL;
           |] :: Query
 
+
 -- * Handler
+
 
 getRequestCollectionHandler
   :: ( MonadReader Config m

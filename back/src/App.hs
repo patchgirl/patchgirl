@@ -35,7 +35,7 @@ import           Account.Model
 import           AppHealth
 import           Config
 import           Environment.App
-import           RequestCollection
+import           RequestCollection.App
 import           RequestComputation.App
 import           RequestNode.App
 import           RequestNode.Model

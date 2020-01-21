@@ -51,7 +51,6 @@ spec =
           let signupPayload = SignUp { _signUpEmail = CaseInsensitive "whatever" }
           try clientEnv (signUp signupPayload) `shouldThrow` errorsWithStatus badRequest400
 
-
       it "returns 400 on already used email" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           let newAccount = NewAccount { _newAccountEmail = CaseInsensitive "foo@mail.com" }
@@ -61,6 +60,8 @@ spec =
 
 
 -- ** initialize password
+
+
     let email = CaseInsensitive "foo@mail.com"
 
     let newFakeAccount =
