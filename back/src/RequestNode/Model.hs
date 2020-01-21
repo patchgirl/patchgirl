@@ -107,7 +107,7 @@ instance FromJSON RequestNodeFromPG where
         return $ RequestNodeFromPG $ RequestFolder{..}
 
 instance FromField [RequestNodeFromPG] where
-  fromField field mdata = do
+  fromField field mdata =
     (fromField field mdata :: Conversion (Maybe Value)) >>= \case
       Nothing ->
         return []
