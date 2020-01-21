@@ -62,6 +62,7 @@ type CombinedApi auths =
 
 type RestApi auths =
   PRequestCollectionApi auths :<|>
+  PEnvironmentApi auths :<|>
   SessionApi :<|> PSessionApi auths :<|>
   AccountApi
 
@@ -70,6 +71,25 @@ type PRequestCollectionApi auths =
 
 type RequestCollectionApi =
   "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
+
+type PEnvironmentApi auths =
+  Flat (Auth auths CookieSession :> EnvironmentApi)
+
+type EnvironmentApi =
+  Flat (
+    "api" :> "environment" :> (
+      ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
+      Get '[JSON] [Environment] :<|> -- getEnvironments
+      Capture "environmentId" Int :> (
+        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
+        Delete '[JSON] () :<|>  -- deleteEnvironment
+        "keyValue" :> (
+          ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
+          Capture "keyValueId" Int :> Delete '[JSON] () -- deleteKeyValues
+        )
+      )
+    )
+  )
 
 type SessionApi =
   "api" :> "session" :> (
@@ -84,17 +104,16 @@ type SessionApi =
 type PSessionApi auths =
   Auth auths CookieSession :> "api" :> "session" :> "whoami" :> WhoAmiApi
 
+type WhoAmiApi =
+  Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                        , Header "Set-Cookie" SetCookie
+                        ] Session)
 
 type AccountApi =
   "api" :> "account" :> (
     "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
     "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] ()
   )
-
-type WhoAmiApi =
-  Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                        , Header "Set-Cookie" SetCookie
-                        ] Session)
 
 type RequestNodeApi =
   Flat (
@@ -112,31 +131,10 @@ type RequestFileApi = Flat (
     )
   )
 
-type EnvironmentApi =
-  Flat (
-    "api" :> "environment" :> (
-      ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
-      Get '[JSON] [Environment] :<|> -- getEnvironments
-      Capture "environmentId" Int :> (
-        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
-        Delete '[JSON] () :<|>
-        KeyValueApi -- deleteEnvironment
-      )
-    )
-  )
-
 type RequestComputationApi =
   Flat (
     "api" :> "requestComputation" :> (
       ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
-    )
-  )
-
-type KeyValueApi =
-  Flat (
-    "keyValue" :> (
-      ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
-      Capture "keyValueId" Int :> Delete '[JSON] ()
     )
   )
 
@@ -200,6 +198,21 @@ requestCollectionApiServer :: AuthResult CookieSession -> ServerT RequestCollect
 requestCollectionApiServer =
   authorize getRequestCollectionHandler
 
+environmentApiServer
+  :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
+  :<|> ((AuthResult CookieSession -> AppM [Environment])
+  :<|> ((AuthResult CookieSession -> Int -> UpdateEnvironment -> AppM ())
+  :<|> ((AuthResult CookieSession -> Int -> AppM ())
+  :<|> ((AuthResult CookieSession -> Int -> [NewKeyValue] -> AppM [KeyValue])
+  :<|> (AuthResult CookieSession -> Int -> Int -> AppM ())))))
+environmentApiServer =
+  (    authorize createEnvironmentHandler
+  :<|> authorize getEnvironmentsHandler
+  :<|> authorize updateEnvironmentHandler
+  :<|> authorize deleteEnvironmentHandler
+  :<|> authorize updateKeyValuesHandler
+  :<|> authorize deleteKeyValueHandler
+  )
 
 {-
 protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
@@ -299,6 +312,7 @@ mkApp config = do
     combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT]) -- JWT is needed for the tests to run
     apiServer =
       (requestCollectionApiServer :<|>
+      environmentApiServer :<|>
       (sessionApiServer cookieSettings jwtSettings :<|> pSessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
       testApiServer :<|>
       assetApiServer

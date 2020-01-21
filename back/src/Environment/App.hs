@@ -40,6 +40,8 @@ import           PatchGirl
 import           Prelude                          hiding (id)
 import           Servant                          (err404, throwError)
 import           Servant.Server                   (ServerError)
+import           Session.Model
+
 
 -- * get environments
 
@@ -159,8 +161,9 @@ getEnvironmentsHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => m [Environment]
-getEnvironmentsHandler = do
+  => CookieSession
+  -> m [Environment]
+getEnvironmentsHandler _ = do
   connection <- getDBConnection
   liftIO $ selectEnvironments connection
 
@@ -212,9 +215,10 @@ createEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => NewEnvironment
+  => CookieSession
+  -> NewEnvironment
   -> m Int
-createEnvironmentHandler newEnvironment = do
+createEnvironmentHandler _ newEnvironment = do
   connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
   liftIO $ bindEnvironmentToAccount 1 environmentId connection >> return environmentId
@@ -236,10 +240,11 @@ updateEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => CookieSession
+  -> Int
   -> UpdateEnvironment
   -> m ()
-updateEnvironmentHandler environmentId updateEnvironment = do
+updateEnvironmentHandler _ environmentId updateEnvironment = do
   connection <- getDBConnection
   liftIO $ updateEnvironmentDB environmentId updateEnvironment connection
 
@@ -264,9 +269,10 @@ deleteEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => CookieSession
+  -> Int
   -> m ()
-deleteEnvironmentHandler environmentId = do
+deleteEnvironmentHandler _ environmentId = do
   connection <- getDBConnection
   liftIO $ deleteEnvironmentDB environmentId connection
 
@@ -290,10 +296,11 @@ deleteKeyValueHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => CookieSession
+  -> Int
   -> Int
   -> m ()
-deleteKeyValueHandler environmentId keyValueId = do
+deleteKeyValueHandler _ environmentId keyValueId = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments connection
   let
@@ -334,7 +341,9 @@ instance FromJSON NewKeyValue where
 
 $(makeFieldsNoPrefix ''NewKeyValue)
 
+
 -- ** handler
+
 
 deleteKeyValuesDB :: Int -> Connection -> IO ()
 deleteKeyValuesDB environmentId connection = do
@@ -365,8 +374,11 @@ updateKeyValuesHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int -> [NewKeyValue] -> m [KeyValue]
-updateKeyValuesHandler environmentId newKeyValues = do
+  => CookieSession
+  -> Int
+  -> [NewKeyValue]
+  -> m [KeyValue]
+updateKeyValuesHandler _ environmentId newKeyValues = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments connection
   let
