@@ -222,13 +222,13 @@ environmentApiServer
   :<|> ((AuthResult CookieSession -> Int -> [NewKeyValue] -> AppM [KeyValue])
   :<|> (AuthResult CookieSession -> Int -> Int -> AppM ())))))
 environmentApiServer =
-  (    authorizeWithAccountId createEnvironmentHandler
+  authorizeWithAccountId createEnvironmentHandler
   :<|> authorizeWithAccountId getEnvironmentsHandler
   :<|> authorizeWithAccountId updateEnvironmentHandler
   :<|> authorizeWithAccountId deleteEnvironmentHandler
   :<|> authorizeWithAccountId updateKeyValuesHandler
   :<|> authorizeWithAccountId deleteKeyValueHandler
-  )
+
 
 {-
 protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
