@@ -178,6 +178,19 @@ accountApiServer =
   signUpHandler :<|>
   initializePasswordHandler
 
+authorizeWithAccountId f = \case
+  BadPassword ->
+    throwAll err402
+
+  NoSuchUser ->
+    throwAll err403
+
+  Indefinite ->
+    throwAll err405
+
+  Authenticated cookieSession ->
+    f (_cookieAccountId cookieSession)
+
 authorize
   :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
   => (t -> p) -> AuthResult t -> p
@@ -206,7 +219,7 @@ environmentApiServer
   :<|> ((AuthResult CookieSession -> Int -> [NewKeyValue] -> AppM [KeyValue])
   :<|> (AuthResult CookieSession -> Int -> Int -> AppM ())))))
 environmentApiServer =
-  (    authorize createEnvironmentHandler
+  (    authorizeWithAccountId createEnvironmentHandler
   :<|> authorize getEnvironmentsHandler
   :<|> authorize updateEnvironmentHandler
   :<|> authorize deleteEnvironmentHandler

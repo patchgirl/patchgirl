@@ -69,6 +69,10 @@ data KeyValue =
            , _value :: String
            } deriving (Eq, Show, Generic, FromRow)
 
+instance FromJSON KeyValue where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 instance ToJSON KeyValue where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
@@ -80,6 +84,10 @@ data Environment
                 , _name      :: String
                 , _keyValues :: [KeyValue]
                 } deriving (Eq, Show, Generic)
+
+instance FromJSON Environment where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance ToJSON Environment where
   toJSON =
@@ -172,17 +180,22 @@ getEnvironmentsHandler _ = do
 
 
 newtype NewEnvironment
-  = NewEnvironment { _name :: String
+  = NewEnvironment { _newEnvironmentName :: String
                    } deriving (Eq, Show, Generic)
 
 instance FromJSON NewEnvironment where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance ToJSON NewEnvironment where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 $(makeFieldsNoPrefix ''NewEnvironment)
 
 insertEnvironment :: NewEnvironment -> Connection -> IO Int
-insertEnvironment NewEnvironment { _name } connection = do
-  [Only id] <- query connection insertEnvironmentQuery (Only _name)
+insertEnvironment NewEnvironment { _newEnvironmentName } connection = do
+  [Only id] <- query connection insertEnvironmentQuery (Only _newEnvironmentName)
   return id
   where
     insertEnvironmentQuery =
@@ -215,13 +228,14 @@ createEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => CookieSession
+  => Int
   -> NewEnvironment
   -> m Int
-createEnvironmentHandler _ newEnvironment = do
+createEnvironmentHandler accountId newEnvironment = do
   connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
-  liftIO $ bindEnvironmentToAccount 1 environmentId connection >> return environmentId
+  liftIO $
+    bindEnvironmentToAccount accountId environmentId connection >> return environmentId
 
 -- * update environment
 
@@ -230,10 +244,15 @@ newtype UpdateEnvironment
   = UpdateEnvironment { _name :: String }
   deriving (Eq, Show, Generic)
 
+instance ToJSON UpdateEnvironment where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 $(makeFieldsNoPrefix ''UpdateEnvironment)
 
 instance FromJSON UpdateEnvironment where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 updateEnvironmentHandler
   :: ( MonadReader Config m
@@ -337,7 +356,13 @@ data NewKeyValue
   deriving (Eq, Show, Generic)
 
 instance FromJSON NewKeyValue where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance ToJSON NewKeyValue where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 
 $(makeFieldsNoPrefix ''NewKeyValue)
 
