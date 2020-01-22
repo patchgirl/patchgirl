@@ -75,7 +75,7 @@ spec =
     describe "get environments" $
       it "should get environments bound to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
+          (_, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           let newKeyValues = [ NewKeyValue { _newKeyValueKey = "1k", _newKeyValueValue = "1v" }
                              , NewKeyValue { _newKeyValueKey = "2k", _newKeyValueValue = "2v" }
@@ -97,18 +97,18 @@ spec =
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, token, _) <- withAccountAndEnvironment connection
+          (_, token, _) <- withAccountAndEnvironment connection
           try clientEnv (updateEnvironment token 1 updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 when environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
+          (_, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           try clientEnv (updateEnvironment token (environmentId + 1) updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "should update environment" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
+          (_, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           _ <- try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload)
           FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
