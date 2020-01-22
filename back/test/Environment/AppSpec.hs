@@ -163,7 +163,7 @@ spec =
 
 -- ** update key values
 
-    describe "update key values" $ do
+    describe "update key values" $
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
