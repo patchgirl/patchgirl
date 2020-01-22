@@ -114,9 +114,34 @@ spec =
           FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test2"
 
+
+-- ** delete environments
+
+
+    describe "delete environment" $ do
+      it "return 404 if environment doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (_, token, _) <- withAccountAndEnvironment connection
+          try clientEnv (deleteEnvironment token 1) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+    describe "delete environment" $ do
+      it "return 404 if environment doesnt belong to account" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId1, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          (accountId2, _) <- insertFakeAccount defaultNewFakeAccount2 connection
+          let newFakeEnvironment =
+                NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId2
+                                   , _newFakeEnvironmentName = "test"
+                                   }
+
+          environmentId <- insertNewFakeEnvironment newFakeEnvironment connection
+          token <- signedUserToken accountId1
+          try clientEnv (deleteEnvironment token environmentId) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+
   where
     withAccountAndEnvironment :: PG.Connection -> IO (Int, Auth.Token, NewEnvironment)
     withAccountAndEnvironment connection = do
-      (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
+      (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
       token <- signedUserToken accountId
       return (accountId, token, NewEnvironment { _newEnvironmentName = "test" })

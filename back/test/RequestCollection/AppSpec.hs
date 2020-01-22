@@ -46,14 +46,14 @@ spec =
 
       it "returns unauthorized404 when requestCollection does not belong to user" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           FakeRequestCollection { _fakeRequestCollectionId } <- insertFakeRequestCollection accountId connection
           token <- signedUserToken (accountId + 1)
           try clientEnv (getRequestCollectionById token _fakeRequestCollectionId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns the request collection when request collection exists and belongs to user" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           FakeRequestCollection { _fakeRequestCollectionId } <- insertFakeRequestCollection accountId connection
           token <- signedUserToken accountId
           requestCollection <- try clientEnv (getRequestCollectionById token _fakeRequestCollectionId)

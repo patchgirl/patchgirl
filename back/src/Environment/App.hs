@@ -294,9 +294,13 @@ deleteEnvironmentHandler
   => Int
   -> Int
   -> m ()
-deleteEnvironmentHandler _ environmentId = do
+deleteEnvironmentHandler accountId environmentId = do
   connection <- getDBConnection
-  liftIO $ deleteEnvironmentDB environmentId connection
+  environments <- liftIO $ selectEnvironments accountId connection
+  case environmentId `elem` map _environmentId environments  of
+    False -> throwError err404
+    True ->
+      liftIO $ deleteEnvironmentDB environmentId connection
 
 deleteEnvironmentDB :: Int -> Connection -> IO ()
 deleteEnvironmentDB environmentId connection = do

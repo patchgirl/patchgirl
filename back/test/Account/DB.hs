@@ -19,12 +19,17 @@ import           Model
 -- * new fake account
 
 
-defaultNewFakeAccount :: NewFakeAccount
-defaultNewFakeAccount =
+defaultNewFakeAccount1 :: NewFakeAccount
+defaultNewFakeAccount1 =
   NewFakeAccount { _newFakeAccountEmail = CaseInsensitive "foo@mail.com"
                  , _newFakeAccountPassword = "123"
                  }
 
+defaultNewFakeAccount2 :: NewFakeAccount
+defaultNewFakeAccount2 =
+  NewFakeAccount { _newFakeAccountEmail = CaseInsensitive "bar@mail.com"
+                 , _newFakeAccountPassword = "321"
+                 }
 
 data NewFakeAccount =
   NewFakeAccount { _newFakeAccountEmail    :: CaseInsensitive
