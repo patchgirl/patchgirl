@@ -12,6 +12,7 @@ import           Data.Functor                     ((<&>))
 import           Data.Maybe                       (listToMaybe)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
+import           Environment.App                  (KeyValue)
 import           GHC.Generics
 
 -- * insert fake environment
@@ -93,14 +94,14 @@ data NewFakeKeyValue =
                   }
   deriving (Eq, Show, Read, Generic, ToRow)
 
-insertNewFakeKeyValue :: NewFakeKeyValue -> Connection -> IO Int
+insertNewFakeKeyValue :: NewFakeKeyValue -> Connection -> IO KeyValue
 insertNewFakeKeyValue newFakeKeyValue connection = do
-  [Only fakeKeyValueId] <- query connection rawQuery newFakeKeyValue
-  return fakeKeyValueId
+  [keyValue] <- query connection rawQuery newFakeKeyValue
+  return keyValue
   where
     rawQuery =
       [sql|
           INSERT INTO key_value (environment_id, key, value)
           VALUES (?, ?, ?)
-          RETURNING id;
+          RETURNING id, key, value;
           |]

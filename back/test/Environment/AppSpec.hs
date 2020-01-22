@@ -25,6 +25,7 @@ import qualified Servant.Auth.Server        as Auth
 import           Servant.Client             (ClientM, client)
 import           Test.Hspec
 
+
 -- * client
 
 
@@ -57,7 +58,7 @@ spec =
     describe "create environment" $
       it "should create an environment and bind it to an account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
+          (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test"
@@ -75,15 +76,25 @@ spec =
     describe "get environments" $
       it "should get environments bound to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token, newEnvironment) <- withAccountAndEnvironment connection
-          environmentId <- try clientEnv (createEnvironment token newEnvironment)
-          let newKeyValues = [ NewKeyValue { _newKeyValueKey = "1k", _newKeyValueValue = "1v" }
-                             , NewKeyValue { _newKeyValueKey = "2k", _newKeyValueValue = "2v" }
-                             ]
-          [keyValue1, keyValue2] <- try clientEnv (updateKeyValues token environmentId newKeyValues)
+          (accountId1, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
+          environmentId1 <- insertNewFakeEnvironment (newFakeEnvironment accountId1 "test1") connection
+          _ <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test2") connection
+
+          let newFakeKeyValues =
+                [ NewFakeKeyValue { _fakeKeyValueEnvironmentId = environmentId1
+                                  , _fakeKeyValueKey = "1k"
+                                  , _fakeKeyValueValue = "1v"
+                                  }
+                , NewFakeKeyValue { _fakeKeyValueEnvironmentId = environmentId1
+                                  , _fakeKeyValueKey = "2k"
+                                  , _fakeKeyValueValue = "2v"
+                                  }
+                ]
+          [keyValue1, keyValue2] <- mapM (`insertNewFakeKeyValue` connection) newFakeKeyValues
           environments <- try clientEnv (getEnvironments token)
-          let expectedEnvironments = [ Environment { _environmentId = environmentId
-                                                   , _environmentName = "test"
+          let expectedEnvironments = [ Environment { _environmentId = environmentId1
+                                                   , _environmentName = "test1"
                                                    , _environmentKeyValues = [ keyValue1, keyValue2 ]
                                                    }
                                      ]
@@ -92,24 +103,26 @@ spec =
 
 -- ** update environments
 
+
     let updateEnvironmentPayload = UpdateEnvironment { _name = "test2" }
 
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token, _) <- withAccountAndEnvironment connection
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
           try clientEnv (updateEnvironment token 1 updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 when environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token, newEnvironment) <- withAccountAndEnvironment connection
-          environmentId <- try clientEnv (createEnvironment token newEnvironment)
-          try clientEnv (updateEnvironment token (environmentId + 1) updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test1") connection
+          try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "should update environment" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token, newEnvironment) <- withAccountAndEnvironment connection
-          environmentId <- try clientEnv (createEnvironment token newEnvironment)
+          (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           _ <- try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload)
           Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test2"
@@ -121,24 +134,23 @@ spec =
     describe "delete environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token, _) <- withAccountAndEnvironment connection
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
           try clientEnv (deleteEnvironment token 1) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId1, _) <- insertFakeAccount defaultNewFakeAccount1 connection
-          (accountId2, _) <- insertFakeAccount defaultNewFakeAccount2 connection
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           let newFakeEnvironment =
                 NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId2
                                    , _newFakeEnvironmentName = "test"
                                    }
           environmentId <- insertNewFakeEnvironment newFakeEnvironment connection
-          token <- signedUserToken accountId1
           try clientEnv (deleteEnvironment token environmentId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes environment" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, token, _) <- withAccountAndEnvironment connection
+          (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
           let newFakeEnvironment =
                 NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                                    , _newFakeEnvironmentName = "test"
@@ -150,8 +162,16 @@ spec =
 
 
   where
-    withAccountAndEnvironment :: PG.Connection -> IO (Int, Auth.Token, NewEnvironment)
-    withAccountAndEnvironment connection = do
-      (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+    withAccountAndToken :: NewFakeAccount -> PG.Connection -> IO (Int, Auth.Token)
+    withAccountAndToken newFakeAccount connection = do
+      (accountId, _) <- insertFakeAccount newFakeAccount connection
       token <- signedUserToken accountId
-      return (accountId, token, NewEnvironment { _newEnvironmentName = "test" })
+      return (accountId, token)
+
+    newEnvironment :: NewEnvironment = NewEnvironment { _newEnvironmentName = "test" }
+
+    newFakeEnvironment :: Int -> String -> NewFakeEnvironment
+    newFakeEnvironment accountId name =
+      NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
+                         , _newFakeEnvironmentName = name
+                         }
