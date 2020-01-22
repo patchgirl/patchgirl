@@ -139,9 +139,7 @@ spec =
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
-          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
-          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test") connection
+          (token, environmentId) <- environmentThatDoesntBelongToAccountToken connection
           try clientEnv (deleteEnvironment token environmentId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes environment" $ \clientEnv ->
@@ -163,9 +161,7 @@ spec =
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
-          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
-          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test") connection
+          (token, environmentId) <- environmentThatDoesntBelongToAccountToken connection
           try clientEnv (updateKeyValues token environmentId []) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "updates the environment key values" $ \clientEnv ->
@@ -201,3 +197,10 @@ spec =
       NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                          , _newFakeEnvironmentName = name
                          }
+
+    environmentThatDoesntBelongToAccountToken :: PG.Connection -> IO (Auth.Token, Int)
+    environmentThatDoesntBelongToAccountToken connection = do
+      (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+      (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
+      environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test") connection
+      return (token, environmentId)
