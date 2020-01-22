@@ -2,7 +2,7 @@ run:
 	clear; stack exec patchGirl
 
 app:
-	clear; stack build
+	clear; stack build --ghc-options="-threaded -rtsopts -with-rtsopts=-TN"
 
 check:
 	clear; ghcid --command 'stack ghci --test --main-is patchGirl:test:spec --ghc-options="-Wall -Werror -fno-warn-name-shadowing"' --test ':main' --warnings

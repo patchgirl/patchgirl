@@ -62,3 +62,6 @@ dependencies:
   - http-types
   - time
   - jose
+  - wai-middleware-prometheus
+  - prometheus-client
+  - prometheus-metrics-ghc

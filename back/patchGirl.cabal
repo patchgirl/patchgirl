@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5bcd0482b331a9da57423055332a1101e2f776838366316b97ed956b952b9e02
+-- hash: 010c6a52e885404105b724cc8fff463019d684a853f70a3ec5d1621d0cb9baf9
 
 name:           patchGirl
 version:        0.0.0
@@ -56,6 +56,8 @@ library
     , lens
     , mtl
     , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
     , servant
     , servant-auth
     , servant-auth-client
@@ -69,6 +71,7 @@ library
     , unordered-containers
     , utf8-string
     , wai
+    , wai-middleware-prometheus
     , warp
     , warp-tls
   default-language: Haskell2010
@@ -98,6 +101,8 @@ executable patchGirl
     , mtl
     , patchGirl
     , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
     , servant
     , servant-auth
     , servant-auth-client
@@ -111,6 +116,7 @@ executable patchGirl
     , unordered-containers
     , utf8-string
     , wai
+    , wai-middleware-prometheus
     , warp
     , warp-tls
   default-language: Haskell2010
@@ -153,6 +159,8 @@ test-suite spec
     , mtl
     , patchGirl
     , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
     , servant
     , servant-auth
     , servant-auth-client
@@ -167,6 +175,7 @@ test-suite spec
     , unordered-containers
     , utf8-string
     , wai
+    , wai-middleware-prometheus
     , warp >=3.2.4
     , warp-tls
   default-language: Haskell2010

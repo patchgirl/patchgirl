@@ -9,6 +9,7 @@
 
 module App where
 
+
 import           Control.Monad.Except                  (ExceptT, MonadError,
                                                         runExceptT)
 import           Control.Monad.IO.Class                (MonadIO)
@@ -20,6 +21,10 @@ import           GHC.Natural                           (naturalToInt)
 import           Network.Wai                           hiding (Request)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Handler.WarpTLS
+import           Network.Wai.Middleware.Prometheus     (PrometheusSettings (..),
+                                                        prometheus)
+import           Prometheus                            (register)
+import           Prometheus.Metric.GHC                 (ghcMetrics)
 import           Servant                               hiding (BadPassword,
                                                         NoSuchUser)
 import           Servant.API.ContentTypes              (NoContent)
@@ -308,10 +313,12 @@ run :: IO ()
 run = do
   config :: Config <- importConfig
   print config
+  _ <- register ghcMetrics
   let
+    promMiddleware :: Middleware = prometheus $ PrometheusSettings ["metrics"] True True
     settings = setPort (naturalToInt $ port config) defaultSettings
     tlsOpts = tlsSettings "cert.pem" "key.pem"
-  runTLS tlsOpts settings =<< mkApp config
+  runTLS tlsOpts settings =<< promMiddleware <$> mkApp config
 
 mkApp :: Config -> IO Application
 mkApp config = do

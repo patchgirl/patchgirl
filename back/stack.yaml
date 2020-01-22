@@ -10,7 +10,8 @@ extra-deps:
   - dhall-1.28.0
   - atomic-write-0.2.0.7
   - prettyprinter-1.5.1
-
+  - prometheus-metrics-ghc-1.0.0
+  - wai-middleware-prometheus-1.0.0
 
 nix:
   enable: true

@@ -53,6 +53,20 @@ packages:
       sha256: 86fd583112db41bac5ac9ecf258ec402ad615253e9c5eabc56ec127bfb94c096
   original:
     hackage: prettyprinter-1.5.1
+- completed:
+    hackage: prometheus-metrics-ghc-1.0.0@sha256:0f4ecbefa810bd847e66c498ab3387bf21e426525a7c9a94841973c582719ba3,1231
+    pantry-tree:
+      size: 293
+      sha256: 8a6d6ef3235ab980e867f64b712b5d38f1a84c3ac4920f5b4c3b3e63bcdf6ec9
+  original:
+    hackage: prometheus-metrics-ghc-1.0.0
+- completed:
+    hackage: wai-middleware-prometheus-1.0.0@sha256:1625792914fb2139f005685be8ce519111451cfb854816e430fbf54af46238b4,1314
+    pantry-tree:
+      size: 307
+      sha256: 6d64803c639ed4c7204ea6fab0536b97d3ee16cdecb9b4a883cd8e56d3c61402
+  original:
+    hackage: wai-middleware-prometheus-1.0.0
 snapshots:
 - completed:
     size: 523884
