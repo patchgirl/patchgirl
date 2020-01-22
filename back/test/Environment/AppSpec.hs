@@ -13,14 +13,15 @@ module Environment.AppSpec where
 
 import           Account.DB
 import           App
+import qualified Database.PostgreSQL.Simple as PG
 import           Environment.App
 import           Environment.DB
 import           Helper.App
-import qualified Network.HTTP.Types  as HTTP
+import qualified Network.HTTP.Types         as HTTP
 import           Servant
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Servant.Auth.Client        as Auth
+import qualified Servant.Auth.Server        as Auth
+import           Servant.Client             (ClientM, client)
 import           Test.Hspec
 
 
@@ -56,9 +57,7 @@ spec =
     describe "create environment" $
       it "should create an environment and bind it to an account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
-          token <- signedUserToken accountId
-          let newEnvironment = NewEnvironment { _newEnvironmentName = "test" }
+          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test"
@@ -76,9 +75,7 @@ spec =
     describe "get environments" $
       it "should get environments bound to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
-          token <- signedUserToken accountId
-          let newEnvironment = NewEnvironment { _newEnvironmentName = "test" }
+          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           let newKeyValues = [ NewKeyValue { _newKeyValueKey = "1k", _newKeyValueValue = "1v" }
                              , NewKeyValue { _newKeyValueKey = "2k", _newKeyValueValue = "2v" }
@@ -95,31 +92,31 @@ spec =
 
 -- ** update environments
 
+    let updateEnvironmentPayload = UpdateEnvironment { _name = "test2" }
 
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
-          token <- signedUserToken accountId
-          let updateEnvironmentPayload = UpdateEnvironment { _name = "whatever" }
+          (accountId, token, _) <- withAccountAndEnvironment connection
           try clientEnv (updateEnvironment token 1 updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 when environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
-          token <- signedUserToken accountId
-          let newEnvironment = NewEnvironment { _newEnvironmentName = "test" }
+          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
-          let updateEnvironmentPayload = UpdateEnvironment { _name = "test2" }
           try clientEnv (updateEnvironment token (environmentId + 1) updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "should update environment" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
-          token <- signedUserToken accountId
-          let newEnvironment = NewEnvironment { _newEnvironmentName = "test" }
+          (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
-          let updateEnvironmentPayload = UpdateEnvironment { _name = "test2" }
           _ <- try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload)
           FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test2"
+
+  where
+    withAccountAndEnvironment :: PG.Connection -> IO (Int, Auth.Token, NewEnvironment)
+    withAccountAndEnvironment connection = do
+      (accountId, _) <- insertFakeAccount defaultNewFakeAccount connection
+      token <- signedUserToken accountId
+      return (accountId, token, NewEnvironment { _newEnvironmentName = "test" })

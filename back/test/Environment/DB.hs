@@ -43,9 +43,8 @@ data FakeAccountEnvironment =
   deriving (Eq, Show, Read, Generic, FromRow)
 
 selectFakeAccountEnvironments :: Int -> Connection -> IO [FakeAccountEnvironment]
-selectFakeAccountEnvironments accountId connection = do
-  fakeAccountEnvironments <- query connection rawQuery (Only accountId)
-  return fakeAccountEnvironments
+selectFakeAccountEnvironments accountId connection =
+  query connection rawQuery (Only accountId)
   where
     rawQuery =
       [sql|
