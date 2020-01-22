@@ -88,9 +88,9 @@ selectFakeAccountEnvironments accountId connection =
 
 
 data NewFakeKeyValue =
-  NewFakeKeyValue { _fakeKeyValueEnvironmentId :: Int
-                  , _fakeKeyValueKey           :: String
-                  , _fakeKeyValueValue         :: String
+  NewFakeKeyValue { _newFakeKeyValueEnvironmentId :: Int
+                  , _newFakeKeyValueKey           :: String
+                  , _newFakeKeyValueValue         :: String
                   }
   deriving (Eq, Show, Read, Generic, ToRow)
 
@@ -104,4 +104,27 @@ insertNewFakeKeyValue newFakeKeyValue connection = do
           INSERT INTO key_value (environment_id, key, value)
           VALUES (?, ?, ?)
           RETURNING id, key, value;
+          |]
+
+
+-- * select fake key value
+
+
+data FakeKeyValue =
+  FakeKeyValue { _fakeKeyValueId            :: Int
+               , _fakeKeyValueEnvironmentId :: Int
+               , _fakeKeyValueKey           :: String
+               , _fakeKeyValueValue         :: String
+               }
+  deriving (Eq, Show, Read, Generic, FromRow)
+
+selectFakeKeyValues :: Int -> Connection -> IO [KeyValue]
+selectFakeKeyValues environmentId connection =
+  query connection rawQuery (Only environmentId)
+  where
+    rawQuery =
+      [sql|
+          SELECT id, environment_id, key, value
+          FROM key_value
+          WHERE environment_id = ?
           |]

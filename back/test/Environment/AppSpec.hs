@@ -82,13 +82,13 @@ spec =
           _ <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test2") connection
 
           let newFakeKeyValues =
-                [ NewFakeKeyValue { _fakeKeyValueEnvironmentId = environmentId1
-                                  , _fakeKeyValueKey = "1k"
-                                  , _fakeKeyValueValue = "1v"
+                [ NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId1
+                                  , _newFakeKeyValueKey = "1k"
+                                  , _newFakeKeyValueValue = "1v"
                                   }
-                , NewFakeKeyValue { _fakeKeyValueEnvironmentId = environmentId1
-                                  , _fakeKeyValueKey = "2k"
-                                  , _fakeKeyValueValue = "2v"
+                , NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId1
+                                  , _newFakeKeyValueKey = "2k"
+                                  , _newFakeKeyValueValue = "2v"
                                   }
                 ]
           [keyValue1, keyValue2] <- mapM (`insertNewFakeKeyValue` connection) newFakeKeyValues
@@ -141,21 +141,13 @@ spec =
         cleanDBAfter $ \connection -> do
           (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
-          let newFakeEnvironment =
-                NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId2
-                                   , _newFakeEnvironmentName = "test"
-                                   }
-          environmentId <- insertNewFakeEnvironment newFakeEnvironment connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test") connection
           try clientEnv (deleteEnvironment token environmentId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes environment" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
-          let newFakeEnvironment =
-                NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
-                                   , _newFakeEnvironmentName = "test"
-                                   }
-          environmentId <- insertNewFakeEnvironment newFakeEnvironment connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           _ <- try clientEnv (deleteEnvironment token environmentId)
           mEnvironment <- selectFakeEnvironment environmentId connection
           mEnvironment `shouldSatisfy` Maybe.isNothing
@@ -163,11 +155,36 @@ spec =
 
 -- ** update key values
 
-    describe "update key values" $
+    describe "update key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
           try clientEnv (updateKeyValues token 1 []) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "return 404 if environment doesnt belong to account" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test") connection
+          try clientEnv (updateKeyValues token environmentId []) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "updates the environment key values" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
+          try clientEnv (updateKeyValues token environmentId []) `shouldReturn` []
+          selectFakeKeyValues environmentId connection `shouldReturn` []
+
+          let newKeyValues =
+                [ NewKeyValue { _newKeyValueKey = "key1"
+                              , _newKeyValueValue = "value1"
+                              }
+                ]
+          [ KeyValue { _keyValueKey, _keyValueValue } ] <- try clientEnv (updateKeyValues token environmentId newKeyValues)
+          _keyValueKey `shouldBe` "key1"
+          _keyValueValue `shouldBe` "value1"
+
+
 
 
   where

@@ -14,4 +14,4 @@ check-dhall:
 	clear; dhall --explain --file ./config.dhall
 
 check-hlint:
-	hlint .
+	clear; hlint .
