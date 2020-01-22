@@ -13,6 +13,7 @@ module Environment.AppSpec where
 
 import           Account.DB
 import           App
+import qualified Data.Maybe                 as Maybe
 import qualified Database.PostgreSQL.Simple as PG
 import           Environment.App
 import           Environment.DB
@@ -23,7 +24,6 @@ import qualified Servant.Auth.Client        as Auth
 import qualified Servant.Auth.Server        as Auth
 import           Servant.Client             (ClientM, client)
 import           Test.Hspec
-
 
 -- * client
 
@@ -59,7 +59,7 @@ spec =
         cleanDBAfter $ \connection -> do
           (accountId, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
-          FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
+          Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test"
           fakeAccountEnvironments <- selectFakeAccountEnvironments accountId connection
           let expectedFakeAccountEnvironment =
@@ -111,7 +111,7 @@ spec =
           (_, token, newEnvironment) <- withAccountAndEnvironment connection
           environmentId <- try clientEnv (createEnvironment token newEnvironment)
           _ <- try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload)
-          FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
+          Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
           _fakeEnvironmentName `shouldBe` "test2"
 
 
@@ -124,7 +124,6 @@ spec =
           (_, token, _) <- withAccountAndEnvironment connection
           try clientEnv (deleteEnvironment token 1) `shouldThrow` errorsWithStatus HTTP.notFound404
 
-    describe "delete environment" $ do
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId1, _) <- insertFakeAccount defaultNewFakeAccount1 connection
@@ -133,10 +132,21 @@ spec =
                 NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId2
                                    , _newFakeEnvironmentName = "test"
                                    }
-
           environmentId <- insertNewFakeEnvironment newFakeEnvironment connection
           token <- signedUserToken accountId1
           try clientEnv (deleteEnvironment token environmentId) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "deletes environment" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, token, _) <- withAccountAndEnvironment connection
+          let newFakeEnvironment =
+                NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
+                                   , _newFakeEnvironmentName = "test"
+                                   }
+          environmentId <- insertNewFakeEnvironment newFakeEnvironment connection
+          _ <- try clientEnv (deleteEnvironment token environmentId)
+          mEnvironment <- selectFakeEnvironment environmentId connection
+          mEnvironment `shouldSatisfy` Maybe.isNothing
 
 
   where

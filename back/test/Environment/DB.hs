@@ -8,10 +8,11 @@
 
 module Environment.DB where
 
+import           Data.Functor                     ((<&>))
+import           Data.Maybe                       (listToMaybe)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
-
 
 -- * insert fake environment
 
@@ -49,10 +50,9 @@ data FakeEnvironment =
                   }
   deriving (Eq, Show, Read, Generic, FromRow)
 
-selectFakeEnvironment :: Int -> Connection -> IO FakeEnvironment
-selectFakeEnvironment environmentId connection = do
-  [fakeEnvironment] <- query connection rawQuery (Only environmentId)
-  return fakeEnvironment
+selectFakeEnvironment :: Int -> Connection -> IO (Maybe FakeEnvironment)
+selectFakeEnvironment environmentId connection =
+  query connection rawQuery (Only environmentId) <&> listToMaybe
   where
     rawQuery =
       [sql|
