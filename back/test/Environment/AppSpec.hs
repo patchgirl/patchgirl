@@ -153,6 +153,7 @@ spec =
 
 -- ** update key values
 
+
     describe "update key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
@@ -181,6 +182,37 @@ spec =
           _keyValueValue `shouldBe` "value1"
 
 
+-- ** delete key values
+
+
+    describe "delete key values" $ do
+      it "return 404 if environment doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          try clientEnv (deleteKeyValue token 1 1) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "return 404 if environment doesnt belong to account" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (token, environmentId) <- environmentThatDoesntBelongToAccountToken connection
+          try clientEnv (deleteKeyValue token environmentId 1) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "return 404 if the key value doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
+          try clientEnv (deleteKeyValue token environmentId 1) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "deletes the key value" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
+          KeyValue { _keyValueId } <-
+            insertNewFakeKeyValue NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId
+                                                  , _newFakeKeyValueKey = "key1"
+                                                  , _newFakeKeyValueValue = "value1"
+                                                  } connection
+          try clientEnv (deleteKeyValue token environmentId _keyValueId )
+          selectFakeKeyValues _keyValueId connection `shouldReturn` []
 
 
   where
