@@ -1,6 +1,13 @@
 class Init < ActiveRecord::Migration[5.2]
   def up
+    if Rails.env.test? then
+      execute %{
+        ALTER ROLE postgres SET client_min_messages TO WARNING; -- to avoid log when truncating in test
+      }
+    end
+
     execute %{
+
       CREATE EXTENSION CITEXT;
       CREATE EXTENSION PGCRYPTO;
 

@@ -102,6 +102,7 @@ withConnection :: (Connection -> IO a) -> Connection -> IO a
 withConnection f connection =
   finally (f connection) $ listTables connection >>= mapM_ (truncateTable connection)
 
+
 listTables :: Connection -> IO [Text]
 listTables c =
   map fromOnly `fmap` query_ c q
