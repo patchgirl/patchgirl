@@ -161,6 +161,15 @@ spec =
           mEnvironment `shouldSatisfy` Maybe.isNothing
 
 
+-- ** update key values
+
+    describe "update key values" $ do
+      it "return 404 if environment doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (_, token) <- withAccountAndToken defaultNewFakeAccount1 connection
+          try clientEnv (updateKeyValues token 1 []) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+
   where
     withAccountAndToken :: NewFakeAccount -> PG.Connection -> IO (Int, Auth.Token)
     withAccountAndToken newFakeAccount connection = do

@@ -96,10 +96,8 @@ signInHandler
                  , Header "Set-Cookie" SetCookie]
          Session)
 signInHandler cookieSettings jwtSettings login = do
-  liftIO $ print login
   connection <- getDBConnection
   mAccount <- liftIO $ selectAccount login connection
-  liftIO $ print mAccount
   case mAccount of
     Nothing ->
       throwError err401
