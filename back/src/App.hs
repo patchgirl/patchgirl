@@ -41,9 +41,9 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
 
 import           Account.App
 import           Account.Model
-import           AppHealth
 import           Config
 import           Environment.App
+import           Health.App
 import           RequestCollection.App
 import           RequestComputation.App
 import           RequestNode.Model

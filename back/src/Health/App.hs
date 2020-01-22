@@ -5,7 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
 
-module AppHealth where
+module Health.App where
 
 import           Config
 import           Control.Monad.Except             (MonadError)
@@ -21,6 +21,7 @@ import           Servant
 
 -- * Model
 
+
 data AppHealth =
   AppHealth { isAppRunning :: Bool
             , isDBUp       :: Bool
@@ -30,7 +31,9 @@ data AppHealth =
 instance ToJSON AppHealth
 instance FromJSON AppHealth
 
+
 -- * DB
+
 
 selectDBIsRunning :: Connection -> IO Bool
 selectDBIsRunning connection = do
@@ -42,7 +45,9 @@ selectDBIsRunning connection = do
           SELECT true
           |]
 
+
 -- * Handler
+
 
 getAppHealth
   :: ( MonadReader Config m
