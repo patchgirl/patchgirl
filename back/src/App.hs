@@ -18,7 +18,7 @@ import qualified GHC.Natural                           as Natural
 import qualified Network.Wai.Handler.Warp              as Warp
 import qualified Network.Wai.Handler.WarpTLS           as WarpTLS
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
-import qualified Prometheus                            as Prometheus
+import qualified Prometheus
 import qualified Prometheus.Metric.GHC                 as Prometheus
 import           Servant                               hiding (BadPassword,
                                                         NoSuchUser)
