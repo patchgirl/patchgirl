@@ -11,7 +11,6 @@ import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Servant
 import qualified Servant.API.ContentTypes         as API
-import qualified Servant.Server                   as Servant
 
 import           DB
 import           PatchGirl
