@@ -24,6 +24,7 @@ import           RequestNode.Model
 import           Servant
 import           Session.Model
 
+
 -- * Model
 
 
@@ -35,8 +36,8 @@ data RequestCollection =
 -- * DB
 
 
-requestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
-requestCollectionAvailable accountId requestCollectionId connection =
+selectRequestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
+selectRequestCollectionAvailable accountId requestCollectionId connection =
   query connection collectionExistsSql (requestCollectionId, accountId) >>= \case
     [Only True] -> return True
     _ -> return False
@@ -137,7 +138,7 @@ getRequestCollectionHandler cookieSession requestCollectionId =
   case cookieSession of
     SignedUserCookie { _cookieAccountId } -> do
       connection <- getDBConnection
-      liftIO (requestCollectionAvailable _cookieAccountId requestCollectionId connection) >>= \case
+      liftIO (selectRequestCollectionAvailable _cookieAccountId requestCollectionId connection) >>= \case
         False -> throwError err404
         True ->
           liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case

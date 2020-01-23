@@ -46,6 +46,7 @@ import           Environment.App
 import           Health.App
 import           RequestCollection.App
 import           RequestComputation.App
+import           RequestNode.App
 import           RequestNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
 import           Session.App
@@ -55,6 +56,7 @@ import           Test
 
 -- * api
 
+
 type CombinedApi auths =
   RestApi auths :<|>
   TestApi :<|>
@@ -63,14 +65,23 @@ type CombinedApi auths =
 type RestApi auths =
   PRequestCollectionApi auths :<|>
   PEnvironmentApi auths :<|>
+  PRequestNodeApi auths :<|>
   SessionApi :<|> PSessionApi auths :<|>
   AccountApi
+
+
+-- ** request collection
+
 
 type PRequestCollectionApi auths =
   Auth auths CookieSession :> RequestCollectionApi
 
 type RequestCollectionApi =
   "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
+
+
+-- ** environment
+
 
 type PEnvironmentApi auths =
   Flat (Auth auths CookieSession :> EnvironmentApi)
@@ -91,6 +102,24 @@ type EnvironmentApi =
     )
   )
 
+
+-- ** request node
+
+
+type PRequestNodeApi auths =
+  Flat (Auth auths CookieSession :> RequestNodeApi)
+
+type RequestNodeApi =
+  Flat (
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
+      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] NoContent
+    )
+  )
+
+
+-- ** session
+
+
 type SessionApi =
   "api" :> "session" :> (
     "signin" :> ReqBody '[JSON] SignIn :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
@@ -104,10 +133,17 @@ type SessionApi =
 type PSessionApi auths =
   Auth auths CookieSession :> "api" :> "session" :> "whoami" :> WhoAmiApi
 
+
+-- ** whoami
+
+
 type WhoAmiApi =
   Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                         , Header "Set-Cookie" SetCookie
                         ] Session)
+
+
+-- ** account
 
 type AccountApi =
   "api" :> "account" :> (
@@ -115,12 +151,7 @@ type AccountApi =
     "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] ()
   )
 
-type RequestNodeApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
-      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] NoContent
-    )
-  )
+-- ** other
 
 type RequestFileApi = Flat (
   "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
@@ -213,6 +244,10 @@ authorize f = \case
 requestCollectionApiServer :: AuthResult CookieSession -> ServerT RequestCollectionApi AppM
 requestCollectionApiServer =
   authorize getRequestCollectionHandler
+
+requestNodeApiServer :: AuthResult CookieSession -> ServerT RequestNodeApi AppM
+requestNodeApiServer =
+  authorizeWithAccountId updateRequestNodeHandler
 
 environmentApiServer
   :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
@@ -331,6 +366,7 @@ mkApp config = do
     apiServer =
       (requestCollectionApiServer :<|>
       environmentApiServer :<|>
+      requestNodeApiServer :<|>
       (sessionApiServer cookieSettings jwtSettings :<|> pSessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
       testApiServer :<|>
       assetApiServer

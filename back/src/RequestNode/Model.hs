@@ -30,32 +30,44 @@ import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Http
 
+
+-- * update request node
+
+
 data UpdateRequestNode
-  = UpdateRequestFolder { _name :: String
+  = UpdateRequestFolder { _updateRequestNodeName :: String
                         }
-  | UpdateRequestFile { _name        :: String
-                      , _httpUrl     :: String
-                      , _httpMethod  :: Method
-                      , _httpHeaders :: [(String, String)]
-                      , _httpBody    :: String
+  | UpdateRequestFile { _updateRequestNodeName        :: String
+                      , _updateRequestNodeHttpUrl     :: String
+                      , _updateRequestNodeHttpMethod  :: Method
+                      , _updateRequestNodeHttpHeaders :: [(String, String)]
+                      , _updateRequestNodeHttpBody    :: String
                       }
-  deriving (Eq, Show, Generic, FromJSON)
+  deriving (Eq, Show, Generic)
 
 instance ToJSON UpdateRequestNode where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
+instance FromJSON UpdateRequestNode where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 $(makeFieldsNoPrefix ''UpdateRequestNode)
 
 instance ToField UpdateRequestNode where
-  toField UpdateRequestFolder { _name } =
-    toField (show _name)
-  toField UpdateRequestFile { _name, _httpUrl, _httpMethod, _httpBody } =
-    Many [ toField _name
-         , toField _httpUrl
-         , toField _httpMethod
-         , toField _httpBody
+  toField UpdateRequestFolder { _updateRequestNodeName } =
+    toField (show _updateRequestNodeName)
+  toField UpdateRequestFile { _updateRequestNodeName, _updateRequestNodeHttpUrl, _updateRequestNodeHttpMethod, _updateRequestNodeHttpBody } =
+    Many [ toField _updateRequestNodeName
+         , toField _updateRequestNodeHttpUrl
+         , toField _updateRequestNodeHttpMethod
+         , toField _updateRequestNodeHttpBody
          ]
+
+
+-- * request node
+
 
 data RequestNode
   = RequestFolder { _requestNodeId       :: Int
@@ -76,13 +88,18 @@ instance ToJSON RequestNode where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJSON RequestNode where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 instance FromField [RequestNode] where
   fromField field mdata = do
     value <- fromField field mdata :: Conversion Value
     let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNode]
     either (returnError ConversionFailed field) return errorOrRequestNodes
+
+
+-- * request node from pg
+
 
 newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
 
@@ -119,6 +136,10 @@ instance FromField [RequestNodeFromPG] where
 fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
 fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode
 
+
+-- * pg header
+
+
 data PGHeader = PGHeader { headerKey   :: String
                          , headerValue :: String
                          } deriving (Eq, Show)
@@ -128,6 +149,10 @@ instance FromJSON PGHeader where
     headerKey <- o .: "header_key"
     headerValue <- o .: "header_value"
     return PGHeader{..}
+
+
+-- * request node type
+
 
 data RequestNodeType
   = RequestFileType
@@ -141,10 +166,18 @@ instance FromJSON RequestNodeType where
         in take (length s - length suffixToRemove) s
     }
 
+
+-- * parent node id
+
+
 data ParentNodeId
   = RequestCollectionId Int
   | RequestNodeId Int
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
+
+
+-- * new request file
+
 
 data NewRequestFile =
   NewRequestFile { _name         :: String
@@ -180,6 +213,10 @@ instance ToRow NewRequestFile where
                 , _name
                 , _httpMethod
                 )
+
+
+-- * new request folder
+
 
 data NewRequestFolder =
   NewRequestFolder { _name         :: String

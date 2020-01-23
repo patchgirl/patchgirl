@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter) where
+module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken) where
 
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
@@ -9,6 +9,7 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
 
+import           Account.DB
 import           Config
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
@@ -19,9 +20,9 @@ import           Network.HTTP.Client              (defaultManagerSettings,
 import           Network.HTTP.Types               (Status)
 import           Network.Wai.Handler.Warp         (testWithApplication)
 import           Servant
-import           Servant.Auth.Client
-import           Servant.Auth.Server              (defaultJWTSettings, makeJWT,
-                                                   readKey)
+import qualified Servant.Auth.Client              as Auth
+import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
+                                                           makeJWT, readKey)
 import           Servant.Client
 import           Session.Model
 import           Test.Hspec                       (SpecWith, aroundWith,
@@ -29,6 +30,13 @@ import           Test.Hspec                       (SpecWith, aroundWith,
 
 
 -- * helper
+
+
+withAccountAndToken :: NewFakeAccount -> Connection -> IO (Int, Auth.Token)
+withAccountAndToken newFakeAccount connection = do
+  (accountId, _) <- insertFakeAccount newFakeAccount connection
+  token <- signedUserToken accountId
+  return (accountId, token)
 
 
 try :: ClientEnv -> ClientM a -> IO a
@@ -50,7 +58,7 @@ withClient app innerSpec =
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)
 
-signedUserToken :: Int -> IO Token
+signedUserToken :: Int -> IO Auth.Token
 signedUserToken id = do
   let cookieSession =
         SignedUserCookie { _cookieAccountId    = id
@@ -58,17 +66,17 @@ signedUserToken id = do
                          }
   mkToken cookieSession Nothing
 
-visitorToken :: IO Token
+visitorToken :: IO Auth.Token
 visitorToken = do
   let cookieSession = VisitorCookie { _cookieAccountId = 1 }
   mkToken cookieSession Nothing
 
 
-mkToken :: CookieSession -> Maybe UTCTime -> IO Token
+mkToken :: CookieSession -> Maybe UTCTime -> IO Auth.Token
 mkToken cookieSession mexp = do
-  key <- readKey $ appKeyFilePath defaultConfig
-  Right token <- makeJWT cookieSession (defaultJWTSettings key) mexp
-  return $ Token $ BSL.toStrict token
+  key <- Auth.readKey $ appKeyFilePath defaultConfig
+  Right token <- Auth.makeJWT cookieSession (Auth.defaultJWTSettings key) mexp
+  return $ Auth.Token $ BSL.toStrict token
 
 
 -- * config

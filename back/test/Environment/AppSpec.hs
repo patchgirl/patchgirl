@@ -216,12 +216,6 @@ spec =
 
 
   where
-    withAccountAndToken :: NewFakeAccount -> PG.Connection -> IO (Int, Auth.Token)
-    withAccountAndToken newFakeAccount connection = do
-      (accountId, _) <- insertFakeAccount newFakeAccount connection
-      token <- signedUserToken accountId
-      return (accountId, token)
-
     newEnvironment :: NewEnvironment = NewEnvironment { _newEnvironmentName = "test" }
 
     newFakeEnvironment :: Int -> String -> NewFakeEnvironment

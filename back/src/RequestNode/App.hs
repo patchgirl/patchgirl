@@ -1,33 +1,58 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE QuasiQuotes      #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE QuasiQuotes         #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module RequestNode.App where
 
-import           Control.Monad.Except             (MonadError)
-import           Control.Monad.IO.Class           (MonadIO, liftIO)
-import           Control.Monad.Reader             (MonadReader)
-import           Database.PostgreSQL.Simple       (Connection, Only (..),
-                                                   execute, query)
+import qualified Control.Monad.Except             as Except (MonadError)
+import qualified Control.Monad.IO.Class           as IO
+import qualified Control.Monad.Reader             as Reader
+import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
+import qualified Servant
+import qualified Servant.API.ContentTypes         as API
+import qualified Servant.Server                   as Servant
+
 import           DB
 import           PatchGirl
+import           RequestCollection.App
 import           RequestNode.Model
-import           Servant                          (err404, throwError)
-import           Servant.API.ContentTypes         (NoContent (..))
-import           Servant.Server                   (ServerError)
 
 
 -- * request node
 
 
-requestNodeIdsFromCollectionId :: Int -> Connection -> IO [Int]
+-- ** handler
+
+
+updateRequestNodeHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Int
+  -> Int
+  -> Int
+  -> UpdateRequestNode
+  -> m API.NoContent
+updateRequestNodeHandler accountId requestCollectionId requestNodeId updateRequestNode = do
+  connection <- getDBConnection
+  requestNodeIds <- IO.liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
+  requestCollectionAvailable <- IO.liftIO $ selectRequestCollectionAvailable accountId requestCollectionId connection
+  case requestNodeId `elem` requestNodeIds && requestCollectionAvailable of
+    False -> Servant.throwError Servant.err404
+    True ->
+      IO.liftIO $
+        updateRequestNodeDB requestNodeId updateRequestNode connection >> return API.NoContent
+
+
+-- ** db
+
+
+requestNodeIdsFromCollectionId :: Int -> PG.Connection -> IO [Int]
 requestNodeIdsFromCollectionId requestCollectionId connection = do
-  oIds <- (query connection requestNodeIdsFromCollectionIdQuery $ Only requestCollectionId) :: IO [Only Int]
-  return $
-    map (\oId ->
-           let Only id = oId
-           in id
-        ) oIds
+  ids :: [PG.Only Int] <- PG.query connection requestNodeIdsFromCollectionIdQuery (PG.Only requestCollectionId)
+  return $ map (\(PG.Only id) -> id) ids
   where
     requestNodeIdsFromCollectionIdQuery =
       [sql|
@@ -49,10 +74,10 @@ requestNodeIdsFromCollectionId requestCollectionId connection = do
           FROM request_node_with_its_parent;
           |]
 
-updateRequestNodeDB :: Int -> UpdateRequestNode -> Connection -> IO ()
+updateRequestNodeDB :: Int -> UpdateRequestNode -> PG.Connection -> IO ()
 updateRequestNodeDB requestNodeId updateRequestNode connection = do
   -- todo search func with : m a -> m b
-  _ <- execute connection updateQuery (updateRequestNode, requestNodeId)
+  _ <- PG.execute connection updateQuery (updateRequestNode, requestNodeId)
   return ()
   where
     updateQuery =
@@ -62,28 +87,12 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
           WHERE id = ?
           |]
 
-updateRequestNodeHandler
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
-     )
-  => Int
-  -> Int
-  -> UpdateRequestNode
-  -> m NoContent
-updateRequestNodeHandler requestCollectionId requestNodeId updateRequestNode = do
-  connection <- getDBConnection
-  requestNodeIds <- liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
-  case requestNodeId `elem` requestNodeIds of
-    True ->
-      liftIO $ updateRequestNodeDB requestNodeId updateRequestNode connection >> return NoContent
-    False -> throwError err404
 
 -- * file
 
-insertRequestFile :: NewRequestFile -> Connection -> IO Int
+insertRequestFile :: NewRequestFile -> PG.Connection -> IO Int
 insertRequestFile newRequestFile connection = do
-  [Only id] <- query connection rawQuery newRequestFile
+  [PG.Only id] <- PG.query connection rawQuery newRequestFile
   return id
   where
     rawQuery =
@@ -100,22 +109,22 @@ insertRequestFile newRequestFile connection = do
           |]
 
 createRequestFile
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
      )
   => Int
   -> NewRequestFile
   -> m Int
 createRequestFile _ newRequestFile = do
   connection <- getDBConnection
-  liftIO $ insertRequestFile newRequestFile connection
+  IO.liftIO $ insertRequestFile newRequestFile connection
 
 -- * folder
 
-insertRequestFolder :: NewRequestFolder -> Connection -> IO Int
+insertRequestFolder :: NewRequestFolder -> PG.Connection -> IO Int
 insertRequestFolder newRequestFolder connection = do
-  [Only id] <- query connection rawQuery newRequestFolder
+  [PG.Only id] <- PG.query connection rawQuery newRequestFolder
   return id
   where
     rawQuery =
