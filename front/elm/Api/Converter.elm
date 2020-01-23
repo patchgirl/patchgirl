@@ -46,19 +46,25 @@ convertRequestNodesFromBackToFront backRequestNodes =
 
 -- * environment
 
+
 convertEnvironmentFromBackToFront : Back.Environment -> Front.Environment
-convertEnvironmentFromBackToFront { id, name, keyValues } =
-    { id = id
-    , name = NotEdited name
+convertEnvironmentFromBackToFront { environmentId, environmentName, environmentKeyValues } =
+    { id = environmentId
+    , name = NotEdited environmentName
     , showRenameInput = False
-    , keyValues = List.map Saved keyValues
+    , keyValues = List.map convertEnvironmentKeyValueFromBackToFront environmentKeyValues
     }
+
 
 -- * environment key values
 
+
 convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.Storable Front.NewKeyValue Front.KeyValue
-convertEnvironmentKeyValueFromBackToFront backKeyValue =
-    Front.Saved backKeyValue
+convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue } =
+    Saved { id = keyValueId
+          , key = keyValueKey
+          , value = keyValueValue
+          }
 
 convertEnvironmentKeyValueFromFrontToBack : Front.Storable Front.NewKeyValue Front.KeyValue -> Back.NewKeyValue
 convertEnvironmentKeyValueFromFrontToBack storable =

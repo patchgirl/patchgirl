@@ -70,7 +70,7 @@ update msg model =
     AskEnvironmentCreation name ->
         let
             payload =
-                Client.NewEnvironment { name = name }
+                Client.NewEnvironment { newEnvironmentName = name }
 
             newMsg =
                 Client.postApiEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)

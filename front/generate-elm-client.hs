@@ -15,12 +15,12 @@
 
 import           Account.Model
 import           App
-import           AppHealth
 import           Control.Lens             ((&), (<>~))
 import qualified Data.Aeson               as Aeson
 import qualified Data.Text                as T
 import           Elm.Module               as Elm
 import           Elm.TyRep
+import           Health.App
 
 import           Debug.Trace
 import           ElmOption                (deriveElmDefOption)
@@ -29,7 +29,7 @@ import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
                                            Symbol, TypeError, symbolVal)
 import           Http
 import           Model                    (CaseInsensitive)
-import           RequestCollection
+import           RequestCollection.App
 import           RequestComputation.App
 import           RequestNode.Model
 import           Servant                  ((:<|>))
