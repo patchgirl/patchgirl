@@ -49,13 +49,13 @@ selectDBIsRunning connection = do
 -- * Handler
 
 
-getAppHealth
+getAppHealthHandler
   :: ( MonadReader Config m
      , MonadIO m
      , MonadError ServerError m
      )
   => m AppHealth
-getAppHealth = do
+getAppHealthHandler = do
   connection <- getDBConnection
   liftIO $ selectDBIsRunning connection >>= \case
     True -> return $

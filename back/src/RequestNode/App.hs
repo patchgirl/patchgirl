@@ -89,6 +89,27 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
 
 -- * file
 
+
+-- ** handler
+
+
+createRequestFileHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Int
+  -> Int
+  -> NewRequestFile
+  -> m Int
+createRequestFileHandler accountId requestCollection newRequestFile = do
+  connection <- getDBConnection
+  IO.liftIO $ insertRequestFile newRequestFile connection
+
+
+-- ** db
+
+
 insertRequestFile :: NewRequestFile -> PG.Connection -> IO Int
 insertRequestFile newRequestFile connection = do
   [PG.Only id] <- PG.query connection rawQuery newRequestFile
@@ -97,27 +118,15 @@ insertRequestFile newRequestFile connection = do
     rawQuery =
       [sql|
           INSERT INTO request_node (
-            request_collection_id,
-            request_node_parent_id,
-            tag,
             name,
+            request_node_parent_id,
             http_method
+            tag,
           )
           VALUES (?, ?, ?, ?, ?)
           RETURNING id
           |]
 
-createRequestFile
-  :: ( Reader.MonadReader Config m
-     , IO.MonadIO m
-     , Except.MonadError Servant.ServerError m
-     )
-  => Int
-  -> NewRequestFile
-  -> m Int
-createRequestFile _ newRequestFile = do
-  connection <- getDBConnection
-  IO.liftIO $ insertRequestFile newRequestFile connection
 
 -- * folder
 

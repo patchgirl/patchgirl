@@ -180,38 +180,42 @@ data ParentNodeId
 
 
 data NewRequestFile =
-  NewRequestFile { _name         :: String
-                 , _parentNodeId :: ParentNodeId
-                 , _httpMethod   :: Method
-                 } deriving (Eq, Show, Generic, FromJSON)
+  NewRequestFile { _newRequestFileName         :: String
+                 , _newRequestFileParentNodeId :: ParentNodeId
+                 , _newRequestFileHttpMethod   :: Method
+                 } deriving (Eq, Show, Generic)
 
 instance ToJSON NewRequestFile where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
+instance FromJSON NewRequestFile where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 instance ToRow NewRequestFile where
-  toRow NewRequestFile { _name
-                       , _parentNodeId
-                       , _httpMethod
+  toRow NewRequestFile { _newRequestFileName
+                       , _newRequestFileParentNodeId
+                       , _newRequestFileHttpMethod
                        } =
     let
       tag = "RequestFile" :: String
       noId = Nothing :: Maybe Int
     in
-      case _parentNodeId of
+      case _newRequestFileParentNodeId of
         RequestCollectionId requestCollectionId ->
           toRow ( requestCollectionId
                 , noId
                 , tag
-                , _name
-                , _httpMethod
+                , _newRequestFileName
+                , _newRequestFileHttpMethod
                 )
         RequestNodeId requestNodeId ->
           toRow ( noId
                 , requestNodeId
                 , tag
-                , _name
-                , _httpMethod
+                , _newRequestFileName
+                , _newRequestFileHttpMethod
                 )
 
 

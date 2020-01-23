@@ -27,10 +27,12 @@ import qualified Network.HTTP.Types.Header as Http
 import           PatchGirl
 import           Servant.Server            (ServerError)
 
+
 -- * model
 
 
 -- ** request computation input
+
 
 data RequestComputationInput
   = RequestComputationInput { _requestComputationInputMethod  :: Method
@@ -94,9 +96,10 @@ runRequestComputationHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => RequestComputationInput
+  => Int
+  -> RequestComputationInput
   -> m RequestComputationResult
-runRequestComputationHandler requestComputationInput = do
+runRequestComputationHandler _ requestComputationInput = do
   response <- runRequest requestComputationInput
   liftIO $ print response
   return $ GotRequestComputationOutput $ createRequestComputationOutput response

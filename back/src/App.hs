@@ -57,17 +57,45 @@ import           Test
 -- * api
 
 
+-- ** combined
+
+
 type CombinedApi auths =
   RestApi auths :<|>
   TestApi :<|>
   AssetApi
 
+combinedApiServer cookieSettings jwtSettings =
+  restApiServer cookieSettings jwtSettings :<|>
+  testApiServer :<|>
+  assetApiServer
+
+
+-- ** rest
+
+
 type RestApi auths =
   PRequestCollectionApi auths :<|>
   PEnvironmentApi auths :<|>
   PRequestNodeApi auths :<|>
-  SessionApi :<|> PSessionApi auths :<|>
-  AccountApi
+  PRequestFileApi auths :<|>
+  PRequestComputationApi auths :<|>
+  SessionApi :<|>
+  PSessionApi auths :<|>
+  AccountApi  :<|>
+  HealthApi
+
+restApiServer cookieSettings jwtSettings =
+  ( requestCollectionApiServer
+  :<|> environmentApiServer
+  :<|> requestNodeApiServer
+  :<|> requestFileApiServer
+  :<|> requestComputationApiServer
+  :<|> sessionApiServer cookieSettings jwtSettings
+  :<|> pSessionApiServer cookieSettings jwtSettings
+  :<|> accountApiServer
+  :<|> healthApiServer
+  )
 
 
 -- ** request collection
@@ -117,6 +145,41 @@ type RequestNodeApi =
   )
 
 
+-- ** request file api
+
+
+type PRequestFileApi auths =
+  Flat (Auth auths CookieSession :> RequestFileApi)
+
+
+type RequestFileApi = Flat (
+  "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
+    -- createRequestFile
+    ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int -- :<|>
+    -- updateRequestFile
+    -- Capture "requestFileId" Int :> Put '[JSON] Int
+    )
+  )
+
+
+-- ** request computation
+
+
+type PRequestComputationApi auths =
+  Flat (Auth auths CookieSession :> RequestComputationApi)
+
+type RequestComputationApi =
+  Flat (
+    "api" :> "requestComputation" :> (
+      ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
+    )
+  )
+
+requestComputationApiServer :: AuthResult CookieSession -> ServerT RequestComputationApi AppM
+requestComputationApiServer =
+  authorizeWithAccountId runRequestComputationHandler
+
+
 -- ** session
 
 
@@ -151,23 +214,20 @@ type AccountApi =
     "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] ()
   )
 
+
+-- ** health
+
+
+type HealthApi =
+  "api" :> "health" :> Get '[JSON] AppHealth
+
+healthApiServer :: ServerT HealthApi AppM
+healthApiServer =
+  getAppHealthHandler
+
+
 -- ** other
 
-type RequestFileApi = Flat (
-  "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
-    -- createRequestFile
-    ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int -- :<|>
-    -- updateRequestFile
-    -- Capture "requestFileId" Int :> Put '[JSON] Int
-    )
-  )
-
-type RequestComputationApi =
-  Flat (
-    "api" :> "requestComputation" :> (
-      ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
-    )
-  )
 
 type TestApi =
   Flat (
@@ -177,9 +237,6 @@ type TestApi =
       "getInternalServerError" :> Get '[JSON] ()
     )
   )
-
-type HealthApi =
-  "api" :> "health" :> Get '[JSON] AppHealth
 
 type AssetApi =
   "public" :> Raw
@@ -248,6 +305,11 @@ requestCollectionApiServer =
 requestNodeApiServer :: AuthResult CookieSession -> ServerT RequestNodeApi AppM
 requestNodeApiServer =
   authorizeWithAccountId updateRequestNodeHandler
+
+requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
+requestFileApiServer =
+  authorizeWithAccountId createRequestFileHandler
+
 
 environmentApiServer
   :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
@@ -336,6 +398,7 @@ appMToHandler config r = do
     Left error   -> throwError error
     Right result -> return result
 
+
 -- * app
 
 
@@ -364,12 +427,7 @@ mkApp config = do
     context = cookieSettings :. jwtSettings :. EmptyContext
     combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT]) -- JWT is needed for the tests to run
     apiServer =
-      (requestCollectionApiServer :<|>
-      environmentApiServer :<|>
-      requestNodeApiServer :<|>
-      (sessionApiServer cookieSettings jwtSettings :<|> pSessionApiServer cookieSettings jwtSettings :<|> accountApiServer)) :<|>
-      testApiServer :<|>
-      assetApiServer
+      combinedApiServer cookieSettings jwtSettings
     server =
       hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
   return $
