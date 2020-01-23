@@ -10,21 +10,16 @@
 module App where
 
 
-import           Control.Monad.Except                  (ExceptT, MonadError,
-                                                        runExceptT)
-import           Control.Monad.IO.Class                (MonadIO)
-import           Control.Monad.Reader                  (MonadReader, ReaderT,
-                                                        runReaderT)
-import           Control.Monad.Trans                   (liftIO)
-import           GHC.Generics                          (Generic)
-import           GHC.Natural                           (naturalToInt)
-import           Network.Wai                           hiding (Request)
-import           Network.Wai.Handler.Warp
-import           Network.Wai.Handler.WarpTLS
-import           Network.Wai.Middleware.Prometheus     (PrometheusSettings (..),
-                                                        prometheus)
-import           Prometheus                            (register)
-import           Prometheus.Metric.GHC                 (ghcMetrics)
+import qualified Control.Monad.Except                  as Except
+import qualified Control.Monad.IO.Class                as IO
+import qualified Control.Monad.Reader                  as Reader
+import qualified GHC.Generics                          as Generics
+import qualified GHC.Natural                           as Natural
+import qualified Network.Wai.Handler.Warp              as Warp
+import qualified Network.Wai.Handler.WarpTLS           as WarpTLS
+import qualified Network.Wai.Middleware.Prometheus     as Prometheus
+import qualified Prometheus                            as Prometheus
+import qualified Prometheus.Metric.GHC                 as Prometheus
 import           Servant                               hiding (BadPassword,
                                                         NoSuchUser)
 import           Servant.API.ContentTypes              (NoContent)
@@ -286,14 +281,14 @@ assetApiServer =
 
 
 newtype AppM a =
-  AppM { unAppM :: ExceptT ServerError (ReaderT Config IO) a }
-  deriving ( MonadError ServerError
-           , MonadReader Config
+  AppM { unAppM :: Except.ExceptT ServerError (Reader.ReaderT Config IO) a }
+  deriving ( Except.MonadError ServerError
+           , Reader.MonadReader Config
            , Functor
            , Applicative
            , Monad
-           , MonadIO
-           , Generic
+           , IO.MonadIO
+           , Generics.Generic
            )
 
 appMToHandler
@@ -301,7 +296,7 @@ appMToHandler
   -> AppM a
   -> Handler a
 appMToHandler config r = do
-  eitherErrorOrResult <- liftIO $ flip runReaderT config . runExceptT . unAppM $ r
+  eitherErrorOrResult <- IO.liftIO $ flip Reader.runReaderT config . Except.runExceptT . unAppM $ r
   case eitherErrorOrResult of
     Left error   -> throwError error
     Right result -> return result
@@ -313,12 +308,12 @@ run :: IO ()
 run = do
   config :: Config <- importConfig
   print config
-  _ <- register ghcMetrics
+  _ <- Prometheus.register Prometheus.ghcMetrics
   let
-    promMiddleware :: Middleware = prometheus $ PrometheusSettings ["metrics"] True True
-    settings = setPort (naturalToInt $ port config) defaultSettings
-    tlsOpts = tlsSettings "cert.pem" "key.pem"
-  runTLS tlsOpts settings =<< promMiddleware <$> mkApp config
+    promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
+    settings = Warp.setPort (Natural.naturalToInt $ port config) Warp.defaultSettings
+    tlsOpts = WarpTLS.tlsSettings "cert.pem" "key.pem"
+  WarpTLS.runTLS tlsOpts settings =<< promMiddleware <$> mkApp config
 
 mkApp :: Config -> IO Application
 mkApp config = do
