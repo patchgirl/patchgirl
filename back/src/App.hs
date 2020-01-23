@@ -107,6 +107,10 @@ type PRequestCollectionApi auths =
 type RequestCollectionApi =
   "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
 
+requestCollectionApiServer :: AuthResult CookieSession -> ServerT RequestCollectionApi AppM
+requestCollectionApiServer =
+  authorizeWithAccountId getRequestCollectionHandler
+
 
 -- ** environment
 
@@ -193,17 +197,18 @@ type SessionApi =
                                           ] Session)
   )
 
-type PSessionApi auths =
-  Auth auths CookieSession :> "api" :> "session" :> "whoami" :> WhoAmiApi
-
 
 -- ** whoami
 
 
+type PSessionApi auths =
+  Auth auths CookieSession :> WhoAmiApi
+
+
 type WhoAmiApi =
-  Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                        , Header "Set-Cookie" SetCookie
-                        ] Session)
+  "api" :> "session" :> "whoami" :> Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                                          , Header "Set-Cookie" SetCookie
+                                                          ] Session)
 
 
 -- ** account
@@ -297,10 +302,6 @@ authorize f = \case
 
   Authenticated cookieSession ->
     f cookieSession
-
-requestCollectionApiServer :: AuthResult CookieSession -> ServerT RequestCollectionApi AppM
-requestCollectionApiServer =
-  authorize getRequestCollectionHandler
 
 requestNodeApiServer :: AuthResult CookieSession -> ServerT RequestNodeApi AppM
 requestNodeApiServer =
