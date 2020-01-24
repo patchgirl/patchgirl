@@ -136,13 +136,9 @@ getRequestCollectionHandler
   -> m RequestCollection
 getRequestCollectionHandler accountId requestCollectionId = do
   connection <- getDBConnection
-  return $ RequestCollection requestCollectionId []
-
-  {-
   liftIO (selectRequestCollectionAvailable accountId requestCollectionId connection) >>= \case
     False -> throwError err404
     True ->
       liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case
         Just request -> return request
         Nothing      -> throwError err404
--}
