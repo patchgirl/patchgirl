@@ -39,6 +39,47 @@ def insert_request_file(id, request_node_parent_id, tag, name, http_url, http_me
   }
 end
 
+def insert_request_folder2(id, request_node_parent_id, tag, name)
+  %{
+    INSERT INTO request_node2 (
+      id,
+      request_node_parent_id,
+      tag,
+      name
+    ) values (
+      #{id},
+      #{request_node_parent_id.nil? ? 'NULL' : request_node_parent_id},
+      '#{tag}',
+      '#{name}'
+    );
+  }
+end
+
+def insert_request_file2(id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+
+  %{
+    INSERT INTO request_node2 (
+      id,
+      request_node_parent_id,
+      tag,
+      name,
+      http_url,
+      http_method,
+      http_headers,
+      http_body
+    ) values (
+      #{id},
+      #{request_node_parent_id.nil? ? 'NULL' : request_node_parent_id},
+      '#{tag}',
+      '#{name}',
+      '#{http_url}',
+      '#{http_method}',
+      #{http_headers},
+      '#{http_body}'
+    );
+  }
+end
+
 headers = %{ARRAY[('key1','value1')::header_type]}
 empty_headers = %{ARRAY[]::header_type[]}
 
@@ -53,10 +94,28 @@ request_nodes = [
   insert_request_file(8, 1, 'RequestFile', "get - internal server error", "https://{{host}}/test/getInternalServerError", "Get", headers, ""),
 ]
 
+request_nodes2 = [
+  insert_request_folder2(10, nil, 'RequestFolder', "root"),
+  insert_request_folder2(1, 10, 'RequestFolder', "testApi"),
+  insert_request_folder2(2, 10, 'RequestFolder', "2/"),
+  insert_request_folder2(3, 1, 'RequestFolder', "1.1/"),
+  insert_request_file2(4, 3, 'RequestFile', "1.1.1", "https://{{host}}/requestCollection/1", "Get", headers, ""),
+  insert_request_file2(5, 3, 'RequestFile', "swapi/people", "https://swapi.co/api/people/1/", "Get", empty_headers, ""),
+  insert_request_file2(6, 1, 'RequestFile', "delete - no content", "https://{{host}}/test/deleteNoContent", "Delete", headers, ""),
+  insert_request_file2(7, 1, 'RequestFile', "get - not found", "https://{{host}}/test/getNotFound", "Get", headers, ""),
+  insert_request_file2(8, 1, 'RequestFile', "get - internal server error", "https://{{host}}/test/getInternalServerError", "Get", headers, ""),
+]
+
 request_nodes.each do |request_node_query|
   puts request_node_query
   ActiveRecord::Migration[5.2].execute request_node_query
 end
+
+request_nodes2.each do |request_node_query|
+  puts request_node_query
+  ActiveRecord::Migration[5.2].execute request_node_query
+end
+
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO request_collection_to_request_node (
@@ -88,6 +147,14 @@ ActiveRecord::Migration[5.2].execute %{
       NULL
     );
 }
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO request_collection2 (
+      name,
+      account_id,
+      root_request_node_id
+    ) values ('test1', 1, 10);
+  }
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO environment (

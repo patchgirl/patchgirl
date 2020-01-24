@@ -142,3 +142,68 @@ getRequestCollectionHandler accountId requestCollectionId = do
       liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case
         Just request -> return request
         Nothing      -> throwError err404
+
+getRequestCollectionHandler2
+  :: ( MonadReader Config m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> Int
+  -> m RequestCollection
+getRequestCollectionHandler2 accountId requestCollectionId = do
+  connection <- getDBConnection
+  liftIO (selectRequestCollectionAvailable accountId requestCollectionId connection) >>= \case
+    False -> throwError err404
+    True ->
+      liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case
+        Just request -> return request
+        Nothing      -> throwError err404
+
+
+{-
+data RequestNodeFromPG2 =
+  RequestNodeFromPG2 { requestNodeFromPG2Id :: Int
+                     , requestNodeFromPG2ParentId :: Int
+                     , requestNodeFromPG2Tag :: String
+                     , requestNodeFromPG2Name :: String
+                     , requestNodeFromPG2HttpUrl :: String
+                     , requestNodeFromPG2HttpMethod :: String
+                     , requestNodeFromPG2HttpHeaders :: String
+                     , requestNodeFromPG2HttpBody :: String
+                     }
+
+
+selectRequestCollection :: Int -> Connection -> IO (Maybe RequestCollection)
+selectRequestCollection accountId connection = do
+    [(requestCollectionId, rootRequestNodeId) :: (Int, Int)] <- query connection selectRootRequestNodeId (Only accountId)
+    requestNodesFromPG :: [RequestNodeFromPG2] <- query connection selectRequestCollectionSql (requestCollectionId, requestCollectionId)
+    return . Just $
+      RequestCollection2 requestCollectionId rootRequestNodeId (buildRequestNodeFromPG requestNodesFromPG)
+  where
+    selectRootRequestNodeId =
+      [sql|
+          SELECT id, root_request_node_id
+          FROM request_collection2
+          WHERE account_id = ?
+          |]
+
+    selectRequestCollectionSql =
+      [sql|
+          WITH RECURSIVE request_node_with_its_parent(node_id, parents) AS (
+            SELECT root_request_node_id, NULL :: int
+            FROM request_collection2 n
+            WHERE id = ?
+
+            UNION ALL
+
+            SELECT c.id, c.request_node_parent_id
+            FROM request_node_with_its_parent p
+            JOIN request_node2 c
+            ON c.request_node_parent_id = p.node_id
+          ) SELECT id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body
+            FROM request_node_with_its_parent
+            INNER JOIN request_node2 r ON r.id = node_id
+            WHERE request_node_parent_id IS NOT NULL
+          |] :: Query
+-}
