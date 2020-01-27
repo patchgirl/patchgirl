@@ -48,31 +48,14 @@ class Init < ActiveRecord::Migration[5.2]
         )
       );
 
-      CREATE TABLE request_node2(
-        id SERIAL PRIMARY KEY,
-        request_node_parent_id INTEGER,
-        tag request_node_type NOT NULL,
-        name TEXT NOT NULL,
-        http_url TEXT,
-        http_method http_method_type,
-        http_headers header_type[],
-        http_body TEXT,
-        CHECK (
-          (tag = 'RequestFolder' AND http_url IS NULL AND http_method IS NULL AND http_headers IS NULL AND http_body IS NULL) OR
-          (tag = 'RequestFile' AND http_url IS NOT NULL AND http_method IS NOT NULL AND http_headers IS NOT NULL AND http_body IS NOT NULL)
-        )
-      );
-
-      CREATE TABLE request_collection2(
-        id SERIAL PRIMARY KEY,
-        name TEXT,
-        account_id INTEGER REFERENCES account(id) ON DELETE CASCADE,
-        root_request_node_id INTEGER REFERENCES request_node2(id) ON DELETE CASCADE
-      );
-
 
       -- request collection
 
+
+      CREATE TABLE request_collection(
+        id SERIAL PRIMARY KEY,
+        account_id INTEGER REFERENCES account(id) ON DELETE CASCADE
+      );
 
       CREATE TABLE request_collection_to_request_node(
         request_collection_id INTEGER,
@@ -106,7 +89,7 @@ class Init < ActiveRecord::Migration[5.2]
       -- util
 
 
-      CREATE OR REPLACE FUNCTION request_node_as_js(someRow request_node2) RETURNS jsonb AS $$
+      CREATE OR REPLACE FUNCTION request_node_as_js(someRow request_node) RETURNS jsonb AS $$
       BEGIN
         RETURN CASE WHEN someRow.tag = 'RequestFolder' THEN
           jsonb_build_object(

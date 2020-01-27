@@ -240,22 +240,20 @@ ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 
 
 --
--- Name: request_collection2; Type: TABLE; Schema: public; Owner: -
+-- Name: request_collection; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.request_collection2 (
+CREATE TABLE public.request_collection (
     id integer NOT NULL,
-    name text,
-    account_id integer,
-    root_request_node_id integer
+    account_id integer
 );
 
 
 --
--- Name: request_collection2_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: request_collection_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.request_collection2_id_seq
+CREATE SEQUENCE public.request_collection_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -265,10 +263,10 @@ CREATE SEQUENCE public.request_collection2_id_seq
 
 
 --
--- Name: request_collection2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: request_collection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.request_collection2_id_seq OWNED BY public.request_collection2.id;
+ALTER SEQUENCE public.request_collection_id_seq OWNED BY public.request_collection.id;
 
 
 --
@@ -279,43 +277,6 @@ CREATE TABLE public.request_collection_to_request_node (
     request_collection_id integer NOT NULL,
     request_node_id integer NOT NULL
 );
-
-
---
--- Name: request_node2; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.request_node2 (
-    id integer NOT NULL,
-    request_node_parent_id integer,
-    tag public.request_node_type NOT NULL,
-    name text NOT NULL,
-    http_url text,
-    http_method public.http_method_type,
-    http_headers public.header_type[],
-    http_body text,
-    CONSTRAINT request_node2_check CHECK ((((tag = 'RequestFolder'::public.request_node_type) AND (http_url IS NULL) AND (http_method IS NULL) AND (http_headers IS NULL) AND (http_body IS NULL)) OR ((tag = 'RequestFile'::public.request_node_type) AND (http_url IS NOT NULL) AND (http_method IS NOT NULL) AND (http_headers IS NOT NULL) AND (http_body IS NOT NULL))))
-);
-
-
---
--- Name: request_node2_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.request_node2_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: request_node2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.request_node2_id_seq OWNED BY public.request_node2.id;
 
 
 --
@@ -369,10 +330,10 @@ ALTER TABLE ONLY public.key_value ALTER COLUMN id SET DEFAULT nextval('public.ke
 
 
 --
--- Name: request_collection2 id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: request_collection id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.request_collection2 ALTER COLUMN id SET DEFAULT nextval('public.request_collection2_id_seq'::regclass);
+ALTER TABLE ONLY public.request_collection ALTER COLUMN id SET DEFAULT nextval('public.request_collection_id_seq'::regclass);
 
 
 --
@@ -380,13 +341,6 @@ ALTER TABLE ONLY public.request_collection2 ALTER COLUMN id SET DEFAULT nextval(
 --
 
 ALTER TABLE ONLY public.request_node ALTER COLUMN id SET DEFAULT nextval('public.request_node_id_seq'::regclass);
-
-
---
--- Name: request_node2 id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_node2 ALTER COLUMN id SET DEFAULT nextval('public.request_node2_id_seq'::regclass);
 
 
 --
@@ -438,11 +392,11 @@ ALTER TABLE ONLY public.key_value
 
 
 --
--- Name: request_collection2 request_collection2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: request_collection request_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.request_collection2
-    ADD CONSTRAINT request_collection2_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.request_collection
+    ADD CONSTRAINT request_collection_pkey PRIMARY KEY (id);
 
 
 --
@@ -451,14 +405,6 @@ ALTER TABLE ONLY public.request_collection2
 
 ALTER TABLE ONLY public.request_collection_to_request_node
     ADD CONSTRAINT request_collection_to_request_node_pkey PRIMARY KEY (request_collection_id, request_node_id);
-
-
---
--- Name: request_node2 request_node2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_node2
-    ADD CONSTRAINT request_node2_pkey PRIMARY KEY (id);
 
 
 --
@@ -502,19 +448,11 @@ ALTER TABLE ONLY public.key_value
 
 
 --
--- Name: request_collection2 request_collection2_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: request_collection request_collection_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.request_collection2
-    ADD CONSTRAINT request_collection2_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
-
-
---
--- Name: request_collection2 request_collection2_root_request_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_collection2
-    ADD CONSTRAINT request_collection2_root_request_node_id_fkey FOREIGN KEY (root_request_node_id) REFERENCES public.request_node2(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.request_collection
+    ADD CONSTRAINT request_collection_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
 
 
 --
