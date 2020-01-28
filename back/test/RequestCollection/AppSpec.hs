@@ -13,13 +13,16 @@ module RequestCollection.AppSpec where
 
 import           Account.DB
 import           App
+import           Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as C
+import qualified Database.PostgreSQL.Simple as PG
 import           Helper.App
-import qualified Network.HTTP.Types    as HTTP
-import           RequestCollection.App (RequestCollection (..))
+import qualified Network.HTTP.Types         as HTTP
+import           RequestCollection.App      (RequestCollection (..))
 import           RequestCollection.DB
 import           Servant
-import qualified Servant.Auth.Client   as Auth
-import           Servant.Auth.Server   (JWT)
+import qualified Servant.Auth.Client        as Auth
+import           Servant.Auth.Server        (JWT)
 import           Servant.Client
 import           Test.Hspec
 
@@ -55,6 +58,75 @@ spec =
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           FakeRequestCollection { _fakeRequestCollectionId } <- insertFakeRequestCollection accountId connection
+          _ <- insertRequestNodes connection
+          let fakeRequestCollectionToRequestNode1 =
+                FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = _fakeRequestCollectionId
+                                                   , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = 1
+                                                   }
+          let fakeRequestCollectionToRequestNode2 =
+                FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = _fakeRequestCollectionId
+                                                   , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = 2
+                                                   }
+
+          _ <- insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode1 connection
+          _ <- insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode2 connection
           token <- signedUserToken accountId
           requestCollection <- try clientEnv (getRequestCollectionById token _fakeRequestCollectionId)
+          C.putStrLn $ encode requestCollection
           requestCollection `shouldBe` RequestCollection _fakeRequestCollectionId []
+
+  where
+
+    insertRequestNodes :: PG.Connection -> IO ()
+    insertRequestNodes connection = do
+      _ <- insertFakeRequestFolder n1 connection
+      _ <- insertFakeRequestFolder n2 connection
+      _ <- insertFakeRequestFolder n3 connection
+      _ <- insertFakeRequestFile n4 connection
+      _ <- insertFakeRequestFile n5 connection
+      _ <- insertFakeRequestFile n6 connection
+      return ()
+
+    -- level 1
+
+    n1 = FakeRequestFolder { _fakeRequestFolderId       = 1
+                           , _fakeRequestFolderParentId = Nothing
+                           , _fakeRequestName           = "1/"
+                           }
+
+    n2 = FakeRequestFolder { _fakeRequestFolderId       = 2
+                           , _fakeRequestFolderParentId = Nothing
+                           , _fakeRequestName           = "2/"
+                           }
+    -- level 2
+
+    n3 = FakeRequestFolder { _fakeRequestFolderId       = 3
+                           , _fakeRequestFolderParentId = Just 1
+                           , _fakeRequestName           = "3/"
+                           }
+
+    n4 = FakeRequestFile { _fakeRequestFileId = 4
+                         , _fakeRequestFileParentId = Just 1
+                         , _fakeRequestFileName       = "4"
+                         , _fakeRequestFileHttpUrl    = "http://4.com"
+                         , _fakeRequestFileHttpMethod = "Get"
+                         , _fakeRequestFileHttpBody   = ""
+                         }
+
+    -- level 3
+
+    n5 = FakeRequestFile { _fakeRequestFileId = 5
+                         , _fakeRequestFileParentId = Just 3
+                         , _fakeRequestFileName       = "5"
+                         , _fakeRequestFileHttpUrl    = "http://5.com"
+                         , _fakeRequestFileHttpMethod = "Get"
+                         , _fakeRequestFileHttpBody   = ""
+                         }
+
+    n6 = FakeRequestFile { _fakeRequestFileId = 6
+                         , _fakeRequestFileParentId = Just 3
+                         , _fakeRequestFileName       = "6"
+                         , _fakeRequestFileHttpUrl    = "http://6.com"
+                         , _fakeRequestFileHttpMethod = "Get"
+                         , _fakeRequestFileHttpBody   = ""
+                         }
