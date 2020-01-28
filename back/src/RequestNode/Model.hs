@@ -58,7 +58,11 @@ $(makeFieldsNoPrefix ''UpdateRequestNode)
 instance ToField UpdateRequestNode where
   toField UpdateRequestFolder { _updateRequestNodeName } =
     toField (show _updateRequestNodeName)
-  toField UpdateRequestFile { _updateRequestNodeName, _updateRequestNodeHttpUrl, _updateRequestNodeHttpMethod, _updateRequestNodeHttpBody } =
+  toField UpdateRequestFile { _updateRequestNodeName
+                            , _updateRequestNodeHttpUrl
+                            , _updateRequestNodeHttpMethod
+                            , _updateRequestNodeHttpBody
+                            } =
     Many [ toField _updateRequestNodeName
          , toField _updateRequestNodeHttpUrl
          , toField _updateRequestNodeHttpMethod
@@ -89,7 +93,7 @@ instance ToJSON RequestNode where
 
 instance FromJSON RequestNode where
   parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromField [RequestNode] where
   fromField field mdata = do

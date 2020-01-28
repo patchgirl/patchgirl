@@ -88,31 +88,35 @@ class Init < ActiveRecord::Migration[5.2]
 
       -- util
 
-
-      CREATE OR REPLACE FUNCTION request_node_as_js(someRow request_node) RETURNS jsonb AS $$
+      CREATE OR REPLACE FUNCTION request_nodes_as_json(node_id int) RETURNS jsonb[] AS $$
+      DECLARE result jsonb[];
       BEGIN
-        RETURN CASE WHEN someRow.tag = 'RequestFolder' THEN
-          jsonb_build_object(
-            'id', someRow.id,
-            'name', someRow.name,
-            'tag', someRow.tag,
-            'children', json_build_array()
-          )
-        ELSE
-          jsonb_build_object(
-            'id', someRow.id,
-            'name', someRow.name,
-            'tag', someRow.tag,
-            'http_url', someRow.http_url,
-            'http_method', someRow.http_method,
-            'http_headers', someRow.http_headers,
-            'http_body', someRow.http_body
-          )
-        END;
+        SELECT array_agg (
+          CASE WHEN tag = 'RequestFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', request_nodes_as_json(id)
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'http_body', http_body,
+              'http_url', http_url,
+              'http_method', http_method,
+              'http_headers', http_headers
+            )
+          END
+        ) INTO result
+        FROM request_node
+        WHERE request_node_parent_id = node_id;
+        RETURN result;
       END;
       $$ LANGUAGE plpgsql;
     }
-
   end
 
   def down
@@ -120,7 +124,7 @@ class Init < ActiveRecord::Migration[5.2]
       DROP TABLE request_node;
       DROP TABLE request_collection_to_request_node;
 
-      DROP FUNCTION request_node_as_js;
+      DROP FUNCTION request_nodes_as_json(integer);
 
       REMOVE request_node_type;
       REMOVE http_method_type;

@@ -72,56 +72,45 @@ CREATE TYPE public.request_node_type AS ENUM (
 );
 
 
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
 --
--- Name: request_node; Type: TABLE; Schema: public; Owner: -
+-- Name: request_nodes_as_json(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE TABLE public.request_node (
-    id integer NOT NULL,
-    request_node_parent_id integer,
-    tag public.request_node_type NOT NULL,
-    name text NOT NULL,
-    http_url text,
-    http_method public.http_method_type,
-    http_headers public.header_type[],
-    http_body text,
-    CONSTRAINT request_node_check CHECK ((((tag = 'RequestFolder'::public.request_node_type) AND (http_url IS NULL) AND (http_method IS NULL) AND (http_headers IS NULL) AND (http_body IS NULL)) OR ((tag = 'RequestFile'::public.request_node_type) AND (http_url IS NOT NULL) AND (http_method IS NOT NULL) AND (http_headers IS NOT NULL) AND (http_body IS NOT NULL))))
-);
-
-
---
--- Name: request_node_as_js(public.request_node); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.request_node_as_js(somerow public.request_node) RETURNS jsonb
+CREATE FUNCTION public.request_nodes_as_json(node_id integer) RETURNS jsonb[]
     LANGUAGE plpgsql
     AS $$
+      DECLARE result jsonb[];
       BEGIN
-        RETURN CASE WHEN someRow.tag = 'RequestFolder' THEN
-          jsonb_build_object(
-            'id', someRow.id,
-            'name', someRow.name,
-            'tag', someRow.tag,
-            'children', json_build_array()
-          )
-        ELSE
-          jsonb_build_object(
-            'id', someRow.id,
-            'name', someRow.name,
-            'tag', someRow.tag,
-            'http_url', someRow.http_url,
-            'http_method', someRow.http_method,
-            'http_headers', someRow.http_headers,
-            'http_body', someRow.http_body
-          )
-        END;
+        SELECT array_agg (
+          CASE WHEN tag = 'RequestFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', request_nodes_as_json(id)
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'http_body', http_body,
+              'http_url', http_url,
+              'http_method', http_method,
+              'http_headers', http_headers
+            )
+          END
+        ) INTO result
+        FROM request_node
+        WHERE request_node_parent_id = node_id;
+        RETURN result;
       END;
       $$;
 
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
 
 --
 -- Name: account; Type: TABLE; Schema: public; Owner: -
@@ -276,6 +265,23 @@ ALTER SEQUENCE public.request_collection_id_seq OWNED BY public.request_collecti
 CREATE TABLE public.request_collection_to_request_node (
     request_collection_id integer NOT NULL,
     request_node_id integer NOT NULL
+);
+
+
+--
+-- Name: request_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.request_node (
+    id integer NOT NULL,
+    request_node_parent_id integer,
+    tag public.request_node_type NOT NULL,
+    name text NOT NULL,
+    http_url text,
+    http_method public.http_method_type,
+    http_headers public.header_type[],
+    http_body text,
+    CONSTRAINT request_node_check CHECK ((((tag = 'RequestFolder'::public.request_node_type) AND (http_url IS NULL) AND (http_method IS NULL) AND (http_headers IS NULL) AND (http_body IS NULL)) OR ((tag = 'RequestFile'::public.request_node_type) AND (http_url IS NOT NULL) AND (http_method IS NOT NULL) AND (http_headers IS NOT NULL) AND (http_body IS NOT NULL))))
 );
 
 
