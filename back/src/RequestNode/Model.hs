@@ -13,6 +13,7 @@
 module RequestNode.Model where
 
 import           Control.Lens                         (makeFieldsNoPrefix)
+import           Control.Lens                         hiding (element)
 import           Data.Aeson                           (Value, parseJSON)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
@@ -29,7 +30,6 @@ import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Http
-
 
 -- * update request node
 
@@ -86,6 +86,8 @@ data RequestNode
                 , _requestNodeHttpBody    :: String
                 }
   deriving (Eq, Show, Generic)
+
+$(makeLenses ''RequestNode)
 
 instance ToJSON RequestNode where
   toJSON =
