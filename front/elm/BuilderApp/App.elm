@@ -33,9 +33,9 @@ update msg model =
 
         TreeMsg subMsg ->
             let
-                newModel = BuilderTree.update subMsg model
+                (newModel, newSubMsg) = BuilderTree.update subMsg model
             in
-                (newModel, Cmd.none)
+                (newModel, Cmd.map TreeMsg newSubMsg)
 
         BuilderMsg subMsg ->
             let

@@ -8,82 +8,101 @@ import BuilderApp.Builder.App as Builder
 
 import Util.Maybe as Maybe
 
-update : Msg -> Model a -> Model a
+update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
   case msg of
     SetDisplayedBuilder idx ->
-        { model | selectedBuilderIndex = Just idx }
+        let
+            newModel = { model | selectedBuilderIndex = Just idx }
+        in
+            (newModel, Cmd.none)
 
     ToggleMenu idx ->
-      let
-        newDisplayedRequestNodeMenuIndex =
-          case Maybe.exists model.displayedRequestNodeMenuIndex ((==) idx) of
-            True -> Nothing
-            False -> Just idx
-      in
-        { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
+        let
+            newDisplayedRequestNodeMenuIndex =
+                case Maybe.exists model.displayedRequestNodeMenuIndex ((==) idx) of
+                    True -> Nothing
+                    False -> Just idx
+            newModel = { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
+        in
+            (newModel, Cmd.none)
 
     ToggleFolder idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode toggleFolder requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                  RequestCollection id (modifyRequestNode toggleFolder requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
     Mkdir idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode mkdir requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                  RequestCollection id (modifyRequestNode mkdir requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
     Touch idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode touch requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                  RequestCollection id (modifyRequestNode touch requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
     ShowRenameInput idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode displayRenameInput requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                  RequestCollection id (modifyRequestNode displayRenameInput requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
     Rename idx newName ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                  RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
     ChangeName idx newName ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode (tempRename newName) requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                  RequestCollection id (modifyRequestNode (tempRename newName) requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
     Delete idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                        RequestCollection id (deleteRequestNode requestNodes idx)
+                }
         in
-            { model
-                | requestCollection =
-                    RequestCollection id (deleteRequestNode requestNodes idx)
-            }
+            (newModel, Cmd.none)
 
-    DoNothing -> model
+    DoNothing ->
+        (model, Cmd.none)

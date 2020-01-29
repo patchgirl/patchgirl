@@ -92,9 +92,9 @@ update msg model =
     case msg of
         BuilderTreeMsg subMsg ->
             let
-                newModel = BuilderTree.update subMsg model
+                (newModel, newSubMsg) = BuilderTree.update subMsg model
             in
-                (newModel, Cmd.none)
+                (newModel, Cmd.map BuilderTreeMsg newSubMsg)
 
         BuilderAppMsg subMsg ->
             case subMsg of
