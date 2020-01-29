@@ -106,8 +106,7 @@ update msg model =
                                    }
 
                 getRequestCollection =
-                    Client.getApiRequestCollection2ByRequestCollectionId "" (getCsrfToken session) (getSessionId session) requestCollectionResultToMsg
---                    Client.getApiRequestCollectionByRequestCollectionId "" (getCsrfToken session) (getSessionId session) requestCollectionResultToMsg
+                    Client.getApiRequestCollection "" (getCsrfToken session) requestCollectionResultToMsg
 
                 getEnvironments =
                     Client.getApiEnvironment "" (getCsrfToken session) environmentsResultToMsg
