@@ -33,13 +33,13 @@ insertFakeRequestCollection accountId connection = do
 -- * insert request collection to request node
 
 
-data FakeRequestCollectionToRequestNode =
-  FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId :: Int
-                                     , _fakeRequestCollectionToRequestNodeRequestRequestNodeId :: Int
-                                     }
+data NewFakeRequestCollectionToRequestNode =
+  NewFakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId :: Int
+                                        , _fakeRequestCollectionToRequestNodeRequestRequestNodeId :: Int
+                                        }
   deriving (Eq, Show, Read, Generic, ToRow)
 
-insertFakeRequestCollectionToRequestNode :: FakeRequestCollectionToRequestNode -> Connection -> IO ()
+insertFakeRequestCollectionToRequestNode :: NewFakeRequestCollectionToRequestNode -> Connection -> IO ()
 insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode connection = do
   _ <- execute connection rawQuery fakeRequestCollectionToRequestNode
   return ()
@@ -54,14 +54,14 @@ insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode conn
 -- * insert fake request folder
 
 
-data FakeRequestFolder =
-  FakeRequestFolder { _fakeRequestFolderParentId :: Maybe Int
-                    , _fakeRequestName           :: String
-                    }
+data NewFakeRequestFolder =
+  NewFakeRequestFolder { _newFakeRequestFolderParentId :: Maybe Int
+                       , _newFakeRequestName           :: String
+                       }
   deriving (Eq, Show, Read, Generic, ToRow)
 
 
-insertFakeRequestFolder :: FakeRequestFolder -> Connection -> IO Int
+insertFakeRequestFolder :: NewFakeRequestFolder -> Connection -> IO Int
 insertFakeRequestFolder fakeRequestFolder connection = do
   [Only id] <- query connection rawQuery fakeRequestFolder
   return id
@@ -133,13 +133,13 @@ insertSampleRequestCollection accountId connection = do
       _ <- insertFakeRequestFile (n6 n3Id) connection
       requestCollectionId <- insertFakeRequestCollection accountId connection
       let fakeRequestCollectionToRequestNode1 =
-            FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
-                                               , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = n1Id
-                                               }
+            NewFakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
+                                                  , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = n1Id
+                                                  }
       let fakeRequestCollectionToRequestNode2 =
-            FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
-                                               , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = n2Id
-                                               }
+            NewFakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
+                                                  , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = n2Id
+                                                  }
 
       _ <- insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode1 connection
       _ <- insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode2 connection
@@ -150,18 +150,18 @@ insertSampleRequestCollection accountId connection = do
 
 -- ** level 1
 
-    n1 = FakeRequestFolder { _fakeRequestFolderParentId = Nothing
-                           , _fakeRequestName           = "1/"
-                           }
+    n1 = NewFakeRequestFolder { _newFakeRequestFolderParentId = Nothing
+                              , _newFakeRequestName           = "1/"
+                              }
 
-    n2 = FakeRequestFolder { _fakeRequestFolderParentId = Nothing
-                           , _fakeRequestName           = "2/"
-                           }
+    n2 = NewFakeRequestFolder { _newFakeRequestFolderParentId = Nothing
+                              , _newFakeRequestName           = "2/"
+                              }
 -- ** level 2
 
-    n3 id = FakeRequestFolder { _fakeRequestFolderParentId = Just id
-                              , _fakeRequestName           = "3/"
-                              }
+    n3 id = NewFakeRequestFolder { _newFakeRequestFolderParentId = Just id
+                                 , _newFakeRequestName           = "3/"
+                                 }
 
     n4 id = FakeRequestFile { _fakeRequestFileParentId = Just id
                             , _fakeRequestFileName       = "4"

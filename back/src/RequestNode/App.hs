@@ -1,9 +1,11 @@
 {-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module RequestNode.App where
 
+import           Control.Lens.Getter              ((^.))
 import qualified Control.Monad.Except             as Except (MonadError)
 import qualified Control.Monad.IO.Class           as IO
 import qualified Control.Monad.Reader             as Reader
@@ -16,6 +18,7 @@ import           DB
 import           PatchGirl
 import           RequestCollection.Sql
 import           RequestNode.Model
+import           RequestNode.Sql
 
 -- * update request node
 
@@ -33,15 +36,18 @@ updateRequestNodeHandler
   -> Int
   -> UpdateRequestNode
   -> m API.NoContent
-updateRequestNodeHandler accountId requestCollectionId requestNodeId updateRequestNode = do
+updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
   connection <- getDBConnection
-  requestNodeIds <- IO.liftIO $ requestNodeIdsFromCollectionId requestCollectionId connection
-  requestCollectionAvailable <- IO.liftIO $ selectRequestCollectionAvailable accountId requestCollectionId connection
-  case requestNodeId `elem` requestNodeIds && requestCollectionAvailable of
-    False -> Servant.throwError Servant.err404
-    True ->
-      IO.liftIO $
-        updateRequestNodeDB requestNodeId updateRequestNode connection >> return API.NoContent
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+    Just requestCollectionId -> do
+      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      case requestNodeId `elem` map _requestNodeId requestNodes of
+        False -> Servant.throwError Servant.err404
+        True ->
+          IO.liftIO $
+            updateRequestNodeDB requestNodeId updateRequestNode connection >> return API.NoContent
 
 
 -- ** db
@@ -75,7 +81,9 @@ requestNodeIdsFromCollectionId requestCollectionId connection = do
 updateRequestNodeDB :: Int -> UpdateRequestNode -> PG.Connection -> IO ()
 updateRequestNodeDB requestNodeId updateRequestNode connection = do
   -- todo search func with : m a -> m b
-  _ <- PG.execute connection updateQuery (updateRequestNode, requestNodeId)
+  let newName = updateRequestNode ^. updateRequestNodeName
+  _ <- PG.execute connection updateQuery (newName, requestNodeId)
+  print updateRequestNode
   return ()
   where
     updateQuery =

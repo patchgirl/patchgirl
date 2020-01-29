@@ -11,13 +11,11 @@
 
 module RequestCollection.Sql where
 
+import           Data.Functor                     ((<&>))
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           RequestCollection.Model
 import           RequestNode.Model
-
-
--- * DB
 
 
 selectRequestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
@@ -50,3 +48,18 @@ selectRequestCollectionById requestCollectionId connection = do
           SELECT 1, *
           FROM request_nodes_as_json(?)
           |] :: Query
+
+selectRequestCollectionId :: Int -> Connection -> IO (Maybe Int)
+selectRequestCollectionId accountId connection =
+  query connection requestCollectionSql (Only accountId) <&> \case
+    [Only id] -> Just id
+    _ -> Nothing
+  where
+    requestCollectionSql =
+      [sql|
+          SELECT rc.id
+          FROM request_collection2 rc
+          INNER JOIN request_collection_to_request_node2 rcrn ON rc.id = rcrn.request_collection_id
+          WHERE rc.account_id = ?
+          LIMIT 1
+          |]

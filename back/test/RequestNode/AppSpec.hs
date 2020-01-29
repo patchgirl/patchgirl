@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE MultiParamTypeClasses     #-}
+{-# LANGUAGE NamedFieldPuns            #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
@@ -25,6 +26,7 @@ import           Helper.App
 import           Http
 import           RequestCollection.DB
 import           RequestCollection.Model
+import           RequestNode.DB
 import           RequestNode.Model
 
 
@@ -63,6 +65,16 @@ spec =
           token <- signedUserToken accountId1
           try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
+      it "modifies a request folder" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
+          let nodeId = (head requestNodes) ^. requestNodeId
+          token <- signedUserToken accountId
+          _ <- try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFolder)
+          FakeRequestFolder { _fakeRequestFolderName } <- selectFakeRequestFolder nodeId connection
+          _fakeRequestFolderName `shouldBe` "newName"
+
   where
     updateRequestFile :: UpdateRequestNode
     updateRequestFile =
@@ -72,3 +84,8 @@ spec =
                         , _updateRequestNodeHttpHeaders = [("newHeaderKey", "newHeaderValue")]
                         , _updateRequestNodeHttpBody = "newBody"
                         }
+
+    updateRequestFolder :: UpdateRequestNode
+    updateRequestFolder =
+      UpdateRequestFolder { _updateRequestNodeName = "newName"
+                          }
