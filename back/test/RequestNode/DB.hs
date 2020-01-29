@@ -41,7 +41,7 @@ selectFakeRequestFile fakeRequestFileId connection = do
 -- * select fake request folder
 
 
-data FakeRequestFolder =
+newtype FakeRequestFolder =
   FakeRequestFolder { _fakeRequestFolderName :: String
                     }
   deriving (Eq, Show, Read, Generic, FromRow)

@@ -61,7 +61,7 @@ spec =
           (accountId1, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           (accountId2, _) <- insertFakeAccount defaultNewFakeAccount2 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
-          let nodeId = (head requestNodes) ^. requestNodeId
+          let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId1
           try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
@@ -69,7 +69,7 @@ spec =
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let nodeId = (head requestNodes) ^. requestNodeId
+          let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId
           _ <- try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFolder)
           FakeRequestFolder { _fakeRequestFolderName } <- selectFakeRequestFolder nodeId connection

@@ -1,20 +1,12 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE NamedFieldPuns    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE RecordWildCards   #-}
 
 module RequestCollection.App where
 
-import           Control.Monad.Except             (MonadError)
-import           Control.Monad.IO.Class           (MonadIO, liftIO)
-import           Control.Monad.Reader             (MonadReader)
-import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.SqlQQ
+import           Control.Monad.Except    (MonadError)
+import           Control.Monad.IO.Class  (MonadIO, liftIO)
+import           Control.Monad.Reader    (MonadReader)
 import           DB
 
 import           PatchGirl

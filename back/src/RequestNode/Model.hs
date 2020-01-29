@@ -14,7 +14,6 @@ module RequestNode.Model where
 
 import           Control.Lens                         (makeFieldsNoPrefix)
 import           Control.Lens                         hiding (element)
-import           Control.Lens.Getter                  ((^.))
 import           Data.Aeson                           (Value, parseJSON)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
