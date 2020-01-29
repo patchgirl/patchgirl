@@ -20,7 +20,6 @@ import           DB
 import           Data.Functor                     ((<&>))
 import           PatchGirl
 import           RequestCollection.Model
-import           RequestCollection.Sql
 import           RequestNode.Sql
 import           Servant
 
