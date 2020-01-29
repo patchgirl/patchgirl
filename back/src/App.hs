@@ -185,6 +185,10 @@ type RequestFileApi = Flat (
     )
   )
 
+requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
+requestFileApiServer =
+  authorizeWithAccountId createRequestFileHandler
+
 
 -- ** request computation
 
@@ -322,11 +326,6 @@ authorize f = \case
 
   Authenticated cookieSession ->
     f cookieSession
-
-requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
-requestFileApiServer =
-  authorizeWithAccountId createRequestFileHandler
-
 
 
 {-
