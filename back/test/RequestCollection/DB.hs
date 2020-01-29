@@ -10,27 +10,23 @@ module RequestCollection.DB where
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
+import           RequestCollection.Model
+import           RequestNode.Sql
 
 
 -- * new fake request collection
 
 
-data FakeRequestCollection =
-  FakeRequestCollection { _fakeRequestCollectionId        :: Int
-                        , _fakeRequestCollectionAccountId :: Int
-                        }
-  deriving (Eq, Show, Read, Generic, FromRow)
-
-insertFakeRequestCollection :: Int -> Connection -> IO FakeRequestCollection
+insertFakeRequestCollection :: Int -> Connection -> IO Int
 insertFakeRequestCollection accountId connection = do
-  [fakeRequestCollection] <- query connection rawQuery (Only accountId)
-  return fakeRequestCollection
+  [Only id] <- query connection rawQuery (Only accountId)
+  return id
   where
     rawQuery =
       [sql|
-          INSERT INTO request_collection (account_id)
+          INSERT INTO request_collection2 (account_id)
           VALUES (?)
-          RETURNING id, account_id
+          RETURNING id
           |]
 
 
@@ -50,7 +46,7 @@ insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode conn
   where
     rawQuery =
       [sql|
-          INSERT INTO request_collection_to_request_node (request_collection_id, request_node_id)
+          INSERT INTO request_collection_to_request_node2 (request_collection_id, request_node_id)
           VALUES (?, ?)
           |]
 
@@ -59,8 +55,7 @@ insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode conn
 
 
 data FakeRequestFolder =
-  FakeRequestFolder { _fakeRequestFolderId       :: Int
-                    , _fakeRequestFolderParentId :: Maybe Int
+  FakeRequestFolder { _fakeRequestFolderParentId :: Maybe Int
                     , _fakeRequestName           :: String
                     }
   deriving (Eq, Show, Read, Generic, ToRow)
@@ -73,8 +68,8 @@ insertFakeRequestFolder fakeRequestFolder connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO request_node (id, request_node_parent_id, tag, name)
-          VALUES (?, ?, 'RequestFolder', ?)
+          INSERT INTO request_node (request_node_parent_id, tag, name)
+          VALUES (?, 'RequestFolder', ?)
           RETURNING id;
           |]
 
@@ -83,8 +78,7 @@ insertFakeRequestFolder fakeRequestFolder connection = do
 
 
 data FakeRequestFile =
-  FakeRequestFile { _fakeRequestFileId         :: Int
-                  , _fakeRequestFileParentId   :: Maybe Int
+  FakeRequestFile { _fakeRequestFileParentId   :: Maybe Int
                   , _fakeRequestFileName       :: String
                   , _fakeRequestFileHttpUrl    :: String
                   , _fakeRequestFileHttpMethod :: String
@@ -93,15 +87,14 @@ data FakeRequestFile =
   deriving (Eq, Show, Read, Generic, ToRow)
 
 
-insertFakeRequestFile :: FakeRequestFile -> Connection -> IO ()
+insertFakeRequestFile :: FakeRequestFile -> Connection -> IO Int
 insertFakeRequestFile fakeRequestFile connection = do
-  _ <- execute connection rawQuery fakeRequestFile
-  return ()
+  [Only id] <- query connection rawQuery fakeRequestFile
+  return id
   where
     rawQuery =
       [sql|
           INSERT INTO request_node (
-            id,
             request_node_parent_id,
             tag,
             name,
@@ -109,5 +102,86 @@ insertFakeRequestFile fakeRequestFile connection = do
             http_method,
             http_body,
             http_headers
-          ) values (?,?, 'RequestFile', ?,?,?,?, '{}');
+          ) VALUES (?, 'RequestFile', ?,?,?,?, '{}')
+          RETURNING id;
           |]
+
+
+-- * insert sample request collection
+
+
+{-
+  insert a collection that looks like this:
+
+
+       1     2
+      / \
+     3   4
+    / \
+   5   6
+
+
+-}
+
+insertSampleRequestCollection :: Int -> Connection -> IO RequestCollection
+insertSampleRequestCollection accountId connection = do
+      n1Id <- insertFakeRequestFolder n1 connection
+      n2Id <- insertFakeRequestFolder n2 connection
+      n3Id <- insertFakeRequestFolder (n3 n1Id) connection
+      _ <- insertFakeRequestFile (n4 n1Id) connection
+      _ <- insertFakeRequestFile (n5 n3Id) connection
+      _ <- insertFakeRequestFile (n6 n3Id) connection
+      requestCollectionId <- insertFakeRequestCollection accountId connection
+      let fakeRequestCollectionToRequestNode1 =
+            FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
+                                               , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = n1Id
+                                               }
+      let fakeRequestCollectionToRequestNode2 =
+            FakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
+                                               , _fakeRequestCollectionToRequestNodeRequestRequestNodeId = n2Id
+                                               }
+
+      _ <- insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode1 connection
+      _ <- insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode2 connection
+      requestNodes <- selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      return $
+        RequestCollection requestCollectionId requestNodes
+  where
+
+-- ** level 1
+
+    n1 = FakeRequestFolder { _fakeRequestFolderParentId = Nothing
+                           , _fakeRequestName           = "1/"
+                           }
+
+    n2 = FakeRequestFolder { _fakeRequestFolderParentId = Nothing
+                           , _fakeRequestName           = "2/"
+                           }
+-- ** level 2
+
+    n3 id = FakeRequestFolder { _fakeRequestFolderParentId = Just id
+                              , _fakeRequestName           = "3/"
+                              }
+
+    n4 id = FakeRequestFile { _fakeRequestFileParentId = Just id
+                            , _fakeRequestFileName       = "4"
+                            , _fakeRequestFileHttpUrl    = "http://4.com"
+                            , _fakeRequestFileHttpMethod = "Get"
+                            , _fakeRequestFileHttpBody   = ""
+                            }
+
+-- ** level 3
+
+    n5 id = FakeRequestFile { _fakeRequestFileParentId = Just id
+                            , _fakeRequestFileName       = "5"
+                            , _fakeRequestFileHttpUrl    = "http://5.com"
+                            , _fakeRequestFileHttpMethod = "Get"
+                            , _fakeRequestFileHttpBody   = ""
+                            }
+
+    n6 id = FakeRequestFile { _fakeRequestFileParentId = Just id
+                            , _fakeRequestFileName       = "6"
+                            , _fakeRequestFileHttpUrl    = "http://6.com"
+                            , _fakeRequestFileHttpMethod = "Get"
+                            , _fakeRequestFileHttpBody   = ""
+                            }

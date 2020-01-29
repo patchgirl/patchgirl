@@ -14,7 +14,7 @@ import           Account.DB
 import           App
 import           Helper.App
 import qualified Network.HTTP.Types      as HTTP
-import qualified RequestCollection.DB2   as DB2
+import           RequestCollection.DB
 import           RequestCollection.Model
 import           Servant
 import qualified Servant.Auth.Client     as Auth
@@ -47,7 +47,7 @@ spec =
       it "returns the account's request collection" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
-          expectedRequestCollection <- DB2.insertSampleRequestCollection accountId connection
+          expectedRequestCollection <- insertSampleRequestCollection accountId connection
           token <- signedUserToken accountId
           requestCollection <- try clientEnv (getRequestCollectionById token)
           requestCollection `shouldBe` expectedRequestCollection

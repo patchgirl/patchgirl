@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3cf477211a01490c8d838cf4eadb6e878370202403ce8f1cbe436aadd3331db8
+-- hash: 82dcff9becfd2e079c679aefdee31aabce8013cc8b214469a0c1c2e734c76117
 
 name:           patchGirl
 version:        0.0.0
@@ -135,7 +135,6 @@ test-suite spec
       Helper.App
       RequestCollection.AppSpec
       RequestCollection.DB
-      RequestCollection.DB2
       RequestCollection.Fixture
       RequestFile.AppSpec
       RequestNode.AppSpec

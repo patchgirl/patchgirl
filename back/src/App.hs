@@ -165,6 +165,9 @@ type RequestNodeApi =
     )
   )
 
+requestNodeApiServer :: AuthResult CookieSession -> ServerT RequestNodeApi AppM
+requestNodeApiServer =
+  authorizeWithAccountId updateRequestNodeHandler
 
 -- ** request file api
 
@@ -319,10 +322,6 @@ authorize f = \case
 
   Authenticated cookieSession ->
     f cookieSession
-
-requestNodeApiServer :: AuthResult CookieSession -> ServerT RequestNodeApi AppM
-requestNodeApiServer =
-  authorizeWithAccountId updateRequestNodeHandler
 
 requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
 requestFileApiServer =
