@@ -49,6 +49,21 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
 
+      -- request collection2
+
+
+      CREATE TABLE request_collection2(
+        id SERIAL PRIMARY KEY,
+        account_id INTEGER REFERENCES account(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE request_collection_to_request_node2(
+        request_collection_id INTEGER REFERENCES request_collection2(id) ON DELETE CASCADE,
+        request_node_id INTEGER REFERENCES request_node(id) ON DELETE CASCADE,
+        PRIMARY KEY (request_collection_id, request_node_id)
+      );
+
+
       -- request collection
 
 
@@ -88,6 +103,37 @@ class Init < ActiveRecord::Migration[5.2]
 
       -- util
 
+      CREATE OR REPLACE FUNCTION root_request_nodes_as_json(rc_id int) RETURNS jsonb[] AS $$
+      DECLARE result jsonb[];
+      BEGIN
+        SELECT array_agg (
+          CASE WHEN tag = 'RequestFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', COALESCE(request_nodes_as_json(id), '{}'::jsonb[])
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'http_body', http_body,
+              'http_url', http_url,
+              'http_method', http_method,
+              'http_headers', http_headers
+            )
+          END
+        ) INTO result
+        FROM request_node rn
+        INNER JOIN request_collection_to_request_node2 rcrn ON rcrn.request_node_id = rn.id
+        WHERE rcrn.request_collection_id = rc_id;
+        RETURN result;
+      END;
+      $$ LANGUAGE plpgsql;
+
+
       CREATE OR REPLACE FUNCTION request_nodes_as_json(node_id int) RETURNS jsonb[] AS $$
       DECLARE result jsonb[];
       BEGIN
@@ -97,7 +143,7 @@ class Init < ActiveRecord::Migration[5.2]
               'id', id,
               'name', name,
               'tag', tag,
-              'children', request_nodes_as_json(id)
+              'children', COALESCE(request_nodes_as_json(id), '{}'::jsonb[])
             )
           ELSE
             jsonb_build_object(

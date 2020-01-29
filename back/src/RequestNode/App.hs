@@ -14,11 +14,10 @@ import qualified Servant.API.ContentTypes         as API
 
 import           DB
 import           PatchGirl
-import           RequestCollection.App
+import           RequestCollection.Sql
 import           RequestNode.Model
 
-
--- * request node
+-- * update request node
 
 
 -- ** handler
@@ -87,7 +86,7 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
           |]
 
 
--- * file
+-- *  create request file
 
 
 -- ** handler
@@ -102,7 +101,7 @@ createRequestFileHandler
   -> Int
   -> NewRequestFile
   -> m Int
-createRequestFileHandler accountId requestCollection newRequestFile = do
+createRequestFileHandler _ _ newRequestFile = do
   connection <- getDBConnection
   IO.liftIO $ insertRequestFile newRequestFile connection
 
@@ -128,7 +127,8 @@ insertRequestFile newRequestFile connection = do
           |]
 
 
--- * folder
+-- * create request folder
+
 
 insertRequestFolder :: NewRequestFolder -> PG.Connection -> IO Int
 insertRequestFolder newRequestFolder connection = do

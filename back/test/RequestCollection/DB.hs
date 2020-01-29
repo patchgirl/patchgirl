@@ -45,7 +45,7 @@ data FakeRequestCollectionToRequestNode =
 
 insertFakeRequestCollectionToRequestNode :: FakeRequestCollectionToRequestNode -> Connection -> IO ()
 insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode connection = do
-  execute connection rawQuery fakeRequestCollectionToRequestNode
+  _ <- execute connection rawQuery fakeRequestCollectionToRequestNode
   return ()
   where
     rawQuery =
@@ -95,7 +95,7 @@ data FakeRequestFile =
 
 insertFakeRequestFile :: FakeRequestFile -> Connection -> IO ()
 insertFakeRequestFile fakeRequestFile connection = do
-  execute connection rawQuery fakeRequestFile
+  _ <- execute connection rawQuery fakeRequestFile
   return ()
   where
     rawQuery =

@@ -45,6 +45,7 @@ import           Config
 import           Environment.App
 import           Health.App
 import           RequestCollection.App
+import           RequestCollection.Model
 import           RequestComputation.App
 import           RequestNode.App
 import           RequestNode.Model
@@ -65,6 +66,7 @@ type CombinedApi auths =
   TestApi :<|>
   AssetApi
 
+combinedApiServer :: CookieSettings -> JWTSettings -> ServerT (CombinedApi a) AppM
 combinedApiServer cookieSettings jwtSettings =
   restApiServer cookieSettings jwtSettings :<|>
   testApiServer :<|>
@@ -85,8 +87,9 @@ type RestApi auths =
   AccountApi  :<|>
   HealthApi
 
+restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
-  ( requestCollectionApiServer
+   requestCollectionApiServer
   :<|> environmentApiServer
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
@@ -95,21 +98,26 @@ restApiServer cookieSettings jwtSettings =
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
   :<|> healthApiServer
-  )
 
 
 -- ** request collection
 
 
 type PRequestCollectionApi auths =
-  Auth auths CookieSession :> RequestCollectionApi
+  Flat (Auth auths CookieSession :> RequestCollectionApi)
 
 type RequestCollectionApi =
-  "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection
+  Flat (
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
+    "api" :> "requestCollection2" :> Capture "requestCollectionId2" Int :> Get '[JSON] RequestCollection
+  )
 
-requestCollectionApiServer :: AuthResult CookieSession -> ServerT RequestCollectionApi AppM
+requestCollectionApiServer
+  :: (AuthResult CookieSession -> Int -> AppM RequestCollection)
+  :<|> (AuthResult CookieSession -> Int -> AppM RequestCollection)
 requestCollectionApiServer =
-  authorizeWithAccountId getRequestCollectionHandler
+  authorizeWithAccountId getRequestCollectionHandler :<|>
+  authorizeWithAccountId getRequestCollectionHandler2
 
 
 -- ** environment
@@ -133,6 +141,21 @@ type EnvironmentApi =
       )
     )
   )
+
+environmentApiServer
+  :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
+  :<|> ((AuthResult CookieSession -> AppM [Environment])
+  :<|> ((AuthResult CookieSession -> Int -> UpdateEnvironment -> AppM ())
+  :<|> ((AuthResult CookieSession -> Int -> AppM ())
+  :<|> ((AuthResult CookieSession -> Int -> [NewKeyValue] -> AppM [KeyValue])
+  :<|> (AuthResult CookieSession -> Int -> Int -> AppM ())))))
+environmentApiServer =
+  authorizeWithAccountId createEnvironmentHandler
+  :<|> authorizeWithAccountId getEnvironmentsHandler
+  :<|> authorizeWithAccountId updateEnvironmentHandler
+  :<|> authorizeWithAccountId deleteEnvironmentHandler
+  :<|> authorizeWithAccountId updateKeyValuesHandler
+  :<|> authorizeWithAccountId deleteKeyValueHandler
 
 
 -- ** request node
@@ -311,21 +334,6 @@ requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
 requestFileApiServer =
   authorizeWithAccountId createRequestFileHandler
 
-
-environmentApiServer
-  :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
-  :<|> ((AuthResult CookieSession -> AppM [Environment])
-  :<|> ((AuthResult CookieSession -> Int -> UpdateEnvironment -> AppM ())
-  :<|> ((AuthResult CookieSession -> Int -> AppM ())
-  :<|> ((AuthResult CookieSession -> Int -> [NewKeyValue] -> AppM [KeyValue])
-  :<|> (AuthResult CookieSession -> Int -> Int -> AppM ())))))
-environmentApiServer =
-  authorizeWithAccountId createEnvironmentHandler
-  :<|> authorizeWithAccountId getEnvironmentsHandler
-  :<|> authorizeWithAccountId updateEnvironmentHandler
-  :<|> authorizeWithAccountId deleteEnvironmentHandler
-  :<|> authorizeWithAccountId updateKeyValuesHandler
-  :<|> authorizeWithAccountId deleteKeyValueHandler
 
 
 {-

@@ -3,10 +3,10 @@
 
 module RequestCollection.Fixture where
 
-import           Data.Aeson            (Value)
+import           Data.Aeson              (Value)
 import           Data.Aeson.QQ
 import           Http
-import           RequestCollection.App
+import           RequestCollection.Model
 import           RequestNode.Model
 
 requestCollectionSample1 :: RequestCollection

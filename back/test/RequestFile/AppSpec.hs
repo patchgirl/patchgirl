@@ -43,5 +43,5 @@ createRequestFile =
 spec :: Spec
 spec =
     describe "" $
-      it "" $
+      it ""
         pending

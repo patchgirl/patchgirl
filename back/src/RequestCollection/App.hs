@@ -10,62 +10,18 @@
 
 module RequestCollection.App where
 
-import           Control.Monad.Except               (MonadError)
-import           Control.Monad.IO.Class             (MonadIO, liftIO)
-import           Control.Monad.Reader               (MonadReader)
-import           Data.Aeson
+import           Control.Monad.Except             (MonadError)
+import           Control.Monad.IO.Class           (MonadIO, liftIO)
+import           Control.Monad.Reader             (MonadReader)
 import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.FromRow (FromRow (..))
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
-import           GHC.Generics
+
 import           PatchGirl
-import           RequestNode.Model
+import           RequestCollection.Model
+import           RequestCollection.Sql
+import           RequestNode.Sql
 import           Servant
-import           Session.Model
-
-
--- * Model
-
-
-data RequestCollection =
-  RequestCollection Int [RequestNode]
-  deriving (Eq, Show, Generic, ToJSON, FromJSON, FromRow)
-
-
--- * DB
-
-
-selectRequestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
-selectRequestCollectionAvailable accountId requestCollectionId connection =
-  query connection collectionExistsSql (requestCollectionId, accountId) >>= \case
-    [Only True] -> return True
-    _ -> return False
-  where
-    collectionExistsSql =
-      [sql|
-          SELECT EXISTS (
-            SELECT 1
-            FROM request_collection
-            WHERE id = ?
-            AND account_id = ?
-          );
-          |]
-
-selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
-selectRequestCollectionById requestCollectionId connection = do
-    [(_, mRequestNodesFromPG)] <- query connection selectRequestCollectionSql (Only requestCollectionId) :: IO[(Int, Maybe [RequestNodeFromPG])]
-    case mRequestNodesFromPG of
-      Just requestNodesFromPG ->
-        return . Just $ RequestCollection requestCollectionId (fromPgRequestNodeToRequestNode <$> requestNodesFromPG)
-      Nothing ->
-        return . Just $ RequestCollection requestCollectionId []
-  where
-    selectRequestCollectionSql =
-      [sql|
-          SELECT 1, *
-          FROM request_nodes_as_json(?)
-          |] :: Query
 
 
 -- * Handler
@@ -87,3 +43,44 @@ getRequestCollectionHandler accountId requestCollectionId = do
       liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case
         Just request -> return request
         Nothing      -> throwError err404
+
+
+-- * handler
+
+
+getRequestCollectionHandler2
+  :: ( MonadReader Config m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => Int
+  -> Int
+  -> m RequestCollection
+getRequestCollectionHandler2 accountId requestCollectionId = do
+  connection <- getDBConnection
+  liftIO (selectRequestCollectionAvailable2 accountId requestCollectionId connection) >>= \case
+    False -> throwError err404
+    True -> do
+      requestNodes <- liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      return $ RequestCollection requestCollectionId requestNodes
+
+
+-- * db
+
+
+selectRequestCollectionAvailable2 :: Int -> Int -> Connection -> IO Bool
+selectRequestCollectionAvailable2 accountId requestCollectionId connection =
+  query connection collectionExistsSql (accountId, requestCollectionId) >>= \case
+    [Only True] -> return True
+    _ -> return False
+  where
+    collectionExistsSql =
+      [sql|
+          SELECT EXISTS (
+            SELECT 1
+            FROM request_collection2
+            INNER JOIN request_collection_to_request_node2 ON id = request_collection_id
+            WHERE account_id = ?
+            AND request_collection_id = ?
+          )
+          |]

@@ -15,7 +15,7 @@ module RequestNode.Model where
 import           Control.Lens                         (makeFieldsNoPrefix)
 import           Data.Aeson                           (Value, parseJSON)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
-                                                       ToJSON (..), camelTo2,
+                                                       ToJSON (..),
                                                        constructorTagModifier,
                                                        defaultOptions,
                                                        fieldLabelModifier,
@@ -135,6 +135,13 @@ instance FromField [RequestNodeFromPG] where
       Just value -> do
         let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNodeFromPG]
         either (returnError ConversionFailed field) return errorOrRequestNodes
+
+instance FromField RequestNodeFromPG where
+  fromField field mdata =
+    (fromField field mdata :: Conversion Value) >>= \case
+      value -> do
+        let errorOrRequestNode = parseEither parseJSON value :: Either String RequestNodeFromPG
+        either (returnError ConversionFailed field) return errorOrRequestNode
 
 
 fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
