@@ -25,11 +25,12 @@ import           Servant.Auth.Server        (JWT)
 import           Servant.Client
 import           Test.Hspec
 
+
 -- * client
 
 
 getRequestCollectionById :: Auth.Token -> Int -> ClientM RequestCollection
-getRequestCollectionById2 :: Auth.Token -> Int -> ClientM RequestCollection
+getRequestCollectionById2 :: Auth.Token -> ClientM RequestCollection
 getRequestCollectionById :<|> getRequestCollectionById2 =
   client (Proxy :: Proxy (PRequestCollectionApi '[JWT]))
 
@@ -86,21 +87,14 @@ spec =
       it "returns notFound404 when requestCollection does not exist" $ \clientEnv ->
         cleanDBAfter $ \_ -> do
           token <- signedUserToken 1
-          try clientEnv (getRequestCollectionById2 token 10000) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (getRequestCollectionById2 token) `shouldThrow` errorsWithStatus HTTP.notFound404
 
-      it "returns unauthorized404 when requestCollection does not belong to user" $ \clientEnv ->
+      it "returns the account's request collection" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
-          requestCollectionId <- DB2.insertFakeRequestCollection accountId connection
-          token <- signedUserToken (accountId + 1)
-          try clientEnv (getRequestCollectionById2 token requestCollectionId) `shouldThrow` errorsWithStatus HTTP.notFound404
-
-      it "returns the request collection when request collection exists and belongs to user" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
-          expectedRequestCollection@(RequestCollection requestCollectionId _) <- DB2.insertSampleRequestCollection accountId connection
+          expectedRequestCollection <- DB2.insertSampleRequestCollection accountId connection
           token <- signedUserToken accountId
-          requestCollection <- try clientEnv (getRequestCollectionById2 token requestCollectionId)
+          requestCollection <- try clientEnv (getRequestCollectionById2 token)
           requestCollection `shouldBe` expectedRequestCollection
 
   where

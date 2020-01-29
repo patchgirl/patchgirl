@@ -29,7 +29,7 @@ import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
                                            Symbol, TypeError, symbolVal)
 import           Http
 import           Model                    (CaseInsensitive)
-import           RequestCollection.App
+import           RequestCollection.Model
 import           RequestComputation.App
 import           RequestNode.Model
 import           Servant                  ((:<|>))

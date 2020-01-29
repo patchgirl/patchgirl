@@ -17,6 +17,7 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 
+import           Data.Functor                     ((<&>))
 import           PatchGirl
 import           RequestCollection.Model
 import           RequestCollection.Sql
@@ -54,13 +55,14 @@ getRequestCollectionHandler2
      , MonadError ServerError m
      )
   => Int
-  -> Int
   -> m RequestCollection
-getRequestCollectionHandler2 accountId requestCollectionId = do
+getRequestCollectionHandler2 accountId = do
   connection <- getDBConnection
-  liftIO (selectRequestCollectionAvailable2 accountId requestCollectionId connection) >>= \case
-    False -> throwError err404
-    True -> do
+  liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing -> do
+      liftIO $ putStrLn "HAHAHAHA"
+      throwError err404
+    Just requestCollectionId -> do
       requestNodes <- liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
       return $ RequestCollection requestCollectionId requestNodes
 
@@ -68,19 +70,17 @@ getRequestCollectionHandler2 accountId requestCollectionId = do
 -- * db
 
 
-selectRequestCollectionAvailable2 :: Int -> Int -> Connection -> IO Bool
-selectRequestCollectionAvailable2 accountId requestCollectionId connection =
-  query connection collectionExistsSql (accountId, requestCollectionId) >>= \case
-    [Only True] -> return True
-    _ -> return False
+selectRequestCollectionId :: Int -> Connection -> IO (Maybe Int)
+selectRequestCollectionId accountId connection =
+  query connection requestCollectionSql (Only accountId) <&> \case
+    [Only id] -> Just id
+    _ -> Nothing
   where
-    collectionExistsSql =
+    requestCollectionSql =
       [sql|
-          SELECT EXISTS (
-            SELECT 1
-            FROM request_collection2
-            INNER JOIN request_collection_to_request_node2 ON id = request_collection_id
-            WHERE account_id = ?
-            AND request_collection_id = ?
-          )
+          SELECT rc.id
+          FROM request_collection2 rc
+          INNER JOIN request_collection_to_request_node2 rcrn ON rc.id = rcrn.request_collection_id
+          WHERE rc.account_id = ?
+          LIMIT 1
           |]

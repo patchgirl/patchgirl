@@ -58,16 +58,9 @@ request_nodes.each do |request_node_query|
   ActiveRecord::Migration[5.2].execute request_node_query
 end
 
-ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection_to_request_node (
-      request_collection_id,
-      request_node_id
-    ) values (1,1);
-    INSERT INTO request_collection_to_request_node (
-      request_collection_id,
-      request_node_id
-    ) values (1,2);
-  }
+
+# account
+
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
@@ -88,6 +81,28 @@ ActiveRecord::Migration[5.2].execute %{
       NULL
     );
 }
+
+# request collection
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO request_collection2 (
+      id,
+      account_id
+    ) values (1,1);
+  }
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO request_collection_to_request_node2 (
+      request_collection_id,
+      request_node_id
+    ) values (1,1);
+    INSERT INTO request_collection_to_request_node2 (
+      request_collection_id,
+      request_node_id
+    ) values (1,2);
+  }
+
+# environment
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO environment (

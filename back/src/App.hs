@@ -109,12 +109,12 @@ type PRequestCollectionApi auths =
 type RequestCollectionApi =
   Flat (
     "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> Get '[JSON] RequestCollection :<|>
-    "api" :> "requestCollection2" :> Capture "requestCollectionId2" Int :> Get '[JSON] RequestCollection
+    "api" :> "requestCollection2" :> Get '[JSON] RequestCollection
   )
 
 requestCollectionApiServer
   :: (AuthResult CookieSession -> Int -> AppM RequestCollection)
-  :<|> (AuthResult CookieSession -> Int -> AppM RequestCollection)
+  :<|> (AuthResult CookieSession -> AppM RequestCollection)
 requestCollectionApiServer =
   authorizeWithAccountId getRequestCollectionHandler :<|>
   authorizeWithAccountId getRequestCollectionHandler2
