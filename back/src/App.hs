@@ -107,11 +107,11 @@ type PRequestCollectionApi auths =
   Flat (Auth auths CookieSession :> RequestCollectionApi)
 
 type RequestCollectionApi =
-    "api" :> "requestCollection2" :> Get '[JSON] RequestCollection
+    "api" :> "requestCollection" :> Get '[JSON] RequestCollection
 
 requestCollectionApiServer :: (AuthResult CookieSession -> AppM RequestCollection)
 requestCollectionApiServer =
-  authorizeWithAccountId getRequestCollectionHandler2
+  authorizeWithAccountId getRequestCollectionHandler
 
 
 -- ** environment

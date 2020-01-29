@@ -25,7 +25,7 @@ import           RequestNode.Sql
 import           Servant
 
 
--- * Handler
+-- * handler
 
 
 getRequestCollectionHandler
@@ -34,33 +34,11 @@ getRequestCollectionHandler
      , MonadError ServerError m
      )
   => Int
-  -> Int
   -> m RequestCollection
-getRequestCollectionHandler accountId requestCollectionId = do
-  connection <- getDBConnection
-  liftIO (selectRequestCollectionAvailable accountId requestCollectionId connection) >>= \case
-    False -> throwError err404
-    True ->
-      liftIO (selectRequestCollectionById requestCollectionId connection) >>= \case
-        Just request -> return request
-        Nothing      -> throwError err404
-
-
--- * handler
-
-
-getRequestCollectionHandler2
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
-     )
-  => Int
-  -> m RequestCollection
-getRequestCollectionHandler2 accountId = do
+getRequestCollectionHandler accountId = do
   connection <- getDBConnection
   liftIO (selectRequestCollectionId accountId connection) >>= \case
-    Nothing -> do
-      liftIO $ putStrLn "HAHAHAHA"
+    Nothing ->
       throwError err404
     Just requestCollectionId -> do
       requestNodes <- liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
