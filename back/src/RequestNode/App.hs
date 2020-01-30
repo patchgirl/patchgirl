@@ -5,6 +5,7 @@
 
 module RequestNode.App where
 
+import           Control.Lens.Operators ((^.))
 import qualified Control.Monad.Except   as Except (MonadError)
 import qualified Control.Monad.IO.Class as IO
 import qualified Control.Monad.Reader   as Reader
@@ -37,13 +38,19 @@ updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
       Servant.throwError Servant.err404
     Just requestCollectionId -> do
       requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
-      case requestNodeId `elem` map _requestNodeId requestNodes of
+      case any (isNodeContainedInRequestNode requestNodeId) requestNodes of
         False -> Servant.throwError Servant.err404
         True ->
           IO.liftIO $
             updateRequestNodeDB requestNodeId updateRequestNode connection >> return ()
 
-
+isNodeContainedInRequestNode :: Int -> RequestNode -> Bool
+isNodeContainedInRequestNode nodeId requestNode =
+  requestNode ^. requestNodeId == nodeId || case requestNode of
+    RequestFile {} ->
+      False
+    RequestFolder {} ->
+      any (isNodeContainedInRequestNode nodeId) (requestNode ^. requestNodeChildren)
 
 
 -- * create request file

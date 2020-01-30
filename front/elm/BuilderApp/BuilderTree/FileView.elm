@@ -23,10 +23,10 @@ fileReadView name idx =
         , label = el [] <| iconWithTextAndColor "label" name secondaryColor
         }
 
-fileEditView : String -> Int -> Element Msg
-fileEditView name idx =
+fileEditView : String -> Int -> Int -> Element Msg
+fileEditView name id idx =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (Rename idx)
+      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
       ]
       { onChange = ChangeName idx
       , text = name
@@ -34,13 +34,13 @@ fileEditView name idx =
       , label = Input.labelHidden "rename file"
       }
 
-fileView : Editable String -> Int -> Bool -> Element Msg
-fileView name idx showMenu =
+fileView : Int -> Editable String -> Int -> Bool -> Element Msg
+fileView id name idx showMenu =
     let
         modeView =
             case name of
                 NotEdited value -> fileReadView value idx
-                Edited oldValue newValue -> fileEditView newValue idx
+                Edited oldValue newValue -> fileEditView newValue id idx
         menuView =
             case not showMenu of
                 True -> none

@@ -29,18 +29,18 @@ nodeView idx mDisplayedRequestNodeMenuIndex requestCollection =
       [] -> (idx, [])
       node :: tail ->
         case node of
-          (RequestFolder { name, open, children }) ->
+          (RequestFolder { id, name, open, children }) ->
             let
               (folderIdx, folderChildrenView) = nodeView (idx + 1) mDisplayedRequestNodeMenuIndex children
               (newIdx, tailView) = nodeView folderIdx mDisplayedRequestNodeMenuIndex tail
               currentFolderView =
-                  folderView name idx folderChildrenView open showMenu
+                  folderView id name idx folderChildrenView open showMenu
             in
               (newIdx, currentFolderView :: tailView)
 
-          (RequestFile { name }) ->
+          (RequestFile { id, name }) ->
             let
               (newIdx, tailView) = nodeView (idx + 1) mDisplayedRequestNodeMenuIndex tail
-              currentFileView = fileView name idx showMenu
+              currentFileView = fileView id name idx showMenu
             in
               (newIdx, currentFileView :: tailView)

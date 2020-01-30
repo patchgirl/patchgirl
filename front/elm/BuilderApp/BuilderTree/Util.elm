@@ -50,12 +50,13 @@ modifyRequestNode f =
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               RequestFolder { name, open, children } ->
+               RequestFolder { id, name, open, children } ->
                  let
                     (newIdx, newChildren) = modify children (idx - 1)
                     (rIdx, newTail) = modify tail newIdx
                     newFolder =
-                        RequestFolder { name = name
+                        RequestFolder { id = id
+                                      , name = name
                                       , open = open
                                       , children = newChildren
                                       }
@@ -82,11 +83,12 @@ deleteRequestNode =
           ([], _) -> (idx, [])
           (node :: tail, _) ->
              case node of
-               RequestFolder { name, open, children } ->
+               RequestFolder { id, name, open, children } ->
                  let
                     (newIdx, newChildren) = delete children (idx - 1)
                     (rIdx, newTail) = delete tail newIdx
-                    newFolder = RequestFolder { name = name
+                    newFolder = RequestFolder { id = id
+                                              , name = name
                                               , open = open
                                               , children = newChildren
                                               }

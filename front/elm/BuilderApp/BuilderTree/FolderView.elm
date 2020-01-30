@@ -64,10 +64,10 @@ folderReadView idx name isOpen =
         , label = folderWithIconView name isOpen
         }
 
-folderEditView : String -> Int -> Element Msg
-folderEditView name idx =
+folderEditView : Int -> String -> Int -> Element Msg
+folderEditView id name idx =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename idx)
+      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
       ]
       { onChange = ChangeName idx
       , text = name
@@ -75,15 +75,15 @@ folderEditView name idx =
       , label = Input.labelHidden "rename folder"
       }
 
-folderView : Editable String -> Int -> List(Element Msg) -> Bool -> Bool -> Element Msg
-folderView name idx folderChildrenView open showMenu =
+folderView : Int -> Editable String -> Int -> List(Element Msg) -> Bool -> Bool -> Element Msg
+folderView id name idx folderChildrenView open showMenu =
     let
         modeView =
             case name of
                 NotEdited value ->
                     folderReadView idx value open
                 Edited oldValue newValue ->
-                    folderEditView newValue idx
+                    folderEditView id newValue idx
     in
         column [ width (fill |> maximum 300) ]
             [ row []

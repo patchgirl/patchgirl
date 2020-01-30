@@ -26,13 +26,15 @@ type RequestNode
     | RequestFile File
 
 type alias Folder =
-  { name : Editable String
+  { id: Int
+  , name : Editable String
   , open : Bool
   , children : List RequestNode
   }
 
 type alias File =
-  { name : Editable String
+  { id: Int
+  , name : Editable String
   , isSaved : Bool
   , httpUrl : Editable String
   , httpMethod : Editable Builder.Method
@@ -43,13 +45,15 @@ type alias File =
   }
 
 defaultFolder =
-  RequestFolder { name = NotEdited "new folder"
+  RequestFolder { id = 0
+                , name = NotEdited "new folder"
                 , open = False
                 , children = []
                 }
 
 defaultFile =
-  RequestFile { name = NotEdited "new file"
+  RequestFile { id = 0
+              , name = NotEdited "new file"
               , isSaved = False
               , httpUrl = NotEdited ""
               , httpMethod = NotEdited Builder.Get
