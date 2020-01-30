@@ -6,7 +6,13 @@ import BuilderApp.BuilderTree.Util exposing (..)
 
 import BuilderApp.Builder.App as Builder
 
+import Http as Http
 import Util.Maybe as Maybe
+import Api.Generated as Client
+
+
+-- * update
+
 
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
@@ -71,17 +77,6 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    Rename idx newName ->
-        let
-            (RequestCollection id requestNodes) = model.requestCollection
-            newModel =
-                { model
-                    | requestCollection =
-                      RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
-                }
-        in
-            (newModel, Cmd.none)
-
     ChangeName idx newName ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
@@ -89,6 +84,30 @@ update msg model =
                 { model
                     | requestCollection =
                       RequestCollection id (modifyRequestNode (tempRename newName) requestNodes idx)
+                }
+        in
+            (newModel, Cmd.none)
+
+    AskRename requestNodeIdx newName ->
+        let
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            payload =
+                Client.UpdateRequestFolder { updateRequestNodeName = newName }
+
+            newMsg =
+                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId requestNodeIdx payload (newEnvironmentResultToMsg requestNodeIdx newName)
+        in
+            (model, newMsg)
+
+    Rename idx newName ->
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
                 }
         in
             (newModel, Cmd.none)
@@ -104,5 +123,21 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+    BuilderTreeServerError ->
+        Debug.todo "error with builder tree"
+
     DoNothing ->
         (model, Cmd.none)
+
+
+-- * util
+
+
+newEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
+newEnvironmentResultToMsg idx newName result =
+    case Debug.log "result" result of
+        Ok _ ->
+            Rename idx newName
+
+        Err error ->
+            BuilderTreeServerError

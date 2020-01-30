@@ -5,11 +5,10 @@
 
 module RequestNode.App where
 
-import qualified Control.Monad.Except     as Except (MonadError)
-import qualified Control.Monad.IO.Class   as IO
-import qualified Control.Monad.Reader     as Reader
+import qualified Control.Monad.Except   as Except (MonadError)
+import qualified Control.Monad.IO.Class as IO
+import qualified Control.Monad.Reader   as Reader
 import qualified Servant
-import qualified Servant.API.ContentTypes as API
 
 import           DB
 import           PatchGirl
@@ -30,7 +29,7 @@ updateRequestNodeHandler
   -> Int
   -> Int
   -> UpdateRequestNode
-  -> m API.NoContent
+  -> m ()
 updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
   connection <- getDBConnection
   IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
@@ -42,7 +41,7 @@ updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
         False -> Servant.throwError Servant.err404
         True ->
           IO.liftIO $
-            updateRequestNodeDB requestNodeId updateRequestNode connection >> return API.NoContent
+            updateRequestNodeDB requestNodeId updateRequestNode connection >> return ()
 
 
 

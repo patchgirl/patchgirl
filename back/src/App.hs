@@ -161,13 +161,14 @@ type PRequestNodeApi auths =
 type RequestNodeApi =
   Flat (
     "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
-      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] NoContent
+      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] ()
     )
   )
 
 requestNodeApiServer :: AuthResult CookieSession -> ServerT RequestNodeApi AppM
 requestNodeApiServer =
   authorizeWithAccountId updateRequestNodeHandler
+
 
 -- ** request file api
 

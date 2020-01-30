@@ -33,7 +33,7 @@ import           RequestNode.Model
 -- * client
 
 
-updateRequestNode :: Auth.Token -> Int -> Int -> UpdateRequestNode -> ClientM NoContent
+updateRequestNode :: Auth.Token -> Int -> Int -> UpdateRequestNode -> ClientM ()
 updateRequestNode =
   client (Proxy :: Proxy (PRequestNodeApi '[Auth.JWT]))
 

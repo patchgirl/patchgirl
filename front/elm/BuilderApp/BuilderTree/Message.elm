@@ -6,8 +6,10 @@ type Msg
   | Mkdir Int
   | Touch Int
   | ShowRenameInput Int
-  | Rename Int String
-  | ChangeName Int String
+  | ChangeName Int String -- while focus is on the input
+  | AskRename Int String -- validate input
+  | Rename Int String -- refresh input
   | Delete Int
   | ToggleMenu Int
   | DoNothing
+  | BuilderTreeServerError
