@@ -85,18 +85,18 @@ ActiveRecord::Migration[5.2].execute %{
 # request collection
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection2 (
+    INSERT INTO request_collection (
       id,
       account_id
     ) values (1,1);
   }
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection_to_request_node2 (
+    INSERT INTO request_collection_to_request_node (
       request_collection_id,
       request_node_id
     ) values (1,1);
-    INSERT INTO request_collection_to_request_node2 (
+    INSERT INTO request_collection_to_request_node (
       request_collection_id,
       request_node_id
     ) values (1,2);

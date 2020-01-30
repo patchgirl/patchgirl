@@ -24,7 +24,7 @@ insertFakeRequestCollection accountId connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO request_collection2 (account_id)
+          INSERT INTO request_collection (account_id)
           VALUES (?)
           RETURNING id
           |]
@@ -46,7 +46,7 @@ insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode conn
   where
     rawQuery =
       [sql|
-          INSERT INTO request_collection_to_request_node2 (request_collection_id, request_node_id)
+          INSERT INTO request_collection_to_request_node (request_collection_id, request_node_id)
           VALUES (?, ?)
           |]
 

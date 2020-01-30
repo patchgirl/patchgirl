@@ -138,7 +138,7 @@ CREATE FUNCTION public.root_request_nodes_as_json(rc_id integer) RETURNS jsonb[]
           END
         ) INTO result
         FROM request_node rn
-        INNER JOIN request_collection_to_request_node2 rcrn ON rcrn.request_node_id = rn.id
+        INNER JOIN request_collection_to_request_node rcrn ON rcrn.request_node_id = rn.id
         WHERE rcrn.request_collection_id = rc_id;
         RETURN result;
       END;
@@ -276,36 +276,6 @@ CREATE TABLE public.request_collection (
 
 
 --
--- Name: request_collection2; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.request_collection2 (
-    id integer NOT NULL,
-    account_id integer
-);
-
-
---
--- Name: request_collection2_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.request_collection2_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: request_collection2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.request_collection2_id_seq OWNED BY public.request_collection2.id;
-
-
---
 -- Name: request_collection_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -330,16 +300,6 @@ ALTER SEQUENCE public.request_collection_id_seq OWNED BY public.request_collecti
 --
 
 CREATE TABLE public.request_collection_to_request_node (
-    request_collection_id integer NOT NULL,
-    request_node_id integer NOT NULL
-);
-
-
---
--- Name: request_collection_to_request_node2; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.request_collection_to_request_node2 (
     request_collection_id integer NOT NULL,
     request_node_id integer NOT NULL
 );
@@ -420,13 +380,6 @@ ALTER TABLE ONLY public.request_collection ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
--- Name: request_collection2 id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_collection2 ALTER COLUMN id SET DEFAULT nextval('public.request_collection2_id_seq'::regclass);
-
-
---
 -- Name: request_node id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -482,27 +435,11 @@ ALTER TABLE ONLY public.key_value
 
 
 --
--- Name: request_collection2 request_collection2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_collection2
-    ADD CONSTRAINT request_collection2_pkey PRIMARY KEY (id);
-
-
---
 -- Name: request_collection request_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.request_collection
     ADD CONSTRAINT request_collection_pkey PRIMARY KEY (id);
-
-
---
--- Name: request_collection_to_request_node2 request_collection_to_request_node2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_collection_to_request_node2
-    ADD CONSTRAINT request_collection_to_request_node2_pkey PRIMARY KEY (request_collection_id, request_node_id);
 
 
 --
@@ -554,14 +491,6 @@ ALTER TABLE ONLY public.key_value
 
 
 --
--- Name: request_collection2 request_collection2_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_collection2
-    ADD CONSTRAINT request_collection2_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
-
-
---
 -- Name: request_collection request_collection_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -570,19 +499,11 @@ ALTER TABLE ONLY public.request_collection
 
 
 --
--- Name: request_collection_to_request_node2 request_collection_to_request_node2_request_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: request_collection_to_request_node request_collection_to_request_node_request_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.request_collection_to_request_node2
-    ADD CONSTRAINT request_collection_to_request_node2_request_collection_id_fkey FOREIGN KEY (request_collection_id) REFERENCES public.request_collection2(id) ON DELETE CASCADE;
-
-
---
--- Name: request_collection_to_request_node2 request_collection_to_request_node2_request_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.request_collection_to_request_node2
-    ADD CONSTRAINT request_collection_to_request_node2_request_node_id_fkey FOREIGN KEY (request_node_id) REFERENCES public.request_node(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.request_collection_to_request_node
+    ADD CONSTRAINT request_collection_to_request_node_request_collection_id_fkey FOREIGN KEY (request_collection_id) REFERENCES public.request_collection(id) ON DELETE CASCADE;
 
 
 --

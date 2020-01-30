@@ -58,8 +58,8 @@ selectRequestCollectionId accountId connection =
     requestCollectionSql =
       [sql|
           SELECT rc.id
-          FROM request_collection2 rc
-          INNER JOIN request_collection_to_request_node2 rcrn ON rc.id = rcrn.request_collection_id
+          FROM request_collection rc
+          INNER JOIN request_collection_to_request_node rcrn ON rc.id = rcrn.request_collection_id
           WHERE rc.account_id = ?
           LIMIT 1
           |]

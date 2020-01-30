@@ -49,31 +49,13 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
 
-      -- request collection2
-
-
-      CREATE TABLE request_collection2(
-        id SERIAL PRIMARY KEY,
-        account_id INTEGER REFERENCES account(id) ON DELETE CASCADE
-      );
-
-      CREATE TABLE request_collection_to_request_node2(
-        request_collection_id INTEGER REFERENCES request_collection2(id) ON DELETE CASCADE,
-        request_node_id INTEGER REFERENCES request_node(id) ON DELETE CASCADE,
-        PRIMARY KEY (request_collection_id, request_node_id)
-      );
-
-
-      -- request collection
-
-
       CREATE TABLE request_collection(
         id SERIAL PRIMARY KEY,
         account_id INTEGER REFERENCES account(id) ON DELETE CASCADE
       );
 
       CREATE TABLE request_collection_to_request_node(
-        request_collection_id INTEGER,
+        request_collection_id INTEGER REFERENCES request_collection(id) ON DELETE CASCADE,
         request_node_id INTEGER REFERENCES request_node(id) ON DELETE CASCADE,
         PRIMARY KEY (request_collection_id, request_node_id)
       );
@@ -127,7 +109,7 @@ class Init < ActiveRecord::Migration[5.2]
           END
         ) INTO result
         FROM request_node rn
-        INNER JOIN request_collection_to_request_node2 rcrn ON rcrn.request_node_id = rn.id
+        INNER JOIN request_collection_to_request_node rcrn ON rcrn.request_node_id = rn.id
         WHERE rcrn.request_collection_id = rc_id;
         RETURN result;
       END;
