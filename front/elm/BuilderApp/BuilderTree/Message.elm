@@ -7,7 +7,7 @@ type Msg
   | Touch Int
   | ShowRenameInput Int
   | ChangeName Int String -- while focus is on the input
-  | AskRename Int String -- validate input
+  | AskRename Int Int String -- validate input
   | Rename Int String -- refresh input
   | Delete Int
   | ToggleMenu Int

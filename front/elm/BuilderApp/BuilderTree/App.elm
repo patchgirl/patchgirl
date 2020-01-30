@@ -88,7 +88,7 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    AskRename requestNodeIdx newName ->
+    AskRename requestNodeId requestNodeIdx newName ->
         let
             (RequestCollection requestCollectionId requestNodes) =
                 model.requestCollection
@@ -97,7 +97,7 @@ update msg model =
                 Client.UpdateRequestFolder { updateRequestNodeName = newName }
 
             newMsg =
-                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId requestNodeIdx payload (newEnvironmentResultToMsg requestNodeIdx newName)
+                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId requestNodeId payload (newEnvironmentResultToMsg requestNodeIdx newName)
         in
             (model, newMsg)
 

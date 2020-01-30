@@ -26,7 +26,7 @@ fileReadView name idx =
 fileEditView : String -> Int -> Int -> Element Msg
 fileEditView name id idx =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
+      [ htmlAttribute <| Util.onEnterWithInput (AskRename id idx)
       ]
       { onChange = ChangeName idx
       , text = name

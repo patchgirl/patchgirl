@@ -67,7 +67,7 @@ folderReadView idx name isOpen =
 folderEditView : Int -> String -> Int -> Element Msg
 folderEditView id name idx =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
+      [ htmlAttribute <| Util.onEnterWithInput (AskRename id idx)
       ]
       { onChange = ChangeName idx
       , text = name
