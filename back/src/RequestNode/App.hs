@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE LambdaCase          #-}
-{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module RequestNode.App where
 
 import           Control.Lens.Operators ((^.))
+import qualified Control.Monad          as Monad
 import qualified Control.Monad.Except   as Except (MonadError)
 import qualified Control.Monad.IO.Class as IO
 import qualified Control.Monad.Reader   as Reader
@@ -42,7 +42,7 @@ updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
         False -> Servant.throwError Servant.err404
         True ->
           IO.liftIO $
-            updateRequestNodeDB requestNodeId updateRequestNode connection >> return ()
+            Monad.void (updateRequestNodeDB requestNodeId updateRequestNode connection)
 
 isNodeContainedInRequestNode :: Int -> RequestNode -> Bool
 isNodeContainedInRequestNode nodeId requestNode =
