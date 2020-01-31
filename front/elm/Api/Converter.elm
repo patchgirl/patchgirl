@@ -9,7 +9,9 @@ import Application.Type as Front
 import Dict as Dict
 import Tuple as Tuple
 
+
 -- * request Collection
+
 
 convertRequestCollectionFromBackToFront : Back.RequestCollection -> Front.RequestCollection
 convertRequestCollectionFromBackToFront backRequestCollection =

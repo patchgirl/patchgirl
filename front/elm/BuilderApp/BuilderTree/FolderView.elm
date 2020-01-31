@@ -9,6 +9,7 @@ import Html.Attributes as Html
 import Html as Html
 import Application.Type exposing (..)
 import ViewUtil exposing (..)
+import Uuid
 
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 
@@ -39,11 +40,11 @@ folderMenuView idx isOpen =
                       , label = editIcon
                       }
                 , Input.button []
-                    { onPress = Just <| Mkdir idx
+                    { onPress = Just <| RandomMkdir idx
                     , label = createFolderIcon
                     }
                 , Input.button []
-                    { onPress = Just <| Touch idx
+                    { onPress = Just <| RandomTouch idx
                     , label = createFileIcon
                     }
                 , Input.button []
@@ -64,7 +65,7 @@ folderReadView idx name isOpen =
         , label = folderWithIconView name isOpen
         }
 
-folderEditView : Int -> String -> Int -> Element Msg
+folderEditView : Uuid.Uuid -> String -> Int -> Element Msg
 folderEditView id name idx =
   Input.text
       [ htmlAttribute <| Util.onEnterWithInput (AskRename id idx)
@@ -75,7 +76,7 @@ folderEditView id name idx =
       , label = Input.labelHidden "rename folder"
       }
 
-folderView : Int -> Editable String -> Int -> List(Element Msg) -> Bool -> Bool -> Element Msg
+folderView : Uuid.Uuid -> Editable String -> Int -> List(Element Msg) -> Bool -> Bool -> Element Msg
 folderView id name idx folderChildrenView open showMenu =
     let
         modeView =

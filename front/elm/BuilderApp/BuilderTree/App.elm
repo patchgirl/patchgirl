@@ -6,6 +6,8 @@ import BuilderApp.BuilderTree.Util exposing (..)
 
 import BuilderApp.Builder.App as Builder
 
+import Random
+import Uuid
 import Http as Http
 import Util.Maybe as Maybe
 import Api.Generated as Client
@@ -44,24 +46,42 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    Mkdir idx ->
+    RandomMkdir idx ->
+        let
+            newMsg = Random.generate (Mkdir idx) Uuid.uuidGenerator
+        in
+            (model, newMsg)
+
+    Mkdir idx newId ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode mkdir requestNodes idx)
+                      RequestCollection id (modifyRequestNode (mkdir newId) requestNodes idx)
                 }
         in
             (newModel, Cmd.none)
 
-    Touch idx ->
+    RandomTouch idx ->
+        let
+            newMsg = Random.generate (AskTouch idx) Uuid.uuidGenerator
+        in
+            (model, newMsg)
+
+    AskTouch idx newId ->
+        let
+            newMsg = Random.generate (AskTouch idx) Uuid.uuidGenerator
+        in
+            (model, newMsg)
+
+    Touch idx newId ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode touch requestNodes idx)
+                      RequestCollection id (modifyRequestNode (touch newId) requestNodes idx)
                 }
         in
             (newModel, Cmd.none)
@@ -97,7 +117,7 @@ update msg model =
                 Client.UpdateRequestFolder { updateRequestNodeName = newName }
 
             newMsg =
-                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId requestNodeId payload (newEnvironmentResultToMsg requestNodeIdx newName)
+                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId requestNodeId payload (renameNodeResultToMsg requestNodeIdx newName)
         in
             (model, newMsg)
 
@@ -133,8 +153,17 @@ update msg model =
 -- * util
 
 
-newEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
-newEnvironmentResultToMsg idx newName result =
+renameNodeResultToMsg : Int -> String -> Result Http.Error () -> Msg
+renameNodeResultToMsg idx newName result =
+    case Debug.log "result" result of
+        Ok _ ->
+            Rename idx newName
+
+        Err error ->
+            BuilderTreeServerError
+
+createRequestFileResultToMsg : Int -> String -> Result Http.Error () -> Msg
+createRequestFileResultToMsg idx newName result =
     case Debug.log "result" result of
         Ok _ ->
             Rename idx newName

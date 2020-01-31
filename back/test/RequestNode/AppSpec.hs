@@ -13,6 +13,8 @@
 module RequestNode.AppSpec where
 
 import           Control.Lens.Getter     ((^.))
+import           Data.UUID
+import qualified Data.UUID               as UUID
 import qualified Network.HTTP.Types      as HTTP
 import           Servant
 import qualified Servant.Auth.Client     as Auth
@@ -33,7 +35,7 @@ import           RequestNode.Model
 -- * client
 
 
-updateRequestNode :: Auth.Token -> Int -> Int -> UpdateRequestNode -> ClientM ()
+updateRequestNode :: Auth.Token -> Int -> UUID -> UpdateRequestNode -> ClientM ()
 updateRequestNode =
   client (Proxy :: Proxy (PRequestNodeApi '[Auth.JWT]))
 
@@ -54,7 +56,7 @@ spec =
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
-          try clientEnv (updateRequestNode token 1 1 updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateRequestNode token 1 UUID.nil updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do

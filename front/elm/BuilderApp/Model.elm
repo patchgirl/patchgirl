@@ -6,6 +6,8 @@ import Application.Type exposing (..)
 import Application.Type as Type
 import VarApp.Model as VarApp
 import BuilderApp.Builder.Model as Builder
+import Uuid
+import Random
 
 type alias Model a =
     { a
@@ -26,14 +28,14 @@ type RequestNode
     | RequestFile File
 
 type alias Folder =
-  { id: Int
+  { id: Uuid.Uuid
   , name : Editable String
   , open : Bool
   , children : List RequestNode
   }
 
 type alias File =
-  { id: Int
+  { id: Uuid.Uuid
   , name : Editable String
   , isSaved : Bool
   , httpUrl : Editable String
@@ -44,21 +46,23 @@ type alias File =
   , showResponseView : Bool
   }
 
-defaultFolder =
-  RequestFolder { id = 0
-                , name = NotEdited "new folder"
-                , open = False
-                , children = []
-                }
+mkDefaultFolder : Uuid.Uuid -> RequestNode
+mkDefaultFolder id =
+    RequestFolder { id = id
+                  , name = NotEdited "new folder"
+                  , open = False
+                  , children = []
+                  }
 
-defaultFile =
-  RequestFile { id = 0
-              , name = NotEdited "new file"
-              , isSaved = False
-              , httpUrl = NotEdited ""
-              , httpMethod = NotEdited Builder.Get
-              , httpHeaders = NotEdited []
-              , httpBody = NotEdited ""
-              , showResponseView = False
-              , requestComputationResult = Nothing
-              }
+mkDefaultFile : Uuid.Uuid -> RequestNode
+mkDefaultFile id =
+    RequestFile { id = id
+                , name = NotEdited "new file"
+                , isSaved = False
+                , httpUrl = NotEdited ""
+                , httpMethod = NotEdited Builder.Get
+                , httpHeaders = NotEdited []
+                , httpBody = NotEdited ""
+                , showResponseView = False
+                , requestComputationResult = Nothing
+                }

@@ -7,9 +7,10 @@
 module Http where
 
 import           Data.Aeson
-import           Database.PostgreSQL.Simple.ToField
+import qualified Data.ByteString.Char8                as B
+import qualified Database.PostgreSQL.Simple.FromField as PG
+import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
-
 
 -- * method
 
@@ -24,6 +25,19 @@ data Method
   | Options
   deriving (Eq, Show, Read, Generic, ToJSON, FromJSON)
 
+instance PG.FromField Method where
+   fromField f mdata =
+     case B.unpack `fmap` mdata of
+       Nothing        -> PG.returnError PG.UnexpectedNull f ""
+       Just "Get"     -> return Get
+       Just "Post"    -> return Post
+       Just "Put"     -> return Put
+       Just "Delete"  -> return Delete
+       Just "Patch"   -> return Patch
+       Just "Head"    -> return Head
+       Just "Options" -> return Options
+       _              -> PG.returnError PG.Incompatible f ""
+
 methodToString :: Method -> String
 methodToString = \case
   Get -> "GET"
@@ -34,9 +48,8 @@ methodToString = \case
   Head -> "HEAD"
   Options -> "OPTIONS"
 
-
-instance ToField Method where
-  toField = toField . show
+instance PG.ToField Method where
+  toField = PG.toField . show
 
 
 -- * scheme

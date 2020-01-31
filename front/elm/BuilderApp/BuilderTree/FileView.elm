@@ -15,6 +15,7 @@ import Element.Font as Font
 
 import ViewUtil exposing (..)
 import Util.View as Util
+import Uuid
 
 fileReadView : String -> Int -> Element Msg
 fileReadView name idx =
@@ -23,7 +24,7 @@ fileReadView name idx =
         , label = el [] <| iconWithTextAndColor "label" name secondaryColor
         }
 
-fileEditView : String -> Int -> Int -> Element Msg
+fileEditView : String -> Uuid.Uuid -> Int -> Element Msg
 fileEditView name id idx =
   Input.text
       [ htmlAttribute <| Util.onEnterWithInput (AskRename id idx)
@@ -34,7 +35,7 @@ fileEditView name id idx =
       , label = Input.labelHidden "rename file"
       }
 
-fileView : Int -> Editable String -> Int -> Bool -> Element Msg
+fileView : Uuid.Uuid -> Editable String -> Int -> Bool -> Element Msg
 fileView id name idx showMenu =
     let
         modeView =

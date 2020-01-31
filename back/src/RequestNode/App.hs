@@ -9,6 +9,8 @@ import qualified Control.Monad          as Monad
 import qualified Control.Monad.Except   as Except (MonadError)
 import qualified Control.Monad.IO.Class as IO
 import qualified Control.Monad.Reader   as Reader
+import qualified Data.Maybe             as Maybe
+import           Data.UUID
 import qualified Servant
 
 import           DB
@@ -28,7 +30,7 @@ updateRequestNodeHandler
      )
   => Int
   -> Int
-  -> Int
+  -> UUID
   -> UpdateRequestNode
   -> m ()
 updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
@@ -38,19 +40,28 @@ updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
       Servant.throwError Servant.err404
     Just requestCollectionId -> do
       requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
-      case any (isNodeContainedInRequestNode requestNodeId) requestNodes of
-        False -> Servant.throwError Servant.err404
-        True ->
+      case findNodeInRequestNodes requestNodeId requestNodes of
+        Nothing -> Servant.throwError Servant.err404
+        Just _ ->
           IO.liftIO $
             Monad.void (updateRequestNodeDB requestNodeId updateRequestNode connection)
 
-isNodeContainedInRequestNode :: Int -> RequestNode -> Bool
-isNodeContainedInRequestNode nodeId requestNode =
-  requestNode ^. requestNodeId == nodeId || case requestNode of
-    RequestFile {} ->
-      False
-    RequestFolder {} ->
-      any (isNodeContainedInRequestNode nodeId) (requestNode ^. requestNodeChildren)
+
+findNodeInRequestNodes :: UUID -> [RequestNode] -> Maybe RequestNode
+findNodeInRequestNodes nodeIdToFind requestNodes =
+  Maybe.listToMaybe . Maybe.catMaybes $ map findNodeInRequestNode requestNodes
+  where
+    findNodeInRequestNode :: RequestNode -> Maybe RequestNode
+    findNodeInRequestNode requestNode =
+      case requestNode ^. requestNodeId == nodeIdToFind of
+        True -> Just requestNode
+        False ->
+          case requestNode of
+            RequestFile {} ->
+              Nothing
+            RequestFolder {} ->
+              findNodeInRequestNodes nodeIdToFind (requestNode ^. requestNodeChildren)
+
 
 
 -- * create request file
@@ -64,7 +75,18 @@ createRequestFileHandler
   => Int
   -> Int
   -> NewRequestFile
-  -> m Int
-createRequestFileHandler _ _ newRequestFile = do
+  -> m ()
+createRequestFileHandler accountId requestCollectionId newRequestFile = do
   connection <- getDBConnection
-  IO.liftIO $ insertRequestFile newRequestFile connection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+    Just requestCollectionId' | requestCollectionId /= requestCollectionId' ->
+      Servant.throwError Servant.err404
+    _ -> do
+      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      case findNodeInRequestNodes (newRequestFile ^. newRequestFileParentNodeId) requestNodes of
+        Just RequestFolder {} ->
+          IO.liftIO $ insertRequestFile newRequestFile connection
+        _ ->
+          Servant.throwError Servant.err404

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4a262f4a89c4bb11c6cfbdaa0f466db2c56de45e2e70e449043738c32cc49232
+-- hash: 1ba59e165afff05564314700f717037c61cf415156234511a257ef5f6337d89b
 
 name:           patchGirl
 version:        0.0.0
@@ -73,6 +73,7 @@ library
     , transformers
     , unordered-containers
     , utf8-string
+    , uuid
     , wai
     , wai-middleware-prometheus
     , warp
@@ -118,6 +119,7 @@ executable patchGirl
     , transformers
     , unordered-containers
     , utf8-string
+    , uuid
     , wai
     , wai-middleware-prometheus
     , warp
@@ -135,7 +137,6 @@ test-suite spec
       Helper.App
       RequestCollection.AppSpec
       RequestCollection.DB
-      RequestCollection.Fixture
       RequestFile.AppSpec
       RequestNode.AppSpec
       RequestNode.DB
@@ -180,6 +181,7 @@ test-suite spec
     , transformers
     , unordered-containers
     , utf8-string
+    , uuid
     , wai
     , wai-middleware-prometheus
     , warp >=3.2.4

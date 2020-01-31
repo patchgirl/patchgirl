@@ -12,6 +12,7 @@
 
 module RequestNode.Model where
 
+
 import           Control.Lens                         (makeFieldsNoPrefix)
 import           Control.Lens                         hiding (element)
 import           Data.Aeson                           (Value, parseJSON)
@@ -24,12 +25,47 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        genericToJSON,
                                                        parseEither, withObject,
                                                        (.:))
+import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Http
+
+
+-- * request node
+
+
+data RequestNode
+  = RequestFolder { _requestNodeId       :: UUID
+                  , _requestNodeName     :: String
+                  , _requestNodeChildren :: [RequestNode]
+                  }
+  | RequestFile { _requestNodeId          :: UUID
+                , _requestNodeName        :: String
+                , _requestNodeHttpUrl     :: String
+                , _requestNodeHttpMethod  :: Method
+                , _requestNodeHttpHeaders :: [(String, String)]
+                , _requestNodeHttpBody    :: String
+                }
+  deriving (Eq, Show, Generic)
+
+$(makeLenses ''RequestNode)
+
+instance ToJSON RequestNode where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON RequestNode where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromField [RequestNode] where
+  fromField field mdata = do
+    value <- fromField field mdata :: Conversion Value
+    let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNode]
+    either (returnError ConversionFailed field) return errorOrRequestNodes
 
 
 -- * update request node
@@ -69,40 +105,6 @@ instance ToField UpdateRequestNode where
          , toField _updateRequestNodeHttpMethod
          , toField _updateRequestNodeHttpBody
          ]
-
-
--- * request node
-
-
-data RequestNode
-  = RequestFolder { _requestNodeId       :: Int
-                  , _requestNodeName     :: String
-                  , _requestNodeChildren :: [RequestNode]
-                  }
-  | RequestFile { _requestNodeId          :: Int
-                , _requestNodeName        :: String
-                , _requestNodeHttpUrl     :: String
-                , _requestNodeHttpMethod  :: Method
-                , _requestNodeHttpHeaders :: [(String, String)]
-                , _requestNodeHttpBody    :: String
-                }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''RequestNode)
-
-instance ToJSON RequestNode where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON RequestNode where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromField [RequestNode] where
-  fromField field mdata = do
-    value <- fromField field mdata :: Conversion Value
-    let errorOrRequestNodes = parseEither parseJSON value :: Either String [RequestNode]
-    either (returnError ConversionFailed field) return errorOrRequestNodes
 
 
 -- * request node from pg
@@ -184,9 +186,13 @@ instance FromJSON RequestNodeType where
 -- * parent node id
 
 
+{-
+  a request node (file or folder) can either be regular (meaning it has a folder as a parent)
+  or root (meaning it is at the top of a tree hierarchy so it doesn't have a parent)
+-}
 data ParentNodeId
   = RequestCollectionId Int
-  | RequestNodeId Int
+  | RequestNodeId UUID
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 
@@ -194,10 +200,11 @@ data ParentNodeId
 
 
 data NewRequestFile =
-  NewRequestFile { _newRequestFileName         :: String
-                 , _newRequestFileParentNodeId :: ParentNodeId
-                 , _newRequestFileHttpMethod   :: Method
-                 } deriving (Eq, Show, Generic)
+  NewRequestFile { _newRequestFileId           :: UUID
+                 , _newRequestFileParentNodeId :: UUID
+                 } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''NewRequestFile)
 
 instance ToJSON NewRequestFile where
   toJSON =
@@ -206,31 +213,6 @@ instance ToJSON NewRequestFile where
 instance FromJSON NewRequestFile where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance ToRow NewRequestFile where
-  toRow NewRequestFile { _newRequestFileName
-                       , _newRequestFileParentNodeId
-                       , _newRequestFileHttpMethod
-                       } =
-    let
-      tag = "RequestFile" :: String
-      noId = Nothing :: Maybe Int
-    in
-      case _newRequestFileParentNodeId of
-        RequestCollectionId requestCollectionId ->
-          toRow ( requestCollectionId
-                , noId
-                , tag
-                , _newRequestFileName
-                , _newRequestFileHttpMethod
-                )
-        RequestNodeId requestNodeId ->
-          toRow ( noId
-                , requestNodeId
-                , tag
-                , _newRequestFileName
-                , _newRequestFileHttpMethod
-                )
 
 
 -- * new request folder

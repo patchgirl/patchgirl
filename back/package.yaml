@@ -65,3 +65,4 @@ dependencies:
   - wai-middleware-prometheus
   - prometheus-client
   - prometheus-metrics-ghc
+  - uuid

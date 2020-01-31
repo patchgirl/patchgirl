@@ -13,6 +13,7 @@ module App where
 import qualified Control.Monad.Except                  as Except
 import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
+import           Data.UUID
 import qualified GHC.Generics                          as Generics
 import qualified GHC.Natural                           as Natural
 import qualified Network.Wai.Handler.Warp              as Warp
@@ -160,7 +161,7 @@ type PRequestNodeApi auths =
 
 type RequestNodeApi =
   Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" Int :> (
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
       ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] ()
     )
   )
@@ -177,12 +178,11 @@ type PRequestFileApi auths =
   Flat (Auth auths CookieSession :> RequestFileApi)
 
 
-type RequestFileApi = Flat (
-  "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
-    -- createRequestFile
-    ReqBody '[JSON] NewRequestFile :> Post '[JSON] Int -- :<|>
-    -- updateRequestFile
-    -- Capture "requestFileId" Int :> Put '[JSON] Int
+type RequestFileApi =
+  Flat (
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
+      -- createRequestFile
+      ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
     )
   )
 

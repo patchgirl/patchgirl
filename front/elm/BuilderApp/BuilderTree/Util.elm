@@ -3,7 +3,7 @@ module BuilderApp.BuilderTree.Util exposing (..)
 --import BuilderApp.BuilderTree.Model exposing (..)
 import BuilderApp.BuilderTree.Message exposing (..)
 
---import BuilderApp.Builder.App as Builder
+import Uuid
 import Application.Type exposing (..)
 import BuilderApp.Model exposing (..)
 
@@ -111,22 +111,22 @@ toggleFolder node =
                           | open = (not folder.open)
                       }
 
-mkdir : RequestNode -> RequestNode
-mkdir node =
+mkdir : Uuid.Uuid -> RequestNode -> RequestNode
+mkdir id node =
   case node of
     RequestFile _ as file -> file
     RequestFolder folder ->
         RequestFolder { folder
-                          | children = defaultFolder :: folder.children
+                          | children = mkDefaultFolder id :: folder.children
                       }
 
-touch : RequestNode -> RequestNode
-touch node =
+touch : Uuid.Uuid -> RequestNode -> RequestNode
+touch id node =
   case node of
     RequestFile _ as file -> file
     RequestFolder folder ->
       RequestFolder { folder
-                        | children = (defaultFile :: folder.children)
+                        | children = mkDefaultFile id  :: folder.children
                     }
 
 displayRenameInput : RequestNode -> RequestNode

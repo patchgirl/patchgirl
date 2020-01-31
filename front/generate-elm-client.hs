@@ -18,6 +18,7 @@ import           App
 import           Control.Lens             ((&), (<>~))
 import qualified Data.Aeson               as Aeson
 import qualified Data.Text                as T
+import           Data.Word
 import           Elm.Module               as Elm
 import           Elm.TyRep
 import           Health.App
@@ -98,6 +99,38 @@ deriveElmDef deriveElmDefOption ''Scheme
 deriveElmDef deriveElmDefOption ''InitializePassword
 
 
+myElmImports :: T.Text
+myElmImports = T.unlines
+  [ "import Json.Decode"
+  , "import Json.Encode exposing (Value)"
+  , "-- The following module comes from bartavelle/json-helpers"
+  , "import Json.Helpers exposing (..)"
+  , "import Dict exposing (Dict)"
+  , "import Set"
+  , "import Http"
+  , "import String"
+  , "import Url.Builder"
+  , "import Uuid as Uuid"
+  , ""
+  , "type alias UUID = Uuid.Uuid"
+  , ""
+  , "jsonDecUUID : Json.Decode.Decoder UUID"
+  , "jsonDecUUID = Uuid.decoder"
+  , ""
+  , "jsonEncUUID : UUID -> Value"
+  , "jsonEncUUID = Uuid.encode"
+  ]
+
+{-
+  this is used to a convert parameter in a url to a string
+  eg : whatever.com/books/:someUuidToConvertToString?arg=:someOtherComplexTypeToConvertToString
+-}
+myDefaultElmToString :: EType -> T.Text
+myDefaultElmToString argType =
+  case argType of
+    ETyCon (ETCon "UUID") -> "Uuid.toString"
+    _                     -> defaultElmToString argType
+
 main :: IO ()
 main =
   let
@@ -109,6 +142,7 @@ main =
                       , toElmType (Proxy @T.Text)
                       , toElmType (Proxy @Token)
                       ]
+                    , elmToString = myDefaultElmToString
                     }
     namespace =
       [ "Api"
@@ -144,4 +178,4 @@ main =
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
   in
-    generateElmModuleWith options namespace defElmImports targetFolder elmDefinitions proxyApi
+    generateElmModuleWith options namespace myElmImports targetFolder elmDefinitions proxyApi
