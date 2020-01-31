@@ -1,5 +1,14 @@
 name: patchGirl
 
+default-extensions:
+  - LambdaCase
+  - OverloadedStrings
+  - NamedFieldPuns
+  - QuasiQuotes
+  - ScopedTypeVariables
+  - TemplateHaskell
+
+
 ghc-options:
   - -Wall
   - -fno-warn-name-shadowing

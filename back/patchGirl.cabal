@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1ba59e165afff05564314700f717037c61cf415156234511a257ef5f6337d89b
+-- hash: d740fbb998c045afd29e427d9a17579b1442a309a2232951fe92af47ea09bef5
 
 name:           patchGirl
 version:        0.0.0
@@ -39,6 +39,7 @@ library
       Paths_patchGirl
   hs-source-dirs:
       src
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
@@ -84,6 +85,7 @@ executable patchGirl
   main-is: exe/Main.hs
   other-modules:
       Paths_patchGirl
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
@@ -144,6 +146,7 @@ test-suite spec
       Paths_patchGirl
   hs-source-dirs:
       test
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson

@@ -61,7 +61,7 @@ spec =
       it "returns 404 when request node parent doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
-          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
+          RequestCollection requestCollectionId _ <- insertSampleRequestCollection accountId connection
           token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
