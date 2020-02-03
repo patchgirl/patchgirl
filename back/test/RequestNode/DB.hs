@@ -18,6 +18,7 @@ import           GHC.Generics
 import           Http
 import           RequestNode.Model
 
+
 -- * select fake request file
 
 
@@ -47,8 +48,9 @@ selectFakeRequestFile id connection = do
 -- * select fake request folder
 
 
-newtype FakeRequestFolder =
-  FakeRequestFolder { _fakeRequestFolderName :: String
+data FakeRequestFolder =
+  FakeRequestFolder { _fakeRequestFolderParentId :: Maybe UUID
+                    , _fakeRequestFolderName     :: String
                     }
   deriving (Eq, Show, Read, Generic, FromRow)
 
@@ -60,7 +62,7 @@ selectFakeRequestFolder fakeRequestFolderId connection = do
   where
     rawQuery =
       [sql|
-          SELECT name
+          SELECT request_node_parent_id, name
           FROM request_node
           where id = ?
           |]

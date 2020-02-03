@@ -79,6 +79,7 @@ type RestApi auths =
   PEnvironmentApi auths :<|>
   PRequestNodeApi auths :<|>
   PRequestFileApi auths :<|>
+  PRequestFolderApi auths :<|>
   PRequestComputationApi auths :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
@@ -91,6 +92,7 @@ restApiServer cookieSettings jwtSettings =
   :<|> environmentApiServer
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
+  :<|> requestFolderApiServer
   :<|> requestComputationApiServer
   :<|> sessionApiServer cookieSettings jwtSettings
   :<|> pSessionApiServer cookieSettings jwtSettings
@@ -186,6 +188,26 @@ type RequestFileApi =
 requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
 requestFileApiServer =
   authorizeWithAccountId createRequestFileHandler
+
+
+-- ** request folder api
+
+
+type PRequestFolderApi auths =
+  Flat (Auth auths CookieSession :> RequestFolderApi)
+
+
+type RequestFolderApi =
+  Flat (
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFolder" :> (
+      -- create request folder
+      ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
+    )
+  )
+
+requestFolderApiServer :: AuthResult CookieSession -> ServerT RequestFolderApi AppM
+requestFolderApiServer =
+  authorizeWithAccountId createRequestFolderHandler
 
 
 -- ** request computation

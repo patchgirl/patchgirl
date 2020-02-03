@@ -214,28 +214,17 @@ instance FromJSON NewRequestFile where
 
 
 data NewRequestFolder =
-  NewRequestFolder { _name         :: String
-                   , _parentNodeId :: ParentNodeId
+  NewRequestFolder { _newRequestFolderId           :: UUID
+                   , _newRequestFolderParentNodeId :: UUID
+                   , _newRequestFolderName         :: String
                    } deriving (Eq, Show, Generic)
 
-instance ToRow NewRequestFolder where
-  toRow NewRequestFolder { _name
-                         , _parentNodeId
-                         } =
-    let
-      tag = "RequestFolder" :: String
-      noId = Nothing :: Maybe Int
-    in
-      case _parentNodeId of
-        RequestCollectionId requestCollectionId ->
-          toRow ( requestCollectionId
-                , noId
-                , tag
-                , _name
-                )
-        RequestNodeId requestNodeId ->
-          toRow ( noId
-                , requestNodeId
-                , tag
-                , _name
-                )
+$(makeLenses ''NewRequestFolder)
+
+instance ToJSON NewRequestFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRequestFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }

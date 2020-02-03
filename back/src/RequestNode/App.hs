@@ -88,3 +88,30 @@ createRequestFileHandler accountId requestCollectionId newRequestFile = do
           IO.liftIO $ insertRequestFile newRequestFile connection
         _ ->
           Servant.throwError Servant.err404
+
+-- * create request folder
+
+
+createRequestFolderHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Int
+  -> Int
+  -> NewRequestFolder
+  -> m ()
+createRequestFolderHandler accountId requestCollectionId newRequestFolder = do
+  connection <- getDBConnection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+    Just requestCollectionId' | requestCollectionId /= requestCollectionId' ->
+      Servant.throwError Servant.err404
+    _ -> do
+      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      case findNodeInRequestNodes (newRequestFolder ^. newRequestFolderParentNodeId) requestNodes of
+        Just RequestFolder {} ->
+          IO.liftIO $ insertRequestFolder newRequestFolder connection
+        _ ->
+          Servant.throwError Servant.err404

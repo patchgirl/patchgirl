@@ -53,21 +53,22 @@ insertRequestFile NewRequestFile { _newRequestFileId
 -- * insert request folder
 
 
-insertRequestFolder :: NewRequestFolder -> PG.Connection -> IO Int
-insertRequestFolder newRequestFolder connection = do
-  [PG.Only id] <- PG.query connection rawQuery newRequestFolder
-  return id
+insertRequestFolder :: NewRequestFolder -> PG.Connection -> IO ()
+insertRequestFolder NewRequestFolder { _newRequestFolderId
+                                     , _newRequestFolderParentNodeId
+                                     , _newRequestFolderName
+                                     } connection = do
+  Monad.void $ PG.execute connection rawQuery (_newRequestFolderId, _newRequestFolderParentNodeId, _newRequestFolderName)
   where
     rawQuery =
       [sql|
           INSERT INTO request_node (
-            request_collection_id,
+            id,
             request_node_parent_id,
             tag,
             name
           )
-          VALUES (?, ?, ?, ?)
-          RETURNING id
+          VALUES (?, ?, 'RequestFolder', ?)
           |]
 
 updateRequestNodeDB :: UUID -> UpdateRequestNode -> PG.Connection -> IO ()

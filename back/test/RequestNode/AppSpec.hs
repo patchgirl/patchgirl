@@ -74,7 +74,9 @@ spec =
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId
           _ <- try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFolder)
+          putStrLn "test3"
           FakeRequestFolder { _fakeRequestFolderName } <- selectFakeRequestFolder nodeId connection
+          putStrLn "test5"
           _fakeRequestFolderName `shouldBe` "newName"
 
   where
