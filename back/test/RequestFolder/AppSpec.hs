@@ -24,7 +24,6 @@ import           Test.Hspec
 import           Account.DB
 import           App
 import           Helper.App
-import           Http
 import           RequestCollection.DB
 import           RequestCollection.Model
 import           RequestNode.DB

@@ -24,7 +24,6 @@ import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
-import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Http
 
