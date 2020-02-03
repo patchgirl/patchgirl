@@ -51,24 +51,3 @@ type alias File =
   , requestComputationResult : Maybe Builder.RequestComputationResult
   , showResponseView : Bool
   }
-
-mkDefaultFolder : Uuid.Uuid -> RequestNode
-mkDefaultFolder id =
-    RequestFolder { id = id
-                  , name = NotEdited "new folder"
-                  , open = False
-                  , children = []
-                  }
-
-mkDefaultFile : Uuid.Uuid -> RequestNode
-mkDefaultFile id =
-    RequestFile { id = id
-                , name = NotEdited "new file"
-                , isSaved = False
-                , httpUrl = NotEdited ""
-                , httpMethod = NotEdited Builder.Get
-                , httpHeaders = NotEdited []
-                , httpBody = NotEdited ""
-                , showResponseView = False
-                , requestComputationResult = Nothing
-                }

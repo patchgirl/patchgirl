@@ -1,6 +1,6 @@
 module BuilderApp.BuilderTree.Util exposing (..)
 
---import BuilderApp.BuilderTree.Model exposing (..)
+import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.Message exposing (..)
 
 import Uuid
@@ -70,16 +70,32 @@ modifyRequestNode f =
   in
     \x y -> modify x y |> Tuple.second
 
+modifyRequestNode2 : Uuid.Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
+modifyRequestNode2 id f requestNode =
+    case getRequestNodeId requestNode == id of
+        True -> f requestNode
+        False ->
+            case requestNode of
+                RequestFile requestFile ->
+                    RequestFile requestFile
+
+                RequestFolder requestFolder ->
+                    RequestFolder { requestFolder
+                                      | children =
+                                        List.map (modifyRequestNode2 id f) requestFolder.children
+                                  }
+
+
 deleteRequestNode : Uuid.Uuid -> RequestNode -> List RequestNode
 deleteRequestNode idToDelete requestNode =
     case getRequestNodeId requestNode == idToDelete of
         True -> []
         False ->
             case requestNode of
-                RequestFile {} as requestFile ->
-                    [requestFile]
+                RequestFile requestFile ->
+                    [RequestFile requestFile]
 
-                RequestFolder ({} as requestFolder) ->
+                RequestFolder requestFolder ->
                     [ RequestFolder { requestFolder
                                       | children =
                                         List.concatMap (deleteRequestNode idToDelete) requestFolder.children
@@ -107,7 +123,17 @@ mkdir id node =
                       }
 
 touch : Uuid.Uuid -> RequestNode -> RequestNode
-touch id node =
+touch id parentNode =
+  case parentNode of
+    RequestFile _ as file -> file
+    RequestFolder folder ->
+      RequestFolder { folder
+                        | children = mkDefaultFile id  :: folder.children
+                        , open = True
+                    }
+
+touch2 : Uuid.Uuid -> RequestNode -> RequestNode
+touch2 id node =
   case node of
     RequestFile _ as file -> file
     RequestFolder folder ->
@@ -146,3 +172,24 @@ tempRename newName node =
 
         RequestFile file ->
             RequestFile { file | name = changeEditedValue newName file.name }
+
+mkDefaultFolder : Uuid.Uuid -> RequestNode
+mkDefaultFolder id =
+    RequestFolder { id = id
+                  , name = NotEdited "new folder"
+                  , open = False
+                  , children = []
+                  }
+
+mkDefaultFile : Uuid.Uuid -> RequestNode
+mkDefaultFile id =
+    RequestFile { id = id
+                , name = NotEdited "new request"
+                , isSaved = False
+                , httpUrl = NotEdited ""
+                , httpMethod = NotEdited Builder.Get
+                , httpHeaders = NotEdited []
+                , httpBody = NotEdited ""
+                , showResponseView = False
+                , requestComputationResult = Nothing
+                }

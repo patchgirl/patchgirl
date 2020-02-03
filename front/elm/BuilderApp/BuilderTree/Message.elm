@@ -8,9 +8,9 @@ type Msg
   | GenerateRandomUUIDForFolder Int Uuid.Uuid
   | AskMkdir Int Uuid.Uuid Uuid.Uuid
   | Mkdir Int Uuid.Uuid
-  | AskTouch Int Uuid.Uuid
-  | Touch Int Uuid.Uuid
-  | GenerateRandomUUIDForFile Int
+  | GenerateRandomUUIDForFile Uuid.Uuid
+  | AskTouch Uuid.Uuid Uuid.Uuid
+  | Touch Uuid.Uuid Uuid.Uuid
   | ShowRenameInput Int
   | ChangeName Int String -- while focus is on the input
   | AskRename Uuid.Uuid Int String -- validate input

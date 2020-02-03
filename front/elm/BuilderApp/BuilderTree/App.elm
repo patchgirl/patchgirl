@@ -78,25 +78,38 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    GenerateRandomUUIDForFile idx ->
+    GenerateRandomUUIDForFile parentNodeId ->
         let
-            newMsg = Random.generate (AskTouch idx) Uuid.uuidGenerator
+            newMsg = Random.generate (AskTouch parentNodeId) Uuid.uuidGenerator
         in
             (model, newMsg)
 
-    AskTouch idx newId ->
+    AskTouch parentNodeId newId ->
         let
-            newMsg = Random.generate (AskTouch idx) Uuid.uuidGenerator
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            newRequestFile =
+                   { newRequestFileId = newId
+                   , newRequestFileParentNodeId = parentNodeId
+                   }
+
+            newMsg =
+                Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId newRequestFile (newRequestFileResultToMsg parentNodeId newId)
         in
             (model, newMsg)
 
-    Touch idx newId ->
+    Touch parentNodeId newId ->
         let
             (RequestCollection id requestNodes) = model.requestCollection
+
+            newRequestNodes =
+                List.map (modifyRequestNode2 parentNodeId (touch newId)) requestNodes
+
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode (touch newId) requestNodes idx)
+                      RequestCollection id newRequestNodes
                 }
         in
             (newModel, Cmd.none)
@@ -213,6 +226,15 @@ deleteRequestNodeResultToMsg id result =
     case result of
         Ok _ ->
             Delete id
+
+        Err error ->
+            BuilderTreeServerError
+
+newRequestFileResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+newRequestFileResultToMsg parentNodeId id result =
+    case result of
+        Ok _ ->
+            Touch parentNodeId id
 
         Err error ->
             BuilderTreeServerError

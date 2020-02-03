@@ -44,7 +44,7 @@ folderMenuView id idx isOpen =
                     , label = createFolderIcon
                     }
                 , Input.button []
-                    { onPress = Just <| GenerateRandomUUIDForFile idx
+                    { onPress = Just <| GenerateRandomUUIDForFile id
                     , label = createFileIcon
                     }
                 , Input.button []
