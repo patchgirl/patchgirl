@@ -70,37 +70,22 @@ modifyRequestNode f =
   in
     \x y -> modify x y |> Tuple.second
 
-deleteRequestNode : List RequestNode -> Int -> List RequestNode
-deleteRequestNode =
-  let
-    delete : List RequestNode -> Int -> (Int, List RequestNode)
-    delete requestCollection idx =
-      if idx < 0 then
-        (idx, requestCollection)
-      else
-        case (requestCollection, idx) of
-          (node :: tail, 0) -> (-1, tail)
-          ([], _) -> (idx, [])
-          (node :: tail, _) ->
-             case node of
-               RequestFolder { id, name, open, children } ->
-                 let
-                    (newIdx, newChildren) = delete children (idx - 1)
-                    (rIdx, newTail) = delete tail newIdx
-                    newFolder = RequestFolder { id = id
-                                              , name = name
-                                              , open = open
-                                              , children = newChildren
-                                              }
-                 in (rIdx, newFolder :: newTail)
+deleteRequestNode : Uuid.Uuid -> RequestNode -> List RequestNode
+deleteRequestNode idToDelete requestNode =
+    case getRequestNodeId requestNode == idToDelete of
+        True -> []
+        False ->
+            case requestNode of
+                RequestFile {} as requestFile ->
+                    [requestFile]
 
-               _ ->
-                 let
-                   (newIdx, newBuilderTree) = (delete tail (idx - 1))
-                 in
-                   (newIdx, node :: newBuilderTree)
-  in
-    \x y -> delete x y |> Tuple.second
+                RequestFolder ({} as requestFolder) ->
+                    [ RequestFolder { requestFolder
+                                      | children =
+                                        List.concatMap (deleteRequestNode idToDelete) requestFolder.children
+                                  }
+                    ]
+
 
 toggleFolder : RequestNode -> RequestNode
 toggleFolder node =

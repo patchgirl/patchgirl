@@ -147,24 +147,26 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    AskDelete idx ->
+    AskDelete id ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
-            newModel =
-                { model
-                    | requestCollection =
-                        RequestCollection id (deleteRequestNode requestNodes idx)
-                }
-        in
-            (newModel, Cmd.none)
+            (RequestCollection requestCollectionId _) = model.requestCollection
 
-    Delete idx ->
+            newMsg =
+                Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id (deleteRequestNodeResultToMsg id)
+        in
+            (model, newMsg)
+
+    Delete id ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
+            (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+
+            newRequestNodes =
+                List.concatMap (deleteRequestNode id) requestNodes
+
             newModel =
                 { model
                     | requestCollection =
-                        RequestCollection id (deleteRequestNode requestNodes idx)
+                        RequestCollection requestCollectionId newRequestNodes
                 }
         in
             (newModel, Cmd.none)
@@ -202,6 +204,15 @@ createRequestFolderResultToMsg idx id result =
     case result of
         Ok _ ->
             Mkdir idx id
+
+        Err error ->
+            BuilderTreeServerError
+
+deleteRequestNodeResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteRequestNodeResultToMsg id result =
+    case result of
+        Ok _ ->
+            Delete id
 
         Err error ->
             BuilderTreeServerError

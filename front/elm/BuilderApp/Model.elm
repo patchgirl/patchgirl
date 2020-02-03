@@ -23,6 +23,12 @@ type alias Model a =
 type RequestCollection  =
     RequestCollection Int (List RequestNode)
 
+getRequestNodeId : RequestNode -> Uuid.Uuid
+getRequestNodeId requestNode =
+    case requestNode of
+        RequestFolder { id } -> id
+        RequestFile { id } -> id
+
 type RequestNode
     = RequestFolder Folder
     | RequestFile File

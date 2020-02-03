@@ -52,7 +52,7 @@ fileView id name idx showMenu =
                               , label = editIcon
                               }
                         , Input.button []
-                            { onPress = Just <| Delete idx
+                            { onPress = Just <| AskDelete id
                             , label = deleteIcon
                             }
                         ]
