@@ -15,7 +15,8 @@ type Msg
   | ChangeName Int String -- while focus is on the input
   | AskRename Uuid.Uuid Int String -- validate input
   | Rename Int String -- refresh input
-  | Delete Int
+  | AskDelete Uuid.Uuid
+  | Delete Uuid.Uuid
   | ToggleMenu Int
   | DoNothing
   | BuilderTreeServerError

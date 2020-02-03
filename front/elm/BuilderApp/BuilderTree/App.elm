@@ -147,6 +147,17 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+    AskDelete idx ->
+        let
+            (RequestCollection id requestNodes) = model.requestCollection
+            newModel =
+                { model
+                    | requestCollection =
+                        RequestCollection id (deleteRequestNode requestNodes idx)
+                }
+        in
+            (newModel, Cmd.none)
+
     Delete idx ->
         let
             (RequestCollection id requestNodes) = model.requestCollection

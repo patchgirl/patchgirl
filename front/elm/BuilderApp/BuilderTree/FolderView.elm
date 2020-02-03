@@ -48,7 +48,7 @@ folderMenuView id idx isOpen =
                     , label = createFileIcon
                     }
                 , Input.button []
-                    { onPress = Just <| Delete idx
+                    { onPress = Just <| AskDelete id
                     , label = deleteIcon
                     }
                 ]

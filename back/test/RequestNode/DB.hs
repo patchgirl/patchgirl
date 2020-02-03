@@ -45,6 +45,24 @@ selectFakeRequestFile id connection = do
           |]
 
 
+-- * select node exist
+
+
+selectNodeExists :: UUID -> Connection -> IO Bool
+selectNodeExists id connection = do
+  [Only nodeExists] <- query connection rawQuery (Only id)
+  return nodeExists
+  where
+    rawQuery =
+      [sql|
+          SELECT EXISTS (
+            SELECT 1
+            FROM request_node
+            WHERE id = ?
+          )
+          |]
+
+
 -- * select fake request folder
 
 

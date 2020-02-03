@@ -115,3 +115,31 @@ createRequestFolderHandler accountId requestCollectionId newRequestFolder = do
           IO.liftIO $ insertRequestFolder newRequestFolder connection
         _ ->
           Servant.throwError Servant.err404
+
+
+-- * delete request node
+
+
+deleteRequestNodeHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Int
+  -> Int
+  -> UUID
+  -> m ()
+deleteRequestNodeHandler accountId requestCollectionId requestNodeId = do
+  connection <- getDBConnection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+    Just requestCollectionId' | requestCollectionId /= requestCollectionId' ->
+      Servant.throwError Servant.err404
+    _ -> do
+      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      case findNodeInRequestNodes requestNodeId requestNodes of
+        Nothing ->
+          Servant.throwError Servant.err404
+        _ ->
+          IO.liftIO $ deleteRequestNodeDB requestNodeId connection

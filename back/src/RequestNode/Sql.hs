@@ -71,17 +71,34 @@ insertRequestFolder NewRequestFolder { _newRequestFolderId
           VALUES (?, ?, 'RequestFolder', ?)
           |]
 
+
+-- * update request node
+
+
 updateRequestNodeDB :: UUID -> UpdateRequestNode -> PG.Connection -> IO ()
 updateRequestNodeDB requestNodeId updateRequestNode connection = do
   -- todo search func with : m a -> m b
   let newName = updateRequestNode ^. updateRequestNodeName
   _ <- PG.execute connection updateQuery (newName, requestNodeId)
-  print updateRequestNode
   return ()
   where
     updateQuery =
       [sql|
           UPDATE request_node
           SET name = ?
+          WHERE id = ?
+          |]
+
+
+-- * delete request node
+
+
+deleteRequestNodeDB :: UUID -> PG.Connection -> IO ()
+deleteRequestNodeDB requestNodeId connection =
+  Monad.void $ PG.execute connection updateQuery (PG.Only requestNodeId)
+  where
+    updateQuery =
+      [sql|
+          DELETE FROM request_node
           WHERE id = ?
           |]
