@@ -46,24 +46,24 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    GenerateRandomUUIDForFolder idx ->
+    GenerateRandomUUIDForFolder idx parentNodeId ->
         let
-            newMsg = Random.generate (AskMkdir idx) Uuid.uuidGenerator
+            newMsg = Random.generate (AskMkdir idx parentNodeId) Uuid.uuidGenerator
         in
             (model, newMsg)
 
-    AskMkdir idx id ->
+    AskMkdir idx parentNodeId newId ->
         let
             (RequestCollection requestCollectionId requestNodes) = model.requestCollection
 
             newRequestFolder =
-                { newRequestFolderId = id
-                , newRequestFolderParentNodeId = id
+                { newRequestFolderId = newId
+                , newRequestFolderParentNodeId = parentNodeId
                 , newRequestFolderName = "new folder"
                 }
 
             newMsg =
-                Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (renameNodeResultToMsg idx "")
+                Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (createRequestFolderResultToMsg idx newId)
         in
             (model, newMsg)
 
@@ -186,13 +186,11 @@ createRequestFileResultToMsg idx newName result =
         Err error ->
             BuilderTreeServerError
 
-{-
-createRequestFolderResultToMsg : Int -> String -> Result Http.Error () -> Msg
-createRequestFolderResultToMsg idx newName result =
-    case Debug.log "result" result of
+createRequestFolderResultToMsg : Int -> Uuid.Uuid -> Result Http.Error () -> Msg
+createRequestFolderResultToMsg idx id result =
+    case result of
         Ok _ ->
-            Rename idx newName
+            Mkdir idx id
 
         Err error ->
             BuilderTreeServerError
--}

@@ -25,8 +25,8 @@ folderWithIconView name isOpen =
     in
         iconWithText folderIconText name
 
-folderMenuView : Int -> Bool -> Element Msg
-folderMenuView idx isOpen =
+folderMenuView : Uuid.Uuid -> Int -> Bool -> Element Msg
+folderMenuView id idx isOpen =
     let
         iconClass =
             case isOpen of
@@ -40,7 +40,7 @@ folderMenuView idx isOpen =
                       , label = editIcon
                       }
                 , Input.button []
-                    { onPress = Just <| GenerateRandomUUIDForFolder idx
+                    { onPress = Just <| GenerateRandomUUIDForFolder idx id
                     , label = createFolderIcon
                     }
                 , Input.button []
@@ -91,7 +91,7 @@ folderView id name idx folderChildrenView open showMenu =
                   [ modeView
                   , Input.button []
                       { onPress = Just <| ToggleMenu idx
-                      , label = folderMenuView idx showMenu
+                      , label = folderMenuView id idx showMenu
                       }
                   ]
             , case open of

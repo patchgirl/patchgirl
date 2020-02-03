@@ -118,6 +118,7 @@ mkdir id node =
     RequestFolder folder ->
         RequestFolder { folder
                           | children = mkDefaultFolder id :: folder.children
+                          , open = True
                       }
 
 touch : Uuid.Uuid -> RequestNode -> RequestNode

@@ -5,8 +5,8 @@ import Uuid
 type Msg
   = SetDisplayedBuilder Int
   | ToggleFolder Int
-  | GenerateRandomUUIDForFolder Int
-  | AskMkdir Int Uuid.Uuid
+  | GenerateRandomUUIDForFolder Int Uuid.Uuid
+  | AskMkdir Int Uuid.Uuid Uuid.Uuid
   | Mkdir Int Uuid.Uuid
   | AskTouch Int Uuid.Uuid
   | Touch Int Uuid.Uuid
