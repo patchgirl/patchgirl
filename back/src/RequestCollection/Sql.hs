@@ -30,21 +30,6 @@ selectRequestCollectionAvailable accountId requestCollectionId connection =
           );
           |]
 
-selectRequestCollectionById :: Int -> Connection -> IO (Maybe RequestCollection)
-selectRequestCollectionById requestCollectionId connection = do
-    [(_, mRequestNodesFromPG)] <- query connection selectRequestCollectionSql (Only requestCollectionId) :: IO[(Int, Maybe [RequestNodeFromPG])]
-    case mRequestNodesFromPG of
-      Just requestNodesFromPG ->
-        return . Just $ RequestCollection requestCollectionId (fromPgRequestNodeToRequestNode <$> requestNodesFromPG)
-      Nothing ->
-        return . Just $ RequestCollection requestCollectionId []
-  where
-    selectRequestCollectionSql =
-      [sql|
-          SELECT 1, *
-          FROM request_nodes_as_json(?)
-          |] :: Query
-
 selectRequestCollectionId :: Int -> Connection -> IO (Maybe Int)
 selectRequestCollectionId accountId connection =
   query connection requestCollectionSql (Only accountId) <&> \case
@@ -55,7 +40,6 @@ selectRequestCollectionId accountId connection =
       [sql|
           SELECT rc.id
           FROM request_collection rc
-          INNER JOIN request_collection_to_request_node rcrn ON rc.id = rcrn.request_collection_id
           WHERE rc.account_id = ?
           LIMIT 1
           |]

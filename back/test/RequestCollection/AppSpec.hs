@@ -44,6 +44,15 @@ spec =
           token <- signedUserToken 1
           try clientEnv (getRequestCollectionById token) `shouldThrow` errorsWithStatus HTTP.notFound404
 
+      it "returns an empty request collection if the account doesnt have a request collection" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          requestCollectionId <- insertFakeRequestCollection accountId connection
+          token <- signedUserToken accountId
+          requestCollection <- try clientEnv (getRequestCollectionById token)
+          requestCollection `shouldBe` RequestCollection requestCollectionId []
+
+
       it "returns the account's request collection" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection

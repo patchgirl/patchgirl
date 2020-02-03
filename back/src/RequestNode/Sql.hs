@@ -16,12 +16,12 @@ import           RequestNode.Model
 
 selectRequestNodesFromRequestCollectionId :: Int -> PG.Connection -> IO [RequestNode]
 selectRequestNodesFromRequestCollectionId requestCollectionId connection = do
-    idToMRequestNodesFromPG <- PG.query connection selectRequestNodeSql (PG.Only requestCollectionId) :: IO[(Int, RequestNodeFromPG)]
-    return $ map (fromPgRequestNodeToRequestNode . snd) idToMRequestNodesFromPG
+    res :: [PG.Only RequestNodeFromPG] <- PG.query connection selectRequestNodeSql (PG.Only requestCollectionId)
+    return $ map (fromPgRequestNodeToRequestNode . (\(PG.Only r) -> r)) res
   where
     selectRequestNodeSql =
       [sql|
-          SELECT 1, UNNEST(root_request_nodes_as_json(?));
+          SELECT UNNEST(root_request_nodes_as_json(?));
           |] :: PG.Query
 
 
