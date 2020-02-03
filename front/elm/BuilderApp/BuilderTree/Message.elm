@@ -5,10 +5,12 @@ import Uuid
 type Msg
   = SetDisplayedBuilder Int
   | ToggleFolder Int
-  | RandomMkdir Int
+  | GenerateRandomUUIDForFolder Int
+  | AskMkdir Int Uuid.Uuid
   | Mkdir Int Uuid.Uuid
-  | RandomTouch Int
+  | AskTouch Int Uuid.Uuid
   | Touch Int Uuid.Uuid
+  | GenerateRandomUUIDForFile Int
   | ShowRenameInput Int
   | ChangeName Int String -- while focus is on the input
   | AskRename Uuid.Uuid Int String -- validate input

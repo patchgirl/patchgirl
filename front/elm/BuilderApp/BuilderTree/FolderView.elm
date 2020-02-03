@@ -40,11 +40,11 @@ folderMenuView idx isOpen =
                       , label = editIcon
                       }
                 , Input.button []
-                    { onPress = Just <| RandomMkdir idx
+                    { onPress = Just <| GenerateRandomUUIDForFolder idx
                     , label = createFolderIcon
                     }
                 , Input.button []
-                    { onPress = Just <| RandomTouch idx
+                    { onPress = Just <| GenerateRandomUUIDForFile idx
                     , label = createFileIcon
                     }
                 , Input.button []

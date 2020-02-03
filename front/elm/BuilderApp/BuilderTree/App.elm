@@ -46,9 +46,24 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    RandomMkdir idx ->
+    GenerateRandomUUIDForFolder idx ->
         let
-            newMsg = Random.generate (Mkdir idx) Uuid.uuidGenerator
+            newMsg = Random.generate (AskMkdir idx) Uuid.uuidGenerator
+        in
+            (model, newMsg)
+
+    AskMkdir idx id ->
+        let
+            (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+
+            newRequestFolder =
+                { newRequestFolderId = id
+                , newRequestFolderParentNodeId = id
+                , newRequestFolderName = "new folder"
+                }
+
+            newMsg =
+                Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (renameNodeResultToMsg idx "")
         in
             (model, newMsg)
 
@@ -63,7 +78,7 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    RandomTouch idx ->
+    GenerateRandomUUIDForFile idx ->
         let
             newMsg = Random.generate (AskTouch idx) Uuid.uuidGenerator
         in
@@ -170,3 +185,14 @@ createRequestFileResultToMsg idx newName result =
 
         Err error ->
             BuilderTreeServerError
+
+{-
+createRequestFolderResultToMsg : Int -> String -> Result Http.Error () -> Msg
+createRequestFolderResultToMsg idx newName result =
+    case Debug.log "result" result of
+        Ok _ ->
+            Rename idx newName
+
+        Err error ->
+            BuilderTreeServerError
+-}

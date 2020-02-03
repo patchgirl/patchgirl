@@ -1,7 +1,7 @@
 all: client app
 
-client: generate-elm-client.hs ../back/src/App.hs
-	clear; cd ../back; stack exec -- runhaskell -isrc ../front/generate-elm-client.hs
+client: ../back/generate-elm-client.hs ../back/src/App.hs
+	clear; cd ../back; stack runhaskell generate-elm-client.hs
 
 app:
 	clear; elm make elm/Main.elm --output=../public/js/app.js
