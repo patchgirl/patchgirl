@@ -10,8 +10,6 @@ module RequestCollection.Sql where
 import           Data.Functor                     ((<&>))
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
-import           RequestCollection.Model
-import           RequestNode.Model
 
 
 selectRequestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
