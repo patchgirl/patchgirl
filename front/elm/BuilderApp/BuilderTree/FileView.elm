@@ -17,38 +17,42 @@ import ViewUtil exposing (..)
 import Util.View as Util
 import Uuid
 
-fileReadView : String -> Int -> Element Msg
-fileReadView name idx =
+fileReadView : String -> Uuid.Uuid -> Element Msg
+fileReadView name id =
     Input.button []
-        { onPress = Just <| SetDisplayedBuilder idx
+        { onPress = Just <| SetDisplayedBuilder id
         , label = el [] <| iconWithTextAndColor "label" name secondaryColor
         }
 
-fileEditView : String -> Uuid.Uuid -> Int -> Element Msg
-fileEditView name id idx =
+fileEditView : String -> Uuid.Uuid -> Element Msg
+fileEditView name id =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id idx)
+      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
       ]
-      { onChange = ChangeName idx
+      { onChange = ChangeName id
       , text = name
       , placeholder = Nothing
       , label = Input.labelHidden "rename file"
       }
 
-fileView : Uuid.Uuid -> Editable String -> Int -> Bool -> Element Msg
-fileView id name idx showMenu =
+fileView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> Element Msg
+fileView id mDisplayedRequestNodeMenuIndex name =
     let
         modeView =
             case name of
-                NotEdited value -> fileReadView value idx
-                Edited oldValue newValue -> fileEditView newValue id idx
+                NotEdited value -> fileReadView value id
+                Edited oldValue newValue -> fileEditView newValue id
+
+        showMenu =
+            mDisplayedRequestNodeMenuIndex == Just id
+
         menuView =
             case not showMenu of
                 True -> none
                 False ->
                     row []
                         [ Input.button []
-                              { onPress = Just <| ShowRenameInput idx
+                              { onPress = Just <| ShowRenameInput id
                               , label = editIcon
                               }
                         , Input.button []
@@ -60,7 +64,7 @@ fileView id name idx showMenu =
       row []
           [ modeView
           , Input.button []
-              { onPress = Just <| ToggleMenu idx
+              { onPress = Just <| ToggleMenu id
               , label =
                   icon <|
                       case showMenu of

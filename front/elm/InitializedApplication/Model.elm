@@ -5,6 +5,7 @@ import BuilderApp.Model as BuilderApp
 import List.Extra as List
 import Application.Type exposing (..)
 import Page exposing(..)
+import Uuid
 
 type alias Model =
     { session : Session
@@ -14,9 +15,9 @@ type alias Model =
     , initializePassword2 : String
     , initializePasswordState : InitializePasswordState
     -- BUILDER APP
-    , selectedBuilderIndex : Maybe Int
+    , selectedBuilderIndex : Maybe Uuid.Uuid
     , displayedBuilderIndex : Maybe Int
-    , displayedRequestNodeMenuIndex : Maybe Int
+    , displayedRequestNodeMenuIndex : Maybe Uuid.Uuid
     , requestCollection : BuilderApp.RequestCollection
     -- POSTMAN
     , postmanModel : Maybe (List BuilderApp.RequestNode)

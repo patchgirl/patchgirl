@@ -25,12 +25,6 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        DisplayBuilder idx ->
-            let
-                newModel = { model | selectedBuilderIndex = Just idx }
-            in
-                (newModel, Cmd.none)
-
         TreeMsg subMsg ->
             let
                 (newModel, newSubMsg) = BuilderTree.update subMsg model
@@ -39,20 +33,22 @@ update msg model =
 
         BuilderMsg subMsg ->
             let
-                (RequestCollection id requestNodes) = model.requestCollection
+                (RequestCollection requestCollectionId requestNodes) = model.requestCollection
                 mFile : Maybe File
                 mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderIndex
             in
                 case (model.selectedBuilderIndex, mFile) of
-                    (Just idx, Just file) ->
+                    (Just id, Just file) ->
                         let
                             (newFile, newSubMsg) =
                                 Builder.update subMsg (InitializedApplication.getEnvironmentKeyValuesToRun model) model.varAppModel.vars file
+
                             newBuilderTree =
-                                BuilderTree.modifyRequestNode (changeFileBuilder newFile) requestNodes idx
+                                List.map (BuilderTree.modifyRequestNode2 id (changeFileBuilder newFile)) requestNodes
+
                             newModel =
                                 { model
-                                    | requestCollection = RequestCollection id newBuilderTree
+                                    | requestCollection = RequestCollection requestCollectionId newBuilderTree
                                 }
                         in
                             (newModel, Cmd.map BuilderMsg newSubMsg)

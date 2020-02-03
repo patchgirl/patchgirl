@@ -25,8 +25,8 @@ folderWithIconView name isOpen =
     in
         iconWithText folderIconText name
 
-folderMenuView : Uuid.Uuid -> Int -> Bool -> Element Msg
-folderMenuView id idx isOpen =
+folderMenuView : Uuid.Uuid -> Bool -> Element Msg
+folderMenuView id isOpen =
     let
         iconClass =
             case isOpen of
@@ -36,11 +36,11 @@ folderMenuView id idx isOpen =
         menuView =
             row [ spacing 5 ]
                 [ Input.button []
-                      { onPress = Just <| ShowRenameInput idx
+                      { onPress = Just <| ShowRenameInput id
                       , label = editIcon
                       }
                 , Input.button []
-                    { onPress = Just <| GenerateRandomUUIDForFolder idx id
+                    { onPress = Just <| GenerateRandomUUIDForFolder id
                     , label = createFolderIcon
                     }
                 , Input.button []
@@ -58,40 +58,43 @@ folderMenuView id idx isOpen =
             False -> row [] [ menuIcon ]
 
 
-folderReadView : Int -> String -> Bool -> Element Msg
-folderReadView idx name isOpen =
+folderReadView : Uuid.Uuid -> String -> Bool -> Element Msg
+folderReadView id name isOpen =
     Input.button []
-        { onPress = Just <| ToggleFolder idx
+        { onPress = Just <| ToggleFolder id
         , label = folderWithIconView name isOpen
         }
 
-folderEditView : Uuid.Uuid -> String -> Int -> Element Msg
-folderEditView id name idx =
+folderEditView : Uuid.Uuid -> String -> Element Msg
+folderEditView id name =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id idx)
+      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
       ]
-      { onChange = ChangeName idx
+      { onChange = ChangeName id
       , text = name
       , placeholder = Nothing
       , label = Input.labelHidden "rename folder"
       }
 
-folderView : Uuid.Uuid -> Editable String -> Int -> List(Element Msg) -> Bool -> Bool -> Element Msg
-folderView id name idx folderChildrenView open showMenu =
+folderView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> List(Element Msg) -> Bool -> Element Msg
+folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open =
     let
         modeView =
             case name of
                 NotEdited value ->
-                    folderReadView idx value open
+                    folderReadView id value open
                 Edited oldValue newValue ->
-                    folderEditView id newValue idx
+                    folderEditView id newValue
+
+        showMenu =
+            Just id == mDisplayedRequestNodeMenuIndex
     in
         column [ width (fill |> maximum 300) ]
             [ row []
                   [ modeView
                   , Input.button []
-                      { onPress = Just <| ToggleMenu idx
-                      , label = folderMenuView id idx showMenu
+                      { onPress = Just <| ToggleMenu id
+                      , label = folderMenuView id showMenu
                       }
                   ]
             , case open of

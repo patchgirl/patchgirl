@@ -19,42 +19,52 @@ import Api.Generated as Client
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
   case msg of
-    SetDisplayedBuilder idx ->
+    SetDisplayedBuilder id ->
         let
-            newModel = { model | selectedBuilderIndex = Just idx }
+            newModel = { model | selectedBuilderIndex = Just id }
         in
             (newModel, Cmd.none)
 
-    ToggleMenu idx ->
+    ToggleMenu id ->
         let
             newDisplayedRequestNodeMenuIndex =
-                case Maybe.exists model.displayedRequestNodeMenuIndex ((==) idx) of
-                    True -> Nothing
-                    False -> Just idx
-            newModel = { model | displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex }
-        in
-            (newModel, Cmd.none)
+                case Maybe.exists model.displayedRequestNodeMenuIndex ((==) id) of
+                    True -> Nothing -- menu already displayed
+                    False -> Just id
 
-    ToggleFolder idx ->
-        let
-            (RequestCollection id requestNodes) = model.requestCollection
             newModel =
-                { model
-                    | requestCollection =
-                      RequestCollection id (modifyRequestNode toggleFolder requestNodes idx)
+                { model |
+                      displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex
                 }
         in
             (newModel, Cmd.none)
 
-    GenerateRandomUUIDForFolder idx parentNodeId ->
+    ToggleFolder id ->
         let
-            newMsg = Random.generate (AskMkdir idx parentNodeId) Uuid.uuidGenerator
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            newRequestNodes =
+                List.map (modifyRequestNode2 id toggleFolder) requestNodes
+
+            newModel =
+                { model
+                    | requestCollection =
+                      RequestCollection requestCollectionId newRequestNodes
+                }
+        in
+            (newModel, Cmd.none)
+
+    GenerateRandomUUIDForFolder parentNodeId ->
+        let
+            newMsg = Random.generate (AskMkdir parentNodeId) Uuid.uuidGenerator
         in
             (model, newMsg)
 
-    AskMkdir idx parentNodeId newId ->
+    AskMkdir parentNodeId newId ->
         let
-            (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
 
             newRequestFolder =
                 { newRequestFolderId = newId
@@ -63,17 +73,22 @@ update msg model =
                 }
 
             newMsg =
-                Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (createRequestFolderResultToMsg idx newId)
+                Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (createRequestFolderResultToMsg parentNodeId newId)
         in
             (model, newMsg)
 
-    Mkdir idx newId ->
+    Mkdir parentNodeId newId ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
+            (RequestCollection id requestNodes) =
+                model.requestCollection
+
+            newRequestNodes =
+                List.map (modifyRequestNode2 parentNodeId (mkdir newId)) requestNodes
+
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode (mkdir newId) requestNodes idx)
+                      RequestCollection id newRequestNodes
                 }
         in
             (newModel, Cmd.none)
@@ -114,29 +129,38 @@ update msg model =
         in
             (newModel, Cmd.none)
 
-    ShowRenameInput idx ->
+    ShowRenameInput id ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            newRequestNodes =
+                List.map (modifyRequestNode2 id displayRenameInput) requestNodes
+
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode displayRenameInput requestNodes idx)
+                      RequestCollection requestCollectionId newRequestNodes
                 }
         in
             (newModel, Cmd.none)
 
-    ChangeName idx newName ->
+    ChangeName id newName ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
+            (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+
+            newRequestNodes =
+                List.map (modifyRequestNode2 id (tempRename newName)) requestNodes
+
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode (tempRename newName) requestNodes idx)
+                      RequestCollection requestCollectionId newRequestNodes
                 }
         in
             (newModel, Cmd.none)
 
-    AskRename requestNodeId requestNodeIdx newName ->
+    AskRename id newName ->
         let
             (RequestCollection requestCollectionId requestNodes) =
                 model.requestCollection
@@ -145,17 +169,22 @@ update msg model =
                 Client.UpdateRequestFolder { updateRequestNodeName = newName }
 
             newMsg =
-                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId requestNodeId payload (renameNodeResultToMsg requestNodeIdx newName)
+                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id payload (renameNodeResultToMsg id newName)
         in
             (model, newMsg)
 
-    Rename idx newName ->
+    Rename id newName ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            newRequestNodes =
+                List.map (modifyRequestNode2 id (rename newName)) requestNodes
+
             newModel =
                 { model
                     | requestCollection =
-                      RequestCollection id (modifyRequestNode (rename newName) requestNodes idx)
+                      RequestCollection requestCollectionId newRequestNodes
                 }
         in
             (newModel, Cmd.none)
@@ -194,29 +223,20 @@ update msg model =
 -- * util
 
 
-renameNodeResultToMsg : Int -> String -> Result Http.Error () -> Msg
-renameNodeResultToMsg idx newName result =
-    case Debug.log "result" result of
-        Ok _ ->
-            Rename idx newName
-
-        Err error ->
-            BuilderTreeServerError
-
-createRequestFileResultToMsg : Int -> String -> Result Http.Error () -> Msg
-createRequestFileResultToMsg idx newName result =
-    case Debug.log "result" result of
-        Ok _ ->
-            Rename idx newName
-
-        Err error ->
-            BuilderTreeServerError
-
-createRequestFolderResultToMsg : Int -> Uuid.Uuid -> Result Http.Error () -> Msg
-createRequestFolderResultToMsg idx id result =
+renameNodeResultToMsg : Uuid.Uuid -> String -> Result Http.Error () -> Msg
+renameNodeResultToMsg id newName result =
     case result of
         Ok _ ->
-            Mkdir idx id
+            Rename id newName
+
+        Err error ->
+            BuilderTreeServerError
+
+createRequestFolderResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+createRequestFolderResultToMsg parentNodeId id result =
+    case result of
+        Ok _ ->
+            Mkdir parentNodeId id
 
         Err error ->
             BuilderTreeServerError

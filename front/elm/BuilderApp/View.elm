@@ -21,6 +21,8 @@ import Json.Decode as Json
 import Html.Events as Html
 import Html as Html
 import Html.Attributes as Html
+import Uuid
+
 
 view : Model a -> Element Msg
 view model =
@@ -53,14 +55,14 @@ envSelectionView environmentNames =
                     (List.indexedMap entryView environmentNames)
                 ]
 
-builderView : Model a -> Maybe Int -> Element Msg
-builderView model mIdx =
+builderView : Model a -> Maybe Uuid.Uuid -> Element Msg
+builderView model mId =
     let
         (RequestCollection _ requestNodes) = model.requestCollection
-        mFile : Int -> Maybe BuilderApp.Model.File
+        mFile : Uuid.Uuid -> Maybe BuilderApp.Model.File
         mFile idx = BuilderTree.findFile requestNodes idx
     in
-        case Maybe.andThen mFile mIdx of
+        case Maybe.andThen mFile mId of
             Just file ->
                 el [ width fill, height fill, spacing 20 ]
                     (map BuilderMsg (Builder.view file))

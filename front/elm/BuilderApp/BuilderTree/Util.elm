@@ -3,72 +3,47 @@ module BuilderApp.BuilderTree.Util exposing (..)
 import BuilderApp.Builder.Model as Builder
 import BuilderApp.BuilderTree.Message exposing (..)
 
+import List.Extra as List
+import Maybe.Extra as Maybe
+import Util.Maybe as Maybe
 import Uuid
 import Application.Type exposing (..)
 import BuilderApp.Model exposing (..)
 
-findRequestNode : List RequestNode -> Int -> Maybe RequestNode
-findRequestNode =
-  let
-    find : List RequestNode -> Int -> (Int, Maybe RequestNode)
-    find requestCollection idx =
-      case (requestCollection, idx) of
-        (node :: tail, 0) -> (0, Just node)
-        ([], _) -> (idx, Nothing)
-        (node :: tail, _) ->
-           case node of
-             RequestFolder { children }  ->
-               let
-                  (newIdx, folderSearch) = find children (idx - 1)
-                  (_, tailSearch) = find tail newIdx
-               in
-                 case (folderSearch, tailSearch) of
-                   (Just n, _) -> (0, Just n)
-                   (_, Just n) -> (0, Just n)
-                   _ -> (newIdx, Nothing)
+findFile : List RequestNode -> Uuid.Uuid -> Maybe BuilderApp.Model.File
+findFile requestNodes id =
+    case findNode requestNodes id of
+        Just (RequestFile file) ->
+            Just file
 
-             _ -> find tail (idx - 1)
-  in
-    \x y -> find x y |> Tuple.second
+        _ ->
+            Nothing
 
-findFile : List RequestNode -> Int -> Maybe BuilderApp.Model.File
-findFile requestCollection idx =
-    case findRequestNode requestCollection idx of
-        Just (RequestFile file) -> Just file
-        _ -> Nothing
+findNode : List RequestNode -> Uuid.Uuid -> Maybe RequestNode
+findNode requestNodes id =
+    let
+        find : RequestNode -> Maybe RequestNode
+        find requestNode =
+            case requestNode of
+                (RequestFile file) as node ->
+                    case file.id == id of
+                        True ->
+                            Just node
 
-modifyRequestNode : (RequestNode -> RequestNode) -> List RequestNode -> Int -> List RequestNode
-modifyRequestNode f =
-  let
-    modify : List RequestNode -> Int -> (Int, List RequestNode)
-    modify requestCollection idx =
-      if idx < 0 then
-        (idx, requestCollection)
-      else
-        case (requestCollection, idx) of
-          (node :: tail, 0) -> (-1, (f node) :: tail)
-          ([], _) -> (idx, [])
-          (node :: tail, _) ->
-             case node of
-               RequestFolder { id, name, open, children } ->
-                 let
-                    (newIdx, newChildren) = modify children (idx - 1)
-                    (rIdx, newTail) = modify tail newIdx
-                    newFolder =
-                        RequestFolder { id = id
-                                      , name = name
-                                      , open = open
-                                      , children = newChildren
-                                      }
-                 in (rIdx, newFolder :: newTail)
+                        False ->
+                            Nothing
 
-               _ ->
-                 let
-                   (newIdx, newBuilderTree) = (modify tail (idx - 1))
-                 in
-                   (newIdx, node :: newBuilderTree)
-  in
-    \x y -> modify x y |> Tuple.second
+                (RequestFolder folder) as node ->
+                    case folder.id == id of
+                        True ->
+                            Just node
+
+                        False ->
+                            findNode folder.children id
+    in
+        List.head <| Maybe.catMaybes (List.map find requestNodes)
+
+
 
 modifyRequestNode2 : Uuid.Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
 modifyRequestNode2 id f requestNode =
@@ -130,15 +105,6 @@ touch id parentNode =
       RequestFolder { folder
                         | children = mkDefaultFile id  :: folder.children
                         , open = True
-                    }
-
-touch2 : Uuid.Uuid -> RequestNode -> RequestNode
-touch2 id node =
-  case node of
-    RequestFile _ as file -> file
-    RequestFolder folder ->
-      RequestFolder { folder
-                        | children = mkDefaultFile id  :: folder.children
                     }
 
 displayRenameInput : RequestNode -> RequestNode

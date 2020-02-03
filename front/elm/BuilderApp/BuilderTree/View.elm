@@ -4,8 +4,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
-
---import BuilderApp.BuilderTree.Model exposing (Model, RequestNode(..), BuilderTree)
+import Uuid
 import BuilderApp.Model exposing (..)
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
 import BuilderApp.BuilderTree.FolderView exposing (..)
@@ -18,29 +17,26 @@ view model =
     let
         (RequestCollection _ requestNodes) = model.requestCollection
     in
-        Tuple.second (nodeView 0 model.displayedRequestNodeMenuIndex requestNodes)
+        nodeView model.displayedRequestNodeMenuIndex requestNodes
 
-nodeView : Int -> Maybe Int -> List RequestNode -> (Int, List (Element Msg))
-nodeView idx mDisplayedRequestNodeMenuIndex requestCollection =
-  let
-    showMenu = mDisplayedRequestNodeMenuIndex == Just idx
-  in
+nodeView : Maybe Uuid.Uuid -> List RequestNode -> List (Element Msg)
+nodeView mDisplayedRequestNodeMenuIndex requestCollection =
     case requestCollection of
-      [] -> (idx, [])
+      [] -> []
       node :: tail ->
         case node of
           (RequestFolder { id, name, open, children }) ->
             let
-              (folderIdx, folderChildrenView) = nodeView (idx + 1) mDisplayedRequestNodeMenuIndex children
-              (newIdx, tailView) = nodeView folderIdx mDisplayedRequestNodeMenuIndex tail
+              folderChildrenView = nodeView mDisplayedRequestNodeMenuIndex children
+              tailView = nodeView mDisplayedRequestNodeMenuIndex tail
               currentFolderView =
-                  folderView id name idx folderChildrenView open showMenu
+                  folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open
             in
-              (newIdx, currentFolderView :: tailView)
+              currentFolderView :: tailView
 
           (RequestFile { id, name }) ->
             let
-              (newIdx, tailView) = nodeView (idx + 1) mDisplayedRequestNodeMenuIndex tail
-              currentFileView = fileView id name idx showMenu
+              tailView = nodeView mDisplayedRequestNodeMenuIndex tail
+              currentFileView = fileView id mDisplayedRequestNodeMenuIndex name
             in
-              (newIdx, currentFileView :: tailView)
+              currentFileView :: tailView
