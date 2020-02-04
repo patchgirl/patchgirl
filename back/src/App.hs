@@ -191,7 +191,7 @@ type RequestFileApi =
           ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
       ) :<|>
       "rootRequestFile" :> (
-          -- createRootRequestFile
+          -- create root request file
           ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
       )
     )
@@ -214,15 +214,24 @@ type PRequestFolderApi auths =
 
 type RequestFolderApi =
   Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFolder" :> (
-      -- create request folder
-      ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
+        "requestFolder" :> (
+        -- create request folder
+        ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
+      ) :<|>
+      "rootRequestFolder" :> (
+        -- create root request folder
+        ReqBody '[JSON] NewRootRequestFolder :> Post '[JSON] ()
+      )
     )
   )
 
-requestFolderApiServer :: AuthResult CookieSession -> ServerT RequestFolderApi AppM
+requestFolderApiServer
+  :: (AuthResult CookieSession -> Int -> NewRequestFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> NewRootRequestFolder -> AppM ())
 requestFolderApiServer =
   authorizeWithAccountId createRequestFolderHandler
+  :<|> authorizeWithAccountId createRootRequestFolderHandler
 
 
 -- ** request computation

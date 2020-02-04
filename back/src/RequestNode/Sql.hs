@@ -83,6 +83,35 @@ insertRootRequestFile NewRootRequestFile { _newRootRequestFileId } requestCollec
           |]
 
 
+-- * insert root request folder
+
+
+insertRootRequestFolder :: NewRootRequestFolder -> Int -> PG.Connection -> IO ()
+insertRootRequestFolder NewRootRequestFolder { _newRootRequestFolderId } requestCollectionId connection =
+  Monad.void $
+    PG.execute connection rawQuery ( _newRootRequestFolderId
+                                   , requestCollectionId
+                                   , _newRootRequestFolderId
+                                   )
+  where
+    rawQuery =
+      [sql|
+          WITH insert_root_request_node AS (
+            INSERT INTO request_node (
+              id,
+              request_node_parent_id,
+              tag,
+              name
+            )
+            VALUES (?, NULL, 'RequestFolder', 'new folder')
+          ) INSERT INTO request_collection_to_request_node (
+              request_collection_id,
+              request_node_id
+            )
+            VALUES (?, ?)
+          |]
+
+
 -- * insert request folder
 
 

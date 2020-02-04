@@ -34,7 +34,8 @@ import           RequestNode.Model
 
 
 createRequestFolder :: Auth.Token -> Int -> NewRequestFolder -> ClientM ()
-createRequestFolder =
+createRootRequestFolder :: Auth.Token -> Int -> NewRootRequestFolder -> ClientM ()
+createRequestFolder :<|> createRootRequestFolder =
   client (Proxy :: Proxy (PRequestFolderApi '[Auth.JWT]))
 
 
@@ -43,7 +44,7 @@ createRequestFolder =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultConfig) $ do
 
 
 -- ** create request folder
@@ -86,6 +87,28 @@ spec =
           fakeRequestFolder `shouldBe`  FakeRequestFolder { _fakeRequestFolderParentId   = Just folderId
                                                           , _fakeRequestFolderName       = "whatever"
                                                           }
+-- ** create root request folder
+
+
+    describe "create a root request folder" $ do
+      it "returns 404 when request collection doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          let newRootRequestFolder = mkNewRootRequestFolder UUID.nil
+          try clientEnv (createRootRequestFolder token 1 newRootRequestFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "create the request folder" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          requestCollectionId <- insertFakeRequestCollection accountId connection
+          let newRootRequestFolder = mkNewRootRequestFolder UUID.nil
+          _ <- try clientEnv (createRootRequestFolder token requestCollectionId newRootRequestFolder)
+          fakeRequestFolder <- selectFakeRequestFolder UUID.nil connection
+          fakeRequestFolder `shouldBe`  FakeRequestFolder { _fakeRequestFolderParentId = Nothing
+                                                          , _fakeRequestFolderName       = "new folder"
+                                                          }
 
   where
     mkNewRequestFolder :: UUID -> UUID -> NewRequestFolder
@@ -94,3 +117,7 @@ spec =
                        , _newRequestFolderParentNodeId = parentId
                        , _newRequestFolderName = "whatever"
                        }
+
+    mkNewRootRequestFolder :: UUID -> NewRootRequestFolder
+    mkNewRootRequestFolder id =
+      NewRootRequestFolder { _newRootRequestFolderId = id }
