@@ -23,7 +23,7 @@ view model =
         mainMenuView =
             row [ spacing 10 ]
                 [ Input.button []
-                      { onPress = Just <| DoNothing
+                      { onPress = Just <| GenerateRandomUUIDForRootFolder
                       , label = iconWithText "create_new_folder" "new folder"
                       }
                 , Input.button []

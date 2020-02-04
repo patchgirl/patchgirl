@@ -262,7 +262,46 @@ update msg model =
                 model.requestCollection
 
             newRequestNodes =
-                mkDefaultFile newId :: requestNodes
+                requestNodes ++ [ mkDefaultFile newId ]
+
+            newModel =
+                { model
+                    | requestCollection =
+                        RequestCollection requestCollectionId newRequestNodes
+                }
+        in
+            (newModel, Cmd.none)
+
+
+-- ** root folder
+
+
+    GenerateRandomUUIDForRootFolder ->
+        let
+            newMsg = Random.generate AskMkdirRoot Uuid.uuidGenerator
+        in
+            (model, newMsg)
+
+    AskMkdirRoot newId ->
+        let
+            (RequestCollection requestCollectionId _) =
+                model.requestCollection
+
+            newRootRequestFolder =
+                Client.NewRootRequestFolder { newRootRequestFolderId = newId }
+
+            newMsg =
+                Client.postApiRequestCollectionByRequestCollectionIdRootRequestFolder "" "" requestCollectionId newRootRequestFolder (createRootRequestFolderResultToMsg newId)
+        in
+            (model, newMsg)
+
+    MkdirRoot newId ->
+        let
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            newRequestNodes =
+                requestNodes ++ [ mkDefaultFolder newId ]
 
             newModel =
                 { model
@@ -328,6 +367,15 @@ createRootRequestFileResultToMsg id result =
     case result of
         Ok _ ->
             TouchRoot id
+
+        Err error ->
+            BuilderTreeServerError
+
+createRootRequestFolderResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootRequestFolderResultToMsg id result =
+    case result of
+        Ok _ ->
+            MkdirRoot id
 
         Err error ->
             BuilderTreeServerError

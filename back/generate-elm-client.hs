@@ -99,6 +99,7 @@ deriveElmDef deriveElmDefOption ''Scheme
 deriveElmDef deriveElmDefOption ''InitializePassword
 deriveElmDef deriveElmDefOption ''NewRequestFolder
 deriveElmDef deriveElmDefOption ''NewRootRequestFile
+deriveElmDef deriveElmDefOption ''NewRootRequestFolder
 
 
 myElmImports :: T.Text
@@ -178,6 +179,7 @@ main =
       , DefineElm (Proxy :: Proxy InitializePassword)
       , DefineElm (Proxy :: Proxy NewRequestFolder)
       , DefineElm (Proxy :: Proxy NewRootRequestFile)
+      , DefineElm (Proxy :: Proxy NewRootRequestFolder)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
