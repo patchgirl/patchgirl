@@ -21,20 +21,20 @@ update msg model =
   case msg of
     SetDisplayedBuilder id ->
         let
-            newModel = { model | selectedBuilderIndex = Just id }
+            newModel = { model | selectedBuilderId = Just id }
         in
             (newModel, Cmd.none)
 
     ToggleMenu id ->
         let
             newDisplayedRequestNodeMenuIndex =
-                case Maybe.exists model.displayedRequestNodeMenuIndex ((==) id) of
+                case Maybe.exists model.displayedRequestNodeMenuId ((==) id) of
                     True -> Nothing -- menu already displayed
                     False -> Just id
 
             newModel =
                 { model |
-                      displayedRequestNodeMenuIndex = newDisplayedRequestNodeMenuIndex
+                      displayedRequestNodeMenuId = newDisplayedRequestNodeMenuIndex
                 }
         in
             (newModel, Cmd.none)

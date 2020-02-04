@@ -17,7 +17,7 @@ view model =
     let
         (RequestCollection _ requestNodes) = model.requestCollection
     in
-        nodeView model.displayedRequestNodeMenuIndex requestNodes
+        nodeView model.displayedRequestNodeMenuId requestNodes
 
 nodeView : Maybe Uuid.Uuid -> List RequestNode -> List (Element Msg)
 nodeView mDisplayedRequestNodeMenuIndex requestCollection =

@@ -15,9 +15,9 @@ type alias Model =
     , initializePassword2 : String
     , initializePasswordState : InitializePasswordState
     -- BUILDER APP
-    , selectedBuilderIndex : Maybe Uuid.Uuid
+    , selectedBuilderId : Maybe Uuid.Uuid
     , displayedBuilderIndex : Maybe Int
-    , displayedRequestNodeMenuIndex : Maybe Uuid.Uuid
+    , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : BuilderApp.RequestCollection
     -- POSTMAN
     , postmanModel : Maybe (List BuilderApp.RequestNode)
@@ -72,9 +72,9 @@ getEnvironmentKeyValuesToEdit model =
 createModel : Page -> Session -> BuilderApp.RequestCollection -> List Environment -> Model
 createModel page session requestCollection environments =
   let
-      selectedBuilderIndex = Nothing
+      selectedBuilderId = Nothing
       displayedBuilderIndex = Nothing
-      displayedRequestNodeMenuIndex = Nothing
+      displayedRequestNodeMenuId = Nothing
       varAppModel =
           { vars = []
           , overZoneId = Nothing
@@ -88,9 +88,9 @@ createModel page session requestCollection environments =
       , initializePassword1 = ""
       , initializePassword2 = ""
       , initializePasswordState = InitialPasswordState
-      , selectedBuilderIndex = selectedBuilderIndex
+      , selectedBuilderId = selectedBuilderId
       , displayedBuilderIndex = displayedBuilderIndex
-      , displayedRequestNodeMenuIndex = displayedRequestNodeMenuIndex
+      , displayedRequestNodeMenuId = displayedRequestNodeMenuId
       , requestCollection = requestCollection
       , postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex

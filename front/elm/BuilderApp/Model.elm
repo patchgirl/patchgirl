@@ -11,10 +11,10 @@ import Random
 
 type alias Model a =
     { a
-        | selectedBuilderIndex : Maybe Uuid.Uuid
+        | selectedBuilderId : Maybe Uuid.Uuid
         , displayedBuilderIndex : Maybe Int
         , requestCollection : RequestCollection
-        , displayedRequestNodeMenuIndex : Maybe Uuid.Uuid
+        , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Type.Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , varAppModel : VarApp.Model

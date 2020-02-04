@@ -38,7 +38,7 @@ view model =
                   [ el [ ] <| envSelectionView <| List.map .name model.environments
                   , el [ paddingXY 10 0 ] treeView
                   ]
-            , el [ width (fillPortion 8) ] <| builderView model model.selectedBuilderIndex
+            , el [ width (fillPortion 8) ] <| builderView model model.selectedBuilderId
             ]
 
 envSelectionView : List (Editable String) -> Element Msg

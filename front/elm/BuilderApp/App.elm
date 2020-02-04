@@ -35,9 +35,9 @@ update msg model =
             let
                 (RequestCollection requestCollectionId requestNodes) = model.requestCollection
                 mFile : Maybe File
-                mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderIndex
+                mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderId
             in
-                case (model.selectedBuilderIndex, mFile) of
+                case (model.selectedBuilderId, mFile) of
                     (Just id, Just file) ->
                         let
                             (newFile, newSubMsg) =
