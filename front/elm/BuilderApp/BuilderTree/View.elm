@@ -27,7 +27,7 @@ view model =
                       , label = iconWithText "create_new_folder" "new folder"
                       }
                 , Input.button []
-                      { onPress = Just <| DoNothing
+                      { onPress = Just <| GenerateRandomUUIDForRootFile
                       , label = iconWithText "note_add" "new file"
                       }
                 ]

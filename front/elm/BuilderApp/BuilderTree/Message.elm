@@ -11,10 +11,13 @@ type Msg
   | GenerateRandomUUIDForFile Uuid.Uuid
   | AskTouch Uuid.Uuid Uuid.Uuid
   | Touch Uuid.Uuid Uuid.Uuid
+  | GenerateRandomUUIDForRootFile
+  | AskTouchRoot Uuid.Uuid
+  | TouchRoot Uuid.Uuid
   | ShowRenameInput Uuid.Uuid
   | ChangeName Uuid.Uuid String -- while focus is on the input
-  | AskRename Uuid.Uuid String -- validate input
-  | Rename Uuid.Uuid String -- refresh input
+  | AskRename Uuid.Uuid String  -- validate input
+  | Rename Uuid.Uuid String     -- refresh input
   | AskDelete Uuid.Uuid
   | Delete Uuid.Uuid
   | ToggleMenu Uuid.Uuid

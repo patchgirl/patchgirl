@@ -19,6 +19,11 @@ import Api.Generated as Client
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
   case msg of
+
+
+-- ** toggle builder/menu/folder
+
+
     SetDisplayedBuilder id ->
         let
             newModel = { model | selectedBuilderId = Just id }
@@ -54,6 +59,10 @@ update msg model =
                 }
         in
             (newModel, Cmd.none)
+
+
+-- ** mkdir
+
 
     GenerateRandomUUIDForFolder parentNodeId ->
         let
@@ -93,6 +102,10 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+
+-- ** touch
+
+
     GenerateRandomUUIDForFile parentNodeId ->
         let
             newMsg = Random.generate (AskTouch parentNodeId) Uuid.uuidGenerator
@@ -128,6 +141,10 @@ update msg model =
                 }
         in
             (newModel, Cmd.none)
+
+
+-- ** rename
+
 
     ShowRenameInput id ->
         let
@@ -189,6 +206,10 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+
+-- ** delete
+
+
     AskDelete id ->
         let
             (RequestCollection requestCollectionId _) = model.requestCollection
@@ -213,8 +234,51 @@ update msg model =
         in
             (newModel, Cmd.none)
 
+-- ** root file
+
+
+    GenerateRandomUUIDForRootFile ->
+        let
+            newMsg = Random.generate AskTouchRoot Uuid.uuidGenerator
+        in
+            (model, newMsg)
+
+    AskTouchRoot newId ->
+        let
+            (RequestCollection requestCollectionId _) =
+                model.requestCollection
+
+            newRootRequestFile =
+                Client.NewRootRequestFile { newRootRequestFileId = newId }
+
+            newMsg =
+                Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId newRootRequestFile (createRootRequestFileResultToMsg newId)
+        in
+            (model, newMsg)
+
+    TouchRoot newId ->
+        let
+            (RequestCollection requestCollectionId requestNodes) =
+                model.requestCollection
+
+            newRequestNodes =
+                mkDefaultFile newId :: requestNodes
+
+            newModel =
+                { model
+                    | requestCollection =
+                        RequestCollection requestCollectionId newRequestNodes
+                }
+        in
+            (newModel, Cmd.none)
+
+
+-- ** other
+
+
     BuilderTreeServerError ->
         Debug.todo "error with builder tree"
+
 
     DoNothing ->
         (model, Cmd.none)
@@ -255,6 +319,15 @@ newRequestFileResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
             Touch parentNodeId id
+
+        Err error ->
+            BuilderTreeServerError
+
+createRootRequestFileResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootRequestFileResultToMsg id result =
+    case result of
+        Ok _ ->
+            TouchRoot id
 
         Err error ->
             BuilderTreeServerError
