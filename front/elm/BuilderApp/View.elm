@@ -26,17 +26,10 @@ import Uuid
 
 view : Model a -> Element Msg
 view model =
-    let
-        treeView : Element Msg
-        treeView =
-            column [ spacing 10 ]
-                <| List.map (map TreeMsg) (BuilderTree.view model)
-
-    in
         row [ width fill, paddingXY 10 0 ]
             [ column [ alignTop, spacing 20, centerX, paddingXY 20 0,  width (fillPortion 2) ]
                   [ el [ ] <| envSelectionView <| List.map .name model.environments
-                  , el [ paddingXY 10 0 ] treeView
+                  , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
                   ]
             , el [ width (fillPortion 8) ] <| builderView model model.selectedBuilderId
             ]

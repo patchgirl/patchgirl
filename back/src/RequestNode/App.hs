@@ -89,6 +89,28 @@ createRequestFileHandler accountId requestCollectionId newRequestFile = do
         _ ->
           Servant.throwError Servant.err404
 
+
+-- * create root request file
+
+
+createRootRequestFileHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Int
+  -> Int
+  -> NewRootRequestFile
+  -> m ()
+createRootRequestFileHandler accountId requestCollectionId newRootRequestFile = do
+  connection <- getDBConnection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Just requestCollectionId' | requestCollectionId == requestCollectionId' ->
+      IO.liftIO $ insertRootRequestFile newRootRequestFile requestCollectionId connection
+    _ ->
+      Servant.throwError Servant.err404
+
+
 -- * create request folder
 
 

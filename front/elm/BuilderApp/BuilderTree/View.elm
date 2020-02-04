@@ -4,6 +4,8 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
+import Element.Input as Input
+
 import Uuid
 import BuilderApp.Model exposing (..)
 import BuilderApp.BuilderTree.Message exposing (Msg(..))
@@ -11,13 +13,35 @@ import BuilderApp.BuilderTree.FolderView exposing (..)
 import BuilderApp.BuilderTree.FileView exposing (..)
 
 import Util.View as Util
+import ViewUtil exposing (..)
 
-view : Model a -> List (Element Msg)
+view : Model a -> Element Msg
 view model =
     let
         (RequestCollection _ requestNodes) = model.requestCollection
+
+        mainMenuView =
+            row [ spacing 10 ]
+                [ Input.button []
+                      { onPress = Just <| DoNothing
+                      , label = iconWithText "create_new_folder" "new folder"
+                      }
+                , Input.button []
+                      { onPress = Just <| DoNothing
+                      , label = iconWithText "note_add" "new file"
+                      }
+                ]
+
+        treeView =
+            column [ spacing 10 ] (nodeView model.displayedRequestNodeMenuId requestNodes)
+
     in
-        nodeView model.displayedRequestNodeMenuId requestNodes
+        column [ alignTop, spacing 20, centerX ]
+            [ mainMenuView
+            , treeView
+            ]
+
+
 
 nodeView : Maybe Uuid.Uuid -> List RequestNode -> List (Element Msg)
 nodeView mDisplayedRequestNodeMenuIndex requestCollection =

@@ -12,7 +12,9 @@ import Html.Events as Html
 import Html.Attributes as Html
 import Json.Decode as Json
 
+
 -- * color
+
 
 black : Color
 black =
@@ -71,7 +73,9 @@ colorToString color =
     in
         "rgb(" ++ rgbFloatToString(red) ++ "," ++ rgbFloatToString(green) ++ "," ++ rgbFloatToString(blue) ++ ")"
 
+
 -- * icon
+
 
 icon : String -> Element a
 icon whichIcon =
@@ -115,7 +119,9 @@ sendIcon =
 addIcon =
     icon "add_circle_outline"
 
+
 -- * label
+
 
 labelAttrs : List(Attribute a)
 labelAttrs =
@@ -161,6 +167,7 @@ labelError labelText =
 
 
 -- * util
+
 
 onEnter : a -> Attribute a
 onEnter msg =

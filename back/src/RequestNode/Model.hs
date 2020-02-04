@@ -209,6 +209,24 @@ instance FromJSON NewRequestFile where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
+-- * new root request file
+
+
+newtype NewRootRequestFile =
+  NewRootRequestFile { _newRootRequestFileId           :: UUID
+                     } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''NewRootRequestFile)
+
+instance ToJSON NewRootRequestFile where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRootRequestFile where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
 -- * new request folder
 
 

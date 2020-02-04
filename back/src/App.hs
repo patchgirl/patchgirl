@@ -185,15 +185,24 @@ type PRequestFileApi auths =
 
 type RequestFileApi =
   Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestFile" :> (
-      -- createRequestFile
-      ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
+    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
+      "requestFile" :> (
+          -- createRequestFile
+          ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
+      ) :<|>
+      "rootRequestFile" :> (
+          -- createRootRequestFile
+          ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
+      )
     )
   )
 
-requestFileApiServer :: AuthResult CookieSession -> ServerT RequestFileApi AppM
+requestFileApiServer
+  :: (AuthResult CookieSession -> Int -> NewRequestFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> NewRootRequestFile -> AppM ())
 requestFileApiServer =
   authorizeWithAccountId createRequestFileHandler
+  :<|> authorizeWithAccountId createRootRequestFileHandler
 
 
 -- ** request folder api

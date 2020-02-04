@@ -35,7 +35,8 @@ import           RequestNode.Model
 
 
 createRequestFileHandler :: Auth.Token -> Int -> NewRequestFile -> ClientM ()
-createRequestFileHandler =
+createRootRequestFileHandler :: Auth.Token -> Int -> NewRootRequestFile -> ClientM ()
+createRequestFileHandler :<|> createRootRequestFileHandler =
   client (Proxy :: Proxy (PRequestFileApi '[Auth.JWT]))
 
 
@@ -44,7 +45,7 @@ createRequestFileHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultConfig) $ do
 
 
 -- ** create request file
@@ -91,9 +92,39 @@ spec =
                                                       , _fakeRequestFileHttpBody   = ""
                                                       }
 
+-- ** create root request file
+
+
+    describe "create a root request file" $ do
+      it "returns 404 when request collection doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          let newRootRequestFile = mkNewRootRequestFile UUID.nil
+          try clientEnv (createRootRequestFileHandler token 1 newRootRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "create the request file" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          requestCollectionId <- insertFakeRequestCollection accountId connection
+          let newRootRequestFile = mkNewRootRequestFile UUID.nil
+          _ <- try clientEnv (createRootRequestFileHandler token requestCollectionId newRootRequestFile)
+          fakeRequestFile <- selectFakeRequestFile UUID.nil connection
+          fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Nothing
+                                                      , _fakeRequestFileName       = "new request"
+                                                      , _fakeRequestFileHttpUrl    = ""
+                                                      , _fakeRequestFileHttpMethod = Get
+                                                      , _fakeRequestFileHttpBody   = ""
+                                                      }
+
   where
     mkNewRequestFile :: UUID -> UUID -> NewRequestFile
     mkNewRequestFile id parentId =
       NewRequestFile { _newRequestFileId           = id
                      , _newRequestFileParentNodeId = parentId
                      }
+
+    mkNewRootRequestFile :: UUID -> NewRootRequestFile
+    mkNewRootRequestFile id =
+      NewRootRequestFile { _newRootRequestFileId = id }
