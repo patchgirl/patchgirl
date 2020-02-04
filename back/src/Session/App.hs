@@ -67,7 +67,7 @@ whoAmIHandler cookieSettings jwtSettings = \case
     mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
     case mApplyCookies of
       Nothing           -> throwError err401
-      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = 1
+      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = 0
                                                                   , _sessionCsrfToken = csrfToken
                                                                   }
   where

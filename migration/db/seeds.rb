@@ -67,6 +67,16 @@ ActiveRecord::Migration[5.2].execute %{
       email,
       password
     ) values (
+      'visitor@patchgirl.io',
+      crypt('123', gen_salt('bf', 8))
+    );
+}
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO account (
+      email,
+      password
+    ) values (
       'foo@mail.com',
       crypt('123', gen_salt('bf', 8))
     );
@@ -90,6 +100,13 @@ ActiveRecord::Migration[5.2].execute %{
       id,
       account_id
     ) values (1,1);
+  }
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO request_collection (
+      id,
+      account_id
+    ) values (2,2);
   }
 
 ActiveRecord::Migration[5.2].execute %{
