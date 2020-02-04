@@ -175,8 +175,7 @@ update msg model =
                     urlToPage url
 
                 newModel =
-                    { model | page = newPage }
-
+                    changePage model newPage
             in
                 (newModel, Cmd.none)
 
@@ -237,6 +236,26 @@ upgradeModel model =
 
         _ ->
             (model, Cmd.none)
+
+
+changePage : Model -> Page -> Model
+changePage model newPage =
+    let
+        newModel =
+            case model.appState of
+                InitializedApp initializedApplicationModel ->
+                    let
+                        newAppState =
+                            InitializedApp { initializedApplicationModel
+                                               | page = newPage
+                                           }
+                    in
+                        { model | appState = newAppState }
+
+                _ ->
+                    model
+    in
+        { newModel | page = newPage }
 
 
 -- ** view

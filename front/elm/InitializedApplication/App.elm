@@ -244,7 +244,7 @@ visitorView model visitorSession =
         contentView : Element Msg
         contentView =
             el [ width fill, centerX, centerY ] <|
-                case Debug.log "haha" model.page of
+                case model.page of
                     HomePage -> builderView model
                     ReqPage -> builderView model
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
