@@ -210,6 +210,7 @@ signedUserView model =
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> builderView model
                     SignUpPage -> builderView model
+                    SignOutPage -> none
                     InitializePasswordPage accountId signUpToken ->
                         map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
     in
@@ -230,6 +231,7 @@ visitorView model visitorSession =
                     EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                     SignInPage -> map SignInMsg (SignIn.view visitorSession)
                     SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
+                    SignOutPage -> none
                     InitializePasswordPage accountId signUpToken ->
                         map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
     in

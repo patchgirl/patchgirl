@@ -1,4 +1,4 @@
-module Page exposing (Page(..), urlToPage)
+module Page exposing (Page(..), urlToPage, href)
 
 import Url as Url
 import Url.Parser as Url exposing ((</>))
@@ -10,6 +10,7 @@ type Page
     | SignInPage
     | SignUpPage
     | InitializePasswordPage Int String
+    | SignOutPage
 
 urlToPage : Url.Url -> Page
 urlToPage url =
@@ -38,4 +39,33 @@ urlParser =
         , Url.map SignInPage (Url.s "signIn")
         , Url.map SignUpPage (Url.s "signUp")
         , Url.map InitializePasswordPage (Url.s "account" </> Url.int </> Url.s "initializePassword" </> Url.string)
+        , Url.map SignOutPage (Url.s "signOut")
         ]
+
+href : Page -> String
+href page =
+    let
+        pieces =
+            case page of
+                HomePage ->
+                    []
+
+                ReqPage ->
+                    ["req"]
+
+                EnvPage ->
+                    ["env"]
+
+                SignInPage ->
+                    ["signIn"]
+
+                SignUpPage ->
+                    ["signUp"]
+
+                InitializePasswordPage accountId token ->
+                    ["account", String.fromInt accountId, "initializePassword", token]
+
+                SignOutPage ->
+                    [ "settings" ]
+    in
+        "#/" ++ String.join "/" pieces

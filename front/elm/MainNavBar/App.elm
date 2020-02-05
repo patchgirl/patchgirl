@@ -10,12 +10,12 @@ import ViewUtil exposing (..)
 
 import Html as Html
 import Html.Attributes as Html
-import Util.Route exposing (..)
 import InitializedApplication.Model exposing (..)
 import Application.Type exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
+import Page exposing(..)
 import Page exposing(..)
 
 -- * model
@@ -127,7 +127,7 @@ leftView =
                     , Html.text "ApiTester"
                     ]
     in
-        link [] { url = href Home
+        link [] { url = href HomePage
                 , label = linkContent
                 }
 
@@ -157,7 +157,7 @@ signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
     row [ spacing 10 ]
         [ link (linkAttribute model AskSignOut)
-            { url = href Settings
+            { url = href SignOutPage
             , label = text "Sign out"
             }
         ]
