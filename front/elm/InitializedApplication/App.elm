@@ -125,16 +125,6 @@ update msg model =
             case Postman.update subMsg model.postmanModel of
                 (_, _) -> (model, Cmd.none)
 
-        MainNavBarMsg (MainNavBar.SignOutSucceed newSession) ->
-            let
-                newModel =
-                    { model
-                        | session = newSession
-                        , page = SignInPage
-                    }
-            in
-                (newModel, Cmd.none)
-
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
                 (newModel, newSubMsg) ->
@@ -146,16 +136,6 @@ update msg model =
                     ( { model | varAppModel = newVarAppModel }
                     , Cmd.none
                     )
-
-        SignInMsg (SignIn.SignInSucceed newSession) ->
-            let
-                newModel =
-                    { model
-                        | session = newSession
-                        , page = ReqPage
-                    }
-            in
-                (newModel, Cmd.none)
 
         SignInMsg subMsg ->
             case model.session of

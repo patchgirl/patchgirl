@@ -11,6 +11,8 @@ import Html as Html
 
 import InitializedApplication.Model as InitializedApplication
 import InitializedApplication.App as InitializedApplication
+import SignIn.App as SignIn
+import MainNavBar.App as MainNavBar
 import BuilderApp.Model as BuilderApp
 import Application.Type exposing (..)
 import Url as Url
@@ -28,6 +30,7 @@ type alias Model =
     { page : Page
     , navigationKey : Navigation.Key
     , appState : AppState
+    , url : Url.Url
     }
 
 type AppState
@@ -56,6 +59,32 @@ type Msg
 -- ** init
 
 
+reload : Url.Url -> Navigation.Key -> (Model, Cmd Msg)
+reload url navKey =
+    let
+        msg =
+            Cmd.batch [ Client.getApiSessionWhoami "" "" getSessionWhoamiResult
+                      , Navigation.pushUrl model.navigationKey <| Debug.log "url" (Url.toString url)
+                      ]
+
+        page =
+            urlToPage url
+
+        appState =
+            SessionPending
+
+        model =
+            { page = page
+            , navigationKey = navKey
+            , appState = appState
+            , url = url
+            }
+
+    in
+        (model, msg)
+
+
+
 init : () -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
 init _ url navKey =
     let
@@ -72,6 +101,7 @@ init _ url navKey =
             { page = page
             , navigationKey = navKey
             , appState = appState
+            , url = url
             }
 
     in
@@ -150,20 +180,28 @@ update msg model =
                     Debug.todo "already initialized app received initialization infos"
 
         InitializedApplicationMsg subMsg ->
-            case model.appState of
-                InitializedApp initializedApplication ->
-                    let
-                        (newInitializedApplication, newMsg) =
-                            InitializedApplication.update subMsg initializedApplication
+            case subMsg of
+                InitializedApplication.SignInMsg (SignIn.SignInSucceed _) ->
+                    resetApp model
 
-                        newModel =
-                            { model | appState = InitializedApp newInitializedApplication }
-
-                    in
-                        (newModel, Cmd.map InitializedApplicationMsg newMsg)
+                InitializedApplication.MainNavBarMsg (MainNavBar.SignOutSucceed _) ->
+                    resetApp model
 
                 _ ->
-                    Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
+                    case model.appState of
+                        InitializedApp initializedApplication ->
+                            let
+                                (newInitializedApplication, newMsg) =
+                                    InitializedApplication.update subMsg initializedApplication
+
+                                newModel =
+                                    { model | appState = InitializedApp newInitializedApplication }
+
+                            in
+                                (newModel, Cmd.map InitializedApplicationMsg newMsg)
+
+                        _ ->
+                            Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
 
 
         ServerError error ->
@@ -256,6 +294,22 @@ changePage model newPage =
                     model
     in
         { newModel | page = newPage }
+
+
+resetApp : Model -> (Model, Cmd Msg)
+resetApp model =
+    let
+        url =
+            model.url
+
+        newUrl =
+            { url
+                | path = "/"
+                , query = Nothing
+                , fragment = Nothing
+            }
+    in
+        reload newUrl model.navigationKey
 
 
 -- ** view

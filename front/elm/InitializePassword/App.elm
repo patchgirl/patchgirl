@@ -15,7 +15,9 @@ import Http as Http
 import Regex as Regex
 import InitializedApplication.Model exposing(..)
 
+
 -- * model
+
 
 type alias Model a =
     { a
