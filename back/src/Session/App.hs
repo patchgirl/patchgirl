@@ -51,7 +51,7 @@ whoAmIHandler
                  ]
          Session)
 whoAmIHandler cookieSettings jwtSettings = \case
-  Authenticated SignedUserCookie { _cookieAccountId, _cookieAccountEmail } -> do
+  Authenticated SignedUserCookie {..} -> do
     csrfToken <- liftIO createCsrfToken
     let (CaseInsensitive email) = _cookieAccountEmail
     return $
@@ -67,7 +67,7 @@ whoAmIHandler cookieSettings jwtSettings = \case
     mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
     case mApplyCookies of
       Nothing           -> throwError err401
-      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = 0
+      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = 1
                                                                   , _sessionCsrfToken = csrfToken
                                                                   }
   where
@@ -98,7 +98,7 @@ signInHandler cookieSettings jwtSettings login = do
     Nothing ->
       throwError err401
 
-    Just Account { _accountId, _accountEmail } -> do
+    Just Account {..} -> do
       let CaseInsensitive email = _accountEmail
       let cookieSession =
             SignedUserCookie { _cookieAccountId = _accountId
@@ -115,7 +115,7 @@ signInHandler cookieSettings jwtSettings login = do
         Just applyCookies -> return $ applyCookies session
 
 selectAccount :: SignIn -> Connection -> IO (Maybe Account)
-selectAccount SignIn { _signInEmail, _signInPassword } connection =
+selectAccount SignIn {..} connection =
   query connection selectAccountQuery (_signInEmail, _signInPassword) <&> listToMaybe
   where
     selectAccountQuery =
@@ -128,6 +128,7 @@ selectAccount SignIn { _signInEmail, _signInPassword } connection =
 
 
 -- * sign out
+
 
 deleteSessionHandler
   :: ( MonadReader Config m

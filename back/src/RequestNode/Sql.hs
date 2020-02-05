@@ -29,9 +29,7 @@ selectRequestNodesFromRequestCollectionId requestCollectionId connection = do
 
 
 insertRequestFile :: NewRequestFile -> PG.Connection -> IO ()
-insertRequestFile NewRequestFile { _newRequestFileId
-                                 , _newRequestFileParentNodeId
-                                 } connection =
+insertRequestFile NewRequestFile {..} connection =
   Monad.void $ PG.execute connection rawQuery (_newRequestFileId, _newRequestFileParentNodeId)
   where
     rawQuery =
@@ -54,11 +52,11 @@ insertRequestFile NewRequestFile { _newRequestFileId
 
 
 insertRootRequestFile :: NewRootRequestFile -> Int -> PG.Connection -> IO ()
-insertRootRequestFile NewRootRequestFile { _newRootRequestFileId } requestCollectionId connection =
+insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootRequestFileId
-                                     , requestCollectionId
-                                     , _newRootRequestFileId
+                                   , requestCollectionId
+                                   , _newRootRequestFileId
                                    )
   where
     rawQuery =
@@ -87,7 +85,7 @@ insertRootRequestFile NewRootRequestFile { _newRootRequestFileId } requestCollec
 
 
 insertRootRequestFolder :: NewRootRequestFolder -> Int -> PG.Connection -> IO ()
-insertRootRequestFolder NewRootRequestFolder { _newRootRequestFolderId } requestCollectionId connection =
+insertRootRequestFolder NewRootRequestFolder {..} requestCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootRequestFolderId
                                    , requestCollectionId
@@ -116,10 +114,7 @@ insertRootRequestFolder NewRootRequestFolder { _newRootRequestFolderId } request
 
 
 insertRequestFolder :: NewRequestFolder -> PG.Connection -> IO ()
-insertRequestFolder NewRequestFolder { _newRequestFolderId
-                                     , _newRequestFolderParentNodeId
-                                     , _newRequestFolderName
-                                     } connection =
+insertRequestFolder NewRequestFolder {..} connection =
   Monad.void $ PG.execute connection rawQuery (_newRequestFolderId, _newRequestFolderParentNodeId, _newRequestFolderName)
   where
     rawQuery =

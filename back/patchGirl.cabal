@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cda27c435fb18cac1ebca86361fc8d700161b5021784d5bfd54cb3ee98df96b5
+-- hash: 061a1ed816b50c185b8cedbcba083ad232020cc7a8fee2c6add835d5703a4a03
 
 name:           patchGirl
 version:        0.0.0
@@ -39,7 +39,7 @@ library
       Paths_patchGirl
   hs-source-dirs:
       src
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
@@ -85,7 +85,7 @@ executable patchGirl
   main-is: exe/Main.hs
   other-modules:
       Paths_patchGirl
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson
@@ -147,7 +147,7 @@ test-suite spec
       Paths_patchGirl
   hs-source-dirs:
       test
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       aeson

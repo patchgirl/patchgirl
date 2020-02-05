@@ -4,7 +4,6 @@
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE RecordWildCards        #-}
 
 module Environment.App where
 
@@ -232,6 +231,7 @@ createEnvironmentHandler accountId newEnvironment = do
   liftIO $
     bindEnvironmentToAccount accountId environmentId connection >> return environmentId
 
+
 -- * update environment
 
 
@@ -385,7 +385,7 @@ deleteKeyValuesDB environmentId' connection = do
           |]
 
 insertManyKeyValuesDB :: Int -> NewKeyValue -> Connection -> IO KeyValue
-insertManyKeyValuesDB environmentId NewKeyValue { _newKeyValueKey, _newKeyValueValue } connection = do
+insertManyKeyValuesDB environmentId NewKeyValue {..} connection = do
   [keyValue] <- query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue)
   return keyValue
   where

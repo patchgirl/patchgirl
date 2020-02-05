@@ -7,7 +7,7 @@ default-extensions:
   - QuasiQuotes
   - ScopedTypeVariables
   - TemplateHaskell
-
+  - RecordWildCards
 
 ghc-options:
   - -Wall

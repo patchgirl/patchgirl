@@ -3,7 +3,6 @@
 {-# LANGUAGE DuplicateRecordFields  #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE RecordWildCards        #-}
 
 module RequestNode.Model where
 
