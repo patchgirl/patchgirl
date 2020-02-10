@@ -7,6 +7,15 @@ test:
   pool: 5
   timeout: 5000
 
+stage:
+  adapter: postgresql
+  port: 5432
+  host: localhost
+  database: patchgirl
+  username: patchgirl
+  pool: 5
+  timeout: 5000
+
 dev:
   adapter: postgresql
   port: 5433
