@@ -14,7 +14,6 @@ import           Data.UUID
 import qualified GHC.Generics                          as Generics
 import qualified GHC.Natural                           as Natural
 import qualified Network.Wai.Handler.Warp              as Warp
-import qualified Network.Wai.Handler.WarpTLS           as WarpTLS
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
 import qualified Prometheus
 import qualified Prometheus.Metric.GHC                 as Prometheus
@@ -454,9 +453,7 @@ run = do
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-    settings = Warp.setPort (Natural.naturalToInt $ port config) Warp.defaultSettings
-    tlsOpts = WarpTLS.tlsSettings "cert.pem" "key.pem"
-  WarpTLS.runTLS tlsOpts settings =<< promMiddleware <$> mkApp config
+  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config
 
 mkApp :: Config -> IO Application
 mkApp config = do
