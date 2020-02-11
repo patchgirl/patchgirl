@@ -7,8 +7,7 @@
 module RequestNode.Model where
 
 
-import           Control.Lens                         (makeFieldsNoPrefix)
-import           Control.Lens                         hiding (element)
+import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value, parseJSON)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
@@ -83,7 +82,7 @@ instance FromJSON UpdateRequestNode where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeFieldsNoPrefix ''UpdateRequestNode)
+$(makeLenses ''UpdateRequestNode)
 
 instance ToField UpdateRequestNode where
   toField UpdateRequestFolder { _updateRequestNodeName } =

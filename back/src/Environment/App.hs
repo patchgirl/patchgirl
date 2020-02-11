@@ -13,7 +13,7 @@ module Environment.App where
 
 import           Control.Lens                     hiding (element)
 
-import           Control.Lens                     (makeFieldsNoPrefix)
+import           Control.Lens                     (makeLenses)
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
@@ -54,8 +54,8 @@ data PGEnvironmentWithoutKeyValue =
                                } deriving (Generic, FromRow)
 
 
-$(makeFieldsNoPrefix ''PGEnvironmentWithKeyValue)
-$(makeFieldsNoPrefix ''PGEnvironmentWithoutKeyValue)
+$(makeLenses ''PGEnvironmentWithKeyValue)
+$(makeLenses ''PGEnvironmentWithoutKeyValue)
 
 data KeyValue =
   KeyValue { _keyValueId    :: Int
@@ -71,7 +71,7 @@ instance ToJSON KeyValue where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeFieldsNoPrefix ''KeyValue)
+$(makeLenses ''KeyValue)
 
 data Environment
   = Environment { _environmentId        :: Int
@@ -87,7 +87,7 @@ instance ToJSON Environment where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeFieldsNoPrefix ''Environment)
+$(makeLenses ''Environment)
 
 selectEnvironments :: Int -> Connection -> IO [Environment]
 selectEnvironments accountId connection = do
@@ -185,7 +185,7 @@ instance ToJSON NewEnvironment where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeFieldsNoPrefix ''NewEnvironment)
+$(makeLenses ''NewEnvironment)
 
 insertEnvironment :: NewEnvironment -> Connection -> IO Int
 insertEnvironment NewEnvironment { _newEnvironmentName } connection = do
@@ -243,7 +243,7 @@ instance ToJSON UpdateEnvironment where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeFieldsNoPrefix ''UpdateEnvironment)
+$(makeLenses ''UpdateEnvironment)
 
 instance FromJSON UpdateEnvironment where
   parseJSON =
@@ -367,7 +367,7 @@ instance ToJSON NewKeyValue where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
-$(makeFieldsNoPrefix ''NewKeyValue)
+$(makeLenses ''NewKeyValue)
 
 
 -- ** handler

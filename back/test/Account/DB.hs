@@ -7,7 +7,7 @@
 
 module Account.DB where
 
-import           Control.Lens                     (makeFieldsNoPrefix)
+import           Control.Lens                     (makeLenses)
 import           Data.Functor                     ((<&>))
 import           Data.Maybe                       (listToMaybe)
 import           Database.PostgreSQL.Simple
@@ -79,7 +79,7 @@ data FakeAccount =
               }
   deriving (Eq, Show, Read, Generic, FromRow)
 
-$(makeFieldsNoPrefix ''FakeAccount)
+$(makeLenses ''FakeAccount)
 
 selectFakeAccount :: Int -> Connection -> IO (Maybe FakeAccount)
 selectFakeAccount id connection =
