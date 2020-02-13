@@ -6,8 +6,8 @@ import           Data.Text (Text)
 import           Dhall
 
 importConfig :: Text -> IO Config
-importConfig configFilePath =
-  input auto (configFilePath <> "/" <> "config.dhall")
+importConfig workDir =
+  input auto (workDir <> "/" <> "config.dhall")
 
 
 -- * mailgun

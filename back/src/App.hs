@@ -448,17 +448,17 @@ appMToHandler config r = do
 
 
 run :: String -> IO ()
-run configFilePath = do
-  config :: Config <- importConfig (Text.pack configFilePath)
+run workDir = do
+  config :: Config <- importConfig (Text.pack workDir)
   print config
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config
+  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config workDir
 
-mkApp :: Config -> IO Application
-mkApp config = do
-  key <- readKey $ appKeyFilePath config
+mkApp :: Config -> String -> IO Application
+mkApp config workDir = do
+  key <- readKey $ workDir <> "/" <> appKeyFilePath config
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =
