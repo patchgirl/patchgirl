@@ -5,9 +5,9 @@ module Config where
 import           Data.Text (Text)
 import           Dhall
 
-importConfig :: Text -> IO Config
-importConfig workDir =
-  input auto (workDir <> "/" <> "config.dhall")
+importConfig :: IO Config
+importConfig =
+  input auto "./config.dhall"
 
 
 -- * mailgun

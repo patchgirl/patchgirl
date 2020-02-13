@@ -10,7 +10,6 @@ module App where
 import qualified Control.Monad.Except                  as Except
 import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
-import qualified Data.Text                             as Text
 import           Data.UUID
 import qualified GHC.Generics                          as Generics
 import qualified GHC.Natural                           as Natural
@@ -447,18 +446,18 @@ appMToHandler config r = do
 -- * app
 
 
-run :: String -> IO ()
-run workDir = do
-  config :: Config <- importConfig (Text.pack workDir)
+run :: IO ()
+run = do
+  config :: Config <- importConfig
   print config
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config workDir
+  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config
 
-mkApp :: Config -> String -> IO Application
-mkApp config workDir = do
-  key <- readKey $ workDir <> "/" <> appKeyFilePath config
+mkApp :: Config -> IO Application
+mkApp config = do
+  key <- readKey $ appKeyFilePath config
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =
