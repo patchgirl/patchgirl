@@ -349,7 +349,7 @@ loadingView =
           , centerY
           , Font.center
           ]
-        <| iconWithText "autorenew" "loading ApiTester..."
+        <| iconWithText "autorenew" "loading patchGirl..."
 
 
 
