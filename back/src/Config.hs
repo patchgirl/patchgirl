@@ -2,11 +2,12 @@
 
 module Config where
 
+import           Data.Text (Text)
 import           Dhall
 
-importConfig :: IO Config
-importConfig =
-  input auto "./config.dhall"
+importConfig :: Text -> IO Config
+importConfig configFilePath =
+  input auto configFilePath --"./config.dhall"
 
 
 -- * mailgun

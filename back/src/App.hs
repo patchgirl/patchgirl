@@ -10,6 +10,7 @@ module App where
 import qualified Control.Monad.Except                  as Except
 import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
+import qualified Data.Text                             as Text
 import           Data.UUID
 import qualified GHC.Generics                          as Generics
 import qualified GHC.Natural                           as Natural
@@ -446,9 +447,9 @@ appMToHandler config r = do
 -- * app
 
 
-run :: IO ()
-run = do
-  config :: Config <- importConfig
+run :: String -> IO ()
+run configFilePath = do
+  config :: Config <- importConfig (Text.pack configFilePath)
   print config
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
