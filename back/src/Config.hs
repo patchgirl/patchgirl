@@ -7,7 +7,7 @@ import           Dhall
 
 importConfig :: Text -> IO Config
 importConfig configFilePath =
-  input auto configFilePath --"./config.dhall"
+  input auto (configFilePath <> "config.dhall")
 
 
 -- * mailgun
