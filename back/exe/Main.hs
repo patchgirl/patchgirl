@@ -6,5 +6,5 @@ import           System.Environment (getArgs)
 
 main :: IO ()
 main = do
-  [configFilePath] <- getArgs
-  run configFilePath
+  workDir : [_] <- getArgs
+  run workDir
