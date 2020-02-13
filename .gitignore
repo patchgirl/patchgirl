@@ -23,3 +23,4 @@ config.dhall
 node_modules
 package-lock.json
 report.html
+config.yml
