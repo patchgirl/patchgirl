@@ -124,7 +124,7 @@ leftView =
                           , Html.style "vertical-align" "bottom"
                           ]
                           [ Html.text "call_split" ]
-                    , Html.text "ApiTester"
+                    , Html.text "PatchGirl"
                     ]
     in
         link [] { url = href HomePage
