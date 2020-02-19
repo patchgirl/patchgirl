@@ -104,6 +104,10 @@ ActiveRecord::Migration[5.2].execute %{
   }
 
 ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO request_collection (account_id) values (3);
+  }
+
+ActiveRecord::Migration[5.2].execute %{
     INSERT INTO request_collection_to_request_node (
       request_collection_id,
       request_node_id
