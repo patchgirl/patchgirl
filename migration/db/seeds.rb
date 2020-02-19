@@ -96,17 +96,11 @@ ActiveRecord::Migration[5.2].execute %{
 
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (
-      id,
-      account_id
-    ) values (1,1);
+    INSERT INTO request_collection (account_id) values (1);
   }
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (
-      id,
-      account_id
-    ) values (2,2);
+    INSERT INTO request_collection (account_id) values (2);
   }
 
 ActiveRecord::Migration[5.2].execute %{

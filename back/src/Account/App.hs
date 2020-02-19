@@ -110,8 +110,16 @@ insertAccount NewAccount {..} connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO account (email) VALUES (?)
-          RETURNING id, email, signup_token
+          WITH new_account as (
+            INSERT INTO account (email)
+            VALUES (?)
+            RETURNING id, email, signup_token
+          ), new_request_collection as (
+            INSERT INTO request_collection(account_id)
+            (SELECT id FROM new_account)
+          )
+          SELECT id, email, signup_token
+          FROM new_account
           |]
 
 
