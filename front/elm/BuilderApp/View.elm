@@ -22,16 +22,31 @@ import Html.Events as Html
 import Html as Html
 import Html.Attributes as Html
 import Uuid
-
+import ViewUtil exposing (..)
 
 view : Model a -> Element Msg
 view model =
-        wrappedRow [ width fill, paddingXY 10 0 ]
-            [ column [ alignTop, spacing 20, centerX, paddingXY 20 0,  width (fillPortion 1) ]
+        wrappedRow [ width fill
+                   , paddingXY 10 0
+                   , spacing 10
+                   ]
+            [ column [ alignTop
+                     , spacing 20
+                     , centerX
+                     , padding 20
+                     , width (fillPortion 1)
+                     , Background.color white
+                     , boxShadow
+                     ]
                   [ el [ ] <| envSelectionView <| List.map .name model.environments
                   , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
                   ]
-            , el [ width (fillPortion 9) ] <| builderView model model.selectedBuilderId
+            , el [ width (fillPortion 9)
+                 , padding 20
+                 , Background.color white
+                 , boxShadow
+                 ]
+                <| builderView model model.selectedBuilderId
             ]
 
 envSelectionView : List (Editable String) -> Element Msg

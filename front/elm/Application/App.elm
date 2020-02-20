@@ -319,7 +319,7 @@ view : Model -> Browser.Document Msg
 view model =
     let
         body =
-            layout [] <|
+            layout [ Background.color lightGrey ] <|
                 case model.appState of
                     SessionPending ->
                         loadingView

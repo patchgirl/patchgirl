@@ -67,6 +67,7 @@ import List.Extra as List
 import Http as Http
 
 import Application.Type exposing (..)
+import ViewUtil exposing(..)
 
 
 -- * message
@@ -190,69 +191,58 @@ replaceEnvironmentToEdit model newEnvironment =
 
 view : Model -> Element Msg
 view model =
-    case model.session of
-        Visitor visitorSession ->
-            visitorView model visitorSession
+    let
+        userView =
+            case model.session of
+                Visitor visitorSession ->
+                    visitorView model visitorSession
 
-        SignedUser {} ->
-            signedUserView model
+                SignedUser {} ->
+                    signedUserView model
 
+    in
+        column [ width fill
+               , centerY
+               , spacing 30
+               ]
+            [ map MainNavBarMsg (MainNavBar.view model)
+            , userView
+            ]
 
 signedUserView : Model -> Element Msg
 signedUserView model =
-    let
-        contentView : Element Msg
-        contentView =
-            el [ width fill ] <|
-                case model.page of
-                    HomePage -> builderView model
-                    ReqPage -> builderView model
-                    EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SignInPage -> builderView model
-                    SignUpPage -> builderView model
-                    SignOutPage -> none
-                    InitializePasswordPage accountId signUpToken ->
-                        map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
-    in
-        column [ width fill, centerY, spacing 30 ]
-            [ map MainNavBarMsg (MainNavBar.view model)
-            , contentView
-            ]
+    el contentAttributes <|
+        case model.page of
+            HomePage -> builderView model
+            ReqPage -> builderView model
+            EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+            SignInPage -> builderView model
+            SignUpPage -> builderView model
+            SignOutPage -> none
+            InitializePasswordPage accountId signUpToken ->
+                map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
 
 visitorView : Model -> VisitorSession -> Element Msg
 visitorView model visitorSession =
-    let
-        contentView : Element Msg
-        contentView =
-            el [ width fill, centerX, centerY ] <|
-                case model.page of
-                    HomePage -> builderView model
-                    ReqPage -> builderView model
-                    EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                    SignInPage -> map SignInMsg (SignIn.view visitorSession)
-                    SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
-                    SignOutPage -> none
-                    InitializePasswordPage accountId signUpToken ->
-                        map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
-    in
-        column [ width fill, centerY, spacing 30 ]
-            [ map MainNavBarMsg (MainNavBar.view model)
-            , contentView
-            ]
+    el contentAttributes <|
+        case model.page of
+            HomePage -> builderView model
+            ReqPage -> builderView model
+            EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+            SignInPage -> map SignInMsg (SignIn.view visitorSession)
+            SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
+            SignOutPage -> none
+            InitializePasswordPage accountId signUpToken ->
+                map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
 
+contentAttributes =
+    [ width fill ]
 
 builderView : Model -> Element Msg
 builderView model =
-  let
-    envSelectionView : Element Msg
-    envSelectionView =
-        none
---        map EnvSelectionMsg (EnvSelection.view (List.map .name model.environments))
-  in
     row [ width fill ]
-      [ el [ width fill ] (map BuilderAppMsg (BuilderApp.view model))
-      , el [] envSelectionView
-      ]
+        [ el [ width fill ] (map BuilderAppMsg (BuilderApp.view model))
+        ]
 
 --postmanView : Element Msg
 --postmanView =

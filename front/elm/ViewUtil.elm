@@ -16,6 +16,23 @@ import Json.Decode as Json
 -- * color
 
 
+boxShadow : Attr a b
+boxShadow =
+    Border.shadow { offset = (0, 1)
+                  , size = 0
+                  , blur = 1
+                  , color = rgba255 10 22 70 0.1
+                  }
+
+white : Color
+white =
+    rgb255 255 255 255
+
+
+lightGrey : Color
+lightGrey =
+    rgb255 245 248 250
+
 black : Color
 black =
     rgb255 0 0 0
