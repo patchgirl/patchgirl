@@ -27,11 +27,11 @@ import Uuid
 view : Model a -> Element Msg
 view model =
         wrappedRow [ width fill, paddingXY 10 0 ]
-            [ column [ alignTop, spacing 20, centerX, paddingXY 20 0,  width (fillPortion 2) ]
+            [ column [ alignTop, spacing 20, centerX, paddingXY 20 0,  width (fillPortion 1) ]
                   [ el [ ] <| envSelectionView <| List.map .name model.environments
                   , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
                   ]
-            , el [ width (fillPortion 8) ] <| builderView model model.selectedBuilderId
+            , el [ width (fillPortion 9) ] <| builderView model model.selectedBuilderId
             ]
 
 envSelectionView : List (Editable String) -> Element Msg
