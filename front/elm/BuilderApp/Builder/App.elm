@@ -412,18 +412,32 @@ view model =
     in
         case model.showResponseView of
             False ->
-                column [ width fill ]
+                column [ width fill
+                       , Background.color white
+                       , boxShadow
+                       , padding 20
+                       ]
                     [ titleView model
                     , el [ width fill ] builderView
                     ]
 
             True ->
-                column [ width fill ]
-                    [ titleView model
-                    , wrappedRow [ width fill, spacing 20 ]
-                        [ el [ width (fillPortion 1), alignTop ] builderView
-                        , el [ width (fillPortion 1), alignTop ] (responseView model)
-                        ]
+                wrappedRow [ alignTop, width fill, spacing 10 ]
+                    [ column [ width (fillPortion 1)
+                             , alignTop
+                             , Background.color white
+                             , boxShadow
+                             , padding 20
+                             ]
+                          [ titleView model
+                          , el [ alignTop ] builderView
+                          ]
+                    , el [ width (fillPortion 1)
+                         , Background.color white
+                         , boxShadow
+                         , alignTop
+                         , padding 30
+                         ] (responseView model)
                     ]
 
 titleView : Model a -> Element Msg

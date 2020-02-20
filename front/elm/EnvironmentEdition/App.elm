@@ -244,7 +244,9 @@ getEnvironmentToEdit model =
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
 
+
 -- ** view
+
 
 view : Model a -> Element Msg
 view model =
@@ -284,15 +286,28 @@ view model =
                 }
 
     in
-        row [ width fill
-            , centerX
-            , paddingXY 30 10
-            ]
-          [ column [ alignLeft, alignTop, spacing 10 ]
+        wrappedRow [ width fill
+                   , centerX
+                   , paddingXY 30 10
+                   , spacing 20
+                   ]
+        [ column [ alignLeft
+                   , alignTop
+                   , spacing 10
+                   , padding 10
+                   , Background.color white
+                   , boxShadow
+                   ]
                 [ column [ spacing 10 ] envListView
                 , el [ centerX ] addEnvButtonView
                 ]
-          , el [ centerX, alignTop ] keyValuesEditionView
+          , el [ centerX
+               , alignTop
+               , padding 20
+               , spacing 10
+               , Background.color white
+               , boxShadow
+               ] keyValuesEditionView
           ]
 
 
