@@ -163,13 +163,13 @@ buildRequestToRun envKeyValues varKeyValues builder =
     let
         request = buildRequestComputationInput envKeyValues varKeyValues builder
     in
-        case isPrivateAddress request.url of
+        case Debug.log "isPrivate" <| isPrivateAddress request.url of
             True ->
                 let
                     cmdRequest =
                         { method = methodToString request.method
                         , headers = List.map mkHeader request.headers
-                        , url = (schemeToString request.scheme) ++ "://" ++ request.url
+                        , url = Debug.log "fooo" <| (schemeToString request.scheme) ++ "://" ++ request.url
                         , body = Http.stringBody "application/json" request.body
                         , expect = expectStringDetailed LocalComputationDone
                         , timeout = Nothing
@@ -420,7 +420,7 @@ view model =
             True ->
                 column [ width fill ]
                     [ titleView model
-                    , row [ width fill, spacing 20 ]
+                    , wrappedRow [ width fill, spacing 20 ]
                         [ el [ width (fillPortion 1), alignTop ] builderView
                         , el [ width (fillPortion 1), alignTop ] (responseView model)
                         ]
@@ -431,7 +431,7 @@ titleView model =
     let
         name = notEditedValue model.name
     in
-        row [ centerX, paddingXY 0 10, spacing 10 ]
+        row [ paddingXY 0 10, spacing 10 ]
             [ el [] <| iconWithTextAndColor "label" (name) secondaryColor
             , mainActionButtonsView model
             ]
@@ -575,7 +575,7 @@ mainActionButtonsView model =
 
 methodView : Model a -> Element Msg
 methodView model =
-    Input.radioRow [ padding 10, spacing 20 ]
+    Input.radioRow [ padding 10, spacing 10 ]
         { onChange = SetHttpMethod
         , selected = Just <| editedOrNotEditedValue model.httpMethod
         , label = labelInputView "Method: "

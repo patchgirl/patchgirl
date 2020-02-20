@@ -26,7 +26,7 @@ import Uuid
 
 view : Model a -> Element Msg
 view model =
-        row [ width fill, paddingXY 10 0 ]
+        wrappedRow [ width fill, paddingXY 10 0 ]
             [ column [ alignTop, spacing 20, centerX, paddingXY 20 0,  width (fillPortion 2) ]
                   [ el [ ] <| envSelectionView <| List.map .name model.environments
                   , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))

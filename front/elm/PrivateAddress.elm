@@ -28,7 +28,6 @@ isPrivateAddress url =
             Subnet.included classCNetwork url ||
             Subnet.included localhostNetwork url
 
-
         isLocalhost =
             let
                 localhostRegex : Regex.Regex
