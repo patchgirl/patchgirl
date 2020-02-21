@@ -140,10 +140,18 @@ rightView model =
         SignedUser _ ->
             signedUserRightView model
 
+blogView : Element Msg
+blogView =
+    link ([ paddingXY 20 0 ] ++ mainLinkAttribute2)
+              { url = "https://blog.patchgirl.io"
+              , label = text "Blog"
+              }
+
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row []
-        [ link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignInPage SignInPage))
+        [ blogView
+        , link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignInPage SignInPage))
               { url = "#signIn"
               , label = text "Sign in"
               }
@@ -156,7 +164,8 @@ visitorRightView model =
 signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
     row [ spacing 10 ]
-        [ link (linkAttribute model AskSignOut)
+        [ blogView
+        , link (linkAttribute model AskSignOut)
             { url = href SignOutPage
             , label = text "Sign out"
             }
@@ -187,18 +196,31 @@ linkAttribute model msg =
         , mouseOver activeAttribute
         ]
 
+mainLinkAttribute2 : List (Attribute Msg)
+mainLinkAttribute2 =
+    let
+        activeAttribute =
+            [ Background.color secondaryColor
+            , Font.color primaryColor
+            ]
+    in
+        [ Font.size 21
+        , paddingXY 15 19
+        , mouseOver activeAttribute
+        , Font.color secondaryColor
+        ]
 
 
 mainLinkAttribute : Model a -> Msg -> Page -> List (Attribute Msg)
 mainLinkAttribute model event page =
             let
                 activeAttribute =
-                    [ Background.color <| secondaryColor
-                    , Font.color <| primaryColor
+                    [ Background.color secondaryColor
+                    , Font.color primaryColor
                     ]
 
                 passiveAttribute =
-                    [ Font.color <| secondaryColor
+                    [ Font.color secondaryColor
                     ]
 
                 activeOrPassiveAttribute =
@@ -217,7 +239,7 @@ mainLinkAttribute model event page =
 view : Model a -> Element Msg
 view model =
     el [ width fill, Background.color primaryColor ] <|
-        row [ width fill]--, explain Debug.todo]
+        row [ width fill]
             [ el [ alignLeft, paddingXY 20 0 ] leftView
             , el [ centerX ] <| centerView model
             , el [ alignRight ] (rightView model)
