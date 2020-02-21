@@ -331,7 +331,7 @@ view model =
                         el [ width fill ] <|
                             map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
     in
-        { title = "test"
+        { title = "PatchGirl"
         , body = [body]
         }
 
