@@ -142,7 +142,7 @@ rightView model =
 
 blogView : Element Msg
 blogView =
-    link ([ paddingXY 20 0 ] ++ mainLinkAttribute2)
+    link ([ paddingXY 20 0 ] ++ mainLinkAttribute)
               { url = "https://blog.patchgirl.io"
               , label = text "Blog"
               }
@@ -151,11 +151,11 @@ visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row []
         [ blogView
-        , link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignInPage SignInPage))
+        , link ([ paddingXY 20 0 ] ++ mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage))
               { url = "#signIn"
               , label = text "Sign in"
               }
-        , link ([ paddingXY 20 0 ] ++ (mainLinkAttribute model OpenSignUpPage SignUpPage))
+        , link ([ paddingXY 20 0 ] ++ mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignUpPage SignUpPage))
             { url = "#signUp"
             , label = text "Sign up"
             }
@@ -174,8 +174,8 @@ signedUserRightView model =
 centerView : Model a -> Element Msg
 centerView model =
     row [ centerX, paddingXY 10 0, centerY ]
-        [ link (mainLinkAttribute model OpenReqPage ReqPage) { url = "#req", label = text "Req" }
-        , link (mainLinkAttribute model OpenEnvPage EnvPage) { url = "#env", label = text "Env" }
+        [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage ReqPage)) { url = "#req", label = text "Req" }
+        , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage)) { url = "#env", label = text "Env" }
         ]
 
 
@@ -196,8 +196,8 @@ linkAttribute model msg =
         , mouseOver activeAttribute
         ]
 
-mainLinkAttribute2 : List (Attribute Msg)
-mainLinkAttribute2 =
+mainLinkAttribute : List (Attribute Msg)
+mainLinkAttribute =
     let
         activeAttribute =
             [ Background.color secondaryColor
@@ -210,9 +210,8 @@ mainLinkAttribute2 =
         , Font.color secondaryColor
         ]
 
-
-mainLinkAttribute : Model a -> Msg -> Page -> List (Attribute Msg)
-mainLinkAttribute model event page =
+mainLinkAttributeWhenActive : Model a -> Msg -> Page -> List (Attribute Msg)
+mainLinkAttributeWhenActive model event page =
             let
                 activeAttribute =
                     [ Background.color secondaryColor
@@ -230,9 +229,6 @@ mainLinkAttribute model event page =
 
             in
                 [ Events.onClick event
-                , Font.size 21
-                , paddingXY 15 19
-                , mouseOver activeAttribute
                 ] ++ activeOrPassiveAttribute
 
 
