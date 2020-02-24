@@ -1,7 +1,7 @@
 # patchGirl
 
-[![Build Status](https://travis-ci.com/matsumonkie/apiTester.svg?branch=master)](https://travis-ci.com/matsumonkie/patchGirl)
+[![Build Status](https://travis-ci.com/patchgirl/patchgirl.svg?branch=master)](https://travis-ci.com/patchgirl/patchgirl)
 
 A postman/postwoman like, web app to test your APIs !
 
-Built with Haskell and Elm with <3
+[Live demo](https://patchgirl.io)
