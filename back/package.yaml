@@ -63,7 +63,6 @@ dependencies:
   - utf8-string
   - hailgun
   - email-validate
-  - mtl
   - dhall
   - http-client
   - http-client-tls
