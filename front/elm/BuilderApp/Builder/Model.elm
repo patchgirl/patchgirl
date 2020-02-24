@@ -8,6 +8,7 @@ import Http as Http
 
 -- * model
 
+
 type alias Model a =
     { a
         | name : Editable String

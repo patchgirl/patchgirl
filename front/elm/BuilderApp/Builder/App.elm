@@ -163,13 +163,13 @@ buildRequestToRun envKeyValues varKeyValues builder =
     let
         request = buildRequestComputationInput envKeyValues varKeyValues builder
     in
-        case Debug.log "isPrivate" <| isPrivateAddress request.url of
+        case isPrivateAddress request.url of
             True ->
                 let
                     cmdRequest =
                         { method = methodToString request.method
                         , headers = List.map mkHeader request.headers
-                        , url = Debug.log "fooo" <| (schemeToString request.scheme) ++ "://" ++ request.url
+                        , url = (schemeToString request.scheme) ++ "://" ++ request.url
                         , body = Http.stringBody "application/json" request.body
                         , expect = expectStringDetailed LocalComputationDone
                         , timeout = Nothing
