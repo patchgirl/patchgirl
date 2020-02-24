@@ -46,7 +46,8 @@ instance ToJSON RequestComputationInput where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJSON RequestComputationInput where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 mkHeader :: (String, String) -> Http.Header
 mkHeader (headerName, headerValue) =
@@ -102,30 +103,24 @@ runRequestComputationHandler _ requestComputationInput = do
   liftIO $ print response
   return $ GotRequestComputationOutput $ createRequestComputationOutput response
 
-
-
 runRequest
   :: MonadIO m
   => RequestComputationInput
   -> m (Http.Response BSU.ByteString)
-runRequest RequestComputationInput { _requestComputationInputMethod
-                                   , _requestComputationInputHeaders
-                                   , _requestComputationInputScheme
-                                   , _requestComputationInputUrl
-                                   , _requestComputationInputBody
-                                   } = do
+runRequest RequestComputationInput { .. } = do
   let url = schemeToString _requestComputationInputScheme <> "://" <> _requestComputationInputUrl
   manager <- Tls.newTlsManager
   liftIO $ Tls.setGlobalManager manager
-  liftIO $ print url
   parsedRequest <- liftIO $ Http.parseRequest url
-  liftIO $ print $ show parsedRequest
+  liftIO $ print $ show _requestComputationInputBody
+  liftIO $ print "\n\n"
   let request
         = Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
         $ setPortAndSecure
         $ Http.setRequestBodyLBS (BLU.fromString _requestComputationInputBody)
         $ Http.setRequestManager manager parsedRequest
+  liftIO $ print $ show request
   liftIO $ Http.httpBS request
   where
     setPortAndSecure :: Http.Request -> Http.Request

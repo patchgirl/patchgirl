@@ -160,7 +160,7 @@ type PRequestNodeApi auths =
 type RequestNodeApi =
   Flat (
     "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
-      -- update request node
+      -- rename request node
       ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
       -- delete request node
       Delete '[JSON] ()
