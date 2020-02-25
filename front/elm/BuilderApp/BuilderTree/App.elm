@@ -183,7 +183,7 @@ update msg model =
                 model.requestCollection
 
             payload =
-                Client.UpdateRequestFolder { updateRequestNodeName = newName }
+                Client.UpdateRequestNode { updateRequestNodeName = newName }
 
             newMsg =
                 Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id payload (renameNodeResultToMsg id newName)
