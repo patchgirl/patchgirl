@@ -15,7 +15,6 @@ import qualified Data.Maybe                           as Maybe
 import qualified Data.Strings                         as Strings
 import           Data.UUID
 import           Database.PostgreSQL.Simple
-import qualified Database.PostgreSQL.Simple           as PG
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple.Types     as PG
@@ -33,32 +32,35 @@ data FakeRequestFile =
                   , _fakeRequestFileName        :: String
                   , _fakeRequestFileHttpUrl     :: String
                   , _fakeRequestFileHttpMethod  :: Method
-                  , _fakeRequestFileHttpHeaders :: [HttpHeader]
+                  , _fakeRequestFileHttpHeaders :: HttpHeaders
                   , _fakeRequestFileHttpBody    :: String
                   }
   deriving (Eq, Show, Read, Generic, FromRow)
 
-instance PG.FromField [HttpHeader] where
+newtype HttpHeaders = HttpHeaders [Header] deriving (Eq, Show, Read, Generic)
+newtype Header = Header (String, String) deriving (Eq, Show, Read, Generic)
+
+instance PG.FromField HttpHeaders where
   fromField field mdata = do
-    PG.PGArray httpHeaders <- PG.fromField field mdata :: PG.Conversion (PG.PGArray HttpHeader)
-    return httpHeaders
+    PG.PGArray httpHeaders <- PG.fromField field mdata :: PG.Conversion (PG.PGArray Header)
+    return $ HttpHeaders httpHeaders
 
 {-
   this instance is only for the tests, it will fail for sure with real data
   dont use in prod !!!
   it will fail if either the header key or header value contains a (,) or (") for example
 -}
-instance PG.FromField HttpHeader where
+instance PG.FromField Header where
   fromField _ = \case
     Nothing -> error "invalid field"
-    Just bs -> do
+    Just bs ->
       return $ readHttpHeader bs
     where
-      readHttpHeader :: BS.ByteString -> HttpHeader
+      readHttpHeader :: BS.ByteString -> Header
       readHttpHeader bs = -- bs should have the shape: (someHeader,someValue)
         let
           (key, value) = Strings.strSplit "," $ init $ tail $ BSU.toString bs :: (String, String)
-        in HttpHeader (key, value)
+        in Header (key, value)
 
 selectFakeRequestFile :: UUID -> Connection -> IO FakeRequestFile
 selectFakeRequestFile id connection = do

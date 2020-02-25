@@ -19,15 +19,11 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        genericToJSON,
                                                        parseEither, withObject,
                                                        (.:))
-import qualified Data.ByteString                      as BS
-import qualified Data.ByteString.UTF8                 as BSU
 import qualified Data.List                            as List
-import qualified Data.Strings                         as Strings
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
-import qualified Database.PostgreSQL.Simple.Types     as PG
 import           GHC.Generics
 import           Http
 

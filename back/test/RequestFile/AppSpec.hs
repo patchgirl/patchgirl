@@ -15,7 +15,7 @@ import qualified Data.Maybe              as Maybe
 import           Data.UUID
 import qualified Data.UUID               as UUID
 import qualified Network.HTTP.Types      as HTTP
-import           Servant
+import           Servant                 hiding (Header)
 import qualified Servant.Auth.Client     as Auth
 import qualified Servant.Auth.Server     as Auth
 import           Servant.Client          (ClientM, client)
@@ -93,7 +93,7 @@ spec =
                                                       , _fakeRequestFileHttpUrl    = ""
                                                       , _fakeRequestFileHttpMethod = Get
                                                       , _fakeRequestFileHttpBody   = ""
-                                                      , _fakeRequestFileHttpHeaders = []
+                                                      , _fakeRequestFileHttpHeaders = HttpHeaders []
                                                       }
 
 -- ** create root request file
@@ -120,7 +120,7 @@ spec =
                                                       , _fakeRequestFileHttpUrl    = ""
                                                       , _fakeRequestFileHttpMethod = Get
                                                       , _fakeRequestFileHttpBody   = ""
-                                                      , _fakeRequestFileHttpHeaders = []
+                                                      , _fakeRequestFileHttpHeaders = HttpHeaders []
                                                       }
 
 
@@ -147,9 +147,9 @@ spec =
           _fakeRequestFileHttpUrl `shouldBe` "https://newUrl.com"
           _fakeRequestFileHttpMethod `shouldBe` Patch
           _fakeRequestFileHttpBody `shouldBe` "new body"
-          _fakeRequestFileHttpHeaders `shouldBe` [ HttpHeader ("newHeader1", "newValue1")
-                                                 , HttpHeader ("newHeader2", "newValue2")
-                                                 ]
+          _fakeRequestFileHttpHeaders `shouldBe` HttpHeaders [ Header ("newHeader1", "newValue1")
+                                                             , Header ("newHeader2", "newValue2")
+                                                             ]
 
 
 
