@@ -12,6 +12,7 @@ module RequestNode.DB where
 import qualified Data.ByteString                      as BS
 import qualified Data.ByteString.UTF8                 as BSU
 import qualified Data.Maybe                           as Maybe
+import qualified Data.Strings                         as Strings
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import qualified Database.PostgreSQL.Simple           as PG
@@ -43,7 +44,9 @@ instance PG.FromField [HttpHeader] where
     return httpHeaders
 
 {-
- this instance will fail if either the header key or header value contains a (,) or (")
+  this instance is only for the tests, it will fail for sure with real data
+  dont use in prod !!!
+  it will fail if either the header key or header value contains a (,) or (") for example
 -}
 instance PG.FromField HttpHeader where
   fromField _ = \case
@@ -54,7 +57,7 @@ instance PG.FromField HttpHeader where
       readHttpHeader :: BS.ByteString -> HttpHeader
       readHttpHeader bs = -- bs should have the shape: (someHeader,someValue)
         let
-          (key, value) = (read $ BSU.toString bs) :: (String, String)
+          (key, value) = Strings.strSplit "," $ init $ tail $ BSU.toString bs :: (String, String)
         in HttpHeader (key, value)
 
 selectFakeRequestFile :: UUID -> Connection -> IO FakeRequestFile
