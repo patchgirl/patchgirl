@@ -63,14 +63,8 @@ instance FromField [RequestNode] where
 -- * update request node
 
 
-data UpdateRequestNode
-  = UpdateRequestFolder { _updateRequestNodeName :: String
-                        }
-  | UpdateRequestFile { _updateRequestNodeName        :: String
-                      , _updateRequestNodeHttpUrl     :: String
-                      , _updateRequestNodeHttpMethod  :: Method
-                      , _updateRequestNodeHttpHeaders :: [(String, String)]
-                      , _updateRequestNodeHttpBody    :: String
+newtype UpdateRequestNode
+  = UpdateRequestNode { _updateRequestNodeName :: String
                       }
   deriving (Eq, Show, Generic)
 
@@ -85,18 +79,8 @@ instance FromJSON UpdateRequestNode where
 $(makeLenses ''UpdateRequestNode)
 
 instance ToField UpdateRequestNode where
-  toField UpdateRequestFolder { _updateRequestNodeName } =
+  toField UpdateRequestNode {..} =
     toField (show _updateRequestNodeName)
-  toField UpdateRequestFile { _updateRequestNodeName
-                            , _updateRequestNodeHttpUrl
-                            , _updateRequestNodeHttpMethod
-                            , _updateRequestNodeHttpBody
-                            } =
-    Many [ toField _updateRequestNodeName
-         , toField _updateRequestNodeHttpUrl
-         , toField _updateRequestNodeHttpMethod
-         , toField _updateRequestNodeHttpBody
-         ]
 
 
 -- * request node from pg
@@ -205,6 +189,29 @@ instance ToJSON NewRequestFile where
 instance FromJSON NewRequestFile where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * update request file
+
+
+data UpdateRequestFile
+  = UpdateRequestFile { _updateRequestFileName        :: String
+                      , _updateRequestFileHttpUrl     :: String
+                      , _updateRequestFileHttpMethod  :: Method
+                      , _updateRequestFileHttpHeaders :: [(String, String)]
+                      , _updateRequestFileHttpBody    :: String
+                      }
+  deriving (Eq, Show, Generic)
+
+instance ToJSON UpdateRequestFile where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON UpdateRequestFile where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+$(makeLenses ''UpdateRequestFile)
 
 
 -- * new root request file

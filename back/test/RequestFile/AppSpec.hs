@@ -36,7 +36,10 @@ import           RequestNode.Model
 
 createRequestFileHandler :: Auth.Token -> Int -> NewRequestFile -> ClientM ()
 createRootRequestFileHandler :: Auth.Token -> Int -> NewRootRequestFile -> ClientM ()
-createRequestFileHandler :<|> createRootRequestFileHandler =
+updateRequestFileHandler :: Auth.Token -> Int -> UUID -> UpdateRequestFile -> ClientM ()
+createRequestFileHandler
+  :<|> createRootRequestFileHandler
+  :<|> updateRequestFileHandler =
   client (Proxy :: Proxy (PRequestFileApi '[Auth.JWT]))
 
 
@@ -118,6 +121,33 @@ spec =
                                                       , _fakeRequestFileHttpBody   = ""
                                                       }
 
+
+-- ** update request file
+
+
+    describe "update a request file" $ do
+      it "returns 404 when request file doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          let updateRequestFile = mkUpdateRequestFile
+          try clientEnv (updateRequestFileHandler token 1 UUID.nil updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "update the request file" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
+          let RequestFile {..} = Maybe.fromJust $ getFirstFile requestNodes
+          _ <- try clientEnv (updateRequestFileHandler token requestCollectionId _requestNodeId mkUpdateRequestFile)
+          FakeRequestFile{..} <- selectFakeRequestFile _requestNodeId connection
+          _fakeRequestFileName `shouldBe` "new name"
+          _fakeRequestFileHttpUrl `shouldBe` "https://newUrl.com"
+          _fakeRequestFileHttpMethod `shouldBe` Patch
+          _fakeRequestFileHttpBody `shouldBe` "new body"
+
+
+
   where
     mkNewRequestFile :: UUID -> UUID -> NewRequestFile
     mkNewRequestFile id parentId =
@@ -128,3 +158,12 @@ spec =
     mkNewRootRequestFile :: UUID -> NewRootRequestFile
     mkNewRootRequestFile id =
       NewRootRequestFile { _newRootRequestFileId = id }
+
+    mkUpdateRequestFile :: UpdateRequestFile
+    mkUpdateRequestFile =
+      UpdateRequestFile { _updateRequestFileName        = "new name"
+                        , _updateRequestFileHttpUrl     = "https://newUrl.com"
+                        , _updateRequestFileHttpMethod  = Patch
+                        , _updateRequestFileHttpHeaders = [("newHeader1", "newValue1")]
+                        , _updateRequestFileHttpBody    = "new body"
+                        }

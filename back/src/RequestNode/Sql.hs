@@ -129,7 +129,7 @@ insertRequestFolder NewRequestFolder {..} connection =
           |]
 
 
--- * update request node
+-- * update request node (rename)
 
 
 updateRequestNodeDB :: UUID -> UpdateRequestNode -> PG.Connection -> IO ()
@@ -143,6 +143,32 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
       [sql|
           UPDATE request_node
           SET name = ?
+          WHERE id = ?
+          |]
+
+
+-- * update request file
+
+
+updateRequestFileDB :: UUID -> UpdateRequestFile -> PG.Connection -> IO ()
+updateRequestFileDB requestNodeId UpdateRequestFile{..} connection = do
+  _ <- PG.execute connection updateQuery ( _updateRequestFileName
+                                         , _updateRequestFileHttpUrl
+                                         , _updateRequestFileHttpMethod
+                                         , _updateRequestFileHttpBody
+                                         , requestNodeId
+                                         )
+  return ()
+  where
+    updateQuery =
+      [sql|
+          UPDATE request_node
+          SET
+            name = ?,
+            http_url = ?,
+            http_method = ?,
+            --httpHeaders = ?,
+            http_body = ?
           WHERE id = ?
           |]
 

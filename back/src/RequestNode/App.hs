@@ -111,6 +111,33 @@ createRootRequestFileHandler accountId requestCollectionId newRootRequestFile = 
       Servant.throwError Servant.err404
 
 
+-- * update request file
+
+
+updateRequestFileHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Int
+  -> Int
+  -> UUID
+  -> UpdateRequestFile
+  -> m ()
+updateRequestFileHandler accountId _ requestNodeId updateRequestFile = do
+  connection <- getDBConnection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+    Just requestCollectionId -> do
+      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      case findNodeInRequestNodes requestNodeId requestNodes of
+        Nothing -> Servant.throwError Servant.err404
+        Just _ ->
+          IO.liftIO $
+            Monad.void (updateRequestFileDB requestNodeId updateRequestFile connection)
+
+
 -- * create root request folder
 
 

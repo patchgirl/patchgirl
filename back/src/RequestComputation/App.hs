@@ -113,7 +113,6 @@ runRequest RequestComputationInput { .. } = do
   liftIO $ Tls.setGlobalManager manager
   parsedRequest <- liftIO $ Http.parseRequest url
   liftIO $ print $ show _requestComputationInputBody
-  liftIO $ print "\n\n"
   let request
         = Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)

@@ -192,16 +192,19 @@ type RequestFileApi =
       "rootRequestFile" :> (
           -- create root request file
           ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
-      )
+      ) :<|>
+      Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
     )
   )
 
 requestFileApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFile -> AppM ())
   :<|> (AuthResult CookieSession -> Int -> NewRootRequestFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> UUID -> UpdateRequestFile -> AppM ())
 requestFileApiServer =
   authorizeWithAccountId createRequestFileHandler
   :<|> authorizeWithAccountId createRootRequestFileHandler
+  :<|> authorizeWithAccountId updateRequestFileHandler
 
 
 -- ** request folder api

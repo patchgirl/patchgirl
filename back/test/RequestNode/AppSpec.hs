@@ -25,7 +25,6 @@ import           Test.Hspec
 import           Account.DB
 import           App
 import           Helper.App
-import           Http
 import           RequestCollection.DB
 import           RequestCollection.Model
 import           RequestNode.DB
@@ -35,9 +34,9 @@ import           RequestNode.Model
 -- * client
 
 
-updateRequestNode :: Auth.Token -> Int -> UUID -> UpdateRequestNode -> ClientM ()
-deleteRequestNode :: Auth.Token -> Int -> UUID -> ClientM ()
-updateRequestNode :<|> deleteRequestNode =
+updateRequestNodeHandler :: Auth.Token -> Int -> UUID -> UpdateRequestNode -> ClientM ()
+deleteRequestNodeHandler :: Auth.Token -> Int -> UUID -> ClientM ()
+updateRequestNodeHandler :<|> deleteRequestNodeHandler =
   client (Proxy :: Proxy (PRequestNodeApi '[Auth.JWT]))
 
 
@@ -57,7 +56,7 @@ spec =
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
-          try clientEnv (updateRequestNode token 1 UUID.nil updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateRequestNodeHandler token 1 UUID.nil updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
@@ -66,7 +65,7 @@ spec =
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId1
-          try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateRequestNodeHandler token requestCollectionId nodeId updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "modifies a request folder" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
@@ -74,7 +73,7 @@ spec =
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId
-          _ <- try clientEnv (updateRequestNode token requestCollectionId nodeId updateRequestFolder)
+          _ <- try clientEnv (updateRequestNodeHandler token requestCollectionId nodeId updateRequestNode)
           FakeRequestFolder { _fakeRequestFolderName } <- selectFakeRequestFolder nodeId connection
           _fakeRequestFolderName `shouldBe` "newName"
 
@@ -87,7 +86,7 @@ spec =
         cleanDBAfter $ \connection -> do
           (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
-          try clientEnv (deleteRequestNode token 1 UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteRequestNodeHandler token 1 UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
@@ -96,7 +95,7 @@ spec =
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId1
-          try clientEnv (deleteRequestNode token requestCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteRequestNodeHandler token requestCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "delete a request node" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
@@ -105,20 +104,10 @@ spec =
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId
           selectNodeExists nodeId connection `shouldReturn` True
-          _ <- try clientEnv (deleteRequestNode token requestCollectionId nodeId)
+          _ <- try clientEnv (deleteRequestNodeHandler token requestCollectionId nodeId)
           selectNodeExists nodeId connection `shouldReturn` False
 
   where
-    updateRequestFile :: UpdateRequestNode
-    updateRequestFile =
-      UpdateRequestFile { _updateRequestNodeName = "newName"
-                        , _updateRequestNodeHttpUrl = "http://newUrl.com"
-                        , _updateRequestNodeHttpMethod = Post
-                        , _updateRequestNodeHttpHeaders = [("newHeaderKey", "newHeaderValue")]
-                        , _updateRequestNodeHttpBody = "newBody"
-                        }
-
-    updateRequestFolder :: UpdateRequestNode
-    updateRequestFolder =
-      UpdateRequestFolder { _updateRequestNodeName = "newName"
-                          }
+    updateRequestNode :: UpdateRequestNode
+    updateRequestNode =
+      UpdateRequestNode { _updateRequestNodeName = "newName" }
