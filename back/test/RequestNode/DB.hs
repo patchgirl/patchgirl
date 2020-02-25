@@ -9,10 +9,15 @@
 
 module RequestNode.DB where
 
-import qualified Data.Maybe                       as Maybe
+import qualified Data.ByteString                      as BS
+import qualified Data.ByteString.UTF8                 as BSU
+import qualified Data.Maybe                           as Maybe
 import           Data.UUID
 import           Database.PostgreSQL.Simple
+import qualified Database.PostgreSQL.Simple           as PG
+import qualified Database.PostgreSQL.Simple.FromField as PG
 import           Database.PostgreSQL.Simple.SqlQQ
+import qualified Database.PostgreSQL.Simple.Types     as PG
 import           GHC.Generics
 
 import           Http
@@ -23,14 +28,34 @@ import           RequestNode.Model
 
 
 data FakeRequestFile =
-  FakeRequestFile { _fakeRequestFileParentId   :: Maybe UUID
-                  , _fakeRequestFileName       :: String
-                  , _fakeRequestFileHttpUrl    :: String
-                  , _fakeRequestFileHttpMethod :: Method
-                  , _fakeRequestFileHttpBody   :: String
+  FakeRequestFile { _fakeRequestFileParentId    :: Maybe UUID
+                  , _fakeRequestFileName        :: String
+                  , _fakeRequestFileHttpUrl     :: String
+                  , _fakeRequestFileHttpMethod  :: Method
+                  , _fakeRequestFileHttpHeaders :: [HttpHeader]
+                  , _fakeRequestFileHttpBody    :: String
                   }
   deriving (Eq, Show, Read, Generic, FromRow)
 
+instance PG.FromField [HttpHeader] where
+  fromField field mdata = do
+    PG.PGArray httpHeaders <- PG.fromField field mdata :: PG.Conversion (PG.PGArray HttpHeader)
+    return httpHeaders
+
+{-
+ this instance will fail if either the header key or header value contains a (,) or (")
+-}
+instance PG.FromField HttpHeader where
+  fromField _ = \case
+    Nothing -> error "invalid field"
+    Just bs -> do
+      return $ readHttpHeader bs
+    where
+      readHttpHeader :: BS.ByteString -> HttpHeader
+      readHttpHeader bs = -- bs should have the shape: (someHeader,someValue)
+        let
+          (key, value) = (read $ BSU.toString bs) :: (String, String)
+        in HttpHeader (key, value)
 
 selectFakeRequestFile :: UUID -> Connection -> IO FakeRequestFile
 selectFakeRequestFile id connection = do
@@ -39,7 +64,7 @@ selectFakeRequestFile id connection = do
   where
     rawQuery =
       [sql|
-          SELECT request_node_parent_id, name, http_url, http_method, http_body
+          SELECT request_node_parent_id, name, http_url, http_method, http_headers, http_body
           FROM request_node
           where id = ?
           |]

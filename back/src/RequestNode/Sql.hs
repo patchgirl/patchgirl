@@ -155,6 +155,7 @@ updateRequestFileDB requestNodeId UpdateRequestFile{..} connection = do
   _ <- PG.execute connection updateQuery ( _updateRequestFileName
                                          , _updateRequestFileHttpUrl
                                          , _updateRequestFileHttpMethod
+                                         , _updateRequestFileHttpHeaders
                                          , _updateRequestFileHttpBody
                                          , requestNodeId
                                          )
@@ -167,7 +168,7 @@ updateRequestFileDB requestNodeId UpdateRequestFile{..} connection = do
             name = ?,
             http_url = ?,
             http_method = ?,
-            --httpHeaders = ?,
+            http_headers = ?,
             http_body = ?
           WHERE id = ?
           |]

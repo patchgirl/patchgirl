@@ -93,6 +93,7 @@ spec =
                                                       , _fakeRequestFileHttpUrl    = ""
                                                       , _fakeRequestFileHttpMethod = Get
                                                       , _fakeRequestFileHttpBody   = ""
+                                                      , _fakeRequestFileHttpHeaders = []
                                                       }
 
 -- ** create root request file
@@ -119,6 +120,7 @@ spec =
                                                       , _fakeRequestFileHttpUrl    = ""
                                                       , _fakeRequestFileHttpMethod = Get
                                                       , _fakeRequestFileHttpBody   = ""
+                                                      , _fakeRequestFileHttpHeaders = []
                                                       }
 
 
@@ -145,6 +147,9 @@ spec =
           _fakeRequestFileHttpUrl `shouldBe` "https://newUrl.com"
           _fakeRequestFileHttpMethod `shouldBe` Patch
           _fakeRequestFileHttpBody `shouldBe` "new body"
+          _fakeRequestFileHttpHeaders `shouldBe` [ HttpHeader ("newHeader1", "newValue1")
+                                                 , HttpHeader ("newHeader2", "newValue2")
+                                                 ]
 
 
 
@@ -164,6 +169,8 @@ spec =
       UpdateRequestFile { _updateRequestFileName        = "new name"
                         , _updateRequestFileHttpUrl     = "https://newUrl.com"
                         , _updateRequestFileHttpMethod  = Patch
-                        , _updateRequestFileHttpHeaders = [("newHeader1", "newValue1")]
+                        , _updateRequestFileHttpHeaders = [ HttpHeader ("newHeader1", "newValue1")
+                                                          , HttpHeader ("newHeader2", "newValue2")
+                                                          ]
                         , _updateRequestFileHttpBody    = "new body"
                         }

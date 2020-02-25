@@ -3,6 +3,7 @@
 {-# LANGUAGE DuplicateRecordFields  #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE TypeOperators          #-}
 
 module RequestNode.Model where
 
@@ -18,10 +19,15 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        genericToJSON,
                                                        parseEither, withObject,
                                                        (.:))
+import qualified Data.ByteString                      as BS
+import qualified Data.ByteString.UTF8                 as BSU
+import qualified Data.List                            as List
+import qualified Data.Strings                         as Strings
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
+import qualified Database.PostgreSQL.Simple.Types     as PG
 import           GHC.Generics
 import           Http
 
@@ -193,12 +199,32 @@ instance FromJSON NewRequestFile where
 
 -- * update request file
 
+newtype HttpHeader = HttpHeader (String, String) deriving (Eq, Show, Generic, Read)
+
+instance ToJSON HttpHeader where
+  toJSON =
+    genericToJSON defaultOptions
+
+instance FromJSON HttpHeader where
+  parseJSON =
+    genericParseJSON defaultOptions
+
+instance ToField [HttpHeader] where
+    toField headers =
+      Many [ Plain "ARRAY["
+           , Many $ List.intersperse (Plain ",") $ map toField headers
+           , Plain "]::header_type[]"
+           ]
+
+instance ToField HttpHeader where
+  toField (HttpHeader keyValue) =
+    toField $ show keyValue
 
 data UpdateRequestFile
   = UpdateRequestFile { _updateRequestFileName        :: String
                       , _updateRequestFileHttpUrl     :: String
                       , _updateRequestFileHttpMethod  :: Method
-                      , _updateRequestFileHttpHeaders :: [(String, String)]
+                      , _updateRequestFileHttpHeaders :: [HttpHeader]
                       , _updateRequestFileHttpBody    :: String
                       }
   deriving (Eq, Show, Generic)
@@ -212,7 +238,6 @@ instance FromJSON UpdateRequestFile where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 $(makeLenses ''UpdateRequestFile)
-
 
 -- * new root request file
 

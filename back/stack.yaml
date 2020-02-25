@@ -12,6 +12,7 @@ extra-deps:
   - prettyprinter-1.5.1
   - prometheus-metrics-ghc-1.0.0
   - wai-middleware-prometheus-1.0.0
+  - strings-1.1
 
 nix:
   enable: true
