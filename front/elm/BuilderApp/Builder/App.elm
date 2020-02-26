@@ -50,6 +50,7 @@ type Msg
   | RemoteComputationDone RequestComputationResult -- request ran from the server
   | ServerError
   | AskSave
+  | SaveSuccessfully
 
 
 -- * update
@@ -89,6 +90,22 @@ update msg envKeyValues varKeyValues model =
                 (newModel, Cmd.none)
 
         AskSave ->
+            let
+                payload : Client.UpdateRequestFile
+                payload =
+                    { updateRequestFileName = editedOrNotEditedValue model.name
+                    , updateRequestFileHttpUrl = editedOrNotEditedValue model.httpUrl
+                    , updateRequestFileHttpMethod = Client.convertMethodFromFrontToBack (editedOrNotEditedValue model.httpMethod)
+                    , updateRequestFileHttpHeaders = editedOrNotEditedValue model.httpHeaders
+                    , updateRequestFileHttpBody = editedOrNotEditedValue model.httpBody
+                    }
+
+                newMsg =
+                    Client.putApiRequestCollectionByRequestCollectionIdByRequestNodeId "" "" 1 model.id payload updateRequestFileResultToMsg
+            in
+                (model, newMsg)
+
+        SaveSuccessfully ->
             (model, Cmd.none)
 
         AskRun ->
@@ -135,6 +152,16 @@ update msg envKeyValues varKeyValues model =
 
 
 -- * util
+
+
+updateRequestFileResultToMsg : Result Http.Error () -> Msg
+updateRequestFileResultToMsg result =
+    case result of
+        Ok () ->
+            SaveSuccessfully
+
+        Err error ->
+            ServerError
 
 
 remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -> Msg

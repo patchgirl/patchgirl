@@ -4,6 +4,7 @@ import Dict as Dict
 import Application.Type exposing (..)
 import Api.Generated as Client
 import Http as Http
+import Uuid
 
 
 -- * model
@@ -11,7 +12,8 @@ import Http as Http
 
 type alias Model a =
     { a
-        | name : Editable String
+        | id: Uuid.Uuid
+        , name : Editable String
         , httpUrl : Editable String
         , httpMethod : Editable Method
         , httpHeaders : Editable (List (String, String))

@@ -40,8 +40,11 @@ update msg model =
                 case (model.selectedBuilderId, mFile) of
                     (Just id, Just file) ->
                         let
+                            builderModel =
+                                (InitializedApplication.getEnvironmentKeyValuesToRun model)
+
                             (newFile, newSubMsg) =
-                                Builder.update subMsg (InitializedApplication.getEnvironmentKeyValuesToRun model) model.varAppModel.vars file
+                                Builder.update subMsg builderModel model.varAppModel.vars file
 
                             newBuilderTree =
                                 List.map (BuilderTree.modifyRequestNode2 id (changeFileBuilder newFile)) requestNodes
