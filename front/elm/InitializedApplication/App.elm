@@ -7,7 +7,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Html exposing (Html)
-
+import Uuid
 import Postman.View as Postman
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
@@ -192,11 +192,11 @@ signedUserView : Model -> Element Msg
 signedUserView model =
     el contentAttributes <|
         case model.page of
-            HomePage -> builderView model
-            ReqPage -> builderView model
+            HomePage -> builderView model Nothing
+            ReqPage mId -> builderView model mId
             EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-            SignInPage -> builderView model
-            SignUpPage -> builderView model
+            SignInPage -> builderView model Nothing
+            SignUpPage -> builderView model Nothing
             SignOutPage -> none
             InitializePasswordPage accountId signUpToken ->
                 map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
@@ -205,8 +205,8 @@ visitorView : Model -> VisitorSession -> Element Msg
 visitorView model visitorSession =
     el contentAttributes <|
         case model.page of
-            HomePage -> builderView model
-            ReqPage -> builderView model
+            HomePage -> builderView model Nothing
+            ReqPage mId -> builderView model mId
             EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
             SignInPage -> map SignInMsg (SignIn.view visitorSession)
             SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
@@ -217,8 +217,8 @@ visitorView model visitorSession =
 contentAttributes =
     [ width fill ]
 
-builderView : Model -> Element Msg
-builderView model =
+builderView : Model -> Maybe Uuid.Uuid -> Element Msg
+builderView model id =
     row [ width fill ]
         [ el [ width fill ] (map BuilderAppMsg (BuilderApp.view model))
         ]

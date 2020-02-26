@@ -13,8 +13,6 @@ type alias Model =
     , initializePassword2 : String
     , initializePasswordState : InitializePasswordState
     -- BUILDER APP
-    , selectedBuilderId : Maybe Uuid.Uuid
-    , displayedBuilderIndex : Maybe Int
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : RequestCollection
     -- POSTMAN
@@ -70,19 +68,16 @@ getEnvironmentKeyValuesToEdit model =
 createModel : Page -> Session -> RequestCollection -> List Environment -> Model
 createModel page session requestCollection environments =
   let
-      selectedBuilderId = Nothing
-      displayedBuilderIndex = Nothing
       displayedRequestNodeMenuId = Nothing
       selectedEnvironmentToEditId = Just 0
       selectedEnvironmentToRunIndex = Just 0
+
   in
       { session = session
       , page = page
       , initializePassword1 = ""
       , initializePassword2 = ""
       , initializePasswordState = InitialPasswordState
-      , selectedBuilderId = selectedBuilderId
-      , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuId = displayedRequestNodeMenuId
       , requestCollection = requestCollection
       --, postmanModel = Nothing

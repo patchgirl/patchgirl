@@ -6,24 +6,26 @@
 module RequestComputation.App where
 
 
-import           Control.Monad.Except      (MonadError)
-import           Control.Monad.IO.Class    (MonadIO)
-import           Control.Monad.Reader      (MonadReader)
-import           Control.Monad.Trans       (liftIO)
-import           Data.Aeson                (FromJSON, ToJSON (..),
-                                            genericParseJSON, genericToJSON,
-                                            parseJSON)
-import           Data.Aeson.Types          (defaultOptions, fieldLabelModifier)
-import qualified Data.ByteString.Lazy.UTF8 as BLU
-import qualified Data.ByteString.UTF8      as BSU
-import qualified Data.CaseInsensitive      as CI
-import           GHC.Generics              (Generic)
+import           Control.Monad.Except        (MonadError)
+import           Control.Monad.IO.Class      (MonadIO)
+import           Control.Monad.Reader        (MonadReader)
+import           Control.Monad.Trans         (liftIO)
+import           Data.Aeson                  (FromJSON, ToJSON (..),
+                                              genericParseJSON, genericToJSON,
+                                              parseJSON)
+import           Data.Aeson.Types            (defaultOptions,
+                                              fieldLabelModifier)
+import qualified Data.ByteString.Lazy.UTF8   as BLU
+import qualified Data.ByteString.UTF8        as BSU
+import qualified Data.CaseInsensitive        as CI
+import           GHC.Generics                (Generic)
 import           Http
-import qualified Network.HTTP.Client.TLS   as Tls
-import qualified Network.HTTP.Simple       as Http
-import qualified Network.HTTP.Types.Header as Http
+import qualified Network.HTTP.Client.Conduit as Http
+import qualified Network.HTTP.Client.TLS     as Tls
+import qualified Network.HTTP.Simple         as Http
+import qualified Network.HTTP.Types.Header   as Http
 import           PatchGirl
-import           Servant.Server            (ServerError)
+import           Servant.Server              (ServerError)
 
 
 -- * model
@@ -112,14 +114,17 @@ runRequest RequestComputationInput { .. } = do
   manager <- Tls.newTlsManager
   liftIO $ Tls.setGlobalManager manager
   parsedRequest <- liftIO $ Http.parseRequest url
-  liftIO $ print $ show _requestComputationInputBody
+  liftIO $ print $ "\nparsedRequest: " <> show parsedRequest
+  liftIO $ print $ "\nbody: " <> show (BLU.fromString _requestComputationInputBody)
   let request
-        = Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
-        $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
+        = Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
         $ setPortAndSecure
-        $ Http.setRequestBodyLBS (BLU.fromString _requestComputationInputBody)
+        $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
+        $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestManager manager parsedRequest
+  liftIO $ print "\nrequest:"
   liftIO $ print $ show request
+
   liftIO $ Http.httpBS request
   where
     setPortAndSecure :: Http.Request -> Http.Request

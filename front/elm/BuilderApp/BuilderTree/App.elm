@@ -15,6 +15,7 @@ import Element.Events as Events
 import Element.Input as Input
 import Util.View as Util
 import ViewUtil exposing (..)
+import Page exposing(..)
 
 
 -- * model
@@ -22,9 +23,7 @@ import ViewUtil exposing (..)
 
 type alias Model a =
     { a
-        | selectedBuilderId : Maybe Uuid.Uuid
-        , displayedBuilderIndex : Maybe Int
-        , requestCollection : RequestCollection
+        | requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
@@ -35,8 +34,7 @@ type alias Model a =
 
 
 type Msg
-  = SetDisplayedBuilder Uuid.Uuid
-  | ToggleFolder Uuid.Uuid
+  = ToggleFolder Uuid.Uuid
   | ToggleMenu Uuid.Uuid
   -- mkdir
   | GenerateRandomUUIDForFolder Uuid.Uuid
@@ -76,12 +74,6 @@ update msg model =
 
 -- ** toggle builder/menu/folder
 
-
-    SetDisplayedBuilder id ->
-        let
-            newModel = { model | selectedBuilderId = Just id }
-        in
-            (newModel, Cmd.none)
 
     ToggleMenu id ->
         let
@@ -655,10 +647,10 @@ nodeView mDisplayedRequestNodeMenuIndex requestCollection =
 
 fileReadView : String -> Uuid.Uuid -> Element Msg
 fileReadView name id =
-    Input.button []
-        { onPress = Just <| SetDisplayedBuilder id
-        , label = el [] <| iconWithTextAndColor "label" name secondaryColor
-        }
+    link []
+            { url = href (ReqPage (Just id))
+            , label = el [] <| iconWithTextAndColor "label" name secondaryColor
+            }
 
 fileEditView : String -> Uuid.Uuid -> Element Msg
 fileEditView name id =

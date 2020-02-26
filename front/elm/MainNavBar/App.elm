@@ -5,7 +5,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
-
+import Uuid
 import ViewUtil exposing (..)
 
 import Html as Html
@@ -16,7 +16,7 @@ import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import Page exposing(..)
-import Page exposing(..)
+
 
 -- * model
 
@@ -50,7 +50,7 @@ update msg model =
         OpenReqPage ->
             let
                 newModel =
-                    { model | page = ReqPage }
+                    { model | page = ReqPage Nothing }
             in
                 (newModel, Cmd.none)
 
@@ -174,9 +174,18 @@ signedUserRightView model =
 centerView : Model a -> Element Msg
 centerView model =
     row [ centerX, paddingXY 10 0, centerY ]
-        [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage ReqPage)) { url = "#req", label = text "Req" }
+        [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage (ReqPage (currentDisplayedBuilderId model)))) { url = "#req", label = text "Req" }
         , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage)) { url = "#env", label = text "Env" }
         ]
+
+currentDisplayedBuilderId : Model a -> Maybe Uuid.Uuid
+currentDisplayedBuilderId model =
+    case model.page of
+        ReqPage mId ->
+            mId
+
+        _ ->
+            Nothing
 
 
 linkAttribute : Model a -> Msg -> List (Attribute Msg)
@@ -186,7 +195,6 @@ linkAttribute model msg =
             [ Background.color <| secondaryColor
             , Font.color <| primaryColor
             ]
-
 
     in
         [ Events.onClick msg

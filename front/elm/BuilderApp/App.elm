@@ -25,19 +25,18 @@ import ViewUtil exposing (..)
 
 import Json.Decode as Json
 import Html.Events.Extra exposing (targetValueIntParse)
-
+import Page exposing (..)
 
 -- * model
 
 
 type alias Model a =
     { a
-        | selectedBuilderId : Maybe Uuid.Uuid
-        , displayedBuilderIndex : Maybe Int
-        , requestCollection : RequestCollection
+        | requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
+        , page : Page
     }
 
 
@@ -99,14 +98,23 @@ update msg model =
 -- * util
 
 
+getSelectedBuilderId : Model a -> Maybe Uuid.Uuid
+getSelectedBuilderId model =
+    case model.page of
+        ReqPage (Just id) ->
+            Just id
+
+        _ ->
+            Nothing
+
 getBuilder : Model a -> Maybe Builder.Model
 getBuilder model =
     let
         (RequestCollection requestCollectionId requestNodes) = model.requestCollection
         mFile : Maybe File
-        mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderId
+        mFile = Maybe.andThen (BuilderTree.findFile requestNodes) (getSelectedBuilderId model)
     in
-        case (model.selectedBuilderId, mFile) of
+        case (getSelectedBuilderId model, mFile) of
             (Just _, Just file) ->
                 let
                     keyValuesToRun =
@@ -175,7 +183,7 @@ view model =
                   , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
                   ]
             , el [ width (fillPortion 9) ]
-                <| builderView model model.selectedBuilderId
+                <| builderView model (getSelectedBuilderId model)
             ]
 
 envSelectionView : List (Editable String) -> Element Msg

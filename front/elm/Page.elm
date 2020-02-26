@@ -2,10 +2,11 @@ module Page exposing (Page(..), urlToPage, href)
 
 import Url as Url
 import Url.Parser as Url exposing ((</>))
+import Uuid
 
 type Page
     = HomePage
-    | ReqPage
+    | ReqPage (Maybe Uuid.Uuid)
     | EnvPage
     | SignInPage
     | SignUpPage
@@ -30,11 +31,17 @@ urlToPage url =
             |> Maybe.withDefault HomePage
 
 
+
+uuidParser =
+    Url.custom "UUID" Uuid.fromString
+
+
 urlParser : Url.Parser (Page -> a) a
 urlParser =
     Url.oneOf
         [ Url.map HomePage Url.top
-        , Url.map ReqPage (Url.s "req")
+        , Url.map (\id -> ReqPage (Just id)) (Url.s "req" </> uuidParser)
+        , Url.map (ReqPage Nothing) (Url.s "req")
         , Url.map EnvPage (Url.s "env")
         , Url.map SignInPage (Url.s "signIn")
         , Url.map SignUpPage (Url.s "signUp")
@@ -50,7 +57,10 @@ href page =
                 HomePage ->
                     []
 
-                ReqPage ->
+                ReqPage (Just uuid) ->
+                    ["req", Uuid.toString uuid]
+
+                ReqPage Nothing ->
                     ["req"]
 
                 EnvPage ->
