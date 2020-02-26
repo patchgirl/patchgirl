@@ -1,7 +1,6 @@
 module InitializedApplication.Model exposing (..)
 
 import VarApp.Model as VarApp
-import BuilderApp.Model as BuilderApp
 import List.Extra as List
 import Application.Type exposing (..)
 import Page exposing(..)
@@ -18,9 +17,9 @@ type alias Model =
     , selectedBuilderId : Maybe Uuid.Uuid
     , displayedBuilderIndex : Maybe Int
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
-    , requestCollection : BuilderApp.RequestCollection
+    , requestCollection : RequestCollection
     -- POSTMAN
-    , postmanModel : Maybe (List BuilderApp.RequestNode)
+    --, postmanModel : Maybe (List BuilderApp.RequestNode)
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
@@ -29,11 +28,9 @@ type alias Model =
     , varAppModel : VarApp.Model
     }
 
-type InitializePasswordState
-    = InitialPasswordState
-    | FilledPasswordState
-    | FailedPasswordState String
-    | SucceededPasswordState
+
+-- * environment
+
 
 type alias GetEnvironment a =
     { a
@@ -69,7 +66,11 @@ getEnvironmentKeyValuesToEdit model =
         |> Maybe.map .keyValues
         |> Maybe.withDefault []
 
-createModel : Page -> Session -> BuilderApp.RequestCollection -> List Environment -> Model
+
+-- * model
+
+
+createModel : Page -> Session -> RequestCollection -> List Environment -> Model
 createModel page session requestCollection environments =
   let
       selectedBuilderId = Nothing
@@ -84,7 +85,7 @@ createModel page session requestCollection environments =
       selectedEnvironmentToRunIndex = Just 0
   in
       { session = session
-      , page = Debug.log "page" page
+      , page = page
       , initializePassword1 = ""
       , initializePassword2 = ""
       , initializePasswordState = InitialPasswordState
@@ -92,7 +93,7 @@ createModel page session requestCollection environments =
       , displayedBuilderIndex = displayedBuilderIndex
       , displayedRequestNodeMenuId = displayedRequestNodeMenuId
       , requestCollection = requestCollection
-      , postmanModel = Nothing
+      --, postmanModel = Nothing
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditId = selectedEnvironmentToEditId
       , environments = environments

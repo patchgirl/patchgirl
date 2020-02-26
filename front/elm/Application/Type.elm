@@ -1,5 +1,12 @@
 module Application.Type exposing (..)
 
+import Uuid
+import Dict
+
+
+-- * session
+
+
 type Session
     = Visitor VisitorSession
     | SignedUser { id: Int
@@ -18,10 +25,6 @@ type alias VisitorSession =
     , signUpMessage: Maybe String
     }
 
-type alias SignUp =
-    { email : String
-    }
-
 getCsrfToken : Session -> String
 getCsrfToken session =
     case session of
@@ -34,12 +37,28 @@ getSessionId session =
         Visitor { id } -> id
         SignedUser { id } -> id
 
+
+-- * sign up
+
+
+type alias SignUp =
+    { email : String
+    }
+
+
+-- * environment
+
+
 type alias Environment =
     { id : Int
     , name : Editable String
     , showRenameInput : Bool
     , keyValues : List (Storable NewKeyValue KeyValue)
     }
+
+
+-- * key value
+
 
 type alias NewKeyValue =
     { key : String
@@ -51,6 +70,153 @@ type alias KeyValue =
     , key : String
     , value : String
     }
+
+-- * request collection
+
+
+type RequestCollection  =
+    RequestCollection Int (List RequestNode)
+
+
+-- ** request node
+
+
+type RequestNode
+    = RequestFolder Folder
+    | RequestFile File
+
+
+-- ** folder
+
+
+type alias Folder =
+  { id: Uuid.Uuid
+  , name : Editable String
+  , open : Bool
+  , children : List RequestNode
+  }
+
+
+-- ** file
+
+
+type alias File =
+  { id: Uuid.Uuid
+  , name : Editable String
+  , isSaved : Bool
+  , httpUrl : Editable String
+  , httpMethod : Editable HttpMethod
+  , httpHeaders : Editable (List (String, String))
+  , httpBody : Editable String
+  , requestComputationResult : Maybe RequestComputationResult
+  , showResponseView : Bool
+  }
+
+-- * initialize password state
+
+
+type InitializePasswordState
+    = InitialPasswordState
+    | FilledPasswordState
+    | FailedPasswordState String
+    | SucceededPasswordState
+
+
+-- * builder
+
+
+type alias Builder =
+    { id: Uuid.Uuid
+    , name : Editable String
+    , httpUrl : Editable String
+    , httpMethod : Editable HttpMethod
+    , httpHeaders : Editable (List (String, String))
+    , httpBody : Editable String
+    , requestComputationResult : Maybe RequestComputationResult
+    , showResponseView : Bool
+    }
+
+
+-- * http
+
+-- ** request computation result
+
+
+type RequestComputationResult
+    = RequestTimeout
+    | RequestNetworkError
+    | RequestBadUrl
+    | GotRequestComputationOutput RequestComputationOutput
+
+
+-- ** request computation input
+
+
+type alias RequestComputationInput =
+    { scheme : Scheme
+    , method : HttpMethod
+    , headers : List (String, String)
+    , url : String
+    , body : String
+    }
+
+
+-- ** request computation output
+
+
+type alias RequestComputationOutput =
+    { statusCode : Int
+    , statusText : String
+    , headers : Dict.Dict String String
+    , body : String
+    }
+
+
+-- ** method
+
+type HttpMethod
+    = HttpGet
+    | HttpPost
+    | HttpPut
+    | HttpDelete
+    | HttpPatch
+    | HttpHead
+    | HttpOptions
+
+methodToString : HttpMethod -> String
+methodToString method =
+  case method of
+    HttpGet -> "GET"
+    HttpPost -> "POST"
+    HttpPut -> "PUT"
+    HttpDelete -> "DELETE"
+    HttpPatch -> "PATCH"
+    HttpHead -> "HEAD"
+    HttpOptions -> "OPTIONS"
+
+fromString : String -> Maybe HttpMethod
+fromString method =
+  case method of
+    "GET" -> Just HttpGet
+    "POST" -> Just HttpPost
+    "PUT" -> Just HttpPut
+    "DELETE" -> Just HttpDelete
+    "PATCH" -> Just HttpPatch
+    "HEAD" -> Just HttpHead
+    "OPTIONS" -> Just HttpOptions
+    _ -> Nothing
+
+
+-- ** scheme
+
+
+type Scheme
+    = Http
+    | Https
+
+
+-- * editable
+
 
 type Editable a
     = NotEdited a

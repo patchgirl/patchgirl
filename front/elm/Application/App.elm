@@ -13,7 +13,6 @@ import InitializedApplication.Model as InitializedApplication
 import InitializedApplication.App as InitializedApplication
 import SignIn.App as SignIn
 import MainNavBar.App as MainNavBar
-import BuilderApp.Model as BuilderApp
 import Application.Type exposing (..)
 import Url as Url
 import Browser exposing (UrlRequest(..))
@@ -37,7 +36,7 @@ type AppState
     = SessionPending
     | AppDataPending
       { session : Session
-      , mRequestCollection : Maybe BuilderApp.RequestCollection
+      , mRequestCollection : Maybe RequestCollection
       , mEnvironments : Maybe (List Environment)
       }
     | InitializedApp InitializedApplication.Model
@@ -50,7 +49,7 @@ type Msg
     = SessionFetched Session
     | LinkClicked UrlRequest
     | UrlChanged Url.Url
-    | RequestCollectionFetched BuilderApp.RequestCollection
+    | RequestCollectionFetched RequestCollection
     | EnvironmentsFetched (List Environment)
     | InitializedApplicationMsg InitializedApplication.Msg
     | ServerError Http.Error

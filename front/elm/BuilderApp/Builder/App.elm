@@ -8,10 +8,10 @@ import Json.Decode as Json
 import List.Extra as List
 import Combine as Combine
 import Regex as Regex
+import Uuid
 
 import Api.Generated as Client
 import Api.Converter as Client
-import BuilderApp.Builder.Model exposing (..)
 import Maybe.Extra as Maybe
 import Application.Type exposing (..)
 
@@ -36,12 +36,28 @@ import Json.Print as Json
 import PrivateAddress exposing (..)
 
 
+-- * model
+
+
+type alias Model a =
+    { a
+        | id: Uuid.Uuid
+        , name : Editable String
+        , httpUrl : Editable String
+        , httpMethod : Editable HttpMethod
+        , httpHeaders : Editable (List (String, String))
+        , httpBody : Editable String
+        , requestComputationResult : Maybe RequestComputationResult
+        , showResponseView : Bool
+    }
+
+
 -- * message
 
 
 type Msg
   = UpdateUrl String
-  | SetHttpMethod Method
+  | SetHttpMethod HttpMethod
   | UpdateHeaders String
   | SetHttpBody String
   | SetHttpBodyResponse String
@@ -153,6 +169,15 @@ update msg envKeyValues varKeyValues model =
 
 -- * util
 
+
+isBuilderDirty : Model a -> Bool
+isBuilderDirty model =
+    isDirty model.httpMethod ||
+        isDirty model.httpHeaders ||
+            List.any isDirty [ model.name
+                             , model.httpUrl
+                             , model.httpBody
+                             ]
 
 updateRequestFileResultToMsg : Result Http.Error () -> Msg
 updateRequestFileResultToMsg result =
@@ -392,33 +417,6 @@ keyParser =
     Combine.between (Combine.string "{{") (Combine.string "}}") envKey
 
 
--- * method util
-
-
-methodToString : Method -> String
-methodToString method =
-  case method of
-    Get -> "GET"
-    Post -> "POST"
-    Put -> "PUT"
-    Delete -> "DELETE"
-    Patch -> "PATCH"
-    Head -> "HEAD"
-    Options -> "OPTIONS"
-
-fromString : String -> Maybe Method
-fromString method =
-  case method of
-    "GET" -> Just Get
-    "POST" -> Just Post
-    "PUT" -> Just Put
-    "DELETE" -> Just Delete
-    "PATCH" -> Just Patch
-    "HEAD" -> Just Head
-    "OPTIONS" -> Just Options
-    _ -> Nothing
-
-
 -- * view
 
 
@@ -621,13 +619,13 @@ methodView model =
         , selected = Just <| editedOrNotEditedValue model.httpMethod
         , label = labelInputView "Method: "
         , options =
-              [ Input.option Get (text "Get")
-              , Input.option Post (text "Post")
-              , Input.option Put (text "Put")
-              , Input.option Delete (text "Delete")
-              , Input.option Patch (text "Patch")
-              , Input.option Head (text "Head")
-              , Input.option Options (text "Options")
+              [ Input.option HttpGet (text "Get")
+              , Input.option HttpPost (text "Post")
+              , Input.option HttpPut (text "Put")
+              , Input.option HttpDelete (text "Delete")
+              , Input.option HttpPatch (text "Patch")
+              , Input.option HttpHead (text "Head")
+              , Input.option HttpOptions (text "Options")
               ]
         }
 

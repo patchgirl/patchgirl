@@ -2,10 +2,9 @@ module Postman.Model exposing (..)
 
 import Json.Decode exposing (..)
 
-import BuilderApp.Model as BuilderApp
 import Api.Generated as Client
-
-type alias Model = Maybe (List BuilderApp.RequestNode)
+import Application.Type exposing(..)
+type alias Model = Maybe (List RequestNode)
 
 {-decodePostman : String -> Result Error (List BuilderApp.RequestNode)
 decodePostman str =

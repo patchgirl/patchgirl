@@ -8,31 +8,20 @@ import Element.Border as Border
 import Element.Events as Events
 import Html exposing (Html)
 
-import BuilderApp.BuilderTree.View as BuilderTree
-import BuilderApp.BuilderTree.Util as BuilderTree
 import Postman.View as Postman
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
 import MainNavBar.App as MainNavBar
 import VarApp.View as VarApp
 
-import BuilderApp.Model as BuilderApp
-import BuilderApp.View as BuilderApp
-
 import Util.List as List
 import List.Extra as List
 
 import BuilderApp.App as BuilderApp
-import BuilderApp.Model as BuilderApp
-import BuilderApp.Message as BuilderApp
-import BuilderApp.App as BuilderApp
-import BuilderApp.Message as BuilderApp
 
 import BuilderApp.Builder.App as Builder
 import BuilderApp.Builder.App as Builder
 
-import BuilderApp.BuilderTree.View as BuilderTree
-import BuilderApp.BuilderTree.Message as BuilderTree
 import BuilderApp.BuilderTree.App as BuilderTree
 
 import Postman.View as Postman
@@ -123,8 +112,12 @@ update msg model =
                     (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
 
         PostmanMsg subMsg ->
+            (model, Cmd.none)
+
+            {-
             case Postman.update subMsg model.postmanModel of
                 (_, _) -> (model, Cmd.none)
+                -}
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of

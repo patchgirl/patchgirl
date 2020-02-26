@@ -1,9 +1,7 @@
 module Api.Converter exposing(..)
 
 import Api.Generated as Back
-import BuilderApp.Model as Front
 import SignIn.Model as Front
-import BuilderApp.Builder.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
 import Dict as Dict
@@ -174,27 +172,27 @@ convertRequestComputationInputFromFrontToFromBack frontRequestInput =
    , requestComputationInputBody = frontRequestInput.body
    }
 
-convertMethodFromBackToFront : Back.Method -> Front.Method
+convertMethodFromBackToFront : Back.Method -> Front.HttpMethod
 convertMethodFromBackToFront method =
     case method of
-        Back.Get -> Front.Get
-        Back.Post -> Front.Post
-        Back.Put -> Front.Put
-        Back.Delete -> Front.Delete
-        Back.Patch -> Front.Patch
-        Back.Head -> Front.Head
-        Back.Options -> Front.Options
+        Back.Get -> Front.HttpGet
+        Back.Post -> Front.HttpPost
+        Back.Put -> Front.HttpPut
+        Back.Delete -> Front.HttpDelete
+        Back.Patch -> Front.HttpPatch
+        Back.Head -> Front.HttpHead
+        Back.Options -> Front.HttpOptions
 
-convertMethodFromFrontToBack : Front.Method -> Back.Method
+convertMethodFromFrontToBack : Front.HttpMethod -> Back.Method
 convertMethodFromFrontToBack method =
     case method of
-        Front.Get -> Back.Get
-        Front.Post -> Back.Post
-        Front.Put -> Back.Put
-        Front.Delete -> Back.Delete
-        Front.Patch -> Back.Patch
-        Front.Head -> Back.Head
-        Front.Options -> Back.Options
+        Front.HttpGet -> Back.Get
+        Front.HttpPost -> Back.Post
+        Front.HttpPut -> Back.Put
+        Front.HttpDelete -> Back.Delete
+        Front.HttpPatch -> Back.Patch
+        Front.HttpHead -> Back.Head
+        Front.HttpOptions -> Back.Options
 
 convertSchemeFromFrontToBack : Front.Scheme -> Back.Scheme
 convertSchemeFromFrontToBack scheme =
