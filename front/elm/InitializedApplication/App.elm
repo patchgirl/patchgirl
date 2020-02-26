@@ -12,7 +12,6 @@ import Postman.View as Postman
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
 import MainNavBar.App as MainNavBar
-import VarApp.View as VarApp
 
 import Util.List as List
 import List.Extra as List
@@ -41,11 +40,6 @@ import EnvironmentToRunSelection.App as EnvSelection
 
 import MainNavBar.App as MainNavBar
 
-import VarApp.Model as VarApp
-import VarApp.View as VarApp
-import VarApp.Message as VarApp
-import VarApp.App as VarApp
-
 import Api.Generated as Client
 
 import Page exposing (..)
@@ -68,7 +62,6 @@ type Msg
     | PostmanMsg Postman.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | MainNavBarMsg MainNavBar.Msg
-    | VarAppMsg VarApp.Msg
     | SignInMsg SignIn.Msg
     | SignUpMsg SignUp.Msg
     | InitializePasswordMsg InitializePassword.Msg
@@ -123,13 +116,6 @@ update msg model =
             case MainNavBar.update subMsg model of
                 (newModel, newSubMsg) ->
                     (newModel, Cmd.map MainNavBarMsg newSubMsg)
-
-        VarAppMsg subMsg ->
-            case VarApp.update subMsg model.varAppModel of
-                newVarAppModel ->
-                    ( { model | varAppModel = newVarAppModel }
-                    , Cmd.none
-                    )
 
         SignInMsg subMsg ->
             case model.session of

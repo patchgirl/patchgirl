@@ -39,16 +39,18 @@ import PrivateAddress exposing (..)
 -- * model
 
 
-type alias Model a =
-    { a
-        | id: Uuid.Uuid
-        , name : Editable String
-        , httpUrl : Editable String
-        , httpMethod : Editable HttpMethod
-        , httpHeaders : Editable (List (String, String))
-        , httpBody : Editable String
-        , requestComputationResult : Maybe RequestComputationResult
-        , showResponseView : Bool
+type alias Model =
+    { id : Uuid.Uuid
+    , requestCollectionId : Int
+    , keyValues : List (Storable NewKeyValue KeyValue)
+    , isSaved : Bool
+    , name : Editable String
+    , httpUrl : Editable String
+    , httpMethod : Editable HttpMethod
+    , httpHeaders : Editable (List (String, String))
+    , httpBody : Editable String
+    , requestComputationResult : Maybe RequestComputationResult
+    , showResponseView : Bool
     }
 
 
@@ -72,8 +74,8 @@ type Msg
 -- * update
 
 
-update : Msg -> List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> (Model a, Cmd Msg)
-update msg envKeyValues varKeyValues model =
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
     case msg of
         UpdateUrl newHttpUrl ->
             let
@@ -127,7 +129,7 @@ update msg envKeyValues varKeyValues model =
         AskRun ->
             let
                 newMsg =
-                    buildRequestToRun envKeyValues varKeyValues model
+                    buildRequestToRun model.keyValues model
                 newModel =
                     { model
                         | showResponseView = True
@@ -170,7 +172,7 @@ update msg envKeyValues varKeyValues model =
 -- * util
 
 
-isBuilderDirty : Model a -> Bool
+isBuilderDirty : Model -> Bool
 isBuilderDirty model =
     isDirty model.httpMethod ||
         isDirty model.httpHeaders ||
@@ -210,10 +212,10 @@ parseHeaders headers =
   in
       String.lines headers |> List.map parseRawHeader
 
-buildRequestToRun : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> Cmd Msg
-buildRequestToRun envKeyValues varKeyValues builder =
+buildRequestToRun : List (Storable NewKeyValue KeyValue) -> Model -> Cmd Msg
+buildRequestToRun envKeyValues builder =
     let
-        request = buildRequestComputationInput envKeyValues varKeyValues builder
+        request = buildRequestComputationInput envKeyValues builder
     in
         case isPrivateAddress request.url of
             True ->
@@ -306,8 +308,8 @@ schemeToString scheme =
         Https ->
             "https"
 
-buildRequestComputationInput : List (Storable NewKeyValue KeyValue) -> List KeyValue -> Model a -> RequestComputationInput
-buildRequestComputationInput envKeyValues varKeyValues builder =
+buildRequestComputationInput : List (Storable NewKeyValue KeyValue) -> Model -> RequestComputationInput
+buildRequestComputationInput envKeyValues builder =
     { scheme =
           schemeFromUrl (editedOrNotEditedValue builder.httpUrl)
     , method =
@@ -316,7 +318,7 @@ buildRequestComputationInput envKeyValues varKeyValues builder =
         editedOrNotEditedValue builder.httpHeaders
     , url =
         cleanUrl <|
-            interpolate envKeyValues varKeyValues (editedOrNotEditedValue builder.httpUrl)
+            interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl)
     , body =
         editedOrNotEditedValue builder.httpBody
     }
@@ -351,8 +353,8 @@ removeSchemeFromUrl url =
         Regex.replace schemeRegex (\_ -> "") url
 
 
-interpolate : List (Storable NewKeyValue KeyValue) -> List KeyValue -> String -> String
-interpolate envKeys varKeyValues str =
+interpolate : List (Storable NewKeyValue KeyValue) -> String -> String
+interpolate envKeys str =
   let
     build : TemplatedString -> String
     build templatedString =
@@ -381,9 +383,7 @@ interpolate envKeys varKeyValues str =
                     Edited2 _ { value } ->
                         value
             Nothing ->
-                case List.find (\varKeyValue -> varKeyValue.key == k) varKeyValues of
-                    Just  { value } -> value
-                    Nothing -> k
+                k
   in
     case toRaw str of
       Ok result -> List.map build result |> List.foldr (++) ""
@@ -420,7 +420,7 @@ keyParser =
 -- * view
 
 
-view : Model a -> Element Msg
+view : Model -> Element Msg
 view model =
     let
         builderView =
@@ -465,7 +465,7 @@ view model =
                          ] (responseView model)
                     ]
 
-titleView : Model a -> Element Msg
+titleView : Model -> Element Msg
 titleView model =
     let
         name = notEditedValue model.name
@@ -475,7 +475,7 @@ titleView model =
             , mainActionButtonsView model
             ]
 
-responseView : Model a -> Element Msg
+responseView : Model -> Element Msg
 responseView model =
     let
         bodyResponseText : String -> Dict.Dict String String -> String
@@ -564,7 +564,7 @@ responseView model =
                 el errorAttributes (text "bad url")
 
 
-urlView : Model a -> Element Msg
+urlView : Model -> Element Msg
 urlView model =
     el [ alignLeft, width fill ] <|
         Input.text [ htmlAttribute <| Util.onEnter AskRun ]
@@ -574,7 +574,7 @@ urlView model =
             , label = labelInputView "Url: "
             }
 
-mainActionButtonsView : Model a -> Element Msg
+mainActionButtonsView : Model -> Element Msg
 mainActionButtonsView model =
     let
         rowParam =
@@ -612,7 +612,7 @@ mainActionButtonsView model =
                       none
             ]
 
-methodView : Model a -> Element Msg
+methodView : Model -> Element Msg
 methodView model =
     Input.radioRow [ padding 10, spacing 10 ]
         { onChange = SetHttpMethod
@@ -633,7 +633,7 @@ joinTuple : String -> (String, String) -> String
 joinTuple separator (key, value) =
     key ++ separator ++ value
 
-headerView : Model a -> Element Msg
+headerView : Model -> Element Msg
 headerView model =
     let
         headersToText : Editable (List (String, String)) -> String
@@ -650,7 +650,7 @@ headerView model =
             , spellcheck = False
             }
 
-bodyView : Model a -> Element Msg
+bodyView : Model -> Element Msg
 bodyView model =
     Input.multiline []
         { onChange = SetHttpBody

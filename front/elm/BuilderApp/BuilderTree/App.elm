@@ -7,7 +7,6 @@ import Uuid
 import Http as Http
 import Util.Maybe as Maybe
 import Api.Generated as Client
-import VarApp.Model as VarApp
 
 import Element exposing (..)
 import Element.Background as Background
@@ -29,7 +28,6 @@ type alias Model a =
         , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
-        , varAppModel : VarApp.Model
     }
 
 

@@ -1,6 +1,5 @@
 module InitializedApplication.Model exposing (..)
 
-import VarApp.Model as VarApp
 import List.Extra as List
 import Application.Type exposing (..)
 import Page exposing(..)
@@ -24,8 +23,6 @@ type alias Model =
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
     , environments : List Environment
-    -- VARIABLE APP
-    , varAppModel : VarApp.Model
     }
 
 
@@ -76,11 +73,6 @@ createModel page session requestCollection environments =
       selectedBuilderId = Nothing
       displayedBuilderIndex = Nothing
       displayedRequestNodeMenuId = Nothing
-      varAppModel =
-          { vars = []
-          , overZoneId = Nothing
-          , draggedId = Nothing
-          }
       selectedEnvironmentToEditId = Just 0
       selectedEnvironmentToRunIndex = Just 0
   in
@@ -97,5 +89,4 @@ createModel page session requestCollection environments =
       , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
       , selectedEnvironmentToEditId = selectedEnvironmentToEditId
       , environments = environments
-      , varAppModel = varAppModel
       }

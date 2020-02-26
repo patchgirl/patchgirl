@@ -12,7 +12,6 @@ import Application.Type exposing (..)
 import EnvironmentToRunSelection.App as EnvSelection
 import List.Extra as List
 import InitializedApplication.Model as InitializedApplication
-import VarApp.Model as VarApp
 
 import Element exposing (..)
 import Element.Background as Background
@@ -39,7 +38,6 @@ type alias Model a =
         , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
-        , varAppModel : VarApp.Model
     }
 
 
@@ -72,44 +70,90 @@ update msg model =
                 (newModel, Cmd.map TreeMsg newSubMsg)
 
         BuilderMsg subMsg ->
-            let
-                (RequestCollection requestCollectionId requestNodes) = model.requestCollection
-                mFile : Maybe File
-                mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderId
-            in
-                case (model.selectedBuilderId, mFile) of
-                    (Just id, Just file) ->
-                        let
-                            builderModel =
-                                (InitializedApplication.getEnvironmentKeyValuesToRun model)
+            case getBuilder model of
+                Just builder ->
+                    let
+                        (newBuilder, newSubMsg) =
+                            Builder.update subMsg builder
 
-                            (newFile, newSubMsg) =
-                                Builder.update subMsg builderModel model.varAppModel.vars file
+                                {-
+                        newBuilderTree =
+                            List.map (BuilderTree.modifyRequestNode2 builder.id (changeFileBuilder newBuilder)) requestNodes
 
-                            newBuilderTree =
-                                List.map (BuilderTree.modifyRequestNode2 id (changeFileBuilder newFile)) requestNodes
+                        newModel =
+                            { model
+                                | requestCollection = RequestCollection requestCollectionId newBuilderTree
+                            }
 
-                            newModel =
-                                { model
-                                    | requestCollection = RequestCollection requestCollectionId newBuilderTree
-                                }
-                        in
-                            (newModel, Cmd.map BuilderMsg newSubMsg)
-
-                    _ ->
+                    in
+                        (newModel, Cmd.map BuilderMsg newSubMsg)-}
+                    in
                         (model, Cmd.none)
+
+                _ ->
+                    (model, Cmd.none)
 
 
 -- * util
 
 
-changeFileBuilder : File -> RequestNode -> RequestNode
-changeFileBuilder newFile node =
+getBuilder : Model a -> Maybe Builder.Model
+getBuilder model =
+    let
+        (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+        mFile : Maybe File
+        mFile = Maybe.andThen (BuilderTree.findFile requestNodes) model.selectedBuilderId
+    in
+        case (model.selectedBuilderId, mFile) of
+            (Just _, Just file) ->
+                let
+                    keyValuesToRun =
+                        (InitializedApplication.getEnvironmentKeyValuesToRun model)
+
+                in
+                    Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun)
+
+            _ ->
+                Nothing
+
+
+
+convertFromFileToBuilder : File -> Int -> List (Storable NewKeyValue KeyValue) -> Builder.Model
+convertFromFileToBuilder file requestCollectionId keyValuesToRun =
+    { id = file.id
+    , requestCollectionId = requestCollectionId
+    , keyValues = keyValuesToRun
+    , isSaved = file.isSaved
+    , name = file.name
+    , httpUrl = file.httpUrl
+    , httpMethod = file.httpMethod
+    , httpHeaders = file.httpHeaders
+    , httpBody = file.httpBody
+    , requestComputationResult = file.requestComputationResult
+    , showResponseView = file.showResponseView
+    }
+
+convertFromBuilderToFile : Builder.Model -> File
+convertFromBuilderToFile builder =
+    { id = builder.id
+    , name = builder.name
+    , isSaved = builder.isSaved
+    , httpUrl = builder.httpUrl
+    , httpMethod = builder.httpMethod
+    , httpHeaders = builder.httpHeaders
+    , httpBody = builder.httpBody
+    , requestComputationResult = builder.requestComputationResult
+    , showResponseView = builder.showResponseView
+    }
+
+
+changeFileBuilder : Builder.Model -> RequestNode -> RequestNode
+changeFileBuilder builder node =
     case node of
         RequestFolder f ->
             RequestFolder f
         RequestFile f ->
-            RequestFile newFile
+            RequestFile (convertFromBuilderToFile builder)
 
 
 -- * view
@@ -151,15 +195,10 @@ envSelectionView environmentNames =
 
 builderView : Model a -> Maybe Uuid.Uuid -> Element Msg
 builderView model mId =
-    let
-        (RequestCollection _ requestNodes) = model.requestCollection
-        mFile : Uuid.Uuid -> Maybe File
-        mFile idx = BuilderTree.findFile requestNodes idx
-    in
-        case Maybe.andThen mFile mId of
-            Just file ->
-                el [ width fill, height fill, spacing 20 ]
-                    (map BuilderMsg (Builder.view file))
+    case getBuilder model of
+        Just builder ->
+            el [ width fill, height fill, spacing 20 ]
+                (map BuilderMsg (Builder.view builder))
 
-            Nothing ->
-                el [ centerX ] (text "No request selected")
+        Nothing ->
+            el [ centerX ] (text "No request selected")
