@@ -4,7 +4,6 @@ import Uuid
 
 import BuilderApp.BuilderTree.App as BuilderTree
 import BuilderApp.Builder.App as Builder
-import BuilderApp.Util exposing (..)
 import Util.Maybe as Maybe
 import Api.Generated as Client
 import Api.Converter as Client
@@ -99,6 +98,39 @@ update msg model =
 
                     _ ->
                         (model, Cmd.none)
+
+
+-- * util
+
+
+findPrevious : List a -> a -> Maybe a
+findPrevious l a =
+    case l of
+        x :: y :: z ->
+            if a == x then
+                Just y
+            else if a == y then
+                Just x
+            else
+                findPrevious (y :: z) a
+        x :: xs -> findPrevious xs a
+        [] -> Nothing
+
+markFileAsSaved : RequestNode -> RequestNode
+markFileAsSaved node =
+  case node of
+      RequestFolder f ->
+          RequestFolder f
+      RequestFile f ->
+          RequestFile { f | isSaved = True }
+
+changeFileBuilder : File -> RequestNode -> RequestNode
+changeFileBuilder newFile node =
+    case node of
+        RequestFolder f ->
+            RequestFolder f
+        RequestFile f ->
+            RequestFile newFile
 
 
 -- * view
