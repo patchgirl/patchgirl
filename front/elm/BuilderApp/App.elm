@@ -73,10 +73,12 @@ update msg model =
             case getBuilder model of
                 Just builder ->
                     let
+                        (RequestCollection requestCollectionId requestNodes) =
+                            model.requestCollection
+
                         (newBuilder, newSubMsg) =
                             Builder.update subMsg builder
 
-                                {-
                         newBuilderTree =
                             List.map (BuilderTree.modifyRequestNode2 builder.id (changeFileBuilder newBuilder)) requestNodes
 
@@ -85,10 +87,10 @@ update msg model =
                                 | requestCollection = RequestCollection requestCollectionId newBuilderTree
                             }
 
+                        newMsg =
+                            Cmd.map BuilderMsg newSubMsg
                     in
-                        (newModel, Cmd.map BuilderMsg newSubMsg)-}
-                    in
-                        (model, Cmd.none)
+                        (newModel, newMsg)
 
                 _ ->
                     (model, Cmd.none)
@@ -115,8 +117,6 @@ getBuilder model =
 
             _ ->
                 Nothing
-
-
 
 convertFromFileToBuilder : File -> Int -> List (Storable NewKeyValue KeyValue) -> Builder.Model
 convertFromFileToBuilder file requestCollectionId keyValuesToRun =
@@ -145,7 +145,6 @@ convertFromBuilderToFile builder =
     , requestComputationResult = builder.requestComputationResult
     , showResponseView = builder.showResponseView
     }
-
 
 changeFileBuilder : Builder.Model -> RequestNode -> RequestNode
 changeFileBuilder builder node =
