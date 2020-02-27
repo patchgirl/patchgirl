@@ -40,9 +40,11 @@ suite =
                               ]
                       in
                           Expect.equal (interpolate keyValues "howdy how is it going ?") "howdy how is it going ?"
+
             , test "do nothing when there are no key values" <|
                   \_ ->
                   Expect.equal (interpolate [] "{{user}}") "{{user}}"
+
             , test "interpolate variables when they are available" <|
                   \_ ->
                       let
@@ -60,6 +62,18 @@ suite =
                               ]
                       in
                           Expect.equal (interpolate keyValues "hello {{firstname}} {{lastname}} !") "hello John Doe !"
+
+            , test "interpolate variables with weird format" <|
+                  \_ ->
+                      let
+                          keyValues : List (Storable NewKeyValue KeyValue)
+                          keyValues =
+                              [ New { key = "john-doe1"
+                                    , value = "John"
+                                    }
+                              ]
+                      in
+                          Expect.equal (interpolate keyValues "hello {{john-doe1}} !") "hello John !"
 
             , test "interpolate with multiline strings" <|
                   \_ ->
@@ -95,11 +109,15 @@ is your lastname: Doe ?
                               , New { key = "lastname"
                                     , value = "Doe"
                                     }
-                              , New { key = "age"
-                                    , value = "10"
-                                    }
                               ]
+
+                          input =
+                              "{hello} {{{firstname}}} {{}} {{ }} {{lastname}} !"
+
+                          expectedRes =
+                              "{hello} {John} {{}} {{ }} Doe !"
+
                       in
-                          Expect.equal (interpolate keyValues "{hello} {{{firstname}}} {{}} {{ }} {{lastname}} !") "{hello} {John} {{}} {{ }} Doe !"
+                          Expect.equal (interpolate keyValues input) expectedRes
             ]
         ]

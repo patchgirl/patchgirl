@@ -315,7 +315,7 @@ buildRequestComputationInput envKeyValues builder =
     , method =
         editedOrNotEditedValue builder.httpMethod
     , headers =
-        editedOrNotEditedValue builder.httpHeaders
+        List.map (interpolateHeader envKeyValues) (editedOrNotEditedValue builder.httpHeaders)
     , url =
         cleanUrl <|
             interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl)
@@ -323,6 +323,11 @@ buildRequestComputationInput envKeyValues builder =
         interpolate envKeyValues (Debug.log "raw body: " (editedOrNotEditedValue builder.httpBody))
     }
 
+interpolateHeader : List (Storable NewKeyValue KeyValue) -> (String, String) -> (String, String)
+interpolateHeader envKeyValues (headerKey, headerValue) =
+    ( interpolate envKeyValues headerKey
+    , interpolate envKeyValues headerValue
+    )
 
 schemeFromUrl : String -> Scheme
 schemeFromUrl url =
@@ -400,7 +405,7 @@ toRaw : String -> Result String (List TemplatedString)
 toRaw str =
   case Combine.parse templatedStringParser str of
     Ok (_, _, result) ->
-      Ok (Debug.log "result" result)
+      Ok result
 
     Err (_, stream, errors) ->
       Err (String.join " or " errors)
@@ -419,7 +424,7 @@ keyParser : Combine.Parser s TemplatedString
 keyParser =
   let
     envKey : Combine.Parser s TemplatedString
-    envKey = Combine.regex "([a-zA-Z]|[0-9])+" |> Combine.map Key
+    envKey = Combine.regex "([a-zA-Z]|[0-9]|-)+" |> Combine.map Key
   in
     Combine.between (Combine.string "{{") (Combine.string "}}") envKey
 
