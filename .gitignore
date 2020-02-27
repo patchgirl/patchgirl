@@ -25,3 +25,4 @@ package-lock.json
 report.html
 config.yml
 .appKey
+package.json

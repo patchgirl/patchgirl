@@ -43,7 +43,7 @@ json_headers = %{ARRAY[('Content-Type','application/json')]::header_type[]}
 headers = %{ARRAY[('key1','value1')]::header_type[]}
 empty_headers = %{ARRAY[]::header_type[]}
 body = %{{
-  "email": "eve.holt@reqres.in",
+  "email": "{{user}}@reqres.in",
   "password": "cityslicka"
 }}
 
@@ -178,8 +178,28 @@ ActiveRecord::Migration[5.2].execute %{
       key,
       value
     ) values (
+      1,
+      'user',
+      'eve.holt'
+    );
+
+    INSERT INTO key_value (
+      environment_id,
+      key,
+      value
+    ) values (
       2,
       'host',
-      'localhost:3000'
+      'reqres.in/api'
+    );
+
+    INSERT INTO key_value (
+      environment_id,
+      key,
+      value
+    ) values (
+      2,
+      'user',
+      'whatever'
     );
 }

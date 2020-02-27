@@ -119,6 +119,8 @@ runRequest RequestComputationInput { .. } = do
         $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
         $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestManager manager parsedRequest
+  liftIO $ print "\n\nrequest:"
+  liftIO $ print $ "\n  body: " <> show _requestComputationInputBody
   liftIO $ print $ show request
 
   liftIO $ Http.httpBS request
