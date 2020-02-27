@@ -311,7 +311,7 @@ schemeToString scheme =
 buildRequestComputationInput : List (Storable NewKeyValue KeyValue) -> Model -> RequestComputationInput
 buildRequestComputationInput envKeyValues builder =
     { scheme =
-          schemeFromUrl (editedOrNotEditedValue builder.httpUrl)
+          schemeFromUrl (interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl))
     , method =
         editedOrNotEditedValue builder.httpMethod
     , headers =
@@ -320,7 +320,7 @@ buildRequestComputationInput envKeyValues builder =
         cleanUrl <|
             interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl)
     , body =
-        editedOrNotEditedValue builder.httpBody
+        interpolate envKeyValues (Debug.log "raw body: " (editedOrNotEditedValue builder.httpBody))
     }
 
 
@@ -383,17 +383,24 @@ interpolate envKeys str =
                     Edited2 _ { value } ->
                         value
             Nothing ->
-                k
+                "{{" ++ k ++ "}}"
   in
     case toRaw str of
-      Ok result -> List.map build result |> List.foldr (++) ""
+      Ok templatedStrings -> List.map build templatedStrings |> List.foldr (++) ""
       Err errors -> Debug.log errors str
 
+{-
+ parse a string "hello {{user}} !" to a list of templated string
+ eg: [ Sentence "hello "
+     , Key "user"
+     , Sentence " !"
+     ]
+-}
 toRaw : String -> Result String (List TemplatedString)
 toRaw str =
   case Combine.parse templatedStringParser str of
     Ok (_, _, result) ->
-      Ok result
+      Ok (Debug.log "result" result)
 
     Err (_, stream, errors) ->
       Err (String.join " or " errors)
@@ -406,7 +413,7 @@ templatedStringParser : Combine.Parser s (List TemplatedString)
 templatedStringParser = Combine.many (Combine.or keyParser anychar)
 
 anychar : Combine.Parser s TemplatedString
-anychar = Combine.regex "." |> Combine.map Sentence
+anychar = Combine.regex ".\n*" |> Combine.map Sentence
 
 keyParser : Combine.Parser s TemplatedString
 keyParser =
@@ -482,7 +489,7 @@ responseView model =
         bodyResponseText body responseHeaders =
             case Dict.get "content-type" responseHeaders of
                 Just contentType ->
-                    case Debug.log "json?" <| String.contains "application/json" contentType of
+                    case String.contains "application/json" contentType of
                         True -> Result.withDefault body (Json.prettyString { indent = 4, columns = 4 } body)
                         False -> body
                 _ -> body
