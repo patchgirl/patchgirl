@@ -1,3 +1,8 @@
 html {
   overflow-y: scroll;
+  font-family: "Open Sans", "Helvetica", "Verdana", sans-serif;
+}
+
+textarea, input[type="text"] {
+  font-family: "Roboto mono" !important;
 }
