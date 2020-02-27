@@ -182,7 +182,7 @@ view model =
                   [ el [ ] <| envSelectionView <| List.map .name model.environments
                   , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
                   ]
-            , el [ width (fillPortion 9) ]
+            , el [ alignTop, width (fillPortion 9) ]
                 <| builderView model (getSelectedBuilderId model)
             ]
 

@@ -219,9 +219,7 @@ contentAttributes =
 
 builderView : Model -> Maybe Uuid.Uuid -> Element Msg
 builderView model id =
-    row [ width fill ]
-        [ el [ width fill ] (map BuilderAppMsg (BuilderApp.view model))
-        ]
+    map BuilderAppMsg (BuilderApp.view model)
 
 --postmanView : Element Msg
 --postmanView =
