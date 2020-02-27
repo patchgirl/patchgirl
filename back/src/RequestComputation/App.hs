@@ -15,7 +15,6 @@ import           Data.Aeson                  (FromJSON, ToJSON (..),
                                               parseJSON)
 import           Data.Aeson.Types            (defaultOptions,
                                               fieldLabelModifier)
-import qualified Data.ByteString.Lazy.UTF8   as BLU
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
 import           GHC.Generics                (Generic)
@@ -114,15 +113,12 @@ runRequest RequestComputationInput { .. } = do
   manager <- Tls.newTlsManager
   liftIO $ Tls.setGlobalManager manager
   parsedRequest <- liftIO $ Http.parseRequest url
-  liftIO $ print $ "\nparsedRequest: " <> show parsedRequest
-  liftIO $ print $ "\nbody: " <> show (BLU.fromString _requestComputationInputBody)
   let request
         = Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
         $ setPortAndSecure
         $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
         $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestManager manager parsedRequest
-  liftIO $ print "\nrequest:"
   liftIO $ print $ show request
 
   liftIO $ Http.httpBS request

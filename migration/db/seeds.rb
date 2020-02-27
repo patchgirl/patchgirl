@@ -39,7 +39,8 @@ def insert_request_file(id, request_node_parent_id, tag, name, http_url, http_me
   }
 end
 
-headers = %{ARRAY[('key1','value1')::header_type]}
+json_headers = %{ARRAY[('Content-Type','application/json')]::header_type[]}
+headers = %{ARRAY[('key1','value1')]::header_type[]}
 empty_headers = %{ARRAY[]::header_type[]}
 body = %{{
   "email": "eve.holt@reqres.in",
@@ -54,8 +55,8 @@ request_nodes = [
   insert_request_file(  '718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', "update user", "https://{{host}}/users/2", "Put", headers, ""),
   insert_request_file(  '913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', "delete user", "https://{{host}}/users/2", "Delete", headers, ""),
   insert_request_folder('da0a3654-5e30-471f-ba03-f87760976981', nil, 'RequestFolder', "session"),
-  insert_request_file(  'b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', "login successful", "https://{{host}}/login", "Post", headers, body),
-  insert_request_file(  '6a55626d-d1ec-4255-851d-2b8e18f4bdc4', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', "login unsuccessful", "https://{{host}}/login", "Post", empty_headers, ""),
+  insert_request_file(  'b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', "login successful", "https://{{host}}/login", "Post", json_headers, body),
+  insert_request_file(  '6a55626d-d1ec-4255-851d-2b8e18f4bdc4', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', "login unsuccessful", "https://{{host}}/login", "Post", json_headers, ""),
 ]
 
 request_nodes.each do |request_node_query|
