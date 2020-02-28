@@ -39,8 +39,8 @@ import           Session.Model
 import           Web.Cookie                          (setCookieValue)
 
 
-nilId :: UUID
-nilId =
+visitorId :: UUID
+visitorId =
   Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
 
 
@@ -73,11 +73,11 @@ whoAmIHandler cookieSettings jwtSettings = \case
     csrfToken <- liftIO createCsrfToken
     let
       cookieSession =
-        VisitorCookie { _cookieAccountId = nilId }
+        VisitorCookie { _cookieAccountId = visitorId }
     mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
     case mApplyCookies of
       Nothing           -> throwError err401
-      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = nilId
+      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = visitorId
                                                                   , _sessionCsrfToken = csrfToken
                                                                   }
   where
@@ -152,6 +152,6 @@ deleteSessionHandler
          Session)
 deleteSessionHandler cookieSettings =
   return $
-    clearSession cookieSettings $ VisitorSession { _sessionAccountId = nilId
+    clearSession cookieSettings $ VisitorSession { _sessionAccountId = visitorId
                                                  , _sessionCsrfToken = ""
                                                  }
