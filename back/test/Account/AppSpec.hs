@@ -30,7 +30,8 @@ import           Test.Hspec
 
 signUp :: SignUp -> ClientM ()
 initializePassword :: InitializePassword -> ClientM ()
-signUp :<|> initializePassword =
+resetVisitorAccount :: ClientM ()
+signUp :<|> initializePassword :<|> resetVisitorAccount =
   client (Proxy :: Proxy AccountApi)
 
 
@@ -112,3 +113,13 @@ spec =
           mAccount <- selectFakeAccount accountId connection
           let password = mAccount >>= (^. fakeAccountPassword)
           password `shouldSatisfy` isJust
+
+
+-- ** reset visitor account
+
+
+    describe "reset visitor account" $
+      it "should returns 200" $ \clientEnv ->
+        cleanDBAfter $ \_ -> do
+          res <- try clientEnv resetVisitorAccount
+          res `shouldBe` ()

@@ -286,8 +286,15 @@ type WhoAmiApi =
 type AccountApi =
   "api" :> "account" :> (
     "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
-    "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] ()
+    "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] () :<|>
+    "resetVisitorAccount" :> Get '[JSON] ()
   )
+
+accountApiServer :: ServerT AccountApi AppM
+accountApiServer =
+  signUpHandler :<|>
+  initializePasswordHandler :<|>
+  resetVisitorAccountHandler
 
 
 -- ** health
@@ -335,11 +342,6 @@ sessionApiServer
 sessionApiServer cookieSettings jwtSettings  =
   signInHandler cookieSettings jwtSettings :<|>
   deleteSessionHandler cookieSettings
-
-accountApiServer :: ServerT AccountApi AppM
-accountApiServer =
-  signUpHandler :<|>
-  initializePasswordHandler
 
 authorizeWithAccountId
   :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
