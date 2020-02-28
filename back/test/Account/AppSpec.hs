@@ -68,7 +68,7 @@ spec =
           NewFakeAccountWithoutPassword { _newFakeAccountWithoutPasswordEmail = email }
 
     let initializePasswordPayload =
-          InitializePassword { _initializePasswordAccountId = 1
+          InitializePassword { _initializePasswordAccountId = visitorId
                              , _initializePasswordPassword = "whatever"
                              , _initializePasswordToken = "whatever"
                              }

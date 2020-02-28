@@ -4,8 +4,9 @@ import Api.Generated as Back
 import SignIn.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
-import Dict as Dict
-import Tuple as Tuple
+import Dict
+import Uuid
+import Tuple
 
 
 -- * request Collection
@@ -35,7 +36,6 @@ convertRequestNodesFromBackToFront backRequestNodes =
                     Front.RequestFile
                         { id = file.requestNodeId
                         , name = NotEdited file.requestNodeName
-                        , isSaved = True
                         , httpUrl = NotEdited file.requestNodeHttpUrl
                         , httpMethod = NotEdited (convertMethodFromBackToFront file.requestNodeHttpMethod)
                         , httpHeaders = NotEdited file.requestNodeHttpHeaders
@@ -86,7 +86,9 @@ convertEnvironmentKeyValueFromFrontToBack storable =
             , newKeyValueValue = value
             }
 
+
 -- * account
+
 
 convertSessionFromBackToFront : Back.Session -> Front.Session
 convertSessionFromBackToFront backSession =
@@ -109,7 +111,9 @@ convertSessionFromBackToFront backSession =
                 , email = sessionEmail
                 }
 
+
 -- * sign up
+
 
 convertSignUpFromFrontToBack : Front.SignUp -> Back.SignUp
 convertSignUpFromFrontToBack { email } =
@@ -129,7 +133,7 @@ convertSignInFromFrontToBack { email, password } =
 -- * initializePassword
 
 
-convertInitializePasswordBackToFront : String -> String -> Int -> Back.InitializePassword
+convertInitializePasswordBackToFront : String -> String -> Uuid.Uuid -> Back.InitializePassword
 convertInitializePasswordBackToFront password signUpToken accountId =
    { initializePasswordAccountId = accountId
    , initializePasswordPassword = password

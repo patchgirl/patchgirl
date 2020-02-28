@@ -4,13 +4,20 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 import PrivateAddress exposing (..)
-
+import Uuid.Barebones as Uuid
 
 suite : Test
 suite =
     describe "PrivateAddress module"
         [ describe "can match local address"
-            [ test "works with 'localhost'" <|
+            [ test "test" <|
+                  \_ ->
+                  let
+                      a = "00000000-0000-1000-a000-000000000000"
+                  in
+                      Expect.equal (Uuid.isValidUuid a) True
+
+            , test "works with 'localhost'" <|
                 \_ ->
                     let
                         inputs = [ "localhost:3000"

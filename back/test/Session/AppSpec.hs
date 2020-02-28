@@ -104,9 +104,9 @@ spec =
       context "when signed in" $
         it "should return a signed user session" $ \clientEnv ->
           cleanDBAfter $ \_ -> do
-          token <- signedUserToken 1
+          (token, accountId) <- signedUserToken1
           (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
-          session `shouldBe` SignedUserSession { _sessionAccountId = 1
+          session `shouldBe` SignedUserSession { _sessionAccountId = accountId
                                                , _sessionCsrfToken = ""
                                                , _sessionEmail = "foo@mail.com"
                                                }
@@ -114,9 +114,9 @@ spec =
       context "when unsigned" $
         it "should return a signed user session" $ \clientEnv ->
           cleanDBAfter $ \_ -> do
-            token <- visitorToken
+            (token, accountId) <- visitorToken
             (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
-            session `shouldBe` VisitorSession { _sessionAccountId = 1
+            session `shouldBe` VisitorSession { _sessionAccountId = accountId
                                               , _sessionCsrfToken = ""
                                               }
 
@@ -130,6 +130,6 @@ spec =
           ([(headerName, headerValue), _], session) <- try clientEnv signOut <&> (\r -> (getHeaders r, getResponse r))
           headerName `shouldBe` "Set-Cookie"
           headerValue `shouldBe` "JWT=value; Path=/; Expires=Tue, 10-Oct-1995 00:00:00 GMT; Max-Age=0; HttpOnly; Secure"
-          session `shouldBe` VisitorSession { _sessionAccountId = 1
+          session `shouldBe` VisitorSession { _sessionAccountId = visitorId
                                             , _sessionCsrfToken = ""
                                             }

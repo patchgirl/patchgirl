@@ -10,7 +10,7 @@ type Page
     | EnvPage
     | SignInPage
     | SignUpPage
-    | InitializePasswordPage Int String
+    | InitializePasswordPage Uuid.Uuid String
     | SignOutPage
 
 urlToPage : Url.Url -> Page
@@ -45,7 +45,7 @@ urlParser =
         , Url.map EnvPage (Url.s "env")
         , Url.map SignInPage (Url.s "signIn")
         , Url.map SignUpPage (Url.s "signUp")
-        , Url.map InitializePasswordPage (Url.s "account" </> Url.int </> Url.s "initializePassword" </> Url.string)
+        , Url.map InitializePasswordPage (Url.s "account" </> uuidParser </> Url.s "initializePassword" </> Url.string)
         , Url.map SignOutPage (Url.s "signOut")
         ]
 
@@ -73,7 +73,11 @@ href page =
                     ["signUp"]
 
                 InitializePasswordPage accountId token ->
-                    ["account", String.fromInt accountId, "initializePassword", token]
+                    [ "account"
+                    , Uuid.toString accountId
+                    , "initializePassword"
+                    , token
+                    ]
 
                 SignOutPage ->
                     [ "settings" ]

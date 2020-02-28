@@ -7,9 +7,11 @@ import           Data.Aeson          (FromJSON (..), ToJSON (..),
                                       parseJSON)
 import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
 import           Data.Text           (Text)
+import           Data.UUID
 import           GHC.Generics        (Generic)
 import           Model
 import           Servant.Auth.Server (FromJWT, ToJWT)
+
 
 -- * login
 
@@ -32,10 +34,10 @@ instance FromJSON SignIn where
 
 
 data Session
-  = VisitorSession { _sessionAccountId :: Int
+  = VisitorSession { _sessionAccountId :: UUID
                    , _sessionCsrfToken :: Text
                    }
-  | SignedUserSession { _sessionAccountId :: Int
+  | SignedUserSession { _sessionAccountId :: UUID
                       , _sessionCsrfToken :: Text
                       , _sessionEmail     :: String
                       }
@@ -57,9 +59,9 @@ instance FromJWT Session
 
 
 data CookieSession
-  = VisitorCookie { _cookieAccountId :: Int
+  = VisitorCookie { _cookieAccountId :: UUID
                   }
-  | SignedUserCookie { _cookieAccountId    :: Int
+  | SignedUserCookie { _cookieAccountId    :: UUID
                      , _cookieAccountEmail :: CaseInsensitive
                      }
   deriving (Eq, Show, Read, Generic)

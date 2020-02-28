@@ -43,7 +43,6 @@ type alias Model =
     { id : Uuid.Uuid
     , requestCollectionId : Int
     , keyValues : List (Storable NewKeyValue KeyValue)
-    , isSaved : Bool
     , name : Editable String
     , httpUrl : Editable String
     , httpMethod : Editable HttpMethod
@@ -124,7 +123,17 @@ update msg model =
                 (model, newMsg)
 
         SaveSuccessfully ->
-            (model, Cmd.none)
+            let
+                newModel =
+                    { model
+                        | name = NotEdited (editedOrNotEditedValue model.name)
+                        , httpUrl = NotEdited (editedOrNotEditedValue model.httpUrl)
+                        , httpMethod = NotEdited (editedOrNotEditedValue model.httpMethod)
+                        , httpHeaders = NotEdited (editedOrNotEditedValue model.httpHeaders)
+                        , httpBody = NotEdited (editedOrNotEditedValue model.httpBody)
+                    }
+            in
+                (newModel, Cmd.none)
 
         AskRun ->
             let

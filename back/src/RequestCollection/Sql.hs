@@ -7,6 +7,7 @@
 module RequestCollection.Sql where
 
 import           Data.Functor                     ((<&>))
+import           Data.UUID                        (UUID)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 
@@ -27,7 +28,7 @@ selectRequestCollectionAvailable accountId requestCollectionId connection =
           );
           |]
 
-selectRequestCollectionId :: Int -> Connection -> IO (Maybe Int)
+selectRequestCollectionId :: UUID -> Connection -> IO (Maybe Int)
 selectRequestCollectionId accountId connection =
   query connection requestCollectionSql (Only accountId) <&> \case
     [Only id] -> Just id

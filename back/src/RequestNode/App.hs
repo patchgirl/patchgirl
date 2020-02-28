@@ -26,7 +26,7 @@ updateRequestNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> UUID
   -> UpdateRequestNode
@@ -70,7 +70,7 @@ createRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> NewRequestFile
   -> m ()
@@ -98,7 +98,7 @@ createRootRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> NewRootRequestFile
   -> m ()
@@ -119,7 +119,7 @@ updateRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> UUID
   -> UpdateRequestFile
@@ -146,7 +146,7 @@ createRootRequestFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> NewRootRequestFolder
   -> m ()
@@ -167,7 +167,7 @@ createRequestFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> NewRequestFolder
   -> m ()
@@ -195,7 +195,7 @@ deleteRequestNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> UUID
   -> m ()

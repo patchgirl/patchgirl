@@ -14,6 +14,7 @@ import Api.Converter as Client
 import Http as Http
 import Regex as Regex
 import InitializedApplication.Model exposing(..)
+import Uuid
 
 
 -- * model
@@ -32,7 +33,7 @@ type alias Model a =
 
 
 type Msg
-    = AskInitializePassword Int String
+    = AskInitializePassword Uuid.Uuid String
     | ChangePassword1 String
     | ChangePassword2 String
     | InitializePasswordSucceeded
@@ -127,7 +128,7 @@ errorViewWhenAlreadySignedIn =
     , el [ centerX ] (text "Please sign out before proceeding")
     ]
 
-view : Int -> String -> Model a -> Element Msg
+view : Uuid.Uuid -> String -> Model a -> Element Msg
 view accountId signUpToken model =
     let
         labelInputAttributes =

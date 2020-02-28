@@ -6,6 +6,7 @@ module RequestCollection.App where
 import           Control.Monad.Except    (MonadError)
 import           Control.Monad.IO.Class  (MonadIO, liftIO)
 import           Control.Monad.Reader    (MonadReader)
+import           Data.UUID               (UUID)
 import           DB
 
 import           PatchGirl
@@ -23,7 +24,7 @@ getRequestCollectionHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> m RequestCollection
 getRequestCollectionHandler accountId = do
   connection <- getDBConnection

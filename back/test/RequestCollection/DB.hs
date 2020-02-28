@@ -19,7 +19,7 @@ import           RequestNode.Sql
 -- * new fake request collection
 
 
-insertFakeRequestCollection :: Int -> Connection -> IO Int
+insertFakeRequestCollection :: UUID -> Connection -> IO Int
 insertFakeRequestCollection accountId connection = do
   [Only id] <- query connection rawQuery (Only accountId)
   return id
@@ -128,7 +128,7 @@ insertFakeRequestFile newFakeRequestFile connection = do
 
 -}
 
-insertSampleRequestCollection :: Int -> Connection -> IO RequestCollection
+insertSampleRequestCollection :: UUID -> Connection -> IO RequestCollection
 insertSampleRequestCollection accountId connection = do
   n1Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n1 id) connection
   n2Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n2 id) connection

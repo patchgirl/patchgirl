@@ -10,6 +10,7 @@ module Account.DB where
 import           Control.Lens                     (makeLenses)
 import           Data.Functor                     ((<&>))
 import           Data.Maybe                       (listToMaybe)
+import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
@@ -37,7 +38,7 @@ data NewFakeAccount =
                  }
   deriving (Eq, Show, Read, Generic, ToRow)
 
-insertFakeAccount :: NewFakeAccount -> Connection -> IO (Int, String)
+insertFakeAccount :: NewFakeAccount -> Connection -> IO (UUID, String)
 insertFakeAccount newFakeAccount connection = do
   [(id, signupToken)] <- query connection rawQuery newFakeAccount
   return (id, signupToken)
@@ -57,7 +58,7 @@ newtype NewFakeAccountWithoutPassword =
   NewFakeAccountWithoutPassword { _newFakeAccountWithoutPasswordEmail :: CaseInsensitive }
   deriving (Eq, Show, Read, Generic, ToRow)
 
-insertFakeAccountWithoutPassword :: NewFakeAccountWithoutPassword -> Connection -> IO (Int, String)
+insertFakeAccountWithoutPassword :: NewFakeAccountWithoutPassword -> Connection -> IO (UUID, String)
 insertFakeAccountWithoutPassword newFakeAccount connection = do
   [(id, signupToken)] <- query connection rawQuery newFakeAccount
   return (id, signupToken)
@@ -72,7 +73,7 @@ insertFakeAccountWithoutPassword newFakeAccount connection = do
 
 
 data FakeAccount =
-  FakeAccount { _fakeAccountId          :: Int
+  FakeAccount { _fakeAccountId          :: UUID
               , _fakeAccountEmail       :: CaseInsensitive
               , _fakeAccountPassword    :: Maybe String
               , _fakeAccountSignupToken :: String
@@ -81,7 +82,7 @@ data FakeAccount =
 
 $(makeLenses ''FakeAccount)
 
-selectFakeAccount :: Int -> Connection -> IO (Maybe FakeAccount)
+selectFakeAccount :: UUID -> Connection -> IO (Maybe FakeAccount)
 selectFakeAccount id connection =
   query connection rawQuery (Only id) <&> listToMaybe
   where

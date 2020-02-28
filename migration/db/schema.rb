@@ -154,7 +154,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE public.account (
-    id integer NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     email public.citext NOT NULL,
     signup_token text DEFAULT md5((random())::text) NOT NULL,
     password text
@@ -166,29 +166,9 @@ CREATE TABLE public.account (
 --
 
 CREATE TABLE public.account_environment (
-    account_id integer NOT NULL,
+    account_id uuid NOT NULL,
     environment_id integer NOT NULL
 );
-
-
---
--- Name: account_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.account_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.account_id_seq OWNED BY public.account.id;
 
 
 --
@@ -271,7 +251,7 @@ ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 
 CREATE TABLE public.request_collection (
     id integer NOT NULL,
-    account_id integer
+    account_id uuid
 );
 
 
@@ -329,13 +309,6 @@ CREATE TABLE public.request_node (
 CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
-
-
---
--- Name: account id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.account ALTER COLUMN id SET DEFAULT nextval('public.account_id_seq'::regclass);
 
 
 --

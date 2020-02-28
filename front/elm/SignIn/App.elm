@@ -14,12 +14,14 @@ import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import Maybe.Extra as Maybe
+import Uuid
+
 
 -- * model
 
 
 type alias Model a =
-    { a | id: Int
+    { a | id: Uuid.Uuid
         , csrfToken: String
         , signInEmail: String
         , signInPassword: String

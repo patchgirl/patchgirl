@@ -17,6 +17,7 @@ import           Data.Aeson.Types            (defaultOptions,
                                               fieldLabelModifier)
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
+import           Data.UUID                   (UUID)
 import           GHC.Generics                (Generic)
 import           Http
 import qualified Network.HTTP.Client.Conduit as Http
@@ -96,7 +97,7 @@ runRequestComputationHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> RequestComputationInput
   -> m RequestComputationResult
 runRequestComputationHandler _ requestComputationInput = do
@@ -119,8 +120,8 @@ runRequest RequestComputationInput { .. } = do
         $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
         $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
         $ Http.setRequestManager manager parsedRequest
-  liftIO $ print "\n\nrequest:"
-  liftIO $ print $ "\n  body: " <> show _requestComputationInputBody
+  liftIO $ putStrLn ("\n\nrequest:" :: String)
+  liftIO $ putStrLn $ "\n  body: " <> show _requestComputationInputBody
   liftIO $ print $ show request
 
   liftIO $ Http.httpBS request

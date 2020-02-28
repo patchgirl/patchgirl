@@ -10,6 +10,7 @@
 - ignore: {name: "Eta reduce"}
 - ignore: {name: "Use if"}
 - ignore: {name: "Reduce duplication"}
+- ignore: {name: "Use tuple-section"}
 #- ignore: {name: "Use fewer imports"}
 #- ignore: {name: "Redundant do"}
 #- ignore: {name: "Unused LANGUAGE pragma"}

@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken) where
+module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
 
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
+import           Data.Functor                     ((<&>))
 import           Data.Text                        (Text)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Types (Identifier (..))
@@ -13,7 +14,10 @@ import           Account.DB
 import           Config
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
+import qualified Data.Maybe                       as Maybe
 import           Data.Time                        (UTCTime)
+import           Data.UUID                        (UUID)
+import qualified Data.UUID                        as UUID
 import           Model
 import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
@@ -32,7 +36,7 @@ import           Test.Hspec                       (SpecWith, aroundWith,
 -- * helper
 
 
-withAccountAndToken :: NewFakeAccount -> Connection -> IO (Int, Auth.Token)
+withAccountAndToken :: NewFakeAccount -> Connection -> IO (UUID, Auth.Token)
 withAccountAndToken newFakeAccount connection = do
   (accountId, _) <- insertFakeAccount newFakeAccount connection
   token <- signedUserToken accountId
@@ -58,7 +62,17 @@ withClient app innerSpec =
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)
 
-signedUserToken :: Int -> IO Auth.Token
+signedUserToken1 :: IO (Auth.Token, UUID)
+signedUserToken1 = do
+  let
+    id = Maybe.fromJust $ UUID.fromString "b644ca57-7181-4f0e-a253-39ce45f5364e"
+    cookieSession =
+        SignedUserCookie { _cookieAccountId    = id
+                         , _cookieAccountEmail = CaseInsensitive "foo@mail.com"
+                         }
+  mkToken cookieSession Nothing <&> \token -> (token, id)
+
+signedUserToken :: UUID -> IO Auth.Token
 signedUserToken id = do
   let cookieSession =
         SignedUserCookie { _cookieAccountId    = id
@@ -66,10 +80,16 @@ signedUserToken id = do
                          }
   mkToken cookieSession Nothing
 
-visitorToken :: IO Auth.Token
+visitorId :: UUID
+visitorId =
+  Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
+
+visitorToken :: IO (Auth.Token, UUID)
 visitorToken = do
-  let cookieSession = VisitorCookie { _cookieAccountId = 1 }
-  mkToken cookieSession Nothing
+  let
+    id = Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
+    cookieSession = VisitorCookie { _cookieAccountId = id }
+  mkToken cookieSession Nothing <&> \token -> (token, id)
 
 
 mkToken :: CookieSession -> Maybe UTCTime -> IO Auth.Token

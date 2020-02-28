@@ -15,7 +15,7 @@ class Init < ActiveRecord::Migration[5.2]
 
 
       CREATE TABLE account(
-          id SERIAL PRIMARY KEY,
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           email CITEXT NOT NULL UNIQUE,
           signup_token TEXT NOT NULL DEFAULT MD5(random()::text),
           password TEXT
@@ -50,7 +50,7 @@ class Init < ActiveRecord::Migration[5.2]
 
       CREATE TABLE request_collection(
         id SERIAL PRIMARY KEY,
-        account_id INTEGER REFERENCES account(id) ON DELETE CASCADE
+        account_id UUID REFERENCES account(id) ON DELETE CASCADE
       );
 
       CREATE TABLE request_collection_to_request_node(
@@ -69,7 +69,7 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
       CREATE TABLE account_environment(
-          account_id INTEGER REFERENCES account(id) ON DELETE CASCADE,
+          account_id UUID REFERENCES account(id) ON DELETE CASCADE,
           environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
           PRIMARY KEY (account_id, environment_id)
       );

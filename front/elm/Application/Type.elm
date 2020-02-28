@@ -9,13 +9,13 @@ import Dict
 
 type Session
     = Visitor VisitorSession
-    | SignedUser { id: Int
+    | SignedUser { id: Uuid.Uuid
                  , csrfToken: String
                  , email: String
                  }
 
 type alias VisitorSession =
-    { id: Int
+    { id: Uuid.Uuid
     , csrfToken: String
     , signInEmail: String
     , signInPassword: String
@@ -31,7 +31,7 @@ getCsrfToken session =
         Visitor { csrfToken } -> csrfToken
         SignedUser { csrfToken } -> csrfToken
 
-getSessionId : Session -> Int
+getSessionId : Session -> Uuid.Uuid
 getSessionId session =
     case session of
         Visitor { id } -> id
@@ -103,7 +103,6 @@ type alias Folder =
 type alias File =
   { id: Uuid.Uuid
   , name : Editable String
-  , isSaved : Bool
   , httpUrl : Editable String
   , httpMethod : Editable HttpMethod
   , httpHeaders : Editable (List (String, String))

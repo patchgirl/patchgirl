@@ -10,6 +10,7 @@ module Environment.DB where
 
 import           Data.Functor                     ((<&>))
 import           Data.Maybe                       (listToMaybe)
+import           Data.UUID                        (UUID)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           Environment.App                  (KeyValue)
@@ -19,7 +20,7 @@ import           GHC.Generics
 
 
 data NewFakeEnvironment =
-  NewFakeEnvironment { _newFakeEnvironmentAccountId :: Int
+  NewFakeEnvironment { _newFakeEnvironmentAccountId :: UUID
                      , _newFakeEnvironmentName      :: String
                      }
   deriving (Eq, Show, Read, Generic, ToRow)
@@ -67,12 +68,12 @@ selectFakeEnvironment environmentId connection =
 
 
 data FakeAccountEnvironment =
-  FakeAccountEnvironment { _fakeAccountEnvironmentAccountId     :: Int
+  FakeAccountEnvironment { _fakeAccountEnvironmentAccountId     :: UUID
                          , _fakeAccountEnvironmentEnvironmentId :: Int
                          }
   deriving (Eq, Show, Read, Generic, FromRow)
 
-selectFakeAccountEnvironments :: Int -> Connection -> IO [FakeAccountEnvironment]
+selectFakeAccountEnvironments :: UUID -> Connection -> IO [FakeAccountEnvironment]
 selectFakeAccountEnvironments accountId connection =
   query connection rawQuery (Only accountId)
   where

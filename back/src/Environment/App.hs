@@ -12,7 +12,6 @@ module Environment.App where
 
 
 import           Control.Lens                     hiding (element)
-
 import           Control.Lens                     (makeLenses)
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
@@ -26,6 +25,7 @@ import           Data.Foldable                    (foldl')
 import           Data.HashMap.Strict              as HashMap (HashMap, elems,
                                                               empty, insertWith)
 import           Data.List                        (find)
+import           Data.UUID                        (UUID)
 import           Database.PostgreSQL.Simple       (Connection, FromRow,
                                                    Only (..), execute, query)
 import           Database.PostgreSQL.Simple.SqlQQ
@@ -89,7 +89,7 @@ instance ToJSON Environment where
 
 $(makeLenses ''Environment)
 
-selectEnvironments :: Int -> Connection -> IO [Environment]
+selectEnvironments :: UUID -> Connection -> IO [Environment]
 selectEnvironments accountId connection = do
   pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues (Only accountId)
   pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues (Only accountId)
@@ -163,7 +163,7 @@ getEnvironmentsHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> m [Environment]
 getEnvironmentsHandler accountId = do
   connection <- getDBConnection
@@ -201,7 +201,7 @@ insertEnvironment NewEnvironment { _newEnvironmentName } connection = do
           RETURNING id
           |]
 
-bindEnvironmentToAccount :: Int -> Int -> Connection -> IO ()
+bindEnvironmentToAccount :: UUID -> Int -> Connection -> IO ()
 bindEnvironmentToAccount accountId environmentId connection = do
   _ <- execute connection bindEnvironmentToAccountQuery (accountId, environmentId)
   return ()
@@ -222,7 +222,7 @@ createEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> NewEnvironment
   -> m Int
 createEnvironmentHandler accountId newEnvironment = do
@@ -254,7 +254,7 @@ updateEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> UpdateEnvironment
   -> m ()
@@ -287,7 +287,7 @@ deleteEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> m ()
 deleteEnvironmentHandler accountId environmentId = do
@@ -318,7 +318,7 @@ deleteKeyValueHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> Int
   -> m ()
@@ -402,7 +402,7 @@ updateKeyValuesHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => Int
+  => UUID
   -> Int
   -> [NewKeyValue]
   -> m [KeyValue]

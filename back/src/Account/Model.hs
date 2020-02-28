@@ -12,6 +12,7 @@ import           Data.Aeson                       (FromJSON, ToJSON (..),
                                                    genericToJSON, parseJSON)
 import           Data.Aeson.Types                 (defaultOptions,
                                                    fieldLabelModifier)
+import           Data.UUID
 import           Database.PostgreSQL.Simple       (FromRow)
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics                     (Generic)
@@ -22,7 +23,7 @@ import           Model
 
 
 data Account =
-  Account { _accountId    :: Int
+  Account { _accountId    :: UUID
           , _accountEmail :: CaseInsensitive
           }
   deriving (Eq, Show, Generic, FromRow)
@@ -45,7 +46,7 @@ newtype NewAccount =
 
 
 data CreatedAccount =
-  CreatedAccount { _accountCreatedId          :: Int
+  CreatedAccount { _accountCreatedId          :: UUID
                  , _accountCreatedEmail       :: CaseInsensitive
                  , _accountCreatedSignUpToken :: String
                  }
@@ -56,7 +57,7 @@ data CreatedAccount =
 
 
 data InitializePassword =
-  InitializePassword { _initializePasswordAccountId :: Int
+  InitializePassword { _initializePasswordAccountId :: UUID
                      , _initializePasswordPassword  :: String
                      , _initializePasswordToken     :: String
                      }

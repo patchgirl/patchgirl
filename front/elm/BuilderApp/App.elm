@@ -131,7 +131,6 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun =
     { id = file.id
     , requestCollectionId = requestCollectionId
     , keyValues = keyValuesToRun
-    , isSaved = file.isSaved
     , name = file.name
     , httpUrl = file.httpUrl
     , httpMethod = file.httpMethod
@@ -145,7 +144,6 @@ convertFromBuilderToFile : Builder.Model -> File
 convertFromBuilderToFile builder =
     { id = builder.id
     , name = builder.name
-    , isSaved = builder.isSaved
     , httpUrl = builder.httpUrl
     , httpMethod = builder.httpMethod
     , httpHeaders = builder.httpHeaders

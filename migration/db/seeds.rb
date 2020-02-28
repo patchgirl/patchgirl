@@ -42,7 +42,7 @@ end
 def delete_visitor_data
   %{
      -- delete visitor account
-     DELETE FROM account WHERE id = 1;
+     DELETE FROM account WHERE id = '00000000-0000-1000-a000-000000000000';
      -- delete orphan environment
      DELETE FROM environment
      WHERE id IN (
@@ -61,8 +61,7 @@ def delete_visitor_data
   }
 end
 
-#ActiveRecord::Migration[5.2].execute delete_visitor_data
-
+ActiveRecord::Migration[5.2].execute delete_visitor_data
 
 json_headers = %{ARRAY[('Content-Type','application/json')]::header_type[]}
 headers = %{ARRAY[('key1','value1')]::header_type[]}
@@ -95,9 +94,11 @@ end
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
+      id,
       email,
       password
     ) values (
+      '00000000-0000-1000-a000-000000000000',
       'visitor@patchgirl.io',
       crypt('123', gen_salt('bf', 8))
     );
@@ -105,9 +106,11 @@ ActiveRecord::Migration[5.2].execute %{
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
+      id,
       email,
       password
     ) values (
+      '61bab28a-fcdc-4e65-b32b-a0cc98a9d173',
       'foo@mail.com',
       crypt('123', gen_salt('bf', 8))
     );
@@ -115,9 +118,11 @@ ActiveRecord::Migration[5.2].execute %{
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
+      id,
       email,
       password
     ) values (
+      '08b160b2-3564-4998-8aeb-54ebca0fae58',
       'signup@mail.com',
       NULL
     );
@@ -127,15 +132,15 @@ ActiveRecord::Migration[5.2].execute %{
 
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (account_id) values (1);
+    INSERT INTO request_collection (account_id) values ('00000000-0000-1000-a000-000000000000');
   }
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (account_id) values (2);
+    INSERT INTO request_collection (account_id) values ('61bab28a-fcdc-4e65-b32b-a0cc98a9d173');
   }
 
 ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (account_id) values (3);
+    INSERT INTO request_collection (account_id) values ('08b160b2-3564-4998-8aeb-54ebca0fae58');
   }
 
 ActiveRecord::Migration[5.2].execute %{
@@ -143,7 +148,6 @@ ActiveRecord::Migration[5.2].execute %{
       request_collection_id,
       request_node_id
     ) values (1,'58954f35-49ac-45b7-bcf6-c8df1af4b12c');
-
 
     INSERT INTO request_collection_to_request_node (
       request_collection_id,
@@ -172,7 +176,7 @@ ActiveRecord::Migration[5.2].execute %{
       account_id,
       environment_id
     ) values (
-      1,
+      '00000000-0000-1000-a000-000000000000',
       1
     );
 
@@ -180,7 +184,7 @@ ActiveRecord::Migration[5.2].execute %{
       account_id,
       environment_id
     ) values (
-      1,
+      '00000000-0000-1000-a000-000000000000',
       2
     );
 }

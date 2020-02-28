@@ -579,7 +579,6 @@ mkDefaultFile : Uuid.Uuid -> RequestNode
 mkDefaultFile id =
     RequestFile { id = id
                 , name = NotEdited "new request"
-                , isSaved = False
                 , httpUrl = NotEdited ""
                 , httpMethod = NotEdited HttpGet
                 , httpHeaders = NotEdited []

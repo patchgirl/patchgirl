@@ -41,7 +41,7 @@ spec =
     describe "get request collection by id" $ do
       it "returns notFound404 when requestCollection does not exist" $ \clientEnv ->
         cleanDBAfter $ \_ -> do
-          token <- signedUserToken 1
+          (token, _) <- signedUserToken1
           try clientEnv (getRequestCollectionById token) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns an empty request collection if the account doesnt have a request collection" $ \clientEnv ->

@@ -16,8 +16,11 @@ import           Control.Monad.Reader                (MonadReader)
 import           Control.Monad.Trans                 (liftIO)
 import           Data.Functor                        ((<&>))
 import           Data.Maybe                          (listToMaybe)
+import qualified Data.Maybe                          as Maybe
 import           Data.Text                           (Text)
 import           Data.Text.Encoding                  (decodeUtf8)
+import           Data.UUID                           (UUID)
+import qualified Data.UUID                           as UUID
 import           Database.PostgreSQL.Simple          (Connection, query)
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
@@ -34,6 +37,12 @@ import           Servant.Auth.Server.SetCookieOrphan ()
 import           Servant.Server                      (ServerError)
 import           Session.Model
 import           Web.Cookie                          (setCookieValue)
+
+
+nilId :: UUID
+nilId =
+  Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
+
 
 -- * who am I
 
@@ -62,12 +71,13 @@ whoAmIHandler cookieSettings jwtSettings = \case
 
   _ -> do
     csrfToken <- liftIO createCsrfToken
-    let cookieSession =
-          VisitorCookie { _cookieAccountId = 1 }
+    let
+      cookieSession =
+        VisitorCookie { _cookieAccountId = nilId }
     mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
     case mApplyCookies of
       Nothing           -> throwError err401
-      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = 1
+      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = nilId
                                                                   , _sessionCsrfToken = csrfToken
                                                                   }
   where
@@ -142,6 +152,6 @@ deleteSessionHandler
          Session)
 deleteSessionHandler cookieSettings =
   return $
-    clearSession cookieSettings $ VisitorSession { _sessionAccountId = 1
+    clearSession cookieSettings $ VisitorSession { _sessionAccountId = nilId
                                                  , _sessionCsrfToken = ""
                                                  }
