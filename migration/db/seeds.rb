@@ -39,6 +39,31 @@ def insert_request_file(id, request_node_parent_id, tag, name, http_url, http_me
   }
 end
 
+def delete_visitor_data
+  %{
+     -- delete visitor account
+     DELETE FROM account WHERE id = 1;
+     -- delete orphan environment
+     DELETE FROM environment
+     WHERE id IN (
+       SELECT id FROM environment
+       LEFT JOIN account_environment ON id = environment_id
+       WHERE environment_id IS NULL
+    );
+    -- delete orphan request_node
+    DELETE FROM request_node
+    WHERE id IN (
+      SELECT id
+      FROM request_node
+      LEFT JOIN request_collection_to_request_node ON id = request_node_id
+      WHERE request_node_id IS NULL
+    );
+  }
+end
+
+#ActiveRecord::Migration[5.2].execute delete_visitor_data
+
+
 json_headers = %{ARRAY[('Content-Type','application/json')]::header_type[]}
 headers = %{ARRAY[('key1','value1')]::header_type[]}
 empty_headers = %{ARRAY[]::header_type[]}

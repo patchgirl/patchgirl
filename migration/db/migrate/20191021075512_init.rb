@@ -11,7 +11,6 @@ class Init < ActiveRecord::Migration[5.2]
       CREATE EXTENSION CITEXT;
       CREATE EXTENSION PGCRYPTO;
 
-
       -- account
 
 

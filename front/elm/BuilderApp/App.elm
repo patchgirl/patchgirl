@@ -167,24 +167,24 @@ changeFileBuilder builder node =
 
 view : Model a -> Element Msg
 view model =
-        wrappedRow [ width fill
-                   , paddingXY 10 0
-                   , spacing 10
-                   ]
-            [ column [ alignTop
-                     , spacing 20
-                     , centerX
-                     , padding 20
-                     , width (fillPortion 1)
-                     , Background.color white
-                     , boxShadow
-                     ]
-                  [ el [ ] <| envSelectionView <| List.map .name model.environments
-                  , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
-                  ]
-            , el [ alignTop, width (fillPortion 9) ]
-                <| builderView model (getSelectedBuilderId model)
-            ]
+    wrappedRow [ width fill
+               , paddingXY 10 0
+               , spacing 10
+               ]
+        [ column [ alignTop
+                 , spacing 20
+                 , centerX
+                 , padding 20
+                 , width (fillPortion 1)
+                 , Background.color white
+                 , boxShadow
+                 ]
+              [ el [ ] <| envSelectionView <| List.map .name model.environments
+              , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
+              ]
+        , el [ alignTop, width (fillPortion 9) ]
+            <| builderView model (getSelectedBuilderId model)
+        ]
 
 envSelectionView : List (Editable String) -> Element Msg
 envSelectionView environmentNames =
