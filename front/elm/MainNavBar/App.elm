@@ -110,6 +110,17 @@ deleteSessionSignOutResultToMsg result =
 -- * view
 
 
+view : Model a -> Element Msg
+view model =
+    row [ width fill, Background.color primaryColor, height (px 50) ]
+        [ el [ alignLeft, paddingXY 20 0 ] leftView
+        , el [ centerX, centerY, height fill ] (centerView model)
+        , el [ centerY, height fill, alignRight ] (rightView model)
+        ]
+
+-- ** left view
+
+
 leftView : Element Msg
 leftView =
     let
@@ -131,6 +142,10 @@ leftView =
                 , label = linkContent
                 }
 
+
+-- ** right view
+
+
 rightView : Model a -> Element Msg
 rightView model =
     case model.session of
@@ -144,48 +159,75 @@ blogView : Element Msg
 blogView =
     link ([ paddingXY 20 0 ] ++ mainLinkAttribute)
               { url = "https://blog.patchgirl.io"
-              , label = text "Blog"
+              , label = el [] (text "Blog")
               }
+
+githubLinkView : Element Msg
+githubLinkView =
+    link [ paddingXY 10 0 ]
+        { url = "https://github.com/patchgirl/patchgirl"
+        , label =
+            image [ height (px 30) ]
+                { src = "public/images/github.svg"
+                , description = "github logo"
+                }
+        }
 
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
-    row []
-        [ blogView
-        , link ([ paddingXY 20 0 ] ++ mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage))
+    row [ centerX, centerY, paddingXY 10 0, height fill ]
+        [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage))
               { url = "#signIn"
-              , label = text "Sign in"
+              , label = el [] (text "Sign in")
               }
-        , link ([ paddingXY 20 0 ] ++ mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignUpPage SignUpPage))
+        , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignUpPage SignUpPage))
             { url = "#signUp"
-            , label = text "Sign up"
+            , label = el [] (text "Sign up")
             }
+        , blogView
+        , githubLinkView
         ]
 
 signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
-    row [ spacing 10 ]
-        [ blogView
-        , link (linkAttribute model AskSignOut)
+    row [ centerX, centerY, paddingXY 10 0, height fill ]
+        [ link (linkAttribute model AskSignOut)
             { url = href SignOutPage
-            , label = text "Sign out"
+            , label = el [] (text "Sign out")
             }
+        , blogView
+        , githubLinkView
         ]
+
+
+-- ** center view
+
 
 centerView : Model a -> Element Msg
 centerView model =
-    row [ centerX, paddingXY 10 0, centerY ]
-        [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage (ReqPage (currentDisplayedBuilderId model)))) { url = "#req", label = text "Req" }
-        , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage)) { url = "#env", label = text "Env" }
-        ]
+    let
+        currentDisplayedBuilderId : Maybe Uuid.Uuid
+        currentDisplayedBuilderId =
+            case model.page of
+                ReqPage mId ->
+                    mId
 
-currentDisplayedBuilderId : Model a -> Maybe Uuid.Uuid
-currentDisplayedBuilderId model =
-    case model.page of
-        ReqPage mId ->
-            mId
+                _ ->
+                    Nothing
+    in
+        row [ centerX, centerY, paddingXY 10 0, height fill ]
+            [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage (ReqPage currentDisplayedBuilderId)))
+                  { url = "#req"
+                  , label = el [] (text "Req")
+                  }
+            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage))
+                { url = "#env"
+                , label = el [] (text "Env")
+                }
+            ]
 
-        _ ->
-            Nothing
+
+-- ** attribute
 
 
 linkAttribute : Model a -> Msg -> List (Attribute Msg)
@@ -195,14 +237,16 @@ linkAttribute model msg =
             [ Background.color <| secondaryColor
             , Font.color <| primaryColor
             ]
-
     in
         [ Events.onClick msg
-        , Font.size 21
+        , Font.size font
         , Font.color <| secondaryColor
-        , paddingXY 15 19
+        , paddingXY 15 padding
         , mouseOver activeAttribute
         ]
+
+font = 21
+padding = 0
 
 mainLinkAttribute : List (Attribute Msg)
 mainLinkAttribute =
@@ -212,8 +256,10 @@ mainLinkAttribute =
             , Font.color primaryColor
             ]
     in
-        [ Font.size 21
-        , paddingXY 15 19
+        [ Font.size font
+        , height fill
+        , centerY
+        , paddingXY 15 padding
         , mouseOver activeAttribute
         , Font.color secondaryColor
         ]
@@ -238,13 +284,3 @@ mainLinkAttributeWhenActive model event page =
             in
                 [ Events.onClick event
                 ] ++ activeOrPassiveAttribute
-
-
-view : Model a -> Element Msg
-view model =
-    el [ width fill, Background.color primaryColor ] <|
-        row [ width fill]
-            [ el [ alignLeft, paddingXY 20 0 ] leftView
-            , el [ centerX ] <| centerView model
-            , el [ alignRight ] (rightView model)
-            ]
