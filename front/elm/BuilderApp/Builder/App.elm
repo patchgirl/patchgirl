@@ -3,6 +3,7 @@ module BuilderApp.Builder.App exposing (..)
 import Browser
 import Http
 import Debug
+import Time
 import Url
 import Json.Decode as Json
 import List.Extra as List
@@ -50,7 +51,6 @@ type alias Model =
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
-    , requestPending : Bool
     , runRequestIconAnimation : Animation.State
     }
 
@@ -152,7 +152,6 @@ update msg model =
                 newModel =
                     { model
                         | showResponseView = True
-                        , requestPending = True
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
@@ -163,7 +162,6 @@ update msg model =
                 newModel =
                     { model
                         | requestComputationResult = Just (convertResultToResponse result)
-                        , requestPending = False
                     }
             in
                 (newModel, Cmd.none)
@@ -177,7 +175,6 @@ update msg model =
                 newModel =
                     { model
                         | requestComputationResult = Just remoteComputationResult
-                        , requestPending = False
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in

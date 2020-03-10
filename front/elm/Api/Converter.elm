@@ -43,7 +43,6 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         , httpBody = NotEdited file.requestNodeHttpBody
                         , requestComputationResult = Nothing
                         , showResponseView = False
-                        , requestPending = False
                         , runRequestIconAnimation = Animation.style [ Animation.scale 1 ]
                         }
     in

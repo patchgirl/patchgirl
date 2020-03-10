@@ -581,7 +581,6 @@ mkDefaultFile id =
                 , httpBody = NotEdited ""
                 , showResponseView = False
                 , requestComputationResult = Nothing
-                , requestPending = False
                 , runRequestIconAnimation = Animation.style []
                 }
 

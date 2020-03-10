@@ -110,7 +110,6 @@ type alias File =
   , httpBody : Editable String
   , requestComputationResult : Maybe RequestComputationResult
   , showResponseView : Bool
-  , requestPending : Bool
   , runRequestIconAnimation : Animation.State
   }
 
