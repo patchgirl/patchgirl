@@ -1,7 +1,7 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
-
+import Json.Encode as E
 import Application.App as Application
 
 main =
@@ -13,3 +13,5 @@ main =
     , onUrlRequest = Application.LinkClicked
     , onUrlChange = Application.UrlChanged
     }
+
+port loadApplication : E.Value -> Cmd msg

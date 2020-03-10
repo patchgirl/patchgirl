@@ -20,9 +20,14 @@
     <div id="app"></div>
 
     <script>
-      Elm.Main.init({
+      var loader = Elm.AppLoader.init({
         node: document.getElementById("app")
-      })
+      });
+
+
+      loader.ports.loadApplication.subscribe(function(initializedData) {
+        console.log(initializedData);
+      });
     </script>
   </body>
 </html>
