@@ -7,6 +7,7 @@ import Application.Type as Front
 import Dict
 import Uuid
 import Tuple
+import Animation
 
 
 -- * request Collection
@@ -42,9 +43,12 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         , httpBody = NotEdited file.requestNodeHttpBody
                         , requestComputationResult = Nothing
                         , showResponseView = False
+                        , requestPending = False
+                        , runRequestIconAnimation = Animation.style [ Animation.scale 1 ]
                         }
     in
         List.map convertRequestNodeFromBackToFront backRequestNodes
+
 
 -- * environment
 

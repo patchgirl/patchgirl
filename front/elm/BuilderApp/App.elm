@@ -138,6 +138,8 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun =
     , httpBody = file.httpBody
     , requestComputationResult = file.requestComputationResult
     , showResponseView = file.showResponseView
+    , requestPending = file.requestPending
+    , runRequestIconAnimation = file.runRequestIconAnimation
     }
 
 convertFromBuilderToFile : Builder.Model -> File
@@ -150,6 +152,8 @@ convertFromBuilderToFile builder =
     , httpBody = builder.httpBody
     , requestComputationResult = builder.requestComputationResult
     , showResponseView = builder.showResponseView
+    , requestPending = builder.requestPending
+    , runRequestIconAnimation = builder.runRequestIconAnimation
     }
 
 changeFileBuilder : Builder.Model -> RequestNode -> RequestNode

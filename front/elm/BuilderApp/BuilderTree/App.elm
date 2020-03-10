@@ -16,6 +16,7 @@ import Element.Input as Input
 import Util.View as Util
 import ViewUtil exposing (..)
 import Page exposing(..)
+import Animation
 
 
 -- * model
@@ -431,7 +432,6 @@ createRootRequestFolderResultToMsg id result =
 
 -- ** tree manipulation
 
-
 getRequestNodeId : RequestNode -> Uuid.Uuid
 getRequestNodeId requestNode =
     case requestNode of
@@ -471,8 +471,6 @@ findNode requestNodes id =
     in
         List.head <| Maybe.catMaybes (List.map find requestNodes)
 
-
-
 modifyRequestNode2 : Uuid.Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
 modifyRequestNode2 id f requestNode =
     case getRequestNodeId requestNode == id of
@@ -487,7 +485,6 @@ modifyRequestNode2 id f requestNode =
                                       | children =
                                         List.map (modifyRequestNode2 id f) requestFolder.children
                                   }
-
 
 deleteRequestNode : Uuid.Uuid -> RequestNode -> List RequestNode
 deleteRequestNode idToDelete requestNode =
@@ -504,7 +501,6 @@ deleteRequestNode idToDelete requestNode =
                                         List.concatMap (deleteRequestNode idToDelete) requestFolder.children
                                   }
                     ]
-
 
 toggleFolder : RequestNode -> RequestNode
 toggleFolder node =
@@ -585,7 +581,11 @@ mkDefaultFile id =
                 , httpBody = NotEdited ""
                 , showResponseView = False
                 , requestComputationResult = Nothing
+                , requestPending = False
+                , runRequestIconAnimation = Animation.style []
                 }
+
+
 
 
 -- * view

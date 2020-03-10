@@ -20,6 +20,9 @@ import Browser.Navigation as Navigation
 import Tuple as Tuple
 import Page exposing (..)
 import Url.Parser as Url exposing ((</>))
+import Animation
+import BuilderApp.App as BuilderApp
+import BuilderApp.Builder.App as Builder
 
 
 -- ** model
@@ -30,16 +33,17 @@ type alias Model =
     , navigationKey : Navigation.Key
     , appState : AppState
     , url : Url.Url
+    , style : Animation.State
     }
 
 type AppState
-    = SessionPending
-    | AppDataPending
+    = SessionPending -- first state: we wait for the backend to give us a session
+    | AppDataPending -- second state: we wait for the backend to give us all our session's data
       { session : Session
       , mRequestCollection : Maybe RequestCollection
       , mEnvironments : Maybe (List Environment)
       }
-    | InitializedApp InitializedApplication.Model
+    | InitializedApp InitializedApplication.Model -- third state: we can show the app
 
 
 -- ** message
@@ -53,6 +57,7 @@ type Msg
     | EnvironmentsFetched (List Environment)
     | InitializedApplicationMsg InitializedApplication.Msg
     | ServerError Http.Error
+    | Animate Animation.Msg
 
 
 -- ** init
@@ -77,12 +82,30 @@ reload url navKey =
             , navigationKey = navKey
             , appState = appState
             , url = url
+            , style = initialStyle
             }
 
     in
         (model, msg)
 
+initialStyle =
+    let
+        animation =
+            Animation.styleWith (Animation.easing { duration = 10000 * 10000
+                                                  , ease = \u -> u
+                                                  }
+                                ) [ ]
 
+        looper =
+            Animation.loop
+                [ Animation.toWith (Animation.speed { perSecond = 2 })
+                      [ Animation.rotate (Animation.turn 1) ]
+                , Animation.set [ Animation.rotate (Animation.turn 0) ]
+                ]
+
+    in
+        Animation.interrupt [ looper ] animation
+        --animation
 
 init : () -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
 init _ url navKey =
@@ -101,6 +124,7 @@ init _ url navKey =
             , navigationKey = navKey
             , appState = appState
             , url = url
+            , style = initialStyle
             }
 
     in
@@ -224,6 +248,17 @@ update msg model =
                 External url ->
                     (model, Navigation.load url)
 
+        Animate subMsg ->
+            let
+                newModel =
+                    { model
+                        | style = Animation.update subMsg model.style
+                    }
+
+            in
+                (newModel, Cmd.none)
+
+
 -- ** util
 
 
@@ -321,12 +356,13 @@ view model =
             layout [ Background.color lightGrey ] <|
                 case model.appState of
                     SessionPending ->
-                        loadingView
+                        loadingView model
 
                     AppDataPending _ ->
-                        loadingView
+                        loadingView model
 
                     InitializedApp initializedApplication ->
+--                        loadingView model
                         el [ width fill ] <|
                             map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
     in
@@ -338,17 +374,25 @@ view model =
 unsignedView : Element Msg
 unsignedView = none
 
-loadingView : Element a
-loadingView =
-    el [ width fill
-       , height fill
-       , Background.color <| secondaryColor
-       ]
-    <| el [ centerX
-          , centerY
-          , Font.center
-          ]
-        <| iconWithText "autorenew" "loading patchGirl..."
+loadingView : Model -> Element a
+loadingView model =
+    let
+        animationAttr =
+            List.map htmlAttribute (Animation.render model.style)
+
+        staticAttr =
+            [ width fill
+            , height fill
+            , Background.color <| secondaryColor
+            ]
+    in
+        el staticAttr
+            <| el [ centerX
+                  , centerY
+                  ]
+                <| row [] [ el animationAttr (icon "autorenew")
+                          , text "loading patchGirl..."
+                          ]
 
 
 
@@ -356,5 +400,35 @@ loadingView =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Sub.none
+subscriptions model =
+    case model.appState of
+        InitializedApp initializedApplication ->
+            let
+                (RequestCollection _ requestNodes) =
+                    initializedApplication.requestCollection
+
+                getRequestFiles : List RequestNode -> List File
+                getRequestFiles nodes =
+                    case nodes of
+                        [] ->
+                            []
+
+                        requestNode :: rest ->
+                            case requestNode of
+                                RequestFile file ->
+                                    file :: getRequestFiles rest
+
+                                RequestFolder { children } ->
+                                    getRequestFiles children ++ getRequestFiles rest
+
+                requestFiles =
+                    getRequestFiles requestNodes
+
+                builderMsg msg =
+                    InitializedApplicationMsg (InitializedApplication.BuilderAppMsg (BuilderApp.BuilderMsg msg))
+
+            in
+                Sub.batch (List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles))
+
+        _ ->
+            Sub.none

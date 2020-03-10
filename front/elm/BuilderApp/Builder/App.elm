@@ -9,7 +9,6 @@ import List.Extra as List
 import Combine as Combine
 import Regex as Regex
 import Uuid
-
 import Api.Generated as Client
 import Api.Converter as Client
 import Maybe.Extra as Maybe
@@ -34,6 +33,7 @@ import Dict as Dict
 import Json.Print as Json
 
 import PrivateAddress exposing (..)
+import Animation
 
 
 -- * model
@@ -50,6 +50,8 @@ type alias Model =
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
+    , requestPending : Bool
+    , runRequestIconAnimation : Animation.State
     }
 
 
@@ -68,6 +70,7 @@ type Msg
   | ServerError
   | AskSave
   | SaveSuccessfully
+  | Animate Animation.Msg
 
 
 -- * update
@@ -139,9 +142,18 @@ update msg model =
             let
                 newMsg =
                     buildRequestToRun model.keyValues model
+
+                newRunRequestIconAnimation =
+                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.scale 1.4 ]
+                                                         , Animation.to [ Animation.scale 1.2 ]
+                                                         ]
+                                        ] model.runRequestIconAnimation
+
                 newModel =
                     { model
                         | showResponseView = True
+                        , requestPending = True
+                        , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
                 (newModel, newMsg)
@@ -149,14 +161,25 @@ update msg model =
         LocalComputationDone result ->
             let
                 newModel =
-                    { model | requestComputationResult = Just (convertResultToResponse result) }
+                    { model
+                        | requestComputationResult = Just (convertResultToResponse result)
+                        , requestPending = False
+                    }
             in
                 (newModel, Cmd.none)
 
         RemoteComputationDone remoteComputationResult ->
             let
+                newRunRequestIconAnimation =
+                    Animation.interrupt [ Animation.wait (Time.millisToPosix 2000), Animation.to [ Animation.scale 1 ]
+                        ] model.runRequestIconAnimation
+
                 newModel =
-                    { model | requestComputationResult = Just remoteComputationResult }
+                    { model
+                        | requestComputationResult = Just remoteComputationResult
+                        , requestPending = False
+                        , runRequestIconAnimation = newRunRequestIconAnimation
+                    }
             in
                 (newModel, Cmd.none)
 
@@ -173,6 +196,15 @@ update msg model =
 
                 _ ->
                     (model, Cmd.none)
+
+        Animate subMsg ->
+            let
+                newModel =
+                    { model
+                        | runRequestIconAnimation = Debug.log "animate" <| Animation.update subMsg model.runRequestIconAnimation
+                    }
+            in
+                (newModel, Cmd.none)
 
         ServerError ->
             Debug.todo "server error"
@@ -329,7 +361,7 @@ buildRequestComputationInput envKeyValues builder =
         cleanUrl <|
             interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl)
     , body =
-        interpolate envKeyValues (Debug.log "raw body: " (editedOrNotEditedValue builder.httpBody))
+        interpolate envKeyValues (editedOrNotEditedValue builder.httpBody)
     }
 
 interpolateHeader : List (Storable NewKeyValue KeyValue) -> (String, String) -> (String, String)
@@ -614,13 +646,16 @@ mainActionButtonsView model =
             , alignBottom
             , Background.color secondaryColor
             , paddingXY 10 10
-            ]
+            ] ++ List.map htmlAttribute (Animation.render model.runRequestIconAnimation)
+
+        runIcon =
+            iconWithTextAndColor "send" "Run" primaryColor
 
     in
         row rowParam
             [ Input.button inputParam
                 { onPress = Just <| AskRun
-                , label = el [ centerY ] <| iconWithTextAndColor "send" "Run" primaryColor
+                , label = el [ centerY ] runIcon
                 }
             , case isBuilderDirty model of
                   True ->
@@ -691,3 +726,15 @@ labelInputView labelText =
                   )
     in
         Input.labelAbove [ centerY, size ] <| text labelText
+
+
+-- * subscriptions
+
+
+type alias ModelSubscriptions a =
+    { a | runRequestIconAnimation : Animation.State }
+
+subscriptions : ModelSubscriptions a -> Sub Msg
+subscriptions model =
+    Sub.batch [ Animation.subscription Animate [ model.runRequestIconAnimation ]
+              ]
