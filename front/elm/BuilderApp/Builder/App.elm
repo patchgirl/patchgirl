@@ -144,8 +144,8 @@ update msg model =
                     buildRequestToRun model.keyValues model
 
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.rotate (Animation.turn 0.05) ]
-                                                         , Animation.to [ Animation.rotate (Animation.turn -0.05) ]
+                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.rotate (Animation.turn -0.05) ]
+                                                         , Animation.to [ Animation.rotate (Animation.turn 0.05) ]
                                                          ]
                                         ] model.runRequestIconAnimation
 
