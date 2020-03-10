@@ -144,8 +144,8 @@ update msg model =
                     buildRequestToRun model.keyValues model
 
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.scale 1.4 ]
-                                                         , Animation.to [ Animation.scale 1.2 ]
+                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.rotate (Animation.turn 0.05) ]
+                                                         , Animation.to [ Animation.rotate (Animation.turn -0.05) ]
                                                          ]
                                         ] model.runRequestIconAnimation
 
@@ -157,6 +157,20 @@ update msg model =
             in
                 (newModel, newMsg)
 
+        RemoteComputationDone remoteComputationResult ->
+            let
+                newRunRequestIconAnimation =
+                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 0) ]
+                                        ] model.runRequestIconAnimation
+
+                newModel =
+                    { model
+                        | requestComputationResult = Just remoteComputationResult
+                        , runRequestIconAnimation = newRunRequestIconAnimation
+                    }
+            in
+                (newModel, Cmd.none)
+
         LocalComputationDone result ->
             let
                 newModel =
@@ -166,19 +180,6 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        RemoteComputationDone remoteComputationResult ->
-            let
-                newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.wait (Time.millisToPosix 2000), Animation.to [ Animation.scale 1 ]
-                        ] model.runRequestIconAnimation
-
-                newModel =
-                    { model
-                        | requestComputationResult = Just remoteComputationResult
-                        , runRequestIconAnimation = newRunRequestIconAnimation
-                    }
-            in
-                (newModel, Cmd.none)
 
         SetHttpBodyResponse newBody ->
             case model.requestComputationResult of
@@ -643,10 +644,16 @@ mainActionButtonsView model =
             , alignBottom
             , Background.color secondaryColor
             , paddingXY 10 10
-            ] ++ List.map htmlAttribute (Animation.render model.runRequestIconAnimation)
+            ]
 
+        runIcon : Element Msg
         runIcon =
-            iconWithTextAndColor "send" "Run" primaryColor
+            let
+                attrs : List (Html.Attribute Msg)
+                attrs =
+                    Animation.render model.runRequestIconAnimation
+            in
+                iconWithTextAndColorAndAttr "send" "Run" primaryColor attrs
 
     in
         row rowParam
@@ -658,7 +665,7 @@ mainActionButtonsView model =
                   True ->
                       Input.button inputParam
                           { onPress = Just <| AskSave
-                          , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
+                          , label = el [ centerY ] <| iconWithTextAndColor "save" "Save" primaryColor
                           }
 
                   False ->
