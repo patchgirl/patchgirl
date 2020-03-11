@@ -4,6 +4,7 @@ import Browser
 import Json.Encode as E
 import Application.App as Application
 import Animation
+import Animation.Messenger as Messenger
 import Application.Type exposing (..)
 import Http
 import InitializedApplication.Model as InitializedApplication
@@ -17,6 +18,15 @@ import Element.Font as Font
 import Element.Background as Background
 import Html
 import Html.Attributes as Html
+
+
+{- This is the first app that will get load.
+It will display a loader screen while fetching the necessary data:
+- user session
+- user data
+
+Once retrieved, it will send those data through a port to the real application
+-}
 
 
 -- * main
@@ -40,21 +50,26 @@ port loadApplication : E.Value -> Cmd msg
 
 
 type alias Model =
-    { appState : AppState
-    , style : Animation.State
+    { appState : LoaderState
+    , loaderStyle : Animation.State
+    , backgroundStyle : Messenger.State Msg
     }
 
-type AppState
+type LoaderState
     = SessionPending -- first state: we wait for the backend to give us a session
-    | AppDataPending -- second state: we wait for the backend to give us all our session's data
+    | AppDataPending -- second state: we wait for the backend to give us the session's related data
       { session : Client.Session
       , mRequestCollection : Maybe Client.RequestCollection
       , mEnvironments : Maybe (List Client.Environment)
       }
-    | InitializedApp InitializedApplication.Model -- third state: we can show the app
+    | DataLoaded -- third state: we can fade out the loader
+    | StopLoader -- fourth state: we can hide the loader
 
 
--- ** port model
+-- * port
+
+
+-- ** model
 
 
 type alias LoadedData =
@@ -62,6 +77,10 @@ type alias LoadedData =
     , requestCollection : Client.RequestCollection
     , environments : List Client.Environment
     }
+
+
+-- ** encoder
+
 
 loadedDataEncoder : LoadedData -> E.Value
 loadedDataEncoder { session, requestCollection, environments } =
@@ -72,6 +91,44 @@ loadedDataEncoder { session, requestCollection, environments } =
         ]
 
 
+-- ** start main app
+
+
+startMainApp : Model -> (Model, Cmd Msg)
+startMainApp model =
+    case model.appState of
+        AppDataPending { session, mRequestCollection, mEnvironments } ->
+            case (mRequestCollection, mEnvironments) of
+                (Just requestCollection, Just environments) ->
+                    let
+                        loadedData =
+                            { session = session
+                            , requestCollection = requestCollection
+                            , environments = environments
+                            }
+
+                        newBackgroundStyle =
+                            Animation.interrupt
+                                [ Animation.to
+                                      [ Animation.opacity 0
+                                      ]
+                                , Messenger.send LoaderConcealed
+                                ] model.backgroundStyle
+
+                        newModel =
+                            { model
+                                | appState = DataLoaded
+                                , backgroundStyle = newBackgroundStyle
+                            }
+                    in
+                        (newModel, loadApplication (loadedDataEncoder loadedData))
+
+                _ ->
+                    (model, Cmd.none)
+
+        _ ->
+            (model, Cmd.none)
+
 -- * message
 
 
@@ -79,31 +136,13 @@ type Msg
     = SessionFetched Client.Session
     | RequestCollectionFetched Client.RequestCollection
     | EnvironmentsFetched (List Client.Environment)
+    | LoaderConcealed
     | ServerError Http.Error
     | Animate Animation.Msg
 
 
 -- * init
 
-
-initialStyle =
-    let
-        animation =
-            Animation.styleWith (Animation.easing { duration = 10000 * 10000
-                                                  , ease = \u -> u
-                                                  }
-                                ) [ ]
-
-        looper =
-            Animation.loop
-                [ Animation.toWith (Animation.speed { perSecond = 2 })
-                      [ Animation.rotate (Animation.turn 1) ]
-                , Animation.set [ Animation.rotate (Animation.turn 0) ]
-                ]
-
-    in
-        Animation.interrupt [ looper ] animation
-        --animation
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -114,9 +153,21 @@ init _ =
         appState =
             SessionPending
 
+        loaderStyle =
+            Animation.interrupt
+                [ Animation.loop
+                      [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                      , Animation.set [ Animation.rotate (Animation.turn 0) ]
+                      ]
+                ] (Animation.style [])
+
+        backgroundStyle =
+            Animation.style [ Animation.opacity 1 ]
+
         model =
             { appState = appState
-            , style = initialStyle
+            , loaderStyle = loaderStyle
+            , backgroundStyle = backgroundStyle
             }
 
     in
@@ -181,19 +232,31 @@ update msg model =
                 _ ->
                     Debug.todo "already initialized app received initialization infos"
 
+        LoaderConcealed ->
+            let
+                newModel =
+                    { model | appState = StopLoader }
+            in
+                (newModel, Cmd.none)
 
         ServerError error ->
             Debug.todo "server error" error
 
         Animate subMsg ->
             let
+                (newBackgroundStyle, cmd) =
+                    Messenger.update subMsg model.backgroundStyle
+
+                newLoaderStyle =
+                    Animation.update subMsg model.loaderStyle
+
                 newModel =
                     { model
-                        | style = Animation.update subMsg model.style
+                        | backgroundStyle = newBackgroundStyle
+                        , loaderStyle = newLoaderStyle
                     }
-
             in
-                (newModel, Cmd.none)
+                (newModel, cmd)
 
 
 -- * util
@@ -228,31 +291,6 @@ environmentsResultToMsg result =
             ServerError error
 
 
--- * port
-
-
-startMainApp : Model -> (Model, Cmd Msg)
-startMainApp model =
-    case model.appState of
-        AppDataPending { session, mRequestCollection, mEnvironments } ->
-            case (mRequestCollection, mEnvironments) of
-                (Just requestCollection, Just environments) ->
-                    let
-                        loadedData =
-                            { session = session
-                            , requestCollection = requestCollection
-                            , environments = environments
-                            }
-                    in
-                        (model, loadApplication (loadedDataEncoder loadedData))
-
-                _ ->
-                    (model, Cmd.none)
-
-        _ ->
-            (model, Cmd.none)
-
-
 -- * view
 
 
@@ -267,31 +305,34 @@ view model =
                 AppDataPending _ ->
                     loadingView model
 
-                InitializedApp initializedApplication ->
+                DataLoaded ->
+                    loadingView model
+
+                StopLoader ->
                     none
     in
-        layout [ Background.color lightGrey, htmlAttribute(Html.style "height" "100%") ] element
+        layout [ Background.color lightGrey ] element
 
 loadingView : Model -> Element a
 loadingView model =
     let
-        animationAttr =
-            List.map htmlAttribute (Animation.render model.style)
+        loaderAttr =
+            List.map htmlAttribute (Animation.render model.loaderStyle)
+
+        backgroundAttr =
+            List.map htmlAttribute (Animation.render model.backgroundStyle)
 
         staticAttr =
             [ width fill
             , height fill
             , Background.color <| secondaryColor
-            ]
+            ] ++ backgroundAttr
     in
         el staticAttr
             <| el [ centerX
                   , centerY
                   ]
-                <| row [] [ el animationAttr (icon "autorenew")
-                          , text "loading patchGirl..."
-                          ]
-
+                <| el loaderAttr (text "Loading")
 
 
 -- * subscriptions
@@ -299,4 +340,7 @@ loadingView model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Animation.subscription Animate [ model.backgroundStyle ]
+        , Animation.subscription Animate [ model.loaderStyle ]
+        ]
