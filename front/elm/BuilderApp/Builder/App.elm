@@ -67,6 +67,7 @@ type Msg
   | AskRun
   | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
   | RemoteComputationDone RequestComputationResult -- request ran from the server
+  | RemoteComputationFailed
   | ServerError
   | AskSave
   | SaveSuccessfully
@@ -171,6 +172,20 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
+        RemoteComputationFailed ->
+            let
+                newRunRequestIconAnimation =
+                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 0) ]
+                                        ] model.runRequestIconAnimation
+
+                newModel =
+                    { model
+                        | requestComputationResult = Nothing
+                        , runRequestIconAnimation = newRunRequestIconAnimation
+                    }
+            in
+                (newModel, Cmd.none)
+
         LocalComputationDone result ->
             let
                 newModel =
@@ -199,7 +214,7 @@ update msg model =
             let
                 newModel =
                     { model
-                        | runRequestIconAnimation = Debug.log "animate" <| Animation.update subMsg model.runRequestIconAnimation
+                        | runRequestIconAnimation = Animation.update subMsg model.runRequestIconAnimation
                     }
             in
                 (newModel, Cmd.none)
@@ -238,7 +253,7 @@ remoteComputationDoneToMsg result =
                 Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
 
         Err error ->
-            ServerError
+            RemoteComputationFailed
 
 parseHeaders : String -> List(String, String)
 parseHeaders headers =

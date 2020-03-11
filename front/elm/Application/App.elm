@@ -8,6 +8,7 @@ import Element.Font as Font
 import Element.Background as Background
 import ViewUtil exposing (..)
 import Html as Html
+import Uuid
 
 import InitializedApplication.Model as InitializedApplication
 import InitializedApplication.App as InitializedApplication
@@ -23,6 +24,12 @@ import Url.Parser as Url exposing ((</>))
 import Animation
 import BuilderApp.App as BuilderApp
 import BuilderApp.Builder.App as Builder
+import SignIn.App as SignIn
+import SignUp.App as SignUp
+import InitializePassword.App as InitializePassword
+import EnvironmentEdition.App as EnvironmentEdition
+import EnvironmentToRunSelection.App as EnvSelection
+import BuilderApp.BuilderTree.App as BuilderTree
 
 
 -- ** model
@@ -31,117 +38,91 @@ import BuilderApp.Builder.App as Builder
 type alias Model =
     { page : Page
     , navigationKey : Navigation.Key
-    , appState : AppState
     , url : Url.Url
-    , style : Animation.State
+    , session : Session
+    , loadingStyle : Animation.State -- use to fade in the app on init
+    -- INITIALIZE PASSWORD
+    , initializePassword1 : String
+    , initializePassword2 : String
+    , initializePasswordState : InitializePasswordState
+    -- BUILDER APP
+    , displayedRequestNodeMenuId : Maybe Uuid.Uuid
+    , requestCollection : RequestCollection
+    -- ENVIRONMENT
+    , selectedEnvironmentToRunIndex : Maybe Int
+    , selectedEnvironmentToEditId : Maybe Int
+    , environments : List Environment
     }
 
-type AppState
-    = SessionPending -- first state: we wait for the backend to give us a session
-    | AppDataPending -- second state: we wait for the backend to give us all our session's data
-      { session : Session
-      , mRequestCollection : Maybe RequestCollection
-      , mEnvironments : Maybe (List Environment)
-      }
-    | InitializedApp InitializedApplication.Model -- third state: we can show the app
+type alias UserData =
+    { session : Session
+    , requestCollection : RequestCollection
+    , environments : List Environment
+    }
 
 
 -- ** message
 
 
 type Msg
-    = SessionFetched Session
-    | LinkClicked UrlRequest
+    = LinkClicked UrlRequest
     | UrlChanged Url.Url
-    | RequestCollectionFetched RequestCollection
-    | EnvironmentsFetched (List Environment)
-    | InitializedApplicationMsg InitializedApplication.Msg
     | ServerError Http.Error
+    | BuilderTreeMsg BuilderTree.Msg
+    | BuilderAppMsg BuilderApp.Msg
+    | EnvironmentEditionMsg EnvironmentEdition.Msg
+    | MainNavBarMsg MainNavBar.Msg
+    | SignInMsg SignIn.Msg
+    | SignUpMsg SignUp.Msg
+    | InitializePasswordMsg InitializePassword.Msg
     | Animate Animation.Msg
 
 
 -- ** init
 
 
-reload : Url.Url -> Navigation.Key -> (Model, Cmd Msg)
-reload url navKey =
+init : UserData -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
+init { session, requestCollection, environments } url navigationKey =
     let
-        msg =
-            Cmd.batch [ Client.getApiSessionWhoami "" "" getSessionWhoamiResult
-                      , Navigation.pushUrl model.navigationKey <| Debug.log "url" (Url.toString url)
+        page =
+            urlToPage url
+
+        displayedRequestNodeMenuId =
+            Nothing
+
+        selectedEnvironmentToEditId =
+            Just 0
+
+        selectedEnvironmentToRunIndex =
+            Just 0
+
+        initialLoadingStyle =
+            Animation.style [ Animation.opacity 0 ]
+
+        loadingStyle =
+            Animation.interrupt
+                [ Animation.to
+                      [ Animation.opacity 1
                       ]
-
-        page =
-            urlToPage url
-
-        appState =
-            SessionPending
+                ] initialLoadingStyle
 
         model =
-            { page = page
-            , navigationKey = navKey
-            , appState = appState
+            { session = session
+            , page = page
             , url = url
-            , style = initialStyle
+            , navigationKey = navigationKey
+            , loadingStyle = loadingStyle
+            , initializePassword1 = ""
+            , initializePassword2 = ""
+            , initializePasswordState = InitialPasswordState
+            , displayedRequestNodeMenuId = displayedRequestNodeMenuId
+            , requestCollection = requestCollection
+            , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
+            , selectedEnvironmentToEditId = selectedEnvironmentToEditId
+            , environments = environments
             }
-
     in
-        (model, msg)
-
-initialStyle =
-    let
-        animation =
-            Animation.styleWith (Animation.easing { duration = 10000 * 10000
-                                                  , ease = \u -> u
-                                                  }
-                                ) [ ]
-
-        looper =
-            Animation.loop
-                [ Animation.toWith (Animation.speed { perSecond = 2 })
-                      [ Animation.rotate (Animation.turn 1) ]
-                , Animation.set [ Animation.rotate (Animation.turn 0) ]
-                ]
-
-    in
-        Animation.interrupt [ looper ] animation
-        --animation
-
-init : () -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
-init _ url navKey =
-    let
-        msg =
-            Client.getApiSessionWhoami "" "" getSessionWhoamiResult
-
-        page =
-            urlToPage url
-
-        appState =
-            SessionPending
-
-        model =
-            { page = page
-            , navigationKey = navKey
-            , appState = appState
-            , url = url
-            , style = initialStyle
-            }
-
-    in
-        (model, msg)
-
-getSessionWhoamiResult : Result Http.Error Client.Session -> Msg
-getSessionWhoamiResult result =
-    case result of
-        Ok session ->
-            let
-                newSession =
-                    Client.convertSessionFromBackToFront session
-            in
-                SessionFetched newSession
-
-        Err error ->
-            Debug.log "whoami" (ServerError error)
+        (model, Cmd.none)
 
 
 -- ** update
@@ -150,83 +131,6 @@ getSessionWhoamiResult result =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        SessionFetched session ->
-            let
-                newAppState =
-                    AppDataPending { session = session
-                                   , mRequestCollection = Nothing
-                                   , mEnvironments = Nothing
-                                   }
-
-                getRequestCollection =
-                    Client.getApiRequestCollection "" (getCsrfToken session) requestCollectionResultToMsg
-
-                getEnvironments =
-                    Client.getApiEnvironment "" (getCsrfToken session) environmentsResultToMsg
-
-                getAppData =
-                    Cmd.batch
-                        [ getRequestCollection
-                        , getEnvironments
-                        ]
-
-                newModel =
-                    { model | appState = newAppState }
-
-            in
-                (newModel, getAppData)
-
-        EnvironmentsFetched environments ->
-            case model.appState of
-                AppDataPending pending ->
-                    let
-                        newState =
-                            AppDataPending { pending | mEnvironments = Just environments }
-                    in
-                        { model | appState = newState }
-                            |> upgradeModel
-
-                _ ->
-                    Debug.todo "already initialized app received initialization infos"
-
-        RequestCollectionFetched requestCollection ->
-            case model.appState of
-                AppDataPending pending ->
-                    let
-                        newState =
-                            AppDataPending { pending | mRequestCollection = Just requestCollection }
-                    in
-                        { model | appState = newState }
-                            |> upgradeModel
-
-                _ ->
-                    Debug.todo "already initialized app received initialization infos"
-
-        InitializedApplicationMsg subMsg ->
-            case subMsg of
-                InitializedApplication.SignInMsg (SignIn.SignInSucceed _) ->
-                    resetApp model
-
-                InitializedApplication.MainNavBarMsg (MainNavBar.SignOutSucceed _) ->
-                    resetApp model
-
-                _ ->
-                    case model.appState of
-                        InitializedApp initializedApplication ->
-                            let
-                                (newInitializedApplication, newMsg) =
-                                    InitializedApplication.update subMsg initializedApplication
-
-                                newModel =
-                                    { model | appState = InitializedApp newInitializedApplication }
-
-                            in
-                                (newModel, Cmd.map InitializedApplicationMsg newMsg)
-
-                        _ ->
-                            Debug.todo "InitializedApplicationMsg received with unitialized Application - This should never happen"
-
-
         ServerError error ->
             Debug.todo "server error" error
 
@@ -236,7 +140,7 @@ update msg model =
                     urlToPage url
 
                 newModel =
-                    changePage model newPage
+                    { model | page = newPage }
             in
                 (newModel, Cmd.none)
 
@@ -248,102 +152,70 @@ update msg model =
                 External url ->
                     (model, Navigation.load url)
 
+        BuilderTreeMsg subMsg ->
+            let
+                (newModel, newSubMsg) = BuilderTree.update subMsg model
+            in
+                (newModel, Cmd.map BuilderTreeMsg newSubMsg)
+
+        BuilderAppMsg subMsg ->
+            let
+                (newModel, newMsg) = BuilderApp.update subMsg model
+            in
+                (newModel, Cmd.map BuilderAppMsg newMsg)
+
+        EnvironmentEditionMsg subMsg ->
+            case EnvironmentEdition.update subMsg model of
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
+
+        MainNavBarMsg subMsg ->
+            case MainNavBar.update subMsg model of
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map MainNavBarMsg newSubMsg)
+
+        SignInMsg subMsg ->
+            case model.session of
+                Visitor visitorSession ->
+                    case SignIn.update subMsg visitorSession of
+                        (newVisitorSession, newSubMsg) ->
+                            let newModel =
+                                    { model | session = Visitor newVisitorSession }
+                            in
+                                (newModel, Cmd.map SignInMsg newSubMsg)
+
+                _ ->
+                    Debug.todo "cannot sign in if not a visitor"
+
+        SignUpMsg subMsg ->
+            case model.session of
+                Visitor visitorSession ->
+                    case SignUp.update subMsg visitorSession of
+                        (newVisitorSession, newSubMsg) ->
+                            let newModel =
+                                    { model | session = Visitor newVisitorSession }
+                            in
+                                (newModel, Cmd.map SignUpMsg newSubMsg)
+
+                _ ->
+                    Debug.todo "cannot sign up if not a visitor"
+
+        InitializePasswordMsg subMsg ->
+            case InitializePassword.update subMsg model of
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map InitializePasswordMsg newSubMsg)
+
         Animate subMsg ->
             let
+                newLoadingStyle =
+                    Animation.update subMsg model.loadingStyle
+
                 newModel =
                     { model
-                        | style = Animation.update subMsg model.style
+                        | loadingStyle = newLoadingStyle
                     }
-
             in
                 (newModel, Cmd.none)
-
-
--- ** util
-
-
-requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> Msg
-requestCollectionResultToMsg result =
-    case result of
-        Ok requestCollection ->
-            let
-                newRequestCollection =
-                    Client.convertRequestCollectionFromBackToFront requestCollection
-            in
-                RequestCollectionFetched newRequestCollection
-
-        Err error ->
-            ServerError error
-
-environmentsResultToMsg : Result Http.Error (List Client.Environment) -> Msg
-environmentsResultToMsg result =
-    case result of
-        Ok clientEnvironments ->
-            let
-                environments = List.map Client.convertEnvironmentFromBackToFront clientEnvironments
-            in
-                EnvironmentsFetched environments
-
-        Err error ->
-            ServerError error
-
-upgradeModel : Model -> (Model, Cmd Msg)
-upgradeModel model =
-    case model.appState of
-        AppDataPending { session, mRequestCollection, mEnvironments } ->
-            case (mRequestCollection, mEnvironments) of
-                (Just requestCollection, Just environments) ->
-                    let
-                        newAppState =
-                            InitializedApp <|
-                                InitializedApplication.createModel model.page session requestCollection environments
-
-                        newModel =
-                            { model | appState = newAppState }
-                    in
-                        (newModel, Cmd.none)
-
-                _ ->
-                    (model, Cmd.none)
-
-        _ ->
-            (model, Cmd.none)
-
-
-changePage : Model -> Page -> Model
-changePage model newPage =
-    let
-        newModel =
-            case model.appState of
-                InitializedApp initializedApplicationModel ->
-                    let
-                        newAppState =
-                            InitializedApp { initializedApplicationModel
-                                               | page = newPage
-                                           }
-                    in
-                        { model | appState = newAppState }
-
-                _ ->
-                    model
-    in
-        { newModel | page = newPage }
-
-
-resetApp : Model -> (Model, Cmd Msg)
-resetApp model =
-    let
-        url =
-            model.url
-
-        newUrl =
-            { url
-                | path = "/"
-                , query = Nothing
-                , fragment = Nothing
-            }
-    in
-        reload newUrl model.navigationKey
 
 
 -- ** view
@@ -352,48 +224,72 @@ resetApp model =
 view : Model -> Browser.Document Msg
 view model =
     let
+        loadingStyle =
+            List.map htmlAttribute (Animation.render model.loadingStyle)
+
+        bodyAttr =
+            [ Background.color lightGrey ] ++ loadingStyle
+
         body =
-            layout [ Background.color lightGrey ] <|
-                case model.appState of
-                    SessionPending ->
-                        loadingView model
-
-                    AppDataPending _ ->
-                        loadingView model
-
-                    InitializedApp initializedApplication ->
---                        loadingView model
-                        el [ width fill ] <|
-                            map InitializedApplicationMsg (InitializedApplication.view initializedApplication)
+            layout bodyAttr (mainView model)
     in
         { title = "PatchGirl"
         , body = [body]
         }
 
 
-unsignedView : Element Msg
-unsignedView = none
-
-loadingView : Model -> Element a
-loadingView model =
+mainView : Model -> Element Msg
+mainView model =
     let
-        animationAttr =
-            List.map htmlAttribute (Animation.render model.style)
+        userView =
+            case model.session of
+                Visitor visitorSession ->
+                    visitorView model visitorSession
 
-        staticAttr =
-            [ width fill
-            , height fill
-            , Background.color <| secondaryColor
-            ]
+                SignedUser {} ->
+                    signedUserView model
+
     in
-        el staticAttr
-            <| el [ centerX
-                  , centerY
-                  ]
-                <| row [] [ el animationAttr (icon "autorenew")
-                          , text "loading patchGirl..."
-                          ]
+        column [ width fill, height fill
+               , centerY
+               , spacing 30
+               ]
+            [ map MainNavBarMsg (MainNavBar.view model)
+            , userView
+            ]
 
+signedUserView : Model -> Element Msg
+signedUserView model =
+    el contentAttributes <|
+        case model.page of
+            HomePage -> builderView model Nothing
+            ReqPage mId -> builderView model mId
+            EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+            SignInPage -> builderView model Nothing
+            SignUpPage -> builderView model Nothing
+            SignOutPage -> none
+            InitializePasswordPage accountId signUpToken ->
+                map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
+
+visitorView : Model -> VisitorSession -> Element Msg
+visitorView model visitorSession =
+    el contentAttributes <|
+        case model.page of
+            HomePage -> builderView model Nothing
+            ReqPage mId -> builderView model mId
+            EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+            SignInPage -> map SignInMsg (SignIn.view visitorSession)
+            SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
+            SignOutPage -> none
+            InitializePasswordPage accountId signUpToken ->
+                map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
+
+contentAttributes =
+    [ width fill ]
+
+builderView : Model -> Maybe Uuid.Uuid -> Element Msg
+builderView model id =
+    map BuilderAppMsg (BuilderApp.view model)
 
 
 -- ** subscriptions
@@ -401,34 +297,34 @@ loadingView model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.appState of
-        InitializedApp initializedApplication ->
-            let
-                (RequestCollection _ requestNodes) =
-                    initializedApplication.requestCollection
+    let
+        (RequestCollection _ requestNodes) =
+            model.requestCollection
 
-                getRequestFiles : List RequestNode -> List File
-                getRequestFiles nodes =
-                    case nodes of
-                        [] ->
-                            []
+        getRequestFiles : List RequestNode -> List File
+        getRequestFiles nodes =
+            case nodes of
+                [] ->
+                    []
 
-                        requestNode :: rest ->
-                            case requestNode of
-                                RequestFile file ->
-                                    file :: getRequestFiles rest
+                requestNode :: rest ->
+                    case requestNode of
+                        RequestFile file ->
+                            file :: getRequestFiles rest
 
-                                RequestFolder { children } ->
-                                    getRequestFiles children ++ getRequestFiles rest
+                        RequestFolder { children } ->
+                            getRequestFiles children ++ getRequestFiles rest
 
-                requestFiles =
-                    getRequestFiles requestNodes
+        requestFiles =
+            getRequestFiles requestNodes
 
-                builderMsg msg =
-                    InitializedApplicationMsg (InitializedApplication.BuilderAppMsg (BuilderApp.BuilderMsg msg))
+        builderMsg msg =
+            BuilderAppMsg (BuilderApp.BuilderMsg msg)
 
-            in
-                Sub.batch (List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles))
-
-        _ ->
-            Sub.none
+        buildersSubs =
+            List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles)
+    in
+        Sub.batch
+            ( [ Animation.subscription Animate [ model.loadingStyle ]
+              ] ++ buildersSubs
+            )

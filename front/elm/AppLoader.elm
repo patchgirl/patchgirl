@@ -1,8 +1,8 @@
 port module AppLoader exposing (..)
 
 import Browser
+import Time
 import Json.Encode as E
-import Application.App as Application
 import Animation
 import Animation.Messenger as Messenger
 import Application.Type exposing (..)
@@ -109,10 +109,11 @@ startMainApp model =
 
                         newBackgroundStyle =
                             Animation.interrupt
-                                [ Animation.to
+                                [ --Animation.wait (Time.millisToPosix 5000000)
+                                Animation.to
                                       [ Animation.opacity 0
                                       ]
-                                , Messenger.send LoaderConcealed
+                                , Messenger.send (LoaderConcealed loadedData)
                                 ] model.backgroundStyle
 
                         newModel =
@@ -121,7 +122,7 @@ startMainApp model =
                                 , backgroundStyle = newBackgroundStyle
                             }
                     in
-                        (newModel, loadApplication (loadedDataEncoder loadedData))
+                        (newModel, Cmd.none)
 
                 _ ->
                     (model, Cmd.none)
@@ -136,7 +137,7 @@ type Msg
     = SessionFetched Client.Session
     | RequestCollectionFetched Client.RequestCollection
     | EnvironmentsFetched (List Client.Environment)
-    | LoaderConcealed
+    | LoaderConcealed LoadedData
     | ServerError Http.Error
     | Animate Animation.Msg
 
@@ -232,12 +233,12 @@ update msg model =
                 _ ->
                     Debug.todo "already initialized app received initialization infos"
 
-        LoaderConcealed ->
+        LoaderConcealed loadedData ->
             let
                 newModel =
                     { model | appState = StopLoader }
             in
-                (newModel, Cmd.none)
+                (Debug.log "hey" newModel, loadApplication (loadedDataEncoder loadedData))
 
         ServerError error ->
             Debug.todo "server error" error

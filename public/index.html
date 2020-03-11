@@ -32,17 +32,21 @@
     <!-- End Matomo Code -->
 
   </head>
-  <body>
+  <body style="background-color=rgba(245,248,250,1)">
+    <div id="loader"></div>
     <div id="app"></div>
 
     <script>
       var loader = Elm.AppLoader.init({
-        node: document.getElementById("app")
+        node: document.getElementById("loader")
       });
 
-
-      loader.ports.loadApplication.subscribe(function(initializedData) {
-        console.log(initializedData);
+      loader.ports.loadApplication.subscribe(function(userData) {
+        console.log(userData);
+        Elm.Main.init({
+          node: document.getElementById("app"),
+          flags: userData
+        });
       });
     </script>
   </body>
