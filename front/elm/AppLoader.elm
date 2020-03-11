@@ -238,7 +238,7 @@ update msg model =
                 newModel =
                     { model | appState = StopLoader }
             in
-                (Debug.log "hey" newModel, loadApplication (loadedDataEncoder loadedData))
+                (newModel, loadApplication (loadedDataEncoder loadedData))
 
         ServerError error ->
             Debug.todo "server error" error
@@ -270,7 +270,7 @@ getSessionWhoamiResult result =
             SessionFetched session
 
         Err error ->
-            Debug.log "whoami" (ServerError error)
+            ServerError error
 
 
 requestCollectionResultToMsg : Result Http.Error Client.RequestCollection -> Msg

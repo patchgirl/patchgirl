@@ -216,7 +216,7 @@ newEnvironmentResultToMsg name result =
             EnvironmentCreated id name
 
         Err error ->
-            Debug.log "test" EnvServerError
+            EnvServerError
 
 updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
 updateEnvironmentResultToMsg id name result =

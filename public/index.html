@@ -42,7 +42,6 @@
       });
 
       loader.ports.loadApplication.subscribe(function(userData) {
-        console.log(userData);
         Elm.Main.init({
           node: document.getElementById("app"),
           flags: userData

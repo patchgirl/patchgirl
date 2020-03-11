@@ -114,7 +114,7 @@ validEmail email =
 
 postSessionSignUpResultToMsg : Result Http.Error () -> Msg
 postSessionSignUpResultToMsg result =
-    case Debug.log "result" result of
+    case result of
         Ok () ->
             SignUpSucceed
 
