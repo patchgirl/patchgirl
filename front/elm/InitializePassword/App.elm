@@ -13,7 +13,6 @@ import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import Regex as Regex
-import InitializedApplication.Model exposing(..)
 import Uuid
 
 

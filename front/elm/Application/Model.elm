@@ -1,13 +1,23 @@
-module InitializedApplication.Model exposing (..)
+module Application.Model exposing (..)
 
 import List.Extra as List
 import Application.Type exposing (..)
 import Page exposing(..)
 import Uuid
+import Browser.Navigation as Navigation
+import Animation
+import Url as Url
+
+
+-- * model
+
 
 type alias Model =
-    { session : Session
-    , page : Page
+    { page : Page
+    , navigationKey : Navigation.Key
+    , url : Url.Url
+    , session : Session
+    , loadingStyle : Animation.State -- use to fade in the app on init
     -- INITIALIZE PASSWORD
     , initializePassword1 : String
     , initializePassword2 : String
@@ -15,14 +25,11 @@ type alias Model =
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : RequestCollection
-    -- POSTMAN
-    --, postmanModel : Maybe (List BuilderApp.RequestNode)
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
     , environments : List Environment
     }
-
 
 -- * environment
 
@@ -54,28 +61,3 @@ getEnvironmentToEdit model =
         selectEnvironment id = List.find (\env -> env.id == id) model.environments
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
-
-
--- * model
-
-
-createModel : Page -> Session -> RequestCollection -> List Environment -> Model
-createModel page session requestCollection environments =
-  let
-      displayedRequestNodeMenuId = Nothing
-      selectedEnvironmentToEditId = Just 0
-      selectedEnvironmentToRunIndex = Just 0
-
-  in
-      { session = session
-      , page = page
-      , initializePassword1 = ""
-      , initializePassword2 = ""
-      , initializePasswordState = InitialPasswordState
-      , displayedRequestNodeMenuId = displayedRequestNodeMenuId
-      , requestCollection = requestCollection
-      --, postmanModel = Nothing
-      , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
-      , selectedEnvironmentToEditId = selectedEnvironmentToEditId
-      , environments = environments
-      }

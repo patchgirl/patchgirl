@@ -11,7 +11,7 @@ import Http as Http
 import Application.Type exposing (..)
 import EnvironmentToRunSelection.App as EnvSelection
 import List.Extra as List
-import InitializedApplication.Model as InitializedApplication
+import Application.Model as Application
 
 import Element exposing (..)
 import Element.Background as Background
@@ -118,7 +118,7 @@ getBuilder model =
             (Just _, Just file) ->
                 let
                     keyValuesToRun =
-                        (InitializedApplication.getEnvironmentKeyValuesToRun model)
+                        (Application.getEnvironmentKeyValuesToRun model)
 
                 in
                     Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun)

@@ -10,8 +10,6 @@ import ViewUtil exposing (..)
 import Html as Html
 import Uuid
 
-import InitializedApplication.Model as InitializedApplication
-import InitializedApplication.App as InitializedApplication
 import SignIn.App as SignIn
 import MainNavBar.App as MainNavBar
 import Application.Type exposing (..)
@@ -30,29 +28,11 @@ import InitializePassword.App as InitializePassword
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
 import BuilderApp.BuilderTree.App as BuilderTree
+import Application.Model exposing (..)
 
 
 -- ** model
 
-
-type alias Model =
-    { page : Page
-    , navigationKey : Navigation.Key
-    , url : Url.Url
-    , session : Session
-    , loadingStyle : Animation.State -- use to fade in the app on init
-    -- INITIALIZE PASSWORD
-    , initializePassword1 : String
-    , initializePassword2 : String
-    , initializePasswordState : InitializePasswordState
-    -- BUILDER APP
-    , displayedRequestNodeMenuId : Maybe Uuid.Uuid
-    , requestCollection : RequestCollection
-    -- ENVIRONMENT
-    , selectedEnvironmentToRunIndex : Maybe Int
-    , selectedEnvironmentToEditId : Maybe Int
-    , environments : List Environment
-    }
 
 type alias UserData =
     { session : Session

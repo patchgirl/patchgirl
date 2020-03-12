@@ -7,8 +7,6 @@ import Animation
 import Animation.Messenger as Messenger
 import Application.Type exposing (..)
 import Http
-import InitializedApplication.Model as InitializedApplication
-import InitializedApplication.App as InitializedApplication
 import Api.Generated as Client
 import Api.Converter as Client
 import ViewUtil exposing (..)

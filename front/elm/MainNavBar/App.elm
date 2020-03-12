@@ -10,7 +10,6 @@ import ViewUtil exposing (..)
 
 import Html as Html
 import Html.Attributes as Html
-import InitializedApplication.Model exposing (..)
 import Application.Type exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
