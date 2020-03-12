@@ -55,12 +55,6 @@ getEnvironmentToEdit model =
     in
         Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
 
-getEnvironmentKeyValuesToEdit : Model -> List (Storable NewKeyValue KeyValue)
-getEnvironmentKeyValuesToEdit model =
-    getEnvironmentToEdit model
-        |> Maybe.map .keyValues
-        |> Maybe.withDefault []
-
 
 -- * model
 
