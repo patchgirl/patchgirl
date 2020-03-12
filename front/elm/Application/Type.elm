@@ -4,6 +4,13 @@ import Uuid
 import Dict
 import Animation
 
+-- * menu
+
+
+type MainMenuName
+    = SignInMenu
+    | BlogMenu
+
 
 -- * session
 

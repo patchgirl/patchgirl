@@ -92,6 +92,7 @@ init { session, requestCollection, environments } url navigationKey =
             , url = url
             , navigationKey = navigationKey
             , loadingStyle = loadingStyle
+            , showMainMenuName = Nothing
             , initializePassword1 = ""
             , initializePassword2 = ""
             , initializePasswordState = InitialPasswordState

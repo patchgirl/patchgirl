@@ -18,6 +18,8 @@ type alias Model =
     , url : Url.Url
     , session : Session
     , loadingStyle : Animation.State -- use to fade in the app on init
+    -- MENU
+    , showMainMenuName : Maybe MainMenuName
     -- INITIALIZE PASSWORD
     , initializePassword1 : String
     , initializePassword2 : String

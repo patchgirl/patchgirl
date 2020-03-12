@@ -24,6 +24,7 @@ type alias Model a =
     { a
       | session : Session
       , page : Page
+      , showMainMenuName : Maybe MainMenuName
     }
 
 
@@ -38,6 +39,8 @@ type Msg
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
+    | ShowMainMenuName MainMenuName
+    | HideMainMenuName
 
 
 -- * update
@@ -87,6 +90,20 @@ update msg model =
 
         SignOutSucceed _ ->
             Debug.todo "unreachable state: sign out"
+
+        HideMainMenuName ->
+            let
+                newModel =
+                    { model | showMainMenuName = Nothing }
+            in
+                (newModel, Cmd.none)
+
+        ShowMainMenuName mainMenuName ->
+            let
+                newModel =
+                    { model | showMainMenuName = Just mainMenuName }
+            in
+                (newModel, Cmd.none)
 
 
 -- * util
@@ -154,12 +171,44 @@ rightView model =
         SignedUser _ ->
             signedUserRightView model
 
-blogView : Element Msg
-blogView =
-    link ([ paddingXY 20 0 ] ++ mainLinkAttribute)
+blogView : Model a -> Element Msg
+blogView model =
+    link ( [ paddingXY 20 0 ]
+           ++ mainLinkAttribute
+           ++ [ Events.onMouseEnter (ShowMainMenuName BlogMenu), Events.onMouseLeave HideMainMenuName ]
+         )
               { url = "https://blog.patchgirl.io"
-              , label = el [] (text "Blog")
+              , label = el [] <|
+                  case model.showMainMenuName of
+                      Just BlogMenu ->
+                          el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Blog")) ]
+                              <| iconWithTextAndColor "menu_book" "" primaryColor
+
+                      _ ->
+                          iconWithTextAndColor "menu_book" "" secondaryColor
               }
+
+visitorRightView : Model a -> Element Msg
+visitorRightView model =
+    row [ centerX, centerY, paddingXY 10 0, height fill ]
+        [ blogView model
+        , link ( mainLinkAttribute
+                 ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage)
+                 ++ [ Events.onMouseEnter (ShowMainMenuName SignInMenu), Events.onMouseLeave HideMainMenuName ]
+               )
+              { url = "#signIn"
+              , label =
+                  el [] <|
+                      case model.showMainMenuName of
+                          Just SignInMenu ->
+                              el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ]
+                                  <| iconWithTextAndColor "vpn_key" "" primaryColor
+
+                          _ ->
+                              iconWithTextAndColor "vpn_key" "" secondaryColor
+              }
+        , githubLinkView
+        ]
 
 githubLinkView : Element Msg
 githubLinkView =
@@ -172,21 +221,6 @@ githubLinkView =
                 }
         }
 
-visitorRightView : Model a -> Element Msg
-visitorRightView model =
-    row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage))
-              { url = "#signIn"
-              , label = el [] (text "Sign in")
-              }
-        , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenSignUpPage SignUpPage))
-            { url = "#signUp"
-            , label = el [] (text "Sign up")
-            }
-        , blogView
-        , githubLinkView
-        ]
-
 signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
@@ -194,7 +228,7 @@ signedUserRightView model =
             { url = href SignOutPage
             , label = el [] (text "Sign out")
             }
-        , blogView
+        , blogView model
         , githubLinkView
         ]
 
