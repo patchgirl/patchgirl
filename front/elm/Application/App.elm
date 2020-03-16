@@ -244,11 +244,13 @@ signedUserView model =
     el contentAttributes <|
         case model.page of
             HomePage -> builderView model Nothing
+            NotFoundPage -> notFoundView
             ReqPage mId -> builderView model mId
             EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
             SignInPage -> builderView model Nothing
             SignUpPage -> builderView model Nothing
             SignOutPage -> none
+            OAuthCallbackPage code -> text "callback"
             InitializePasswordPage accountId signUpToken ->
                 map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
 
@@ -257,13 +259,19 @@ visitorView model visitorSession =
     el contentAttributes <|
         case model.page of
             HomePage -> builderView model Nothing
+            NotFoundPage -> notFoundView
             ReqPage mId -> builderView model mId
             EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
             SignInPage -> map SignInMsg (SignIn.view visitorSession)
             SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
             SignOutPage -> none
+            OAuthCallbackPage code -> text "callback"
             InitializePasswordPage accountId signUpToken ->
                 map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
+
+notFoundView : Element Msg
+notFoundView =
+    el [ centerY, centerX ] (text "not found")
 
 contentAttributes =
     [ width fill ]

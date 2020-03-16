@@ -190,25 +190,30 @@ blogView model =
 
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
-    row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ blogView model
-        , link ( mainLinkAttribute
-                 ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage)
-                 ++ [ Events.onMouseEnter (ShowMainMenuName SignInMenu), Events.onMouseLeave HideMainMenuName ]
-               )
-              { url = "#signIn"
-              , label =
-                  el [] <|
-                      case model.showMainMenuName of
-                          Just SignInMenu ->
-                              el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ]
-                                  <| iconWithTextAndColor "vpn_key" "" primaryColor
+    let
+        githubOauthLink = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io/#/oauth-callback"
+    in
+        row [ centerX, centerY, paddingXY 10 0, height fill ]
+            [ blogView model
+            , link ( mainLinkAttribute
+                     ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage)
+                     ++ [ Events.onMouseEnter (ShowMainMenuName SignInMenu)
+                        , Events.onMouseLeave HideMainMenuName
+                        ]
+                   )
+                  { url = githubOauthLink
+                  , label =
+                      el [] <|
+                          case model.showMainMenuName of
+                              Just SignInMenu ->
+                                  el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ]
+                                      <| iconWithTextAndColor "vpn_key" "" primaryColor
 
-                          _ ->
-                              iconWithTextAndColor "vpn_key" "" secondaryColor
-              }
-        , githubLinkView
-        ]
+                              _ ->
+                                  iconWithTextAndColor "vpn_key" "" secondaryColor
+                  }
+            , githubLinkView
+            ]
 
 githubLinkView : Element Msg
 githubLinkView =
