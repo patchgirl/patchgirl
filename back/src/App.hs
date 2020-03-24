@@ -40,6 +40,7 @@ import           Account.App
 import           Account.Model
 import           Config
 import           Environment.App
+import           Github.App
 import           Health.App
 import           RequestCollection.App
 import           RequestCollection.Model
@@ -262,10 +263,22 @@ type SessionApi =
     "signin" :> ReqBody '[JSON] SignIn :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                                                  , Header "Set-Cookie" SetCookie
                                                                  ] Session) :<|>
+    "signInWithGithub" :> ReqBody '[JSON] SignInWithGithub :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
+                                                                                     , Header "Set-Cookie" SetCookie
+                                                                                     ] Session) :<|>
     "signout" :> Delete '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                           , Header "Set-Cookie" SetCookie
                                           ] Session)
   )
+
+sessionApiServer
+  :: CookieSettings
+  -> JWTSettings
+  -> ServerT SessionApi AppM
+sessionApiServer cookieSettings jwtSettings  =
+  signInHandler cookieSettings jwtSettings :<|>
+  signInOnGithubHandler cookieSettings jwtSettings :<|>
+  deleteSessionHandler cookieSettings
 
 
 -- ** whoami
@@ -279,6 +292,13 @@ type WhoAmiApi =
   "api" :> "session" :> "whoami" :> Get '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                                           , Header "Set-Cookie" SetCookie
                                                           ] Session)
+pSessionApiServer
+  :: CookieSettings
+  -> JWTSettings
+  -> AuthResult CookieSession
+  -> ServerT WhoAmiApi AppM
+pSessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
+  whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
 
 -- ** account
@@ -327,22 +347,6 @@ type AssetApi =
 -- * server
 
 
-pSessionApiServer
-  :: CookieSettings
-  -> JWTSettings
-  -> AuthResult CookieSession
-  -> ServerT WhoAmiApi AppM
-pSessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
-  whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
-
-sessionApiServer
-  :: CookieSettings
-  -> JWTSettings
-  -> ServerT SessionApi AppM
-sessionApiServer cookieSettings jwtSettings  =
-  signInHandler cookieSettings jwtSettings :<|>
-  deleteSessionHandler cookieSettings
-
 authorizeWithAccountId
   :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
   => (UUID -> p) -> AuthResult CookieSession -> p
@@ -374,43 +378,6 @@ authorize f = \case
 
   Authenticated cookieSession ->
     f cookieSession
-
-
-{-
-protectedApiServer :: AuthResult CookieSession -> ServerT ProtectedApi AppM
-protectedApiServer = \case
-  BadPassword ->
-    throwAll err402
-
-  NoSuchUser ->
-    throwAll err403
-
-  Indefinite ->
-    throwAll err405
-
-  Authenticated _ ->
-    requestCollectionApi :<|>
-    requestNodeApi :<|>
-    requestFileApi :<|>
-    environmentApi :<|>
-    runRequestComputationHandler :<|>
-    getAppHealth
-
-  where
-    requestCollectionApi =
-      getRequestCollectionHandler
-    requestNodeApi =
-      updateRequestNodeHandler
-    requestFileApi =
-      createRequestFile
-    environmentApi =
-      createEnvironmentHandler :<|>
-      getEnvironmentsHandler :<|>
-      updateEnvironmentHandler :<|>
-      deleteEnvironmentHandler :<|>
-      updateKeyValuesHandler :<|>
-      deleteKeyValueHandler
--}
 
 testApiServer :: ServerT TestApi AppM
 testApiServer =

@@ -36,6 +36,19 @@ data DBConfig
 
 instance FromDhall DBConfig
 
+
+-- * github
+
+
+data GithubConfig
+  = GithubConfig { githubConfigClientId     :: Text
+                 , githubConfigClientSecret :: Text
+                 }
+  deriving (Generic, Show)
+
+instance FromDhall GithubConfig
+
+
 -- * config
 
 
@@ -44,6 +57,7 @@ data Config
            , appKeyFilePath :: String
            , dbConfig       :: DBConfig
            , mailgun        :: MailgunConfig
+           , githubConfig   :: GithubConfig
            }
   deriving (Generic, Show)
 

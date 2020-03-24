@@ -115,6 +115,9 @@ defaultConfig =
                                    , apiKey      = "whatever"
                                    , authorEmail = "admin@mail.com"
                                    }
+         , githubConfig = GithubConfig { githubConfigClientId    = "whatever"
+                                       , githubConfigClientSecret = "whatever"
+                                       }
          }
 
 

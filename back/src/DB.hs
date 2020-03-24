@@ -16,7 +16,7 @@ getDBConnection
      )
   => m PG.Connection
 getDBConnection = do
-  DBConfig { dbPort, dbName, dbUser, dbPassword } <- ask <&> dbConfig
+  DBConfig {..} <- ask <&> dbConfig
   liftIO $ PG.connect PG.defaultConnectInfo { PG.connectDatabase = TS.unpack dbName
                                             , PG.connectUser = TS.unpack dbUser
                                             , PG.connectPort = fromInteger $ toInteger $ naturalToInt dbPort

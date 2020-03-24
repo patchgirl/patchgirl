@@ -8,22 +8,31 @@
 
 module Session.App where
 
-
 import           Account.Model
 import           Control.Monad.Except                (MonadError)
+import           Control.Monad.Free                  ((>=>))
 import           Control.Monad.IO.Class              (MonadIO)
 import           Control.Monad.Reader                (MonadReader)
+import qualified Control.Monad.Reader                as Reader
 import           Control.Monad.Trans                 (liftIO)
+import           Control.Monad.Trans.Maybe           as Maybe
+import qualified Data.Aeson                          as Aeson
+import qualified Data.ByteString.Char8               as B8
 import           Data.Functor                        ((<&>))
+import qualified Data.HashMap.Strict                 as HM
 import           Data.Maybe                          (listToMaybe)
 import qualified Data.Maybe                          as Maybe
 import           Data.Text                           (Text)
+import qualified Data.Text                           as T
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Data.UUID                           (UUID)
 import qualified Data.UUID                           as UUID
 import           Database.PostgreSQL.Simple          (Connection, query)
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
+import qualified Network.HTTP.Simple                 as HTTP
+
+import           Github.App
 import           Model
 import           PatchGirl
 import           Servant
@@ -61,7 +70,7 @@ whoAmIHandler
          Session)
 whoAmIHandler cookieSettings jwtSettings = \case
   Authenticated SignedUserCookie {..} -> do
-    csrfToken <- liftIO createCsrfToken
+    csrfToken <- liftIO $ createCsrfToken cookieSettings
     let (CaseInsensitive email) = _cookieAccountEmail
     return $
       noHeader $ noHeader $ SignedUserSession { _sessionAccountId = _cookieAccountId
@@ -69,22 +78,8 @@ whoAmIHandler cookieSettings jwtSettings = \case
                                               , _sessionCsrfToken = csrfToken
                                               }
 
-  _ -> do
-    csrfToken <- liftIO createCsrfToken
-    let
-      cookieSession =
-        VisitorCookie { _cookieAccountId = visitorId }
-    mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
-    case mApplyCookies of
-      Nothing           -> throwError err401
-      Just applyCookies -> return $ applyCookies $ VisitorSession { _sessionAccountId = visitorId
-                                                                  , _sessionCsrfToken = csrfToken
-                                                                  }
-  where
-    createCsrfToken :: IO Text
-    createCsrfToken = do
-      setCookie <- liftIO $ makeXsrfCookie cookieSettings
-      return $ (decodeUtf8 . setCookieValue) setCookie
+  _ ->
+    createVisitorSession cookieSettings jwtSettings
 
 
 -- * sign in
@@ -136,6 +131,42 @@ selectAccount SignIn {..} connection =
           AND password = crypt(?, password);
           |]
 
+-- * sign in on github
+
+
+signInOnGithubHandler
+  :: ( MonadReader Config m
+     , MonadIO m
+     , MonadError ServerError m
+     )
+  => CookieSettings
+  -> JWTSettings
+  -> SignInWithGithub
+  -> m (Headers '[ Header "Set-Cookie" SetCookie
+                 , Header "Set-Cookie" SetCookie]
+         Session)
+signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
+  GithubConfig {..} <- Reader.ask <&> githubConfig
+  let
+    getGithubProfile =
+      Maybe.MaybeT . getGithubAccessTokenClient >=> Maybe.MaybeT . getGithubProfileClient
+  let
+    githubOAuthCredentials =
+      GithubOAuthCredentials { _githubOAuthCredentialsClientId = T.unpack githubConfigClientId
+                             , _githubOAuthCredentialsClientSecret = T.unpack githubConfigClientSecret
+                             , _githubOAuthCredentialsCode = _signInWithGithubCode
+                             }
+
+  liftIO $ putStrLn $ show githubOAuthCredentials
+  (liftIO . runMaybeT . getGithubProfile) githubOAuthCredentials >>= \case
+    Nothing -> do
+      liftIO $ putStrLn "noothing"
+      createVisitorSession cookieSettings jwtSettings
+
+    Just profile -> do
+      liftIO $ putStrLn $ "profile" <> show profile
+      createVisitorSession cookieSettings jwtSettings
+
 
 -- * sign out
 
@@ -155,3 +186,38 @@ deleteSessionHandler cookieSettings =
     clearSession cookieSettings $ VisitorSession { _sessionAccountId = visitorId
                                                  , _sessionCsrfToken = ""
                                                  }
+
+-- * util
+
+
+-- ** session
+
+
+createVisitorSession
+  :: ( MonadIO m
+     , MonadError ServerError m
+     )
+  => CookieSettings
+  -> JWTSettings
+  -> m (Headers '[ Header "Set-Cookie" SetCookie
+                 , Header "Set-Cookie" SetCookie
+                 ]
+         Session
+       )
+createVisitorSession cookieSettings jwtSettings = do
+  let cookieSession = VisitorCookie { _cookieAccountId = visitorId }
+  csrfToken <- liftIO $ createCsrfToken cookieSettings
+  mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
+  case mApplyCookies of
+    Nothing ->
+      throwError err401
+
+    Just applyCookies ->
+      return . applyCookies $ VisitorSession { _sessionAccountId = visitorId
+                                             , _sessionCsrfToken = csrfToken
+                                             }
+
+createCsrfToken :: CookieSettings -> IO Text
+createCsrfToken cookieSettings = do
+      setCookie <- liftIO $ makeXsrfCookie cookieSettings
+      return $ (decodeUtf8 . setCookieValue) setCookie

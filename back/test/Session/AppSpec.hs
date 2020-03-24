@@ -35,7 +35,7 @@ signIn
 signOut :: ClientM (Headers '[ Header "Set-Cookie" SetCookie
                              , Header "Set-Cookie" SetCookie]
                      Session)
-signIn :<|> signOut =
+signIn :<|> _ :<|> signOut =
   client (Proxy :: Proxy SessionApi)
 
 

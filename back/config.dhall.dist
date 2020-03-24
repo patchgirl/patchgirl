@@ -12,6 +12,10 @@ let config =
     , apiKey = ""
     , authorEmail = ""
     }
+  , githubConfig = {
+    githubConfigClientId = ""
+    , githubConfigClientSecret = ""
+    }
   }
 
 in

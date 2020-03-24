@@ -39,6 +39,7 @@ executables:
 dependencies:
   - base
   - servant
+  - servant-client
   - servant-server
   - servant-auth
   - servant-auth-server
@@ -75,3 +76,4 @@ dependencies:
   - prometheus-metrics-ghc
   - uuid
   - strings
+  - control-monad-free
