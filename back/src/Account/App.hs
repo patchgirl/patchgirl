@@ -30,75 +30,15 @@ import qualified Text.Email.Validate              as Email
 -- * sign up
 
 
-signUpHandler
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
-     )
-  => SignUp
-  -> m ()
-signUpHandler SignUp {..} =
-  let
-    CaseInsensitive email =
-      _signUpEmail
-
-    malformedEmail :: Bool
-    malformedEmail =
-      isLeft $ Email.validate (BSU.fromString email)
-
-    ioEmailAlreadyUsed :: PG.Connection -> IO Bool
-    ioEmailAlreadyUsed connection =
-      liftIO $ selectAccountFromEmail _signUpEmail connection <&> isJust
-
-    invalidEmail :: PG.Connection -> IO Bool
-    invalidEmail connection =
-      if malformedEmail then pure True else ioEmailAlreadyUsed connection
-
-  in do
-    connection <- getDBConnection
-    invalid <- liftIO $ invalidEmail connection
-    case invalid of
-      True -> throwError err400
-      False -> do
-        let newAccount = NewAccount { _newAccountEmail = _signUpEmail }
-        createdAccount <- liftIO $ insertAccount newAccount connection
-        hailgunMessage <- mkHailgunMessage (mkSignUpEmail createdAccount)
-        case hailgunMessage of
-          Left error -> do
-            liftIO $ print error
-            throwError err400
-
-          Right message -> do
-            hailgunContext <- mkHailgunContext
-            emailRes <- liftIO $ sendEmail hailgunContext message
-            case emailRes of
-              Left error ->
-                liftIO $ print error
-              Right _    ->
-                return ()
-
-
-mkSignUpEmail :: CreatedAccount -> Email
-mkSignUpEmail CreatedAccount {..} =
-  let CaseInsensitive email = _accountCreatedEmail
-  in
-    Email { _emailSubject = "Finish your signing up"
-          , _emailTextMessageContent =
-            "Howdy! You're almost done. Finalize your subscription by setting your password here: https://patchgirl.io/#account/" <> show _accountCreatedId <> "/initializePassword/" <> _accountCreatedSignUpToken
-          , _emailHtmlMessageContent =
-            "Howdy!<br/> You're almost done. Finalize your subscription by setting your password <a href=\"https://patchgirl.io/#account/" <> show _accountCreatedId <> "/initializePassword/" <> _accountCreatedSignUpToken <> "\">here.</a>"
-          , _emailRecipients = [email]
-          }
-
-selectAccountFromEmail :: CaseInsensitive -> PG.Connection -> IO (Maybe Account)
-selectAccountFromEmail email connection =
-  PG.query connection selectAccountQuery (PG.Only email) <&> listToMaybe
+selectAccountFromGithubId :: Int -> PG.Connection -> IO (Maybe Account)
+selectAccountFromGithubId githubId connection =
+  PG.query connection selectAccountQuery (PG.Only githubId) <&> listToMaybe
   where
     selectAccountQuery =
       [sql|
-          SELECT id, email
+          SELECT id
           FROM account
-          WHERE email = ?
+          WHERE github_id = ?
           |]
 
 insertAccount :: NewAccount -> PG.Connection -> IO CreatedAccount
@@ -118,57 +58,6 @@ insertAccount NewAccount {..} connection = do
           )
           SELECT id, email, signup_token
           FROM new_account
-          |]
-
-
--- * initialize password
-
-
-initializePasswordHandler
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
-     )
-  => InitializePassword
-  -> m ()
-initializePasswordHandler initializePassword = do
-  connection <- getDBConnection
-  mAccount <- liftIO $ selectAccountFromInitializePassword initializePassword connection
-  case mAccount of
-    Just _ -> do
-      liftIO $ setPassword initializePassword connection
-      return ()
-
-    Nothing ->
-      throwError err400
-
-selectAccountFromInitializePassword :: InitializePassword -> PG.Connection -> IO (Maybe Account)
-selectAccountFromInitializePassword InitializePassword {..} connection =
-  PG.query connection selectAccountQuery ( _initializePasswordAccountId
-                                         , _initializePasswordToken
-                                         ) <&> listToMaybe
-  where
-    selectAccountQuery =
-      [sql|
-          SELECT id, email
-          FROM account
-          WHERE id = ?
-          AND password IS NULL
-          AND signup_token = ?
-          |]
-
-setPassword :: InitializePassword -> PG.Connection -> IO ()
-setPassword InitializePassword {..} connection = do
-  _ <- PG.execute connection selectAccountQuery ( _initializePasswordPassword
-                                                , _initializePasswordAccountId
-                                                )
-  return ()
-  where
-    selectAccountQuery =
-      [sql|
-          UPDATE account
-          SET password = crypt(?, gen_salt('bf', 8))
-          WHERE id = ?
           |]
 
 
@@ -224,10 +113,12 @@ resetVisitorSql connection = do
           -- insert visitor account
           INSERT INTO account (
             id,
+            github_id,
             email,
             password
           ) values (
             '00000000-0000-1000-a000-000000000000',
+            0,
             'visitor@patchgirl.io',
             crypt('123', gen_salt('bf', 8))
           );

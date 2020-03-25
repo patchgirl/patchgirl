@@ -54,14 +54,14 @@ spec =
     describe "update request node" $ do
       it "returns 404 when request node doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           try clientEnv (updateRequestNodeHandler token 1 UUID.nil updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId2, _) <- insertFakeAccount defaultNewFakeAccount2 connection
-          (accountId1, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
+          accountId1 <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId1
@@ -69,7 +69,7 @@ spec =
 
       it "modifies a request folder" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId
@@ -84,14 +84,14 @@ spec =
     describe "delete request node" $ do
       it "returns 404 when request node doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           try clientEnv (deleteRequestNodeHandler token 1 UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId1, _) <- insertFakeAccount defaultNewFakeAccount1 connection
-          (accountId2, _) <- insertFakeAccount defaultNewFakeAccount2 connection
+          accountId1 <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId1
@@ -99,7 +99,7 @@ spec =
 
       it "delete a request node" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let nodeId = head requestNodes ^. requestNodeId
           token <- signedUserToken accountId

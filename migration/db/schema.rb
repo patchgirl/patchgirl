@@ -155,7 +155,8 @@ SET default_with_oids = false;
 
 CREATE TABLE public.account (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    email public.citext NOT NULL,
+    github_id integer NOT NULL,
+    email public.citext,
     signup_token text DEFAULT md5((random())::text) NOT NULL,
     password text
 );
@@ -346,6 +347,14 @@ ALTER TABLE ONLY public.account
 
 ALTER TABLE ONLY public.account_environment
     ADD CONSTRAINT account_environment_pkey PRIMARY KEY (account_id, environment_id);
+
+
+--
+-- Name: account account_github_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account
+    ADD CONSTRAINT account_github_id_key UNIQUE (github_id);
 
 
 --

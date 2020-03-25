@@ -36,9 +36,9 @@ import           Test.Hspec                       (SpecWith, aroundWith,
 -- * helper
 
 
-withAccountAndToken :: NewFakeAccount -> Connection -> IO (UUID, Auth.Token)
-withAccountAndToken newFakeAccount connection = do
-  (accountId, _) <- insertFakeAccount newFakeAccount connection
+withAccountAndToken :: Int -> Connection -> IO (UUID, Auth.Token)
+withAccountAndToken githubId connection = do
+  accountId <- insertFakeAccount githubId connection
   token <- signedUserToken accountId
   return (accountId, token)
 

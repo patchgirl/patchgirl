@@ -57,14 +57,14 @@ spec =
     describe "create a request file" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
           try clientEnv (createRequestFileHandler token 1 newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when request node parent doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId _ <- insertSampleRequestCollection accountId connection
           token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
@@ -72,7 +72,7 @@ spec =
 
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let fileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
           token <- signedUserToken accountId
@@ -81,7 +81,7 @@ spec =
 
       it "create the request file" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let folderId = Maybe.fromJust (getFirstFolder requestNodes) ^. requestNodeId
@@ -102,14 +102,14 @@ spec =
     describe "create a root request file" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           let newRootRequestFile = mkNewRootRequestFile UUID.nil
           try clientEnv (createRootRequestFileHandler token 1 newRootRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           requestCollectionId <- insertFakeRequestCollection accountId connection
           let newRootRequestFile = mkNewRootRequestFile UUID.nil
@@ -130,14 +130,14 @@ spec =
     describe "update a request file" $ do
       it "returns 404 when request file doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           let updateRequestFile = mkUpdateRequestFile
           try clientEnv (updateRequestFileHandler token 1 UUID.nil updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "update the request file" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let RequestFile {..} = Maybe.fromJust $ getFirstFile requestNodes

@@ -142,9 +142,10 @@ signInOnGithubHandler
   => CookieSettings
   -> JWTSettings
   -> SignInWithGithub
-  -> m (Headers '[ Header "Set-Cookie" SetCookie
-                 , Header "Set-Cookie" SetCookie]
-         Session)
+  -> m ( Headers '[ Header "Set-Cookie" SetCookie
+                  , Header "Set-Cookie" SetCookie
+                  ] Session
+       )
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
   GithubConfig {..} <- Reader.ask <&> githubConfig
   let
@@ -156,11 +157,8 @@ signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
                              , _githubOAuthCredentialsClientSecret = T.unpack githubConfigClientSecret
                              , _githubOAuthCredentialsCode = _signInWithGithubCode
                              }
-
-  liftIO $ putStrLn $ show githubOAuthCredentials
   (liftIO . runMaybeT . getGithubProfile) githubOAuthCredentials >>= \case
     Nothing -> do
-      liftIO $ putStrLn "noothing"
       createVisitorSession cookieSettings jwtSettings
 
     Just profile -> do

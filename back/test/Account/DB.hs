@@ -20,34 +20,24 @@ import           Model
 -- * new fake account
 
 
-defaultNewFakeAccount1 :: NewFakeAccount
+defaultNewFakeAccount1 :: Int
 defaultNewFakeAccount1 =
-  NewFakeAccount { _newFakeAccountEmail = CaseInsensitive "foo@mail.com"
-                 , _newFakeAccountPassword = "123"
-                 }
+  1
 
-defaultNewFakeAccount2 :: NewFakeAccount
+defaultNewFakeAccount2 :: Int
 defaultNewFakeAccount2 =
-  NewFakeAccount { _newFakeAccountEmail = CaseInsensitive "bar@mail.com"
-                 , _newFakeAccountPassword = "321"
-                 }
+  2
 
-data NewFakeAccount =
-  NewFakeAccount { _newFakeAccountEmail    :: CaseInsensitive
-                 , _newFakeAccountPassword :: String
-                 }
-  deriving (Eq, Show, Read, Generic, ToRow)
-
-insertFakeAccount :: NewFakeAccount -> Connection -> IO (UUID, String)
-insertFakeAccount newFakeAccount connection = do
-  [(id, signupToken)] <- query connection rawQuery newFakeAccount
-  return (id, signupToken)
+insertFakeAccount :: Int -> Connection -> IO UUID
+insertFakeAccount githubId connection = do
+  [Only id] <- query connection rawQuery (Only githubId)
+  return id
   where
     rawQuery =
       [sql|
-          INSERT INTO account (email, password)
-          VALUES (?, crypt(?, gen_salt('bf', 8)))
-          RETURNING id, signup_token
+          INSERT INTO account (github_id)
+          VALUES (?)
+          RETURNING id
           |]
 
 

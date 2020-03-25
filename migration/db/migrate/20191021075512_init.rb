@@ -16,7 +16,8 @@ class Init < ActiveRecord::Migration[5.2]
 
       CREATE TABLE account(
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          email CITEXT NOT NULL UNIQUE,
+          github_id INTEGER NOT NULL UNIQUE,
+          email CITEXT UNIQUE,
           signup_token TEXT NOT NULL DEFAULT MD5(random()::text),
           password TEXT
       );

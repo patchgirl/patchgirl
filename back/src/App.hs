@@ -305,15 +305,11 @@ pSessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
 
 type AccountApi =
   "api" :> "account" :> (
-    "signup" :> ReqBody '[JSON] SignUp :> PostNoContent '[JSON] () :<|>
-    "initializePassword" :> ReqBody '[JSON] InitializePassword :> Post '[JSON] () :<|>
     "resetVisitorAccount" :> Get '[JSON] ()
   )
 
 accountApiServer :: ServerT AccountApi AppM
 accountApiServer =
-  signUpHandler :<|>
-  initializePasswordHandler :<|>
   resetVisitorAccountHandler
 
 

@@ -95,52 +95,23 @@ end
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO account (
       id,
+      github_id,
       email,
       password
     ) values (
       '00000000-0000-1000-a000-000000000000',
+      0,
       'visitor@patchgirl.io',
       crypt('123', gen_salt('bf', 8))
     );
 }
 
-ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO account (
-      id,
-      email,
-      password
-    ) values (
-      '61bab28a-fcdc-4e65-b32b-a0cc98a9d173',
-      'foo@mail.com',
-      crypt('123', gen_salt('bf', 8))
-    );
-}
-
-ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO account (
-      id,
-      email,
-      password
-    ) values (
-      '08b160b2-3564-4998-8aeb-54ebca0fae58',
-      'signup@mail.com',
-      NULL
-    );
-}
 
 # request collection
 
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO request_collection (account_id) values ('00000000-0000-1000-a000-000000000000');
-  }
-
-ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (account_id) values ('61bab28a-fcdc-4e65-b32b-a0cc98a9d173');
-  }
-
-ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO request_collection (account_id) values ('08b160b2-3564-4998-8aeb-54ebca0fae58');
   }
 
 ActiveRecord::Migration[5.2].execute %{

@@ -53,14 +53,14 @@ spec =
     describe "create a request folder" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFolder UUID.nil UUID.nil
           try clientEnv (createRequestFolder token 1 newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when request node parent doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId _ <- insertSampleRequestCollection accountId connection
           token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFolder UUID.nil UUID.nil
@@ -68,7 +68,7 @@ spec =
 
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let fileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
           token <- signedUserToken accountId
@@ -77,7 +77,7 @@ spec =
 
       it "create the request folder" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let folderId = Maybe.fromJust (getFirstFolder requestNodes) ^. requestNodeId
@@ -93,14 +93,14 @@ spec =
     describe "create a root request folder" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           let newRootRequestFolder = mkNewRootRequestFolder UUID.nil
           try clientEnv (createRootRequestFolder token 1 newRootRequestFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request folder" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
-          (accountId, _) <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           requestCollectionId <- insertFakeRequestCollection accountId connection
           let newRootRequestFolder = mkNewRootRequestFolder UUID.nil
