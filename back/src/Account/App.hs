@@ -27,40 +27,6 @@ import           Session.Model
 import qualified Text.Email.Validate              as Email
 
 
--- * sign up
-
-
-selectAccountFromGithubId :: Int -> PG.Connection -> IO (Maybe Account)
-selectAccountFromGithubId githubId connection =
-  PG.query connection selectAccountQuery (PG.Only githubId) <&> listToMaybe
-  where
-    selectAccountQuery =
-      [sql|
-          SELECT id
-          FROM account
-          WHERE github_id = ?
-          |]
-
-insertAccount :: NewAccount -> PG.Connection -> IO CreatedAccount
-insertAccount NewAccount {..} connection = do
-  [accountCreated] <- PG.query connection rawQuery (PG.Only _newAccountEmail)
-  return accountCreated
-  where
-    rawQuery =
-      [sql|
-          WITH new_account as (
-            INSERT INTO account (email)
-            VALUES (?)
-            RETURNING id, email, signup_token
-          ), new_request_collection as (
-            INSERT INTO request_collection(account_id)
-            (SELECT id FROM new_account)
-          )
-          SELECT id, email, signup_token
-          FROM new_account
-          |]
-
-
 -- * reset visitor account
 
 

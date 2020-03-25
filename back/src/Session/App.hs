@@ -32,6 +32,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import qualified Network.HTTP.Simple                 as HTTP
 
+import           Account.Sql
 import           Github.App
 import           Model
 import           PatchGirl
@@ -71,11 +72,12 @@ whoAmIHandler
 whoAmIHandler cookieSettings jwtSettings = \case
   Authenticated SignedUserCookie {..} -> do
     csrfToken <- liftIO $ createCsrfToken cookieSettings
-    let (CaseInsensitive email) = _cookieAccountEmail
+    let (CaseInsensitive email) = _cookieGithubEmail
     return $
       noHeader $ noHeader $ SignedUserSession { _sessionAccountId = _cookieAccountId
-                                              , _sessionEmail = email
+                                              , _sessionGithubEmail = email
                                               , _sessionCsrfToken = csrfToken
+                                              , _sessionGithubAvatarUrl = _cookieGithubAvatarUrl
                                               }
 
   _ ->
@@ -98,24 +100,29 @@ signInOnGithubHandler
                   ] Session
        )
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
-  GithubConfig {..} <- Reader.ask <&> githubConfig
-  let
+  githubConfig <- Reader.ask <&> githubConfig
+  (liftIO . runMaybeT . getGithubProfile) (mkGithubOAuthCredentials githubConfig) >>= \case
+    Nothing -> do
+      createVisitorSession cookieSettings jwtSettings
+
+    Just githubProfile@GithubProfile {..} -> do
+      connection <- getDBConnection
+      mAccountId <- liftIO $ selectAccountFromGithubId _githubProfileId connection
+      case mAccountId of
+        Just accountId ->
+          createSignedUserSession cookieSettings jwtSettings githubProfile accountId
+
+        Nothing -> do
+          accountId <- liftIO $ insertAccount _githubProfileId connection
+          createSignedUserSession cookieSettings jwtSettings githubProfile accountId
+  where
     getGithubProfile =
       Maybe.MaybeT . getGithubAccessTokenClient >=> Maybe.MaybeT . getGithubProfileClient
-  let
-    githubOAuthCredentials =
+    mkGithubOAuthCredentials GithubConfig {..} =
       GithubOAuthCredentials { _githubOAuthCredentialsClientId = T.unpack githubConfigClientId
                              , _githubOAuthCredentialsClientSecret = T.unpack githubConfigClientSecret
                              , _githubOAuthCredentialsCode = _signInWithGithubCode
                              }
-  (liftIO . runMaybeT . getGithubProfile) githubOAuthCredentials >>= \case
-    Nothing -> do
-      createVisitorSession cookieSettings jwtSettings
-
-    Just profile -> do
-      liftIO $ putStrLn $ "profile" <> show profile
-      createVisitorSession cookieSettings jwtSettings
-
 
 -- * sign out
 
@@ -142,6 +149,9 @@ deleteSessionHandler cookieSettings =
 -- ** session
 
 
+-- *** visitor session
+
+
 createVisitorSession
   :: ( MonadIO m
      , MonadError ServerError m
@@ -165,6 +175,42 @@ createVisitorSession cookieSettings jwtSettings = do
       return . applyCookies $ VisitorSession { _sessionAccountId = visitorId
                                              , _sessionCsrfToken = csrfToken
                                              }
+
+
+-- *** signed user session
+
+
+createSignedUserSession
+  :: ( MonadIO m
+     , MonadError ServerError m
+     )
+  => CookieSettings
+  -> JWTSettings
+  -> GithubProfile
+  -> UUID
+  -> m (Headers '[ Header "Set-Cookie" SetCookie
+                 , Header "Set-Cookie" SetCookie
+                 ]
+         Session
+       )
+createSignedUserSession cookieSettings jwtSettings GithubProfile {..} accountId = do
+  let cookieSession =
+        SignedUserCookie { _cookieAccountId = visitorId
+                         , _cookieGithubEmail = CaseInsensitive _githubProfileEmail
+                         , _cookieGithubAvatarUrl = _githubProfileAvatarUrl
+                         }
+  csrfToken <- liftIO $ createCsrfToken cookieSettings
+  mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
+  case mApplyCookies of
+    Nothing ->
+      throwError err401
+
+    Just applyCookies ->
+      return . applyCookies $ SignedUserSession { _sessionAccountId = accountId
+                                                , _sessionCsrfToken = csrfToken
+                                                , _sessionGithubEmail = _githubProfileEmail
+                                                , _sessionGithubAvatarUrl = _githubProfileAvatarUrl
+                                                }
 
 createCsrfToken :: CookieSettings -> IO Text
 createCsrfToken cookieSettings = do

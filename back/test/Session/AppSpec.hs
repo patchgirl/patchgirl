@@ -63,7 +63,8 @@ spec =
           (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
           session `shouldBe` SignedUserSession { _sessionAccountId = accountId
                                                , _sessionCsrfToken = ""
-                                               , _sessionEmail = "foo@mail.com"
+                                               , _sessionGithubEmail = "foo@mail.com"
+                                               , _sessionGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
                                                }
 
       context "when unsigned" $
