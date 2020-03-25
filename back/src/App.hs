@@ -260,9 +260,6 @@ requestComputationApiServer =
 
 type SessionApi =
   "api" :> "session" :> (
-    "signin" :> ReqBody '[JSON] SignIn :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
-                                                                 , Header "Set-Cookie" SetCookie
-                                                                 ] Session) :<|>
     "signInWithGithub" :> ReqBody '[JSON] SignInWithGithub :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie
                                                                                      , Header "Set-Cookie" SetCookie
                                                                                      ] Session) :<|>
@@ -276,7 +273,6 @@ sessionApiServer
   -> JWTSettings
   -> ServerT SessionApi AppM
 sessionApiServer cookieSettings jwtSettings  =
-  signInHandler cookieSettings jwtSettings :<|>
   signInOnGithubHandler cookieSettings jwtSettings :<|>
   deleteSessionHandler cookieSettings
 

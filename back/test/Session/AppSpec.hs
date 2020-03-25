@@ -27,15 +27,11 @@ import           Test.Hspec
 -- * client
 
 
-signIn
-  :: SignIn
-  -> ClientM (Headers '[ Header "Set-Cookie" SetCookie
-                       , Header "Set-Cookie" SetCookie]
-               Session)
-signOut :: ClientM (Headers '[ Header "Set-Cookie" SetCookie
-                             , Header "Set-Cookie" SetCookie]
-                     Session)
-signIn :<|> _ :<|> signOut =
+signOut :: ClientM ( Headers '[ Header "Set-Cookie" SetCookie
+                              , Header "Set-Cookie" SetCookie
+                              ] Session
+                   )
+_ :<|> signOut =
   client (Proxy :: Proxy SessionApi)
 
 
