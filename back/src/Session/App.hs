@@ -82,56 +82,6 @@ whoAmIHandler cookieSettings jwtSettings = \case
     createVisitorSession cookieSettings jwtSettings
 
 
--- * sign in
-
-
-signInHandler
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
-     )
-  => CookieSettings
-  -> JWTSettings
-  -> SignIn
-  -> m (Headers '[ Header "Set-Cookie" SetCookie
-                 , Header "Set-Cookie" SetCookie]
-         Session)
-signInHandler cookieSettings jwtSettings login = do
-  connection <- getDBConnection
-  mAccount <- liftIO $ selectAccount login connection
-  case mAccount of
-    Nothing ->
-      throwError err401
-
-    Just Account {..} -> do
-      let CaseInsensitive email = _accountEmail
-      let cookieSession =
-            SignedUserCookie { _cookieAccountId = _accountId
-                             , _cookieAccountEmail = _accountEmail
-                             }
-      let session =
-            SignedUserSession { _sessionAccountId = _accountId
-                              , _sessionEmail = email
-                              , _sessionCsrfToken = ""
-                              }
-      mApplyCookies <- liftIO $ acceptLogin cookieSettings jwtSettings cookieSession
-      case mApplyCookies of
-        Nothing           -> throwError err401
-        Just applyCookies -> return $ applyCookies session
-
-selectAccount :: SignIn -> Connection -> IO (Maybe Account)
-selectAccount SignIn {..} connection =
-  query connection selectAccountQuery (_signInEmail, _signInPassword) <&> listToMaybe
-  where
-    selectAccountQuery =
-      [sql|
-          SELECT id, email
-          FROM account
-          WHERE email = ?
-          AND password = crypt(?, password);
-          |]
-
-
 -- * sign in on github
 
 
