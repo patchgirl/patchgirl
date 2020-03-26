@@ -14,10 +14,8 @@ type Page
     | ReqPage (Maybe Uuid.Uuid)
     | EnvPage
     | OAuthCallbackPage String
-    | SignInPage
     | SignUpPage
     | InitializePasswordPage Uuid.Uuid String
-    | SignOutPage
     | NotFoundPage
 
 
@@ -35,10 +33,8 @@ urlParser =
         , Url.map (\id -> ReqPage (Just id)) (Url.s "req" </> uuidParser)
         , Url.map (ReqPage Nothing) (Url.s "req")
         , Url.map EnvPage (Url.s "env")
-        , Url.map SignInPage (Url.s "signIn")
         , Url.map SignUpPage (Url.s "signUp")
         , Url.map InitializePasswordPage (Url.s "account" </> uuidParser </> Url.s "initializePassword" </> Url.string)
-        , Url.map SignOutPage (Url.s "signOut")
         ]
 
 
@@ -62,9 +58,6 @@ href page =
                 EnvPage ->
                     ["env"]
 
-                SignInPage ->
-                    ["signIn"]
-
                 SignUpPage ->
                     ["signUp"]
 
@@ -74,9 +67,6 @@ href page =
                     , "initializePassword"
                     , token
                     ]
-
-                SignOutPage ->
-                    [ "settings" ]
 
                 OAuthCallbackPage _ ->
                     [ "oauth"

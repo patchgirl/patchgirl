@@ -62,7 +62,8 @@ update msg model =
                     }
 
                 newCmd =
-                    Client.postApiAccountSignup "" (Client.convertSignUpFromFrontToBack signUp) postSessionSignUpResultToMsg
+                    Cmd.none
+                    --Client.postApiAccountSignup "" (Client.convertSignUpFromFrontToBack signUp) postSessionSignUpResultToMsg
 
                 newModel =
                     { model

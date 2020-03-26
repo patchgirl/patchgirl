@@ -62,10 +62,12 @@ update msg model =
         AskInitializePassword accountId signUpToken ->
             let
                 initializePassword =
-                    Client.convertInitializePasswordBackToFront model.initializePassword1 signUpToken accountId
+                    Cmd.none
+                        --Client.convertInitializePasswordBackToFront model.initializePassword1 signUpToken accountId
 
                 newCmd =
-                    Client.postApiAccountInitializePassword "" initializePassword postInitializePasswordResultToMsg
+                    Cmd.none
+                        --Client.postApiAccountInitializePassword "" initializePassword postInitializePasswordResultToMsg
 
             in
                 (model, newCmd)

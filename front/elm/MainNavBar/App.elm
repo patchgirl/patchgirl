@@ -2,8 +2,10 @@ module MainNavBar.App exposing (..)
 
 import Element exposing (..)
 import Element.Background as Background
+import Browser.Navigation as Navigation
 import Element.Border as Border
 import Element.Events as Events
+import Element.Input as Input
 import Element.Font as Font
 import Uuid
 import ViewUtil exposing (..)
@@ -34,7 +36,6 @@ type alias Model a =
 type Msg
     = OpenReqPage
     | OpenEnvPage
-    | OpenSignInPage
     | OpenSignUpPage
     | AskSignOut
     | SignOutSucceed Session
@@ -63,13 +64,6 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        OpenSignInPage ->
-            let
-                newModel =
-                    { model | page = SignInPage }
-            in
-                (newModel, Cmd.none)
-
         OpenSignUpPage ->
             let
                 newModel =
@@ -81,7 +75,6 @@ update msg model =
             let
                 newCmd =
                     Client.deleteApiSessionSignout "" deleteSessionSignOutResultToMsg
-
             in
                 (model, newCmd)
 
@@ -89,7 +82,11 @@ update msg model =
             (model, Cmd.none)
 
         SignOutSucceed _ ->
-            Debug.todo "unreachable state: sign out"
+            let
+                newMsg =
+                    Navigation.load "https://dev.patchgirl.io/"
+            in
+                (model, newMsg)
 
         HideMainMenuName ->
             let
@@ -191,12 +188,11 @@ blogView model =
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     let
-        githubOauthLink = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io/#/oauth-callback"
+        githubOauthLink = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
     in
         row [ centerX, centerY, paddingXY 10 0, height fill ]
             [ blogView model
             , link ( mainLinkAttribute
-                     ++ (mainLinkAttributeWhenActive model OpenSignInPage SignInPage)
                      ++ [ Events.onMouseEnter (ShowMainMenuName SignInMenu)
                         , Events.onMouseLeave HideMainMenuName
                         ]
@@ -229,10 +225,9 @@ githubLinkView =
 signedUserRightView : Model a -> Element Msg
 signedUserRightView model =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ link (linkAttribute model AskSignOut)
-            { url = href SignOutPage
-            , label = el [] (text "Sign out")
-            }
+        [ Input.button [] { onPress = Just AskSignOut
+                          , label = text "Sign Out"
+                          }
         , blogView model
         , githubLinkView
         ]
@@ -268,57 +263,24 @@ centerView model =
 -- ** attribute
 
 
-linkAttribute : Model a -> Msg -> List (Attribute Msg)
-linkAttribute model msg =
-    let
-        activeAttribute =
-            [ Background.color <| secondaryColor
-            , Font.color <| primaryColor
-            ]
-    in
-        [ Events.onClick msg
-        , Font.size font
-        , Font.color <| secondaryColor
-        , paddingXY 15 padding
-        , mouseOver activeAttribute
-        ]
-
-font = 21
-padding = 0
-
 mainLinkAttribute : List (Attribute Msg)
 mainLinkAttribute =
-    let
-        activeAttribute =
-            [ Background.color secondaryColor
-            , Font.color primaryColor
-            ]
-    in
-        [ Font.size font
-        , height fill
-        , centerY
-        , paddingXY 15 padding
-        , mouseOver activeAttribute
-        , Font.color secondaryColor
-        ]
+    [ Font.size 21
+    , height fill
+    , centerY
+    , paddingXY 15 0
+    , mouseOver [ Background.color secondaryColor
+                , Font.color primaryColor
+                ]
+    , Font.color secondaryColor
+    ]
 
 mainLinkAttributeWhenActive : Model a -> Msg -> Page -> List (Attribute Msg)
 mainLinkAttributeWhenActive model event page =
-            let
-                activeAttribute =
-                    [ Background.color secondaryColor
+    [ Events.onClick event ] ++
+        case model.page == page of
+            True -> [ Background.color secondaryColor
                     , Font.color primaryColor
                     ]
-
-                passiveAttribute =
-                    [ Font.color secondaryColor
-                    ]
-
-                activeOrPassiveAttribute =
-                    case model.page == page of
-                        True -> activeAttribute
-                        False -> passiveAttribute
-
-            in
-                [ Events.onClick event
-                ] ++ activeOrPassiveAttribute
+            False ->
+                []

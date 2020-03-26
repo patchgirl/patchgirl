@@ -107,41 +107,12 @@ convertSessionFromBackToFront backSession =
                           , signUpMessage = Nothing
                           }
 
-        Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionEmail } ->
+        Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionGithubEmail } ->
             Front.SignedUser
                 { id = sessionAccountId
                 , csrfToken = sessionCsrfToken
-                , email = sessionEmail
+                , email = sessionGithubEmail
                 }
-
-
--- * sign up
-
-
-convertSignUpFromFrontToBack : Front.SignUp -> Back.SignUp
-convertSignUpFromFrontToBack { email } =
-    Back.SignUp { signUpEmail = email }
-
-
--- * sign in
-
-
-convertSignInFromFrontToBack : Front.SignIn -> Back.SignIn
-convertSignInFromFrontToBack { email, password } =
-       { signInEmail = email
-       , signInPassword = password
-       }
-
-
--- * initializePassword
-
-
-convertInitializePasswordBackToFront : String -> String -> Uuid.Uuid -> Back.InitializePassword
-convertInitializePasswordBackToFront password signUpToken accountId =
-   { initializePasswordAccountId = accountId
-   , initializePasswordPassword = password
-   , initializePasswordToken = signUpToken
-   }
 
 
 -- * request computation

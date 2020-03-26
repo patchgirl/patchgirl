@@ -55,6 +55,7 @@ type Msg
     | SignInMsg SignIn.Msg
     | SignUpMsg SignUp.Msg
     | InitializePasswordMsg InitializePassword.Msg
+    | GithubSessionFetched Session
     | Animate Animation.Msg
 
 
@@ -103,7 +104,12 @@ init { session, requestCollection, environments } url navigationKey =
             , environments = environments
             }
     in
-        (model, Cmd.none)
+        case page of
+            OAuthCallbackPage code ->
+                (model, fetchGithubProfile code)
+
+            _ ->
+                (model, Cmd.none)
 
 
 -- ** update
@@ -186,6 +192,17 @@ update msg model =
                 (newModel, newSubMsg) ->
                     (newModel, Cmd.map InitializePasswordMsg newSubMsg)
 
+        GithubSessionFetched newSession ->
+            let
+                newModel =
+                    { model | session = newSession }
+
+                newMsg =
+                    Navigation.load "https://dev.patchgirl.io/"
+
+            in
+                (newModel, newMsg)
+
         Animate subMsg ->
             let
                 newLoadingStyle =
@@ -197,6 +214,27 @@ update msg model =
                     }
             in
                 (newModel, Cmd.none)
+
+
+-- ** util
+
+
+fetchGithubProfile : String -> Cmd Msg
+fetchGithubProfile code =
+    let
+        payload =
+            { signInWithGithubCode = code }
+
+        resultHandler : Result Http.Error Client.Session -> Msg
+        resultHandler result =
+            case result of
+                Ok session ->
+                    GithubSessionFetched (Client.convertSessionFromBackToFront session)
+
+                Err _ ->
+                    Debug.todo "todo"
+    in
+        Client.postApiSessionSignInWithGithub "" payload resultHandler
 
 
 -- ** view
@@ -247,9 +285,7 @@ signedUserView model =
             NotFoundPage -> notFoundView
             ReqPage mId -> builderView model mId
             EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-            SignInPage -> builderView model Nothing
             SignUpPage -> builderView model Nothing
-            SignOutPage -> none
             OAuthCallbackPage code -> text "callback"
             InitializePasswordPage accountId signUpToken ->
                 map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
@@ -262,9 +298,7 @@ visitorView model visitorSession =
             NotFoundPage -> notFoundView
             ReqPage mId -> builderView model mId
             EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-            SignInPage -> map SignInMsg (SignIn.view visitorSession)
             SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
-            SignOutPage -> none
             OAuthCallbackPage code -> text "callback"
             InitializePasswordPage accountId signUpToken ->
                 map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)

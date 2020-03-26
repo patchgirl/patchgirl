@@ -28,6 +28,7 @@ import           ElmOption                (deriveElmDefOption)
 import           Environment.App
 import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
                                            Symbol, TypeError, symbolVal)
+import           Github.App
 import           Http
 import           Model                    (CaseInsensitive)
 import           RequestCollection.Model
@@ -87,21 +88,18 @@ deriveElmDef deriveElmDefOption ''UpdateEnvironment
 deriveElmDef deriveElmDefOption ''Environment
 deriveElmDef deriveElmDefOption ''KeyValue
 deriveElmDef deriveElmDefOption ''NewKeyValue
-deriveElmDef deriveElmDefOption ''SignIn
 deriveElmDef deriveElmDefOption ''CaseInsensitive
-deriveElmDef deriveElmDefOption ''Account
 deriveElmDef deriveElmDefOption ''Session
-deriveElmDef deriveElmDefOption ''SignUp
 deriveElmDef deriveElmDefOption ''RequestComputationInput
 deriveElmDef deriveElmDefOption ''RequestComputationOutput
 deriveElmDef deriveElmDefOption ''RequestComputationResult
 deriveElmDef deriveElmDefOption ''Scheme
-deriveElmDef deriveElmDefOption ''InitializePassword
 deriveElmDef deriveElmDefOption ''NewRequestFolder
 deriveElmDef deriveElmDefOption ''NewRootRequestFile
 deriveElmDef deriveElmDefOption ''NewRootRequestFolder
 deriveElmDef deriveElmDefOption ''UpdateRequestFile
 deriveElmDef deriveElmDefOption ''HttpHeader
+deriveElmDef deriveElmDefOption ''SignInWithGithub
 
 
 myElmImports :: T.Text
@@ -168,22 +166,19 @@ main =
       , DefineElm (Proxy :: Proxy Environment)
       , DefineElm (Proxy :: Proxy KeyValue)
       , DefineElm (Proxy :: Proxy NewKeyValue)
-      , DefineElm (Proxy :: Proxy SignIn)
       , DefineElm (Proxy :: Proxy CaseInsensitive)
-      , DefineElm (Proxy :: Proxy Account)
       , DefineElm (Proxy :: Proxy Session)
       , DefineElm (Proxy :: Proxy Token)
-      , DefineElm (Proxy :: Proxy SignUp)
       , DefineElm (Proxy :: Proxy RequestComputationInput)
       , DefineElm (Proxy :: Proxy RequestComputationOutput)
       , DefineElm (Proxy :: Proxy RequestComputationResult)
       , DefineElm (Proxy :: Proxy Scheme)
-      , DefineElm (Proxy :: Proxy InitializePassword)
       , DefineElm (Proxy :: Proxy NewRequestFolder)
       , DefineElm (Proxy :: Proxy NewRootRequestFile)
       , DefineElm (Proxy :: Proxy NewRootRequestFolder)
       , DefineElm (Proxy :: Proxy UpdateRequestFile)
       , DefineElm (Proxy :: Proxy HttpHeader)
+      , DefineElm (Proxy :: Proxy SignInWithGithub)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))

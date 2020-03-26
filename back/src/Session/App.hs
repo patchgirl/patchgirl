@@ -73,12 +73,12 @@ whoAmIHandler cookieSettings jwtSettings = \case
   Authenticated SignedUserCookie {..} -> do
     csrfToken <- liftIO $ createCsrfToken cookieSettings
     let (CaseInsensitive email) = _cookieGithubEmail
-    return $
-      noHeader $ noHeader $ SignedUserSession { _sessionAccountId = _cookieAccountId
-                                              , _sessionGithubEmail = email
-                                              , _sessionCsrfToken = csrfToken
-                                              , _sessionGithubAvatarUrl = _cookieGithubAvatarUrl
-                                              }
+    return . noHeader . noHeader $
+      SignedUserSession { _sessionAccountId = _cookieAccountId
+                        , _sessionGithubEmail = email
+                        , _sessionCsrfToken = csrfToken
+                        , _sessionGithubAvatarUrl = _cookieGithubAvatarUrl
+                        }
 
   _ ->
     createVisitorSession cookieSettings jwtSettings
@@ -195,7 +195,7 @@ createSignedUserSession
        )
 createSignedUserSession cookieSettings jwtSettings GithubProfile {..} accountId = do
   let cookieSession =
-        SignedUserCookie { _cookieAccountId = visitorId
+        SignedUserCookie { _cookieAccountId = accountId
                          , _cookieGithubEmail = CaseInsensitive _githubProfileEmail
                          , _cookieGithubAvatarUrl = _githubProfileAvatarUrl
                          }
