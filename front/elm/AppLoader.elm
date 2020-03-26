@@ -339,7 +339,7 @@ fetchGithubProfile : String -> Cmd Msg
 fetchGithubProfile code =
     let
         payload =
-            { signInWithGithubCode = code }
+            Client.SignInWithGithub { signInWithGithubCode = code }
 
         resultHandler : Result Http.Error Client.Session -> Msg
         resultHandler result =

@@ -13,7 +13,6 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeOperators         #-}
 
-import           Account.Model
 import           App
 import           Control.Lens             ((&), (<>~))
 import qualified Data.Aeson               as Aeson
