@@ -10,6 +10,8 @@ import Animation
 type MainMenuName
     = SignInMenu
     | BlogMenu
+    | SignOutMenu
+    | GithubMenu
 
 
 -- * session
@@ -17,10 +19,7 @@ type MainMenuName
 
 type Session
     = Visitor VisitorSession
-    | SignedUser { id: Uuid.Uuid
-                 , csrfToken: String
-                 , email: String
-                 }
+    | SignedUser SignedUserSession
 
 type alias VisitorSession =
     { id: Uuid.Uuid
@@ -31,6 +30,13 @@ type alias VisitorSession =
     , signUpEmail: String
     , signUpError: Maybe String
     , signUpMessage: Maybe String
+    }
+
+type alias SignedUserSession =
+    { id: Uuid.Uuid
+    , csrfToken: String
+    , email: String
+    , avatarUrl : String
     }
 
 getCsrfToken : Session -> String

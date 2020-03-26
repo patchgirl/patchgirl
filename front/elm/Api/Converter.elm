@@ -106,11 +106,12 @@ convertSessionFromBackToFront backSession =
                           , signUpMessage = Nothing
                           }
 
-        Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionGithubEmail } ->
+        Back.SignedUserSession { sessionAccountId, sessionCsrfToken, sessionGithubEmail, sessionGithubAvatarUrl } ->
             Front.SignedUser
                 { id = sessionAccountId
                 , csrfToken = sessionCsrfToken
                 , email = sessionGithubEmail
+                , avatarUrl = sessionGithubAvatarUrl
                 }
 
 

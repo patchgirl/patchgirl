@@ -157,8 +157,40 @@ rightView model =
         Visitor _ ->
             visitorRightView model
 
-        SignedUser _ ->
-            signedUserRightView model
+        SignedUser signedUserSession ->
+            signedUserRightView model signedUserSession
+
+signedUserRightView : Model a -> SignedUserSession -> Element Msg
+signedUserRightView model signedUserSession =
+    row [ centerX, centerY, paddingXY 10 0, height fill ]
+        [ signOutView model signedUserSession
+        , blogView model
+        , githubLinkView model
+        ]
+
+signOutView : Model a -> SignedUserSession -> Element Msg
+signOutView model { avatarUrl } =
+    let
+        avatar =
+            image [ height (px 35), clip, Border.rounded 100 ]
+                { src = avatarUrl
+                , description = "avatar url"
+                }
+    in
+        Input.button ( [ Events.onMouseEnter (ShowMainMenuName SignOutMenu)
+                       , Events.onMouseLeave HideMainMenuName
+                       ] ++ mainLinkAttribute
+                     )
+            { onPress = Just AskSignOut
+            , label =
+                case model.showMainMenuName of
+                    Just SignOutMenu ->
+                        el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign out")) ]
+                            avatar
+
+                    _ ->
+                        avatar
+            }
 
 blogView : Model a -> Element Msg
 blogView model =
@@ -166,63 +198,76 @@ blogView model =
            ++ mainLinkAttribute
            ++ [ Events.onMouseEnter (ShowMainMenuName BlogMenu), Events.onMouseLeave HideMainMenuName ]
          )
-              { url = "https://blog.patchgirl.io"
-              , label = el [] <|
-                  case model.showMainMenuName of
-                      Just BlogMenu ->
-                          el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Blog")) ]
-                              <| iconWithTextAndColor "menu_book" "" primaryColor
+    { url = "https://blog.patchgirl.io"
+    , label =
+        el [] <|
+            case model.showMainMenuName of
+                Just BlogMenu ->
+                    el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Blog")) ]
+                        <| iconWithTextAndColor "menu_book" "" primaryColor
 
-                      _ ->
-                          iconWithTextAndColor "menu_book" "" secondaryColor
-              }
+                _ ->
+                    iconWithTextAndColor "menu_book" "" secondaryColor
+    }
 
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
+    row [ centerX, centerY, paddingXY 10 0, height fill ]
+        [ blogView model
+        , signInView model
+        , githubLinkView model
+        ]
+
+signInView : Model a -> Element Msg
+signInView model =
     let
         githubOauthLink = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
     in
-        row [ centerX, centerY, paddingXY 10 0, height fill ]
-            [ blogView model
-            , link ( mainLinkAttribute
-                     ++ [ Events.onMouseEnter (ShowMainMenuName SignInMenu)
-                        , Events.onMouseLeave HideMainMenuName
-                        ]
-                   )
-                  { url = githubOauthLink
-                  , label =
-                      el [] <|
-                          case model.showMainMenuName of
-                              Just SignInMenu ->
-                                  el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ]
-                                      <| iconWithTextAndColor "vpn_key" "" primaryColor
-
-                              _ ->
-                                  iconWithTextAndColor "vpn_key" "" secondaryColor
-                  }
-            , githubLinkView
-            ]
-
-githubLinkView : Element Msg
-githubLinkView =
-    link [ paddingXY 10 0 ]
-        { url = "https://github.com/patchgirl/patchgirl"
+        link ( [ Events.onMouseEnter (ShowMainMenuName SignInMenu)
+               , Events.onMouseLeave HideMainMenuName
+               ] ++ mainLinkAttribute
+             )
+        { url = githubOauthLink
         , label =
+            case model.showMainMenuName of
+                Just SignInMenu ->
+                    el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ]
+                        <| iconWithTextAndColor "vpn_key" "" primaryColor
+
+                _ ->
+                    el [ centerX ] (iconWithTextAndColor "vpn_key" "" secondaryColor)
+        }
+
+githubLinkView : Model a -> Element Msg
+githubLinkView model =
+    let
+        githubLogoActive =
             image [ height (px 30) ]
                 { src = "public/images/github.svg"
                 , description = "github logo"
                 }
-        }
 
-signedUserRightView : Model a -> Element Msg
-signedUserRightView model =
-    row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ Input.button [] { onPress = Just AskSignOut
-                          , label = text "Sign Out"
-                          }
-        , blogView model
-        , githubLinkView
-        ]
+        githubLogoInactive =
+            image [ height (px 30) ]
+                { src = "public/images/github_prim.svg"
+                , description = "github logo"
+                }
+    in
+        link ( [ Events.onMouseEnter (ShowMainMenuName GithubMenu)
+               , Events.onMouseLeave HideMainMenuName
+               ] ++ mainLinkAttribute
+             )
+        { url = "https://github.com/patchgirl/patchgirl"
+        , label =
+            case model.showMainMenuName of
+                Just GithubMenu ->
+                    el [ below (el [ alignRight, moveDown 20, Font.size 18 ] (text "View on Github")) ]
+                        <| githubLogoInactive
+
+                _ ->
+                    githubLogoActive
+
+        }
 
 
 -- ** center view
