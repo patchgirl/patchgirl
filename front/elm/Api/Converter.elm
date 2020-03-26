@@ -1,7 +1,6 @@
 module Api.Converter exposing(..)
 
 import Api.Generated as Back
-import SignIn.Model as Front
 import Application.Type exposing (..)
 import Application.Type as Front
 import Dict

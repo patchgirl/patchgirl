@@ -10,7 +10,6 @@ import ViewUtil exposing (..)
 import Html as Html
 import Uuid
 
-import SignIn.App as SignIn
 import MainNavBar.App as MainNavBar
 import Application.Type exposing (..)
 import Url as Url
@@ -22,9 +21,6 @@ import Url.Parser as Url exposing ((</>))
 import Animation
 import BuilderApp.App as BuilderApp
 import BuilderApp.Builder.App as Builder
-import SignIn.App as SignIn
-import SignUp.App as SignUp
-import InitializePassword.App as InitializePassword
 import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentToRunSelection.App as EnvSelection
 import BuilderApp.BuilderTree.App as BuilderTree
@@ -52,9 +48,6 @@ type Msg
     | BuilderAppMsg BuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | MainNavBarMsg MainNavBar.Msg
-    | SignInMsg SignIn.Msg
-    | SignUpMsg SignUp.Msg
-    | InitializePasswordMsg InitializePassword.Msg
     | Animate Animation.Msg
 
 
@@ -154,37 +147,6 @@ update msg model =
             case MainNavBar.update subMsg model of
                 (newModel, newSubMsg) ->
                     (newModel, Cmd.map MainNavBarMsg newSubMsg)
-
-        SignInMsg subMsg ->
-            case model.session of
-                Visitor visitorSession ->
-                    case SignIn.update subMsg visitorSession of
-                        (newVisitorSession, newSubMsg) ->
-                            let newModel =
-                                    { model | session = Visitor newVisitorSession }
-                            in
-                                (newModel, Cmd.map SignInMsg newSubMsg)
-
-                _ ->
-                    Debug.todo "cannot sign in if not a visitor"
-
-        SignUpMsg subMsg ->
-            case model.session of
-                Visitor visitorSession ->
-                    case SignUp.update subMsg visitorSession of
-                        (newVisitorSession, newSubMsg) ->
-                            let newModel =
-                                    { model | session = Visitor newVisitorSession }
-                            in
-                                (newModel, Cmd.map SignUpMsg newSubMsg)
-
-                _ ->
-                    Debug.todo "cannot sign up if not a visitor"
-
-        InitializePasswordMsg subMsg ->
-            case InitializePassword.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map InitializePasswordMsg newSubMsg)
 
         Animate subMsg ->
             let
