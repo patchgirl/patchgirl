@@ -58,6 +58,7 @@ type alias Model =
     { appState : LoaderState
     , loaderStyle : Animation.State
     , backgroundStyle : Messenger.State Msg
+    , navigationKey : Navigation.Key
     }
 
 type LoaderState
@@ -215,6 +216,7 @@ init _ url navigationKey =
             { appState = appState
             , loaderStyle = loaderStyle
             , backgroundStyle = backgroundStyle
+            , navigationKey = navigationKey
             }
 
     in
@@ -255,10 +257,14 @@ update msg model =
                 getEnvironments =
                     Client.getApiEnvironment "" (getCsrfToken (Client.convertSessionFromBackToFront session)) environmentsResultToMsg
 
+                setBlankUrl =
+                    Navigation.replaceUrl model.navigationKey "/"
+
                 getAppData =
                     Cmd.batch
                         [ getRequestCollection
                         , getEnvironments
+                        , setBlankUrl
                         ]
 
                 newModel =

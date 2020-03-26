@@ -222,57 +222,21 @@ view model =
 mainView : Model -> Element Msg
 mainView model =
     let
-        userView =
-            case model.session of
-                Visitor visitorSession ->
-                    visitorView model visitorSession
-
-                SignedUser {} ->
-                    signedUserView model
-
+        builderView =
+            map BuilderAppMsg (BuilderApp.view model)
     in
         column [ width fill, height fill
                , centerY
                , spacing 30
                ]
-            [ map MainNavBarMsg (MainNavBar.view model)
-            , userView
-            ]
-
-signedUserView : Model -> Element Msg
-signedUserView model =
-    el contentAttributes <|
-        case model.page of
-            HomePage -> builderView model Nothing
-            NotFoundPage -> notFoundView
-            ReqPage mId -> builderView model mId
-            EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-            SignUpPage -> builderView model Nothing
-            InitializePasswordPage accountId signUpToken ->
-                map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
-
-visitorView : Model -> VisitorSession -> Element Msg
-visitorView model visitorSession =
-    el contentAttributes <|
-        case model.page of
-            HomePage -> builderView model Nothing
-            NotFoundPage -> notFoundView
-            ReqPage mId -> builderView model mId
-            EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-            SignUpPage -> map SignUpMsg (SignUp.view visitorSession)
-            InitializePasswordPage accountId signUpToken ->
-                map InitializePasswordMsg (InitializePassword.view accountId signUpToken model)
-
-notFoundView : Element Msg
-notFoundView =
-    el [ centerY, centerX ] (text "not found")
-
-contentAttributes =
-    [ width fill ]
-
-builderView : Model -> Maybe Uuid.Uuid -> Element Msg
-builderView model id =
-    map BuilderAppMsg (BuilderApp.view model)
+        [ map MainNavBarMsg (MainNavBar.view model)
+        , el [ width fill ] <|
+            case model.page of
+                HomePage -> builderView
+                NotFoundPage -> el [ centerY, centerX ] (text "not found")
+                ReqPage mId -> builderView
+                EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+        ]
 
 
 -- ** subscriptions

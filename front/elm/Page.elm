@@ -13,8 +13,6 @@ type Page
     = HomePage
     | ReqPage (Maybe Uuid.Uuid)
     | EnvPage
-    | SignUpPage
-    | InitializePasswordPage Uuid.Uuid String
     | NotFoundPage
 
 
@@ -32,8 +30,6 @@ urlParser =
         , Url.map (\id -> ReqPage (Just id)) (Url.s "req" </> uuidParser)
         , Url.map (ReqPage Nothing) (Url.s "req")
         , Url.map EnvPage (Url.s "env")
-        , Url.map SignUpPage (Url.s "signUp")
-        , Url.map InitializePasswordPage (Url.s "account" </> uuidParser </> Url.s "initializePassword" </> Url.string)
         ]
 
 
@@ -56,16 +52,6 @@ href page =
 
                 EnvPage ->
                     ["env"]
-
-                SignUpPage ->
-                    ["signUp"]
-
-                InitializePasswordPage accountId token ->
-                    [ "account"
-                    , Uuid.toString accountId
-                    , "initializePassword"
-                    , token
-                    ]
 
                 NotFoundPage ->
                     [ "notFound" ]

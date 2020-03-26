@@ -36,7 +36,6 @@ type alias Model a =
 type Msg
     = OpenReqPage
     | OpenEnvPage
-    | OpenSignUpPage
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
@@ -61,13 +60,6 @@ update msg model =
             let
                 newModel =
                     { model | page = EnvPage }
-            in
-                (newModel, Cmd.none)
-
-        OpenSignUpPage ->
-            let
-                newModel =
-                    { model | page = SignUpPage }
             in
                 (newModel, Cmd.none)
 
