@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a16a7fe37460df2f400728e06a8c434218060388abef1c06e65de7cc6f224589
+-- hash: 9acb1f26ba2a97cb87f60e1061bed9d7de4000f76b37a9b01270777dff65e92a
 
 name:           patchGirl
 version:        0.0.0
@@ -13,7 +13,6 @@ build-type:     Simple
 library
   exposed-modules:
       Account.App
-      Account.Model
       Account.Sql
       App
       Config

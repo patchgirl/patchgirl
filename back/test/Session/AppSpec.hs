@@ -10,12 +10,9 @@
 
 module Session.AppSpec where
 
-import           Account.DB
 import           App
 import           Data.Functor        ((<&>))
 import           Helper.App
-import           Model
-import           Network.HTTP.Types  (unauthorized401)
 import           Servant
 import           Servant.Auth.Client
 import           Servant.Auth.Server (JWT, SetCookie)

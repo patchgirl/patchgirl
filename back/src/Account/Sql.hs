@@ -1,5 +1,6 @@
 module Account.Sql where
 
+import           Data.Functor                     ((<&>))
 import           Data.UUID
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
@@ -9,8 +10,8 @@ import           Database.PostgreSQL.Simple.SqlQQ
 
 
 selectAccountFromGithubId :: Int -> PG.Connection -> IO (Maybe UUID)
-selectAccountFromGithubId githubId connection = do
-  PG.query connection selectAccountQuery (PG.Only githubId) >>= return . \case
+selectAccountFromGithubId githubId connection =
+  PG.query connection selectAccountQuery (PG.Only githubId) <&> \case
     [PG.Only accountId] -> Just accountId
     _ -> Nothing
   where

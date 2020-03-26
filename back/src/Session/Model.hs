@@ -9,7 +9,6 @@ import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
 import           Data.Text           (Text)
 import           Data.UUID
 import           GHC.Generics        (Generic)
-import           Github.App
 import           Model
 import           Servant.Auth.Server (FromJWT, ToJWT)
 

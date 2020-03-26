@@ -8,16 +8,11 @@ import           Data.Aeson              (FromJSON (..), ToJSON (..),
                                           genericParseJSON, genericToJSON,
                                           parseJSON)
 import qualified Data.Aeson              as Aeson
-import           Data.Aeson.Types        (defaultOptions, fieldLabelModifier)
 import           Data.Aeson.Types        ((.:), (.=))
-import qualified Data.ByteString.Char8   as B8
-import qualified Data.HashMap.Strict     as HM
-import qualified Data.Text               as T
-import           Debug.Trace
+import           Data.Functor            ((<&>))
 import           GHC.Generics            (Generic)
 import qualified Network.HTTP.Client     as HTTP
 import qualified Network.HTTP.Client.TLS as TLS
-import qualified Network.HTTP.Simple     as HTTP
 import           Servant
 import qualified Servant.Client          as Client
 
@@ -25,18 +20,18 @@ import qualified Servant.Client          as Client
 -- * github sign in
 
 
-data SignInWithGithub
+newtype SignInWithGithub
   = SignInWithGithub { _signInWithGithubCode :: String
                      }
   deriving (Eq, Show, Read, Generic)
 
 instance ToJSON SignInWithGithub where
   toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 instance FromJSON SignInWithGithub where
   parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+    genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- * github access token
@@ -93,9 +88,13 @@ type GithubAccessTokenApi =
 getGithubAccessTokenClient :: GithubOAuthCredentials -> IO (Maybe String)
 getGithubAccessTokenClient githubOAuthCredentials = do
   manager <- HTTP.newManager TLS.tlsManagerSettings
-  Client.runClientM (githubProfileClient githubOAuthCredentials) (clientEnv manager) >>= return . \case
-    Left err -> Nothing
-    Right GithubAccessToken {..} -> Just _githubAccessTokenAccessToken
+  Client.runClientM (githubProfileClient githubOAuthCredentials) (clientEnv manager) >>= \case
+    Left err -> do
+      putStrLn $ "error while trying to fetch gh access token: " <> show err
+      return Nothing
+
+    Right GithubAccessToken {..} ->
+      return $ Just _githubAccessTokenAccessToken
   where
     baseUrl =
       Client.BaseUrl { baseUrlScheme = Client.Https
@@ -144,7 +143,7 @@ type GithubProfileApi =
 getGithubProfileClient :: String -> IO (Maybe GithubProfile)
 getGithubProfileClient accessToken = do
   manager <- HTTP.newManager TLS.tlsManagerSettings
-  Client.runClientM githubProfileClient (clientEnv manager) >>= return . \case
+  Client.runClientM githubProfileClient (clientEnv manager) <&> \case
     Left _ ->  Nothing
     Right profile -> Just profile
   where

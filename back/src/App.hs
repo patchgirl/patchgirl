@@ -37,7 +37,6 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
                                                         throwAll)
 
 import           Account.App
-import           Account.Model
 import           Config
 import           Environment.App
 import           Github.App

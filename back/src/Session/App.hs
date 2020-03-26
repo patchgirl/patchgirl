@@ -1,6 +1,4 @@
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveAnyClass        #-}
-{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
@@ -8,7 +6,6 @@
 
 module Session.App where
 
-import           Account.Model
 import           Control.Monad.Except                (MonadError)
 import           Control.Monad.Free                  ((>=>))
 import           Control.Monad.IO.Class              (MonadIO)
@@ -16,21 +13,14 @@ import           Control.Monad.Reader                (MonadReader)
 import qualified Control.Monad.Reader                as Reader
 import           Control.Monad.Trans                 (liftIO)
 import           Control.Monad.Trans.Maybe           as Maybe
-import qualified Data.Aeson                          as Aeson
-import qualified Data.ByteString.Char8               as B8
 import           Data.Functor                        ((<&>))
-import qualified Data.HashMap.Strict                 as HM
-import           Data.Maybe                          (listToMaybe)
 import qualified Data.Maybe                          as Maybe
 import           Data.Text                           (Text)
 import qualified Data.Text                           as T
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Data.UUID                           (UUID)
 import qualified Data.UUID                           as UUID
-import           Database.PostgreSQL.Simple          (Connection, query)
-import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
-import qualified Network.HTTP.Simple                 as HTTP
 
 import           Account.Sql
 import           Github.App
@@ -102,7 +92,7 @@ signInOnGithubHandler
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
   githubConfig <- Reader.ask <&> githubConfig
   (liftIO . runMaybeT . getGithubProfile) (mkGithubOAuthCredentials githubConfig) >>= \case
-    Nothing -> do
+    Nothing ->
       createVisitorSession cookieSettings jwtSettings
 
     Just githubProfile@GithubProfile {..} -> do

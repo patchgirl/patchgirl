@@ -10,18 +10,10 @@
 
 module Account.AppSpec where
 
-import           Account.App
-import           Account.DB
-import           Account.Model
 import           App
-import           Control.Lens       ((^.))
-import           Data.Maybe         (isJust, isNothing)
 import           Helper.App
-import           Model
-import           Network.HTTP.Types (badRequest400)
 import           Servant
-import           Servant.Client     (ClientM, client)
-import           Session.Model
+import           Servant.Client (ClientM, client)
 import           Test.Hspec
 
 
@@ -38,7 +30,7 @@ resetVisitorAccount =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultConfig) $
 
 
 -- ** reset visitor account

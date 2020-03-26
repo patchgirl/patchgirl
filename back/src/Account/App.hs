@@ -6,25 +6,15 @@
 
 module Account.App where
 
-import           Account.Model
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Control.Monad.Trans              (liftIO)
-import           Data.ByteString.UTF8             as BSU
-import           Data.Either                      (isLeft)
-import           Data.Functor                     ((<&>))
-import           Data.Maybe                       (isJust, listToMaybe)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
-import           Mailgun.App
-import           Model
 import           PatchGirl
-import           Servant                          (err400, throwError)
 import           Servant.Server                   (ServerError)
-import           Session.Model
-import qualified Text.Email.Validate              as Email
 
 
 -- * reset visitor account
