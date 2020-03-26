@@ -13,7 +13,6 @@ type Page
     = HomePage
     | ReqPage (Maybe Uuid.Uuid)
     | EnvPage
-    | OAuthCallbackPage String
     | SignUpPage
     | InitializePasswordPage Uuid.Uuid String
     | NotFoundPage
@@ -68,11 +67,6 @@ href page =
                     , token
                     ]
 
-                OAuthCallbackPage _ ->
-                    [ "oauth"
-                    , "callback"
-                    ]
-
                 NotFoundPage ->
                     [ "notFound" ]
     in
@@ -86,20 +80,6 @@ urlToPage : Url.Url -> Page
 urlToPage url =
     let
         {-
-        when dealing with github oauth, the callback url cannot contains '#'
-        so we instead returns the root url with only a 'code' query param
-        eg: host.com/?code=someCode
-        -}
-        parseOAuth : Maybe Page
-        parseOAuth =
-            case Url.parse (Url.query (Query.string "code")) url of
-                Just (Just code) ->
-                    Just (OAuthCallbackPage code)
-
-                _ ->
-                    Nothing
-
-        {-
         The RealWorld spec treats the fragment like a path.
         This makes it *literally* the path, so we can proceed
         with parsing as if it had been a normal path all along.
@@ -110,11 +90,6 @@ urlToPage url =
                 , fragment = Nothing
             }
     in
-        case parseOAuth of
-            Just oauthPage ->
-                oauthPage
-
-            Nothing ->
-                urlWithoutFragment
-                    |> Url.parse urlParser
-                    |> Maybe.withDefault NotFoundPage
+        urlWithoutFragment
+            |> Url.parse urlParser
+            |> Maybe.withDefault NotFoundPage

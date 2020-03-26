@@ -10,12 +10,17 @@ import Http
 import Api.Generated as Client
 import Api.Converter as Client
 import ViewUtil exposing (..)
+import Browser.Navigation as Navigation
+import Url as Url
 import Element.Background as Background
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
 import Html
 import Html.Attributes as Html
+import Url
+import Url.Parser.Query as Query
+import Url.Parser as Url exposing ((</>), (<?>))
 
 
 {- This is the first app that will get load.
@@ -31,10 +36,12 @@ Once retrieved, it will send those data through a port to the real application
 
 
 main =
-  Browser.element
+  Browser.application
     { init = init
     , update = update
     , subscriptions = subscriptions
+    , onUrlRequest = LinkClicked
+    , onUrlChange = UrlChanged
     , view = view
     }
 
@@ -62,6 +69,45 @@ type LoaderState
       }
     | DataLoaded -- third state: we can fade out the loader
     | StopLoader -- fourth state: we can hide the loader
+
+-- * page
+
+
+-- ** model
+
+
+type Page
+    = LoadingPage
+    | OAuthCallbackPage String
+
+
+-- ** parser
+
+
+urlToPage : Url.Url -> Page
+urlToPage url =
+    let
+        {-
+        when dealing with github oauth, the callback url cannot contains '#'
+        so we instead returns the root url with only a 'code' query param
+        eg: host.com?code=someCode
+        -}
+        parseOAuth : Maybe Page
+        parseOAuth =
+            case Url.parse (Url.query (Query.string "code")) url of
+                Just (Just code) ->
+                    Just (OAuthCallbackPage code)
+
+                _ ->
+                    Nothing
+
+    in
+        case parseOAuth of
+            Just oauthPage ->
+                oauthPage
+
+            Nothing ->
+                LoadingPage
 
 
 -- * port
@@ -138,16 +184,18 @@ type Msg
     | LoaderConcealed LoadedData
     | ServerError Http.Error
     | Animate Animation.Msg
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
 
 
 -- * init
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
+init : () -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
+init _ url navigationKey =
     let
-        msg =
-            Client.getApiSessionWhoami "" "" getSessionWhoamiResult
+        page =
+            urlToPage url
 
         appState =
             SessionPending
@@ -170,7 +218,21 @@ init _ =
             }
 
     in
-        (model, msg)
+        case page of
+            OAuthCallbackPage code ->
+                let
+                    msg =
+                        fetchGithubProfile code
+                in
+                    (model, msg)
+
+            _ ->
+                let
+                    msg =
+                        Client.getApiSessionWhoami "" "" getSessionWhoamiResult
+                in
+                    (model, msg)
+
 
 
 -- * update
@@ -241,6 +303,12 @@ update msg model =
         ServerError error ->
             Debug.todo "server error" error
 
+        UrlChanged _ ->
+            (model, Cmd.none)
+
+        LinkClicked _ ->
+            (model, Cmd.none)
+
         Animate subMsg ->
             let
                 (newBackgroundStyle, cmd) =
@@ -260,6 +328,23 @@ update msg model =
 
 -- * util
 
+
+fetchGithubProfile : String -> Cmd Msg
+fetchGithubProfile code =
+    let
+        payload =
+            { signInWithGithubCode = code }
+
+        resultHandler : Result Http.Error Client.Session -> Msg
+        resultHandler result =
+            case result of
+                Ok session ->
+                    SessionFetched session
+
+                Err _ ->
+                    Debug.todo "todo"
+    in
+        Client.postApiSessionSignInWithGithub "" payload resultHandler
 
 getSessionWhoamiResult : Result Http.Error Client.Session -> Msg
 getSessionWhoamiResult result =
@@ -293,7 +378,7 @@ environmentsResultToMsg result =
 -- * view
 
 
-view : Model -> Html.Html Msg
+view : Model -> Browser.Document Msg
 view model =
     let
         element =
@@ -310,7 +395,10 @@ view model =
                 StopLoader ->
                     none
     in
-        layout [ Background.color lightGrey ] element
+        { title = "Loading Patchgirl..."
+        , body = [ layout [ Background.color lightGrey ] element ]
+        }
+
 
 loadingView : Model -> Element a
 loadingView model =
