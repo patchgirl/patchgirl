@@ -232,15 +232,13 @@ type Scheme
 
 -- * editable
 
-
+{-
+  model that don't have a state difference when they are saved or edited
+  typically any model that doesn't have an `id` field
+-}
 type Editable a
     = NotEdited a
     | Edited a a
-
-type Storable a b
-    = New a
-    | Saved b
-    | Edited2 b b
 
 isDirty : Editable a -> Bool
 isDirty editable =
@@ -251,19 +249,6 @@ isDirty editable =
         Edited _ _ ->
             True
 
-isDirty2 : Storable a b -> Bool
-isDirty2 storable =
-    case storable of
-        New _ ->
-            True
-
-        Edited2 _ _ ->
-            True
-
-        Saved _ ->
-            False
-
-
 editedOrNotEditedValue : Editable a -> a
 editedOrNotEditedValue editable =
     case editable of
@@ -272,18 +257,6 @@ editedOrNotEditedValue editable =
         Edited _ newValue ->
             newValue
 
-storedOrNotStoredValue : Storable a b -> (a -> c) -> (b -> c) -> c
-storedOrNotStoredValue storable f g =
-    case storable of
-        New value ->
-            f value
-
-        Saved value ->
-            g value
-
-        Edited2 _ value ->
-            g value
-
 notEditedValue : Editable a -> a
 notEditedValue editable =
     case editable of
@@ -291,12 +264,6 @@ notEditedValue editable =
             value
         Edited value _ ->
             value
-
-editedValue : Editable a -> Maybe a
-editedValue editable =
-    case editable of
-        NotEdited _ -> Nothing
-        Edited _ value -> Just value
 
 changeEditedValue : a -> Editable a -> Editable a
 changeEditedValue newValue editable =
@@ -310,15 +277,26 @@ changeEditedValue newValue editable =
             False ->
                 Edited oldValue newValue
 
-changeEditedValue2 : Editable a -> Editable a -> Editable a
-changeEditedValue2 eOldValue eNewValue =
-    let
-        oldValue = notEditedValue eOldValue
-        newValue = editedOrNotEditedValue eNewValue
-    in
-        case oldValue == newValue of
-        True ->
-            NotEdited oldValue
+-- * storable
 
-        False->
-            eNewValue
+
+{-
+  model that have a state difference when they are saved or edited
+  typically any model that has an `id` field
+-}
+type Storable a b
+    = New a
+    | Saved b
+    | Edited2 b b
+
+isStorableDirty : Storable a b -> Bool
+isStorableDirty storable =
+    case storable of
+        New _ ->
+            True
+
+        Edited2 _ _ ->
+            True
+
+        Saved _ ->
+            False

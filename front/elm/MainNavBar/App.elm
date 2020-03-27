@@ -221,6 +221,7 @@ visitorRightView model =
 signInView : Model a -> Element Msg
 signInView model =
     let
+        {- todo this url should be dynamic depending on the env -}
         githubOauthLink = "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
     in
         link ( [ Events.onMouseEnter (ShowMainMenuName SignInMenu)

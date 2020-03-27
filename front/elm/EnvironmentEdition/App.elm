@@ -570,7 +570,9 @@ changeValue newValue storable =
                 False ->
                     Edited2 saved { edited | value = newValue }
 
+
 -- ** view
+
 
 envKeyValueView : KeyValueModel a -> Element KeyValueMsg
 envKeyValueView model =
@@ -595,7 +597,7 @@ titleView : KeyValueModel a -> Element KeyValueMsg
 titleView model =
     let
         isModelDirty =
-            List.any isDirty2 model.keyValues
+            List.any isStorableDirty model.keyValues
 
         name =
             case isModelDirty of

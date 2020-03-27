@@ -64,6 +64,8 @@ type Msg
   | UpdateHeaders String
   | SetHttpBody String
   | SetHttpBodyResponse String
+  | AddHeaderInput
+  | DeleteHeader Int
   | AskRun
   | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
   | RemoteComputationDone RequestComputationResult -- request ran from the server
@@ -209,6 +211,29 @@ update msg model =
 
                 _ ->
                     (model, Cmd.none)
+
+        AddHeaderInput ->
+            let
+                newHttpHeaders =
+                    Edited (notEditedValue model.httpHeaders) (editedOrNotEditedValue model.httpHeaders ++ [ ("", "") ])
+
+                newModel =
+                    { model | httpHeaders = newHttpHeaders }
+            in
+                (newModel, Cmd.none)
+
+        DeleteHeader idx ->
+            let
+                editedHttpHeaders =
+                    List.removeAt idx (editedOrNotEditedValue model.httpHeaders)
+
+                newHttpHeaders =
+                    changeEditedValue editedHttpHeaders model.httpHeaders
+
+                newModel =
+                    { model | httpHeaders = newHttpHeaders }
+            in
+                (newModel, Cmd.none)
 
         Animate subMsg ->
             let
@@ -725,22 +750,47 @@ methodView model =
 
 headersView : Model -> Element Msg
 headersView model =
-    column [] (List.map (headerView model) (editedOrNotEditedValue model.httpHeaders))
+    let
+        headerInputs =
+            List.indexedMap (headerView model) (editedOrNotEditedValue model.httpHeaders)
 
-headerView : Model -> (String, String) -> Element Msg
-headerView model (headerKey, headerValue) =
-    row [ width fill ]
+        addHeaderButton =
+            Input.button [ centerX ]
+                { onPress = Just <| AddHeaderInput
+                , label =
+                    row [ centerX ]
+                        [ addIcon
+                        , el [] (text "Add Header")
+                        ]
+                }
+    in
+        column [ width fill, spacing 10 ]
+            [ text "Header:"
+            , column [ width fill, spacing 10 ] headerInputs
+            , addHeaderButton
+            ]
+
+headerView : Model -> Int -> (String, String) -> Element Msg
+headerView model idx (headerKey, headerValue) =
+    row [ width fill, spacing 10 ]
         [ Input.text [ htmlAttribute <| Util.onEnter AskRun ]
             { onChange = UpdateUrl
             , text = headerKey
             , placeholder = Nothing
-            , label = labelInputView "Header key: "
+            , label = Input.labelLeft [ centerY ] (text "key: ")
             }
         , Input.text [ htmlAttribute <| Util.onEnter AskRun ]
             { onChange = UpdateUrl
             , text = headerValue
             , placeholder = Nothing
-            , label = labelInputView "Header value: "
+            , label = Input.labelLeft [ centerY ] (text "value: ")
+            }
+        , Input.button [ centerY ]
+            { onPress = Just <| DeleteHeader idx
+            , label =
+                row [ centerX, centerY ]
+                    [ deleteIcon
+                    ]
             }
         ]
 
