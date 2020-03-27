@@ -175,8 +175,8 @@ update msg model =
                     buildRequestToRun model.keyValues model
 
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.rotate (Animation.turn -0.05) ]
-                                                         , Animation.to [ Animation.rotate (Animation.turn 0.05) ]
+                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                                                         , Animation.set [ Animation.rotate (Animation.turn 0) ]
                                                          ]
                                         ] model.runRequestIconAnimation
 
@@ -191,7 +191,8 @@ update msg model =
         RemoteComputationDone remoteComputationResult ->
             let
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 0) ]
+                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
                                         ] model.runRequestIconAnimation
 
                 newModel =
@@ -205,9 +206,9 @@ update msg model =
         RemoteComputationFailed ->
             let
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 0) ]
+                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
                                         ] model.runRequestIconAnimation
-
                 newModel =
                     { model
                         | requestComputationResult = Nothing
@@ -267,7 +268,8 @@ update msg model =
             let
                 newModel =
                     { model
-                        | runRequestIconAnimation = Animation.update subMsg model.runRequestIconAnimation
+                        | runRequestIconAnimation =
+                          Animation.update subMsg model.runRequestIconAnimation
                     }
             in
                 (newModel, Cmd.none)
