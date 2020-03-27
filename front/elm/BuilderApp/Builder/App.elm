@@ -497,7 +497,7 @@ view model =
                             ]
                       ]
                 , methodView model
-                , headerView model
+                , headersView model
                 , bodyView model
                 ]
     in
@@ -531,6 +531,10 @@ view model =
                          ] (responseView model)
                     ]
 
+
+-- ** title
+
+
 titleView : Model -> Element Msg
 titleView model =
     let
@@ -540,6 +544,57 @@ titleView model =
             [ el [] <| iconWithTextAndColor "label" (name) secondaryColor
             , mainActionButtonsView model
             ]
+
+mainActionButtonsView : Model -> Element Msg
+mainActionButtonsView model =
+    let
+        rowParam =
+            [ centerY
+            , height fill
+            , spacing 10
+            , alignRight
+            , Font.color primaryColor
+            ]
+
+        inputParam =
+            [ Border.solid
+            , Border.color secondaryColor
+            , Border.width 1
+            , Border.rounded 5
+            , alignBottom
+            , Background.color secondaryColor
+            , paddingXY 10 10
+            ]
+
+        runIcon : Element Msg
+        runIcon =
+            let
+                attrs : List (Html.Attribute Msg)
+                attrs =
+                    Animation.render model.runRequestIconAnimation
+            in
+                iconWithTextAndColorAndAttr "send" "Run" primaryColor attrs
+
+    in
+        row rowParam
+            [ Input.button inputParam
+                { onPress = Just <| AskRun
+                , label = el [ centerY ] runIcon
+                }
+            , case isBuilderDirty model of
+                  True ->
+                      Input.button inputParam
+                          { onPress = Just <| AskSave
+                          , label = el [ centerY ] <| iconWithTextAndColor "save" "Save" primaryColor
+                          }
+
+                  False ->
+                      none
+            ]
+
+
+-- ** response
+
 
 responseView : Model -> Element Msg
 responseView model =
@@ -630,6 +685,9 @@ responseView model =
                 el errorAttributes (text "bad url")
 
 
+-- ** url
+
+
 urlView : Model -> Element Msg
 urlView model =
     el [ alignLeft, width fill ] <|
@@ -640,52 +698,9 @@ urlView model =
             , label = labelInputView "Url: "
             }
 
-mainActionButtonsView : Model -> Element Msg
-mainActionButtonsView model =
-    let
-        rowParam =
-            [ centerY
-            , height fill
-            , spacing 10
-            , alignRight
-            , Font.color primaryColor
-            ]
 
-        inputParam =
-            [ Border.solid
-            , Border.color secondaryColor
-            , Border.width 1
-            , Border.rounded 5
-            , alignBottom
-            , Background.color secondaryColor
-            , paddingXY 10 10
-            ]
+-- ** method
 
-        runIcon : Element Msg
-        runIcon =
-            let
-                attrs : List (Html.Attribute Msg)
-                attrs =
-                    Animation.render model.runRequestIconAnimation
-            in
-                iconWithTextAndColorAndAttr "send" "Run" primaryColor attrs
-
-    in
-        row rowParam
-            [ Input.button inputParam
-                { onPress = Just <| AskRun
-                , label = el [ centerY ] runIcon
-                }
-            , case isBuilderDirty model of
-                  True ->
-                      Input.button inputParam
-                          { onPress = Just <| AskSave
-                          , label = el [ centerY ] <| iconWithTextAndColor "save" "Save" primaryColor
-                          }
-
-                  False ->
-                      none
-            ]
 
 methodView : Model -> Element Msg
 methodView model =
@@ -704,26 +719,34 @@ methodView model =
               ]
         }
 
-joinTuple : String -> (String, String) -> String
-joinTuple separator (key, value) =
-    key ++ separator ++ value
 
-headerView : Model -> Element Msg
-headerView model =
-    let
-        headersToText : Editable (List (String, String)) -> String
-        headersToText eHeaders =
-            editedOrNotEditedValue model.httpHeaders
-                |> List.map (joinTuple ":")
-                |> String.join "\n"
-    in
-        Input.multiline []
-            { onChange = UpdateHeaders
-            , text = headersToText model.httpHeaders
-            , placeholder = Just <| Input.placeholder [] (text "Header: SomeHeader\nHeader2: SomeHeader2")
-            , label = labelInputView "Headers: "
-            , spellcheck = False
+-- ** header
+
+
+headersView : Model -> Element Msg
+headersView model =
+    column [] (List.map (headerView model) (editedOrNotEditedValue model.httpHeaders))
+
+headerView : Model -> (String, String) -> Element Msg
+headerView model (headerKey, headerValue) =
+    row [ width fill ]
+        [ Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+            { onChange = UpdateUrl
+            , text = headerKey
+            , placeholder = Nothing
+            , label = labelInputView "Header key: "
             }
+        , Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+            { onChange = UpdateUrl
+            , text = headerValue
+            , placeholder = Nothing
+            , label = labelInputView "Header value: "
+            }
+        ]
+
+
+-- ** body
+
 
 bodyView : Model -> Element Msg
 bodyView model =
@@ -735,6 +758,10 @@ bodyView model =
         , spellcheck = False
         }
 
+
+-- ** util
+
+
 labelInputView : String -> Input.Label Msg
 labelInputView labelText =
     let
@@ -745,6 +772,10 @@ labelInputView labelText =
                   )
     in
         Input.labelAbove [ centerY, size ] <| text labelText
+
+joinTuple : String -> (String, String) -> String
+joinTuple separator (key, value) =
+    key ++ separator ++ value
 
 
 -- * subscriptions

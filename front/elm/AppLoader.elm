@@ -56,6 +56,7 @@ port loadApplication : E.Value -> Cmd msg
 
 type alias Model =
     { appState : LoaderState
+    , page : Page
     , loaderStyle : Animation.State
     , backgroundStyle : Messenger.State Msg
     , navigationKey : Navigation.Key
@@ -214,6 +215,7 @@ init _ url navigationKey =
 
         model =
             { appState = appState
+            , page = page
             , loaderStyle = loaderStyle
             , backgroundStyle = backgroundStyle
             , navigationKey = navigationKey
@@ -222,18 +224,10 @@ init _ url navigationKey =
     in
         case page of
             OAuthCallbackPage code ->
-                let
-                    msg =
-                        fetchGithubProfile code
-                in
-                    (model, msg)
+                (model, fetchGithubProfile code)
 
             _ ->
-                let
-                    msg =
-                        Client.getApiSessionWhoami "" "" getSessionWhoamiResult
-                in
-                    (model, msg)
+                (model, Client.getApiSessionWhoami "" "" getSessionWhoamiResult)
 
 
 
@@ -258,7 +252,12 @@ update msg model =
                     Client.getApiEnvironment "" (getCsrfToken (Client.convertSessionFromBackToFront session)) environmentsResultToMsg
 
                 setBlankUrl =
-                    Navigation.replaceUrl model.navigationKey "/"
+                    case model.page of
+                        OAuthCallbackPage _ ->
+                            Navigation.replaceUrl model.navigationKey "/"
+
+                        _ ->
+                            Cmd.none
 
                 getAppData =
                     Cmd.batch
