@@ -65,6 +65,8 @@ type Msg
   | SetHttpBody String
   | SetHttpBodyResponse String
   | AddHeaderInput
+  | UpdateHeaderKey Int String
+  | UpdateHeaderValue Int String
   | DeleteHeader Int
   | AskRun
   | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
@@ -102,6 +104,32 @@ update msg model =
                     case parseHeaders rawHeaders of
                         httpHeaders ->
                             { model | httpHeaders = changeEditedValue httpHeaders model.httpHeaders }
+            in
+                (newModel, Cmd.none)
+
+        UpdateHeaderKey idx newKey ->
+            let
+                editedHttpHeaders =
+                    List.updateAt idx (\(_, value) -> (newKey, value)) (editedOrNotEditedValue model.httpHeaders)
+
+                newHttpHeaders =
+                    changeEditedValue editedHttpHeaders model.httpHeaders
+
+                newModel =
+                    { model | httpHeaders = newHttpHeaders }
+            in
+                (newModel, Cmd.none)
+
+        UpdateHeaderValue idx newValue ->
+            let
+                editedHttpHeaders =
+                    List.updateAt idx (\(key, _) -> (key, newValue)) (editedOrNotEditedValue model.httpHeaders)
+
+                newHttpHeaders =
+                    changeEditedValue editedHttpHeaders model.httpHeaders
+
+                newModel =
+                    { model | httpHeaders = newHttpHeaders }
             in
                 (newModel, Cmd.none)
 
@@ -774,13 +802,13 @@ headerView : Model -> Int -> (String, String) -> Element Msg
 headerView model idx (headerKey, headerValue) =
     row [ width fill, spacing 10 ]
         [ Input.text [ htmlAttribute <| Util.onEnter AskRun ]
-            { onChange = UpdateUrl
+            { onChange = UpdateHeaderKey idx
             , text = headerKey
             , placeholder = Nothing
             , label = Input.labelLeft [ centerY ] (text "key: ")
             }
         , Input.text [ htmlAttribute <| Util.onEnter AskRun ]
-            { onChange = UpdateUrl
+            { onChange = UpdateHeaderValue idx
             , text = headerValue
             , placeholder = Nothing
             , label = Input.labelLeft [ centerY ] (text "value: ")
