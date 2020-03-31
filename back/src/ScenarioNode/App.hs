@@ -38,13 +38,13 @@ updateScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId updateSc
   let scenarioCollectionAuthorized = doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
   let scenarioNodeAuthorized =
         selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
-        (Maybe.isJust . (findNodeInScenarioNodes scenarioNodeId))
+        Maybe.isJust . findNodeInScenarioNodes scenarioNodeId
 
   authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
   case authorized of
     False ->
       Servant.throwError Servant.err404
-    True -> do
+    True ->
       IO.liftIO $
         Monad.void (updateScenarioNodeDB scenarioNodeId updateScenarioNode connection)
 

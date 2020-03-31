@@ -3,7 +3,6 @@
 module ScenarioNode.Sql where
 
 import           Control.Lens.Getter              ((^.))
-import qualified Control.Monad                    as Monad
 import           Data.UUID
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ

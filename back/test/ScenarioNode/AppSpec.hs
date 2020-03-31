@@ -26,7 +26,6 @@ import           Test.Hspec
 import           Account.DB
 import           App
 import           Helper.App
-import           RequestCollection.DB
 import           ScenarioCollection.DB
 import           ScenarioCollection.Model
 import           ScenarioNode.DB
@@ -47,7 +46,7 @@ updateScenarioNodeHandler = -- :<|> deleteScenarioNodeHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultConfig) $
 
 
 -- ** update scenario node
@@ -64,7 +63,7 @@ spec =
         cleanDBAfter $ \connection -> do
           accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
-          ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
+          ScenarioCollection scenarioCollectionId _ <- insertSampleScenarioCollection accountId connection
           try clientEnv (updateScenarioNodeHandler token scenarioCollectionId UUID.nil updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the scenario node doesnt belong to the account" $ \clientEnv ->
@@ -90,7 +89,7 @@ spec =
         cleanDBAfter $ \connection -> do
           accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
-          let nodeId = (Maybe.fromJust $ getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
           token <- signedUserToken accountId
           _ <- try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode)
           FakeScenarioFile { _fakeScenarioFileName } <- selectFakeScenarioFile nodeId connection

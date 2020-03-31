@@ -7,7 +7,6 @@
 
 module ScenarioCollection.DB where
 
-import qualified Control.Monad                    as Monad
 import           Data.UUID
 import qualified Data.UUID.V4                     as UUID
 import           Database.PostgreSQL.Simple
