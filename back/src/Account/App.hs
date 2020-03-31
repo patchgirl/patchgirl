@@ -70,13 +70,11 @@ resetVisitorSql connection = do
           INSERT INTO account (
             id,
             github_id,
-            email,
-            password
+            email
           ) values (
             '00000000-0000-1000-a000-000000000000',
             0,
-            'visitor@patchgirl.io',
-            crypt('123', gen_salt('bf', 8))
+            'visitor@patchgirl.io'
           );
 
 

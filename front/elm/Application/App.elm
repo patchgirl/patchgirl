@@ -22,7 +22,7 @@ import Animation
 import BuilderApp.App as BuilderApp
 import BuilderApp.Builder.App as Builder
 import EnvironmentEdition.App as EnvironmentEdition
-import Scenario.App as Scenario
+import ScenarioApp.App as Scenario
 import EnvironmentToRunSelection.App as EnvSelection
 import BuilderApp.BuilderTree.App as BuilderTree
 import Application.Model exposing (..)

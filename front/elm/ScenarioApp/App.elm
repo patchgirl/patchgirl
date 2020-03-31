@@ -1,4 +1,4 @@
-module Scenario.App exposing (..)
+module ScenarioApp.App exposing (..)
 
 import Element exposing (..)
 import Element.Font as Font

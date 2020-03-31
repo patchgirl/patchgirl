@@ -11,15 +11,14 @@ class Init < ActiveRecord::Migration[5.2]
       CREATE EXTENSION CITEXT;
       CREATE EXTENSION PGCRYPTO;
 
+
       -- account
 
 
       CREATE TABLE account(
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           github_id INTEGER NOT NULL UNIQUE,
-          email CITEXT UNIQUE,
-          signup_token TEXT NOT NULL DEFAULT MD5(random()::text),
-          password TEXT
+          email CITEXT UNIQUE
       );
 
 

@@ -156,9 +156,7 @@ SET default_with_oids = false;
 CREATE TABLE public.account (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     github_id integer NOT NULL,
-    email public.citext,
-    signup_token text DEFAULT md5((random())::text) NOT NULL,
-    password text
+    email public.citext
 );
 
 
