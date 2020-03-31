@@ -46,6 +46,8 @@ import           RequestCollection.Model
 import           RequestComputation.App
 import           RequestNode.App
 import           RequestNode.Model
+import           ScenarioNode.App
+import           ScenarioNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
 import           Session.App
 import           Session.Model
@@ -76,6 +78,7 @@ combinedApiServer cookieSettings jwtSettings =
 type RestApi auths =
   PRequestCollectionApi auths :<|>
   PEnvironmentApi auths :<|>
+  PScenarioNodeApi auths :<|>
   PRequestNodeApi auths :<|>
   PRequestFileApi auths :<|>
   PRequestFolderApi auths :<|>
@@ -89,6 +92,7 @@ restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
    requestCollectionApiServer
   :<|> environmentApiServer
+  :<|> scenarioNodeApiServer
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
   :<|> requestFolderApiServer
@@ -149,6 +153,30 @@ environmentApiServer =
   :<|> authorizeWithAccountId deleteEnvironmentHandler
   :<|> authorizeWithAccountId updateKeyValuesHandler
   :<|> authorizeWithAccountId deleteKeyValueHandler
+
+
+-- ** scenario node
+
+
+type PScenarioNodeApi auths =
+  Flat (Auth auths CookieSession :> ScenarioNodeApi)
+
+type ScenarioNodeApi =
+  Flat (
+    "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+      -- rename scenario node
+      ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () -- :<|>
+      -- delete scenario node
+      --Delete '[JSON] ()
+    )
+  )
+
+scenarioNodeApiServer
+  :: (AuthResult CookieSession -> UUID -> UUID -> UpdateScenarioNode -> AppM ())
+--  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+scenarioNodeApiServer =
+  authorizeWithAccountId updateScenarioNodeHandler
+--  :<|> authorizeWithAccountId deleteScenarioNodeHandler
 
 
 -- ** request node

@@ -38,6 +38,20 @@ COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+--
 -- Name: header_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -69,6 +83,16 @@ CREATE TYPE public.http_method_type AS ENUM (
 CREATE TYPE public.request_node_type AS ENUM (
     'RequestFolder',
     'RequestFile'
+);
+
+
+--
+-- Name: scenario_node_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.scenario_node_type AS ENUM (
+    'ScenarioFolder',
+    'ScenarioFile'
 );
 
 
@@ -140,6 +164,73 @@ CREATE FUNCTION public.root_request_nodes_as_json(rc_id integer) RETURNS jsonb[]
         FROM request_node rn
         INNER JOIN request_collection_to_request_node rcrn ON rcrn.request_node_id = rn.id
         WHERE rcrn.request_collection_id = rc_id;
+        RETURN result;
+      END;
+      $$;
+
+
+--
+-- Name: root_scenario_nodes_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb[]
+    LANGUAGE plpgsql
+    AS $$
+      DECLARE result jsonb[];
+      BEGIN
+        SELECT array_agg (
+          CASE WHEN tag = 'ScenarioFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'scene_node_id', scene_node_id
+            )
+          END
+        ) INTO result
+        FROM scenario_node rn
+        INNER JOIN scenario_collection_to_scenario_node rcrn ON rcrn.scenario_node_id = rn.id
+        WHERE rcrn.scenario_collection_id = rc_id;
+        RETURN result;
+      END;
+      $$;
+
+
+--
+-- Name: scenario_nodes_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.scenario_nodes_as_json(node_id uuid) RETURNS jsonb[]
+    LANGUAGE plpgsql
+    AS $$
+      DECLARE result jsonb[];
+      BEGIN
+        SELECT array_agg (
+          CASE WHEN tag = 'ScenarioFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'scene_node_id', scene_node_id
+            )
+          END
+        ) INTO result
+        FROM scenario_node
+        WHERE scenario_node_parent_id = node_id;
         RETURN result;
       END;
       $$;
@@ -302,6 +393,50 @@ CREATE TABLE public.request_node (
 
 
 --
+-- Name: scenario_collection; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_collection (
+    id uuid NOT NULL,
+    account_id uuid
+);
+
+
+--
+-- Name: scenario_collection_to_scenario_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_collection_to_scenario_node (
+    scenario_collection_id uuid NOT NULL,
+    scenario_node_id uuid NOT NULL
+);
+
+
+--
+-- Name: scenario_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_node (
+    id uuid NOT NULL,
+    tag public.scenario_node_type NOT NULL,
+    name text NOT NULL,
+    scenario_node_parent_id uuid,
+    scene_node_id uuid
+);
+
+
+--
+-- Name: scene_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scene_node (
+    id uuid NOT NULL,
+    scene_node_parent_id uuid,
+    request_node_id uuid
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -412,6 +547,38 @@ ALTER TABLE ONLY public.request_node
 
 
 --
+-- Name: scenario_collection scenario_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_collection
+    ADD CONSTRAINT scenario_collection_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scenario_collection_to_scenario_node scenario_collection_to_scenario_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_collection_to_scenario_node
+    ADD CONSTRAINT scenario_collection_to_scenario_node_pkey PRIMARY KEY (scenario_collection_id, scenario_node_id);
+
+
+--
+-- Name: scenario_node scenario_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_node
+    ADD CONSTRAINT scenario_node_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scene_node scene_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scene_node
+    ADD CONSTRAINT scene_node_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -473,6 +640,62 @@ ALTER TABLE ONLY public.request_collection_to_request_node
 
 ALTER TABLE ONLY public.request_node
     ADD CONSTRAINT request_node_request_node_parent_id_fkey FOREIGN KEY (request_node_parent_id) REFERENCES public.request_node(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_collection scenario_collection_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_collection
+    ADD CONSTRAINT scenario_collection_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_collection_to_scenario_node scenario_collection_to_scenario_nod_scenario_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_collection_to_scenario_node
+    ADD CONSTRAINT scenario_collection_to_scenario_nod_scenario_collection_id_fkey FOREIGN KEY (scenario_collection_id) REFERENCES public.scenario_collection(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_collection_to_scenario_node scenario_collection_to_scenario_node_scenario_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_collection_to_scenario_node
+    ADD CONSTRAINT scenario_collection_to_scenario_node_scenario_node_id_fkey FOREIGN KEY (scenario_node_id) REFERENCES public.scenario_node(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_node scenario_node_scenario_node_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_node
+    ADD CONSTRAINT scenario_node_scenario_node_parent_id_fkey FOREIGN KEY (scenario_node_parent_id) REFERENCES public.scenario_node(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_node scenario_node_scene_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_node
+    ADD CONSTRAINT scenario_node_scene_node_id_fkey FOREIGN KEY (scene_node_id) REFERENCES public.scene_node(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scene_node scene_node_request_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scene_node
+    ADD CONSTRAINT scene_node_request_node_id_fkey FOREIGN KEY (request_node_id) REFERENCES public.request_node(id);
+
+
+--
+-- Name: scene_node scene_node_scene_node_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scene_node
+    ADD CONSTRAINT scene_node_scene_node_parent_id_fkey FOREIGN KEY (scene_node_parent_id) REFERENCES public.scene_node(id) ON DELETE CASCADE;
 
 
 --

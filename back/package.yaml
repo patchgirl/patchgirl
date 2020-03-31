@@ -77,3 +77,4 @@ dependencies:
   - uuid
   - strings
   - control-monad-free
+  - monad-loops

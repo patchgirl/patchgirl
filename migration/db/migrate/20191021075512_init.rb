@@ -10,7 +10,7 @@ class Init < ActiveRecord::Migration[5.2]
 
       CREATE EXTENSION CITEXT;
       CREATE EXTENSION PGCRYPTO;
-
+      CREATE EXTENSION "uuid-ossp";
 
       -- account
 
@@ -48,6 +48,9 @@ class Init < ActiveRecord::Migration[5.2]
       );
 
 
+      -- request collection
+
+
       CREATE TABLE request_collection(
         id SERIAL PRIMARY KEY,
         account_id UUID REFERENCES account(id) ON DELETE CASCADE
@@ -57,6 +60,45 @@ class Init < ActiveRecord::Migration[5.2]
         request_collection_id INTEGER REFERENCES request_collection(id) ON DELETE CASCADE,
         request_node_id UUID REFERENCES request_node(id) ON DELETE CASCADE,
         PRIMARY KEY (request_collection_id, request_node_id)
+      );
+
+
+      -- scene node
+
+
+      CREATE TABLE scene_node(
+        id UUID PRIMARY KEY,
+        scene_node_parent_id UUID REFERENCES scene_node(id) ON DELETE CASCADE,
+        request_node_id UUID REFERENCES request_node(id)
+      );
+
+
+      -- scenario node
+
+
+      CREATE TYPE scenario_node_type AS ENUM ('ScenarioFolder', 'ScenarioFile');
+
+      CREATE TABLE scenario_node(
+        id UUID PRIMARY KEY,
+        tag scenario_node_type NOT NULL,
+        name TEXT NOT NULL,
+        scenario_node_parent_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
+        scene_node_id UUID REFERENCES scene_node(id) ON DELETE CASCADE
+      );
+
+
+      -- scenario collection
+
+
+      CREATE TABLE scenario_collection(
+        id UUID PRIMARY KEY,
+        account_id UUID REFERENCES account(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE scenario_collection_to_scenario_node(
+        scenario_collection_id UUID REFERENCES scenario_collection(id) ON DELETE CASCADE,
+        scenario_node_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
+        PRIMARY KEY (scenario_collection_id, scenario_node_id)
       );
 
 
@@ -80,6 +122,10 @@ class Init < ActiveRecord::Migration[5.2]
           key TEXT NOT NULL,
           value TEXT NOT NULL
       );
+
+
+      -- request node as json
+
 
       CREATE OR REPLACE FUNCTION root_request_nodes_as_json(rc_id int) RETURNS jsonb[] AS $$
       DECLARE result jsonb[];
@@ -137,6 +183,64 @@ class Init < ActiveRecord::Migration[5.2]
         ) INTO result
         FROM request_node
         WHERE request_node_parent_id = node_id;
+        RETURN result;
+      END;
+      $$ LANGUAGE plpgsql;
+
+
+      -- scene node as json
+
+
+      CREATE OR REPLACE FUNCTION root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb[] AS $$
+      DECLARE result jsonb[];
+      BEGIN
+        SELECT array_agg (
+          CASE WHEN tag = 'ScenarioFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'scene_node_id', scene_node_id
+            )
+          END
+        ) INTO result
+        FROM scenario_node rn
+        INNER JOIN scenario_collection_to_scenario_node rcrn ON rcrn.scenario_node_id = rn.id
+        WHERE rcrn.scenario_collection_id = rc_id;
+        RETURN result;
+      END;
+      $$ LANGUAGE plpgsql;
+
+
+      CREATE OR REPLACE FUNCTION scenario_nodes_as_json(node_id uuid) RETURNS jsonb[] AS $$
+      DECLARE result jsonb[];
+      BEGIN
+        SELECT array_agg (
+          CASE WHEN tag = 'ScenarioFolder' THEN
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
+            )
+          ELSE
+            jsonb_build_object(
+              'id', id,
+              'name', name,
+              'tag', tag,
+              'scene_node_id', scene_node_id
+            )
+          END
+        ) INTO result
+        FROM scenario_node
+        WHERE scenario_node_parent_id = node_id;
         RETURN result;
       END;
       $$ LANGUAGE plpgsql;

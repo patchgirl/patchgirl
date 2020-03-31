@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9acb1f26ba2a97cb87f60e1061bed9d7de4000f76b37a9b01270777dff65e92a
+-- hash: c7707266160657baf5dd31086f4936e701cb54fda434cbdcf778d8f73170a518
 
 name:           patchGirl
 version:        0.0.0
@@ -33,6 +33,11 @@ library
       RequestNode.App
       RequestNode.Model
       RequestNode.Sql
+      ScenarioCollection.Model
+      ScenarioCollection.Sql
+      ScenarioNode.App
+      ScenarioNode.Model
+      ScenarioNode.Sql
       Session.App
       Session.Model
       Test
@@ -60,6 +65,7 @@ library
     , http-types
     , jose
     , lens
+    , monad-loops
     , mtl
     , postgresql-simple
     , prometheus-client
@@ -109,6 +115,7 @@ executable patchGirl
     , http-types
     , jose
     , lens
+    , monad-loops
     , mtl
     , patchGirl
     , postgresql-simple
@@ -150,6 +157,9 @@ test-suite spec
       RequestFolder.AppSpec
       RequestNode.AppSpec
       RequestNode.DB
+      ScenarioCollection.DB
+      ScenarioNode.AppSpec
+      ScenarioNode.DB
       Session.AppSpec
       Paths_patchGirl
   hs-source-dirs:
@@ -175,6 +185,7 @@ test-suite spec
     , http-types
     , jose
     , lens
+    , monad-loops
     , mtl
     , patchGirl
     , postgresql-simple
