@@ -22,6 +22,7 @@ import Animation
 import BuilderApp.App as BuilderApp
 import BuilderApp.Builder.App as Builder
 import EnvironmentEdition.App as EnvironmentEdition
+import Scenario.App as Scenario
 import EnvironmentToRunSelection.App as EnvSelection
 import BuilderApp.BuilderTree.App as BuilderTree
 import Application.Model exposing (..)
@@ -47,6 +48,7 @@ type Msg
     | BuilderTreeMsg BuilderTree.Msg
     | BuilderAppMsg BuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
+    | ScenarioMsg Scenario.Msg
     | MainNavBarMsg MainNavBar.Msg
     | Animate Animation.Msg
 
@@ -143,6 +145,11 @@ update msg model =
                 (newModel, newSubMsg) ->
                     (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
 
+        ScenarioMsg subMsg ->
+            case Scenario.update subMsg model of
+                (newModel, newSubMsg) ->
+                    (newModel, Cmd.map ScenarioMsg newSubMsg)
+
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
                 (newModel, newSubMsg) ->
@@ -198,6 +205,7 @@ mainView model =
                 NotFoundPage -> el [ centerY, centerX ] (text "not found")
                 ReqPage mId -> builderView
                 EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                ScenarioPage -> map ScenarioMsg (Scenario.view model)
         ]
 
 

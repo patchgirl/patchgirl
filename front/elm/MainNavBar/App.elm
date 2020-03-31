@@ -36,6 +36,7 @@ type alias Model a =
 type Msg
     = OpenReqPage
     | OpenEnvPage
+    | OpenScenarioPage
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
@@ -60,6 +61,13 @@ update msg model =
             let
                 newModel =
                     { model | page = EnvPage }
+            in
+                (newModel, Cmd.none)
+
+        OpenScenarioPage ->
+            let
+                newModel =
+                    { model | page = ScenarioPage }
             in
                 (newModel, Cmd.none)
 
@@ -288,12 +296,16 @@ centerView model =
     in
         row [ centerX, centerY, paddingXY 10 0, height fill ]
             [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage (ReqPage currentDisplayedBuilderId)))
-                  { url = "#req"
-                  , label = el [] (text "Req")
+                  { url = href (ReqPage Nothing)
+                  , label = el [] (text "Request")
                   }
             , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage))
-                { url = "#env"
-                , label = el [] (text "Env")
+                { url = href EnvPage
+                , label = el [] (text "Environment")
+                }
+            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenScenarioPage ScenarioPage))
+                { url = href ScenarioPage
+                , label = el [] (text "Scenario")
                 }
             ]
 
