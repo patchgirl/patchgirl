@@ -45,7 +45,6 @@ updateScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId updateSc
     False ->
       Servant.throwError Servant.err404
     True -> do
-      IO.liftIO $ print "test2"
       IO.liftIO $
         Monad.void (updateScenarioNodeDB scenarioNodeId updateScenarioNode connection)
 

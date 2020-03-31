@@ -115,6 +115,10 @@ selectFakeRequestFolder fakeRequestFolderId connection = do
           where id = ?
           |]
 
+
+-- * util
+
+
 getFirstFolder :: [RequestNode] -> Maybe RequestNode
 getFirstFolder requestNodes =
   Maybe.listToMaybe . Maybe.catMaybes $ map findFolder requestNodes
