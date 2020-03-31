@@ -794,7 +794,7 @@ headersView model =
                         ]
                 }
     in
-        column [ width fill, spacing 10 ]
+        column [ width fill, spacing 20 ]
             [ text "Header:"
             , column [ width fill, spacing 10 ] headerInputs
             , addHeaderButton
