@@ -88,6 +88,16 @@ selectNodeExists id connection = do
 -- * util
 
 
+getFirstScenarioFolder :: [ScenarioNode] -> Maybe ScenarioNode
+getFirstScenarioFolder scenarioNodes =
+  Maybe.listToMaybe . Maybe.catMaybes $ map findFolder scenarioNodes
+  where
+    findFolder :: ScenarioNode -> Maybe ScenarioNode
+    findFolder = \case
+      folder@ScenarioFolder {} -> Just folder
+      _ -> Nothing
+
+
 getFirstScenarioFile :: [ScenarioNode] -> Maybe ScenarioNode
 getFirstScenarioFile scenarioNodes =
   Maybe.listToMaybe . Maybe.catMaybes $ map findFile scenarioNodes

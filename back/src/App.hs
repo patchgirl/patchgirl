@@ -79,6 +79,7 @@ type RestApi auths =
   PRequestCollectionApi auths :<|>
   PEnvironmentApi auths :<|>
   PScenarioNodeApi auths :<|>
+  PScenarioFileApi auths :<|>
   PRequestNodeApi auths :<|>
   PRequestFileApi auths :<|>
   PRequestFolderApi auths :<|>
@@ -93,6 +94,7 @@ restApiServer cookieSettings jwtSettings =
    requestCollectionApiServer
   :<|> environmentApiServer
   :<|> scenarioNodeApiServer
+  :<|> scenarioFileApiServer
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
   :<|> requestFolderApiServer
@@ -177,6 +179,34 @@ scenarioNodeApiServer
 scenarioNodeApiServer =
   authorizeWithAccountId updateScenarioNodeHandler
   :<|> authorizeWithAccountId deleteScenarioNodeHandler
+
+-- ** scenario file api
+
+
+type PScenarioFileApi auths =
+  Flat (Auth auths CookieSession :> ScenarioFileApi)
+
+
+type ScenarioFileApi =
+  Flat (
+    "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+      "scenarioFile" :> (
+          -- createScenarioFile
+          ReqBody '[JSON] NewScenarioFile :> Post '[JSON] ()
+      ) :<|>
+      "rootScenarioFile" :> (
+          -- create root scenario file
+          ReqBody '[JSON] NewRootScenarioFile :> Post '[JSON] ()
+      )
+    )
+  )
+
+scenarioFileApiServer
+  :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFile -> AppM ())
+scenarioFileApiServer =
+  authorizeWithAccountId createScenarioFileHandler
+  :<|> authorizeWithAccountId createRootScenarioFileHandler
 
 
 -- ** request node

@@ -45,6 +45,37 @@ updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
             Monad.void (updateRequestNodeDB requestNodeId updateRequestNode connection)
 
 
+-- * delete request node
+
+
+deleteRequestNodeHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> Int
+  -> UUID
+  -> m ()
+deleteRequestNodeHandler accountId requestCollectionId requestNodeId = do
+  connection <- getDBConnection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+    Just requestCollectionId' | requestCollectionId /= requestCollectionId' ->
+      Servant.throwError Servant.err404
+    _ -> do
+      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
+      case findNodeInRequestNodes requestNodeId requestNodes of
+        Nothing ->
+          Servant.throwError Servant.err404
+        _ ->
+          IO.liftIO $ deleteRequestNodeDB requestNodeId connection
+
+
+-- * util
+
+
 findNodeInRequestNodes :: UUID -> [RequestNode] -> Maybe RequestNode
 findNodeInRequestNodes nodeIdToFind requestNodes =
   Maybe.listToMaybe . Maybe.catMaybes $ map findNodeInRequestNode requestNodes
@@ -60,6 +91,26 @@ findNodeInRequestNodes nodeIdToFind requestNodes =
             RequestFolder {} ->
               findNodeInRequestNodes nodeIdToFind (requestNode ^. requestNodeChildren)
 
+
+-- * create root request file
+
+
+createRootRequestFileHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> Int
+  -> NewRootRequestFile
+  -> m ()
+createRootRequestFileHandler accountId requestCollectionId newRootRequestFile = do
+  connection <- getDBConnection
+  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
+    Just requestCollectionId' | requestCollectionId == requestCollectionId' ->
+      IO.liftIO $ insertRootRequestFile newRootRequestFile requestCollectionId connection
+    _ ->
+      Servant.throwError Servant.err404
 
 
 -- * create request file
@@ -88,27 +139,6 @@ createRequestFileHandler accountId requestCollectionId newRequestFile = do
           IO.liftIO $ insertRequestFile newRequestFile connection
         _ ->
           Servant.throwError Servant.err404
-
-
--- * create root request file
-
-
-createRootRequestFileHandler
-  :: ( Reader.MonadReader Config m
-     , IO.MonadIO m
-     , Except.MonadError Servant.ServerError m
-     )
-  => UUID
-  -> Int
-  -> NewRootRequestFile
-  -> m ()
-createRootRequestFileHandler accountId requestCollectionId newRootRequestFile = do
-  connection <- getDBConnection
-  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
-    Just requestCollectionId' | requestCollectionId == requestCollectionId' ->
-      IO.liftIO $ insertRootRequestFile newRootRequestFile requestCollectionId connection
-    _ ->
-      Servant.throwError Servant.err404
 
 
 -- * update request file
@@ -185,31 +215,3 @@ createRequestFolderHandler accountId requestCollectionId newRequestFolder = do
           IO.liftIO $ insertRequestFolder newRequestFolder connection
         _ ->
           Servant.throwError Servant.err404
-
-
--- * delete request node
-
-
-deleteRequestNodeHandler
-  :: ( Reader.MonadReader Config m
-     , IO.MonadIO m
-     , Except.MonadError Servant.ServerError m
-     )
-  => UUID
-  -> Int
-  -> UUID
-  -> m ()
-deleteRequestNodeHandler accountId requestCollectionId requestNodeId = do
-  connection <- getDBConnection
-  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
-    Nothing ->
-      Servant.throwError Servant.err404
-    Just requestCollectionId' | requestCollectionId /= requestCollectionId' ->
-      Servant.throwError Servant.err404
-    _ -> do
-      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
-      case findNodeInRequestNodes requestNodeId requestNodes of
-        Nothing ->
-          Servant.throwError Servant.err404
-        _ ->
-          IO.liftIO $ deleteRequestNodeDB requestNodeId connection

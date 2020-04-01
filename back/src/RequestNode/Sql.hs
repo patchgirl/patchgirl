@@ -25,26 +25,35 @@ selectRequestNodesFromRequestCollectionId requestCollectionId connection = do
           |] :: PG.Query
 
 
--- * insert request file
+-- * update request node (rename)
 
 
-insertRequestFile :: NewRequestFile -> PG.Connection -> IO ()
-insertRequestFile NewRequestFile {..} connection =
-  Monad.void $ PG.execute connection rawQuery (_newRequestFileId, _newRequestFileParentNodeId)
+updateRequestNodeDB :: UUID -> UpdateRequestNode -> PG.Connection -> IO ()
+updateRequestNodeDB requestNodeId updateRequestNode connection = do
+  -- todo search func with : m a -> m b
+  let newName = updateRequestNode ^. updateRequestNodeName
+  _ <- PG.execute connection updateQuery (newName, requestNodeId)
+  return ()
   where
-    rawQuery =
+    updateQuery =
       [sql|
-          INSERT INTO request_node (
-            id,
-            request_node_parent_id,
-            tag,
-            name,
-            http_url,
-            http_method,
-            http_headers,
-            http_body
-          )
-          VALUES (?, ?, 'RequestFile', 'new request', '', 'Get', '{}', '')
+          UPDATE request_node
+          SET name = ?
+          WHERE id = ?
+          |]
+
+
+-- * delete request node
+
+
+deleteRequestNodeDB :: UUID -> PG.Connection -> IO ()
+deleteRequestNodeDB requestNodeId connection =
+  Monad.void $ PG.execute connection updateQuery (PG.Only requestNodeId)
+  where
+    updateQuery =
+      [sql|
+          DELETE FROM request_node
+          WHERE id = ?
           |]
 
 
@@ -78,6 +87,29 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
               request_node_id
             )
             VALUES (?, ?)
+          |]
+
+
+-- * insert request file
+
+
+insertRequestFile :: NewRequestFile -> PG.Connection -> IO ()
+insertRequestFile NewRequestFile {..} connection =
+  Monad.void $ PG.execute connection rawQuery (_newRequestFileId, _newRequestFileParentNodeId)
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO request_node (
+            id,
+            request_node_parent_id,
+            tag,
+            name,
+            http_url,
+            http_method,
+            http_headers,
+            http_body
+          )
+          VALUES (?, ?, 'RequestFile', 'new request', '', 'Get', '{}', '')
           |]
 
 
@@ -129,24 +161,6 @@ insertRequestFolder NewRequestFolder {..} connection =
           |]
 
 
--- * update request node (rename)
-
-
-updateRequestNodeDB :: UUID -> UpdateRequestNode -> PG.Connection -> IO ()
-updateRequestNodeDB requestNodeId updateRequestNode connection = do
-  -- todo search func with : m a -> m b
-  let newName = updateRequestNode ^. updateRequestNodeName
-  _ <- PG.execute connection updateQuery (newName, requestNodeId)
-  return ()
-  where
-    updateQuery =
-      [sql|
-          UPDATE request_node
-          SET name = ?
-          WHERE id = ?
-          |]
-
-
 -- * update request file
 
 
@@ -170,19 +184,5 @@ updateRequestFileDB requestNodeId UpdateRequestFile{..} connection = do
             http_method = ?,
             http_headers = ?,
             http_body = ?
-          WHERE id = ?
-          |]
-
-
--- * delete request node
-
-
-deleteRequestNodeDB :: UUID -> PG.Connection -> IO ()
-deleteRequestNodeDB requestNodeId connection =
-  Monad.void $ PG.execute connection updateQuery (PG.Only requestNodeId)
-  where
-    updateQuery =
-      [sql|
-          DELETE FROM request_node
           WHERE id = ?
           |]

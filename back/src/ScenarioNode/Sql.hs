@@ -54,3 +54,52 @@ deleteScenarioNodeDB scenarioNodeId connection =
           DELETE FROM scenario_node
           WHERE id = ?
           |]
+
+
+-- * insert root scenario file
+
+
+insertRootScenarioFile :: NewRootScenarioFile -> UUID -> PG.Connection -> IO Int.Int64
+insertRootScenarioFile NewRootScenarioFile {..} scenarioCollectionId connection =
+  PG.execute connection rawQuery ( _newRootScenarioFileId
+                                 , _newRootScenarioFileName
+                                 , scenarioCollectionId
+                                 , _newRootScenarioFileId
+                                 )
+  where
+    rawQuery =
+      [sql|
+          WITH insert_root_scenario_node AS (
+            INSERT INTO scenario_node (
+              id,
+              scenario_node_parent_id,
+              tag,
+              name
+            )
+            VALUES (?, NULL, 'ScenarioFile', ?)
+          ) INSERT INTO scenario_collection_to_scenario_node (
+              scenario_collection_id,
+              scenario_node_id
+            )
+            VALUES (?, ?)
+          |]
+-- * insert scenario file
+
+
+insertScenarioFile :: NewScenarioFile -> PG.Connection -> IO Int.Int64
+insertScenarioFile NewScenarioFile {..} connection =
+  PG.execute connection rawQuery ( _newScenarioFileId
+                                 , _newScenarioFileParentNodeId
+                                 , _newScenarioFileName
+                                 )
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO scenario_node (
+            id,
+            scenario_node_parent_id,
+            name,
+            tag
+          )
+          VALUES (?, ?, ?, 'ScenarioFile')
+          |]

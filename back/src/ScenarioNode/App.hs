@@ -39,7 +39,6 @@ updateScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId updateSc
   let scenarioNodeAuthorized =
         selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
         Maybe.isJust . findNodeInScenarioNodes scenarioNodeId
-
   authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
   case authorized of
     False ->
@@ -66,7 +65,6 @@ deleteScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId = do
   let scenarioNodeAuthorized =
         selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
         Maybe.isJust . findNodeInScenarioNodes scenarioNodeId
-
   authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
   case authorized of
     False ->
@@ -77,6 +75,11 @@ deleteScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId = do
 
 -- * util
 
+
+isScenarioFolder :: ScenarioNode -> Bool
+isScenarioFolder = \case
+  ScenarioFolder {} -> True
+  _ -> False
 
 findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
 findNodeInScenarioNodes nodeIdToFind scenarioNodes =
@@ -92,3 +95,53 @@ findNodeInScenarioNodes nodeIdToFind scenarioNodes =
               Nothing
             ScenarioFolder {} ->
               findNodeInScenarioNodes nodeIdToFind (scenarioNode ^. scenarioNodeChildren)
+
+
+-- * create root scenario file
+
+
+createRootScenarioFileHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> NewRootScenarioFile
+  -> m ()
+createRootScenarioFileHandler accountId scenarioCollectionId newRootScenarioFile = do
+  connection <- getDBConnection
+  scenarioCollectionAuthorized <- IO.liftIO $ doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
+  case scenarioCollectionAuthorized of
+    False ->
+      Servant.throwError Servant.err404
+    True ->
+      IO.liftIO . Monad.void $ insertRootScenarioFile newRootScenarioFile scenarioCollectionId connection
+
+
+-- * create scenario file
+
+
+createScenarioFileHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> NewScenarioFile
+  -> m ()
+createScenarioFileHandler accountId scenarioCollectionId newScenarioFile = do
+  connection <- getDBConnection
+  let scenarioCollectionAuthorized = IO.liftIO $ doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
+  let
+      scenarioNodeAuthorized :: IO Bool
+      scenarioNodeAuthorized =
+        selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
+        Maybe.maybe False isScenarioFolder . findNodeInScenarioNodes (newScenarioFile ^. newScenarioFileParentNodeId)
+  authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
+  case authorized of
+    False ->
+      Servant.throwError Servant.err404
+    True ->
+      IO.liftIO . Monad.void $ insertScenarioFile newScenarioFile connection
