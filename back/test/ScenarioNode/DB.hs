@@ -21,9 +21,6 @@ import           ScenarioNode.Model
 -- * select fake scenario file
 
 
--- * select fake scenario file
-
-
 data FakeScenarioFile =
   FakeScenarioFile { _fakeScenarioFileParentId    :: Maybe UUID
                    , _fakeScenarioFileName        :: String
@@ -67,6 +64,25 @@ selectFakeScenarioFolder scenarioNodeId connection = do
           FROM scenario_node
           where id = ?
           |]
+
+
+-- * select scenario node exist
+
+
+selectNodeExists :: UUID -> Connection -> IO Bool
+selectNodeExists id connection = do
+  [Only nodeExists] <- query connection rawQuery (Only id)
+  return nodeExists
+  where
+    rawQuery =
+      [sql|
+          SELECT EXISTS (
+            SELECT 1
+            FROM scenario_node
+            WHERE id = ?
+          )
+          |]
+
 
 
 -- * util

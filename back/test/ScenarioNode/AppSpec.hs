@@ -36,8 +36,8 @@ import           ScenarioNode.Model
 
 
 updateScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> UpdateScenarioNode -> ClientM ()
---deleteScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> ClientM ()
-updateScenarioNodeHandler = -- :<|> deleteScenarioNodeHandler =
+deleteScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> ClientM ()
+updateScenarioNodeHandler :<|> deleteScenarioNodeHandler =
   client (Proxy :: Proxy (PScenarioNodeApi '[Auth.JWT]))
 
 
@@ -46,7 +46,7 @@ updateScenarioNodeHandler = -- :<|> deleteScenarioNodeHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultConfig) $ do
 
 
 -- ** update scenario node
@@ -94,6 +94,43 @@ spec =
           _ <- try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode)
           FakeScenarioFile { _fakeScenarioFileName } <- selectFakeScenarioFile nodeId connection
           _fakeScenarioFileName `shouldBe` "newName"
+
+
+-- ** delete scenario node
+
+
+    describe "delete scenario node" $ do
+      it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          try clientEnv (deleteScenarioNodeHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+          token <- signedUserToken accountId
+          ScenarioCollection scenarioCollectionId _ <- insertSampleScenarioCollection accountId connection
+          try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 if the scenario node doesnt belong to the account" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          accountId1 <- insertFakeAccount defaultNewFakeAccount1 connection
+          accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
+          ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId2 connection
+          let nodeId = head scenarioNodes ^. scenarioNodeId
+          token <- signedUserToken accountId1
+          try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "delete a scenario node" $ \clientEnv ->
+        cleanDBAfter $ \connection -> do
+          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+          ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
+          let nodeId = head scenarioNodes ^. scenarioNodeId
+          token <- signedUserToken accountId
+          selectNodeExists nodeId connection `shouldReturn` True
+          _ <- try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId)
+          selectNodeExists nodeId connection `shouldReturn` False
 
   where
     updateScenarioNode :: UpdateScenarioNode

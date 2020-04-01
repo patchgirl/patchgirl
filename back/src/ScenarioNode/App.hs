@@ -45,43 +45,38 @@ updateScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId updateSc
     False ->
       Servant.throwError Servant.err404
     True ->
-      IO.liftIO $
-        Monad.void (updateScenarioNodeDB scenarioNodeId updateScenarioNode connection)
+      IO.liftIO . Monad.void $ updateScenarioNodeDB scenarioNodeId updateScenarioNode connection
 
 
 -- * delete scenario node
 
-{-
+
 deleteScenarioNodeHandler
   :: ( Reader.MonadReader Config m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
   => UUID
-  -> Int
+  -> UUID
   -> UUID
   -> m ()
-deleteScenarioNodeHandler accountId requestCollectionId requestNodeId = do
-  undefined
-  {
-
+deleteScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId = do
   connection <- getDBConnection
-  IO.liftIO (selectRequestCollectionId accountId connection) >>= \case
-    Nothing ->
+  let scenarioCollectionAuthorized = doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
+  let scenarioNodeAuthorized =
+        selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
+        Maybe.isJust . findNodeInScenarioNodes scenarioNodeId
+
+  authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
+  case authorized of
+    False ->
       Servant.throwError Servant.err404
-    Just requestCollectionId' | requestCollectionId /= requestCollectionId' ->
-      Servant.throwError Servant.err404
-    _ -> do
-      requestNodes <- IO.liftIO $ selectRequestNodesFromRequestCollectionId requestCollectionId connection
-      case findNodeInRequestNodes requestNodeId requestNodes of
-        Nothing ->
-          Servant.throwError Servant.err404
-        _ ->
-          IO.liftIO $ deleteRequestNodeDB requestNodeId connection
--}
+    True ->
+      IO.liftIO . Monad.void $ deleteScenarioNodeDB scenarioNodeId connection
 
 
 -- * util
+
 
 findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
 findNodeInScenarioNodes nodeIdToFind scenarioNodes =

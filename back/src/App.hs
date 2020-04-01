@@ -165,18 +165,18 @@ type ScenarioNodeApi =
   Flat (
     "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
       -- rename scenario node
-      ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () -- :<|>
+      ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () :<|>
       -- delete scenario node
-      --Delete '[JSON] ()
+      Delete '[JSON] ()
     )
   )
 
 scenarioNodeApiServer
   :: (AuthResult CookieSession -> UUID -> UUID -> UpdateScenarioNode -> AppM ())
---  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
 scenarioNodeApiServer =
   authorizeWithAccountId updateScenarioNodeHandler
---  :<|> authorizeWithAccountId deleteScenarioNodeHandler
+  :<|> authorizeWithAccountId deleteScenarioNodeHandler
 
 
 -- ** request node
