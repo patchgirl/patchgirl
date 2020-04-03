@@ -170,3 +170,41 @@ instance ToJSON NewScenarioFile where
 instance FromJSON NewScenarioFile where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * new root scenario folder
+
+
+newtype NewRootScenarioFolder =
+  NewRootScenarioFolder { _newRootScenarioFolderId           :: UUID
+                       } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''NewRootScenarioFolder)
+
+instance ToJSON NewRootScenarioFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRootScenarioFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * new scenario folder
+
+
+data NewScenarioFolder =
+  NewScenarioFolder { _newScenarioFolderId           :: UUID
+                    , _newScenarioFolderParentNodeId :: UUID
+                    , _newScenarioFolderName         :: String
+                    } deriving (Eq, Show, Generic)
+
+$(makeLenses ''NewScenarioFolder)
+
+instance ToJSON NewScenarioFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewScenarioFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }

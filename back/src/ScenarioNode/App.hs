@@ -145,3 +145,57 @@ createScenarioFileHandler accountId scenarioCollectionId newScenarioFile = do
       Servant.throwError Servant.err404
     True ->
       IO.liftIO . Monad.void $ insertScenarioFile newScenarioFile connection
+
+
+-- * create root scenario folder
+
+
+createRootScenarioFolderHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> NewRootScenarioFolder
+  -> m ()
+createRootScenarioFolderHandler accountId scenarioCollectionId newRootScenarioFolder = do
+  connection <- getDBConnection
+  scenarioCollectionAuthorized <- IO.liftIO $ doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
+  case scenarioCollectionAuthorized of
+    False ->
+      Servant.throwError Servant.err404
+
+    True ->
+      IO.liftIO . Monad.void $ insertRootScenarioFolder newRootScenarioFolder scenarioCollectionId connection
+
+
+
+-- * create scenario folder
+
+
+createScenarioFolderHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> NewScenarioFolder
+  -> m ()
+createScenarioFolderHandler accountId scenarioCollectionId newScenarioFolder = do
+  connection <- getDBConnection
+  let scenarioCollectionAuthorized = IO.liftIO $ doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
+  let
+      scenarioNodeAuthorized :: IO Bool
+      scenarioNodeAuthorized =
+        selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
+        Maybe.maybe False isScenarioFolder . findNodeInScenarioNodes (newScenarioFolder ^. newScenarioFolderParentNodeId)
+
+  authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
+  case authorized of
+    False ->
+      Servant.throwError Servant.err404
+
+    True ->
+      IO.liftIO . Monad.void $ insertScenarioFolder newScenarioFolder connection

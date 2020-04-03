@@ -83,6 +83,8 @@ insertRootScenarioFile NewRootScenarioFile {..} scenarioCollectionId connection 
             )
             VALUES (?, ?)
           |]
+
+
 -- * insert scenario file
 
 
@@ -102,4 +104,54 @@ insertScenarioFile NewScenarioFile {..} connection =
             tag
           )
           VALUES (?, ?, ?, 'ScenarioFile')
+          |]
+
+
+-- * insert root scenario folder
+
+
+insertRootScenarioFolder :: NewRootScenarioFolder -> UUID -> PG.Connection -> IO Int.Int64
+insertRootScenarioFolder NewRootScenarioFolder {..} scenarioCollectionId connection =
+  PG.execute connection rawQuery ( _newRootScenarioFolderId
+                                 , scenarioCollectionId
+                                 , _newRootScenarioFolderId
+                                 )
+  where
+    rawQuery =
+      [sql|
+          WITH insert_root_scenario_node AS (
+            INSERT INTO scenario_node (
+              id,
+              scenario_node_parent_id,
+              tag,
+              name
+            )
+            VALUES (?, NULL, 'ScenarioFolder', 'new folder')
+          ) INSERT INTO scenario_collection_to_scenario_node (
+              scenario_collection_id,
+              scenario_node_id
+            )
+            VALUES (?, ?)
+          |]
+
+
+-- * insert scenario folder
+
+
+insertScenarioFolder :: NewScenarioFolder -> PG.Connection -> IO Int.Int64
+insertScenarioFolder NewScenarioFolder {..} connection =
+  PG.execute connection rawQuery ( _newScenarioFolderId
+                                 , _newScenarioFolderParentNodeId
+                                 , _newScenarioFolderName
+                                 )
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO scenario_node (
+            id,
+            scenario_node_parent_id,
+            tag,
+            name
+          )
+          VALUES (?, ?, 'ScenarioFolder', ?)
           |]

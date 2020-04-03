@@ -200,6 +200,43 @@ instance FromJSON NewRequestFile where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
+-- * new root request folder
+
+
+newtype NewRootRequestFolder =
+  NewRootRequestFolder { _newRootRequestFolderId           :: UUID
+                       } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''NewRootRequestFolder)
+
+instance ToJSON NewRootRequestFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRootRequestFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * new request folder
+
+
+data NewRequestFolder =
+  NewRequestFolder { _newRequestFolderId           :: UUID
+                   , _newRequestFolderParentNodeId :: UUID
+                   , _newRequestFolderName         :: String
+                   } deriving (Eq, Show, Generic)
+
+$(makeLenses ''NewRequestFolder)
+
+instance ToJSON NewRequestFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRequestFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 -- * update request file
 
 
@@ -255,41 +292,3 @@ data ParentNodeId
   = RequestCollectionId Int
   | RequestNodeId UUID
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
-
-
--- * new root request folder
-
-
-newtype NewRootRequestFolder =
-  NewRootRequestFolder { _newRootRequestFolderId           :: UUID
-                       } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootRequestFolder)
-
-instance ToJSON NewRootRequestFolder where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON NewRootRequestFolder where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
--- * new request folder
-
-
-data NewRequestFolder =
-  NewRequestFolder { _newRequestFolderId           :: UUID
-                   , _newRequestFolderParentNodeId :: UUID
-                   , _newRequestFolderName         :: String
-                   } deriving (Eq, Show, Generic)
-
-$(makeLenses ''NewRequestFolder)
-
-instance ToJSON NewRequestFolder where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON NewRequestFolder where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
