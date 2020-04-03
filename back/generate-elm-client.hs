@@ -13,26 +13,36 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeOperators         #-}
 
-import           App
+
+-- * third party lib
+
+
 import           Control.Lens             ((&), (<>~))
 import qualified Data.Aeson               as Aeson
 import qualified Data.Text                as T
 import           Data.Word
+import           Debug.Trace
 import           Elm.Module               as Elm
 import           Elm.TyRep
-import           Health.App
-
-import           Debug.Trace
 import           ElmOption                (deriveElmDefOption)
-import           Environment.App
 import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
                                            Symbol, TypeError, symbolVal)
+
+
+-- * patchgirl lib
+
+
+import           App
+import           Environment.App
 import           Github.App
+import           Health.App
 import           Http
 import           Model                    (CaseInsensitive)
 import           RequestCollection.Model
 import           RequestComputation.App
 import           RequestNode.Model
+import           ScenarioCollection.Model
+import           ScenarioNode.Model
 import           Servant                  ((:<|>))
 import           Servant.API              ((:>), Capture, Get, JSON)
 import           Servant.API.ContentTypes (NoContent)
@@ -43,6 +53,10 @@ import           Servant.Auth.Server      (JWT)
 import           Servant.Elm
 import           Servant.Foreign          hiding (Static)
 import           Session.Model
+
+
+-- * util
+
 
 instance IsElmDefinition Token where
   compileElmDef _ = ETypePrimAlias (EPrimAlias (ETypeName "Token" []) (ETyCon (ETCon "String")))
@@ -73,7 +87,20 @@ instance
         token = typeFor lang (Proxy @ftype) (Proxy @Token)
         subP  = Proxy @sub
 
--- input
+{-
+  this is used to a convert parameter in a url to a string
+  eg : whatever.com/books/:someUuidToConvertToString?arg=:someOtherComplexTypeToConvertToString
+-}
+myDefaultElmToString :: EType -> T.Text
+myDefaultElmToString argType =
+  case argType of
+    ETyCon (ETCon "UUID") -> "Uuid.toString"
+    _                     -> defaultElmToString argType
+
+
+-- * elm def
+
+
 deriveElmDef deriveElmDefOption ''RequestCollection
 deriveElmDef deriveElmDefOption ''RequestNode
 deriveElmDef deriveElmDefOption ''Method
@@ -99,6 +126,14 @@ deriveElmDef deriveElmDefOption ''NewRootRequestFolder
 deriveElmDef deriveElmDefOption ''UpdateRequestFile
 deriveElmDef deriveElmDefOption ''HttpHeader
 deriveElmDef deriveElmDefOption ''SignInWithGithub
+deriveElmDef deriveElmDefOption ''NewScenarioFile
+deriveElmDef deriveElmDefOption ''UpdateScenarioNode
+deriveElmDef deriveElmDefOption ''NewScenarioFolder
+deriveElmDef deriveElmDefOption ''NewRootScenarioFile
+deriveElmDef deriveElmDefOption ''NewRootScenarioFolder
+
+
+-- * imports
 
 
 myElmImports :: T.Text
@@ -123,15 +158,9 @@ myElmImports = T.unlines
   , "jsonEncUUID = Uuid.encode"
   ]
 
-{-
-  this is used to a convert parameter in a url to a string
-  eg : whatever.com/books/:someUuidToConvertToString?arg=:someOtherComplexTypeToConvertToString
--}
-myDefaultElmToString :: EType -> T.Text
-myDefaultElmToString argType =
-  case argType of
-    ETyCon (ETCon "UUID") -> "Uuid.toString"
-    _                     -> defaultElmToString argType
+
+-- * main
+
 
 main :: IO ()
 main =
@@ -178,6 +207,11 @@ main =
       , DefineElm (Proxy :: Proxy UpdateRequestFile)
       , DefineElm (Proxy :: Proxy HttpHeader)
       , DefineElm (Proxy :: Proxy SignInWithGithub)
+      , DefineElm (Proxy :: Proxy NewScenarioFile)
+      , DefineElm (Proxy :: Proxy UpdateScenarioNode)
+      , DefineElm (Proxy :: Proxy NewScenarioFolder)
+      , DefineElm (Proxy :: Proxy NewRootScenarioFolder)
+      , DefineElm (Proxy :: Proxy NewRootScenarioFile)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
