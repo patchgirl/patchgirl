@@ -46,6 +46,8 @@ import           RequestCollection.Model
 import           RequestComputation.App
 import           RequestNode.App
 import           RequestNode.Model
+import           ScenarioCollection.App
+import           ScenarioCollection.Model
 import           ScenarioNode.App
 import           ScenarioNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
@@ -77,6 +79,7 @@ combinedApiServer cookieSettings jwtSettings =
 
 type RestApi auths =
   PRequestCollectionApi auths :<|>
+  PScenarioCollectionApi auths :<|>
   PEnvironmentApi auths :<|>
   PScenarioNodeApi auths :<|>
   PScenarioFileApi auths :<|>
@@ -93,6 +96,7 @@ type RestApi auths =
 restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
    requestCollectionApiServer
+  :<|> scenarioCollectionApiServer
   :<|> environmentApiServer
   :<|> scenarioNodeApiServer
   :<|> scenarioFileApiServer
@@ -119,6 +123,20 @@ type RequestCollectionApi =
 requestCollectionApiServer :: (AuthResult CookieSession -> AppM RequestCollection)
 requestCollectionApiServer =
   authorizeWithAccountId getRequestCollectionHandler
+
+
+-- ** scenario collection
+
+
+type PScenarioCollectionApi auths =
+  Flat (Auth auths CookieSession :> ScenarioCollectionApi)
+
+type ScenarioCollectionApi =
+    "api" :> "scenarioCollection" :> Get '[JSON] ScenarioCollection
+
+scenarioCollectionApiServer :: (AuthResult CookieSession -> AppM ScenarioCollection)
+scenarioCollectionApiServer =
+  authorizeWithAccountId getScenarioCollectionHandler
 
 
 -- ** environment

@@ -31,3 +31,21 @@ doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
             LIMIT 1
           )
           |]
+
+
+-- * select scenario collection id
+
+
+selectScenarioCollectionId :: UUID -> Connection -> IO (Maybe UUID)
+selectScenarioCollectionId accountId connection =
+  query connection scenarioCollectionSql (Only accountId) <&> \case
+    [Only id] -> Just id
+    _ -> Nothing
+  where
+    scenarioCollectionSql =
+      [sql|
+          SELECT id
+          FROM scenario_collection
+          WHERE account_id = ?
+          LIMIT 1
+          |]
