@@ -33,7 +33,8 @@ import Page exposing (..)
 
 type alias Model a =
     { a
-        | requestCollection : RequestCollection
+        | notification : Maybe String
+        , requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
@@ -85,6 +86,7 @@ update msg model =
                         newModel =
                             { model
                                 | requestCollection = RequestCollection requestCollectionId newBuilderTree
+                                , notification = newBuilder.notification
                             }
 
                         newMsg =
@@ -122,14 +124,15 @@ getBuilder model =
                         (Application.getEnvironmentKeyValuesToRun model)
 
                 in
-                    Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun)
+                    Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model.notification)
 
             _ ->
                 Nothing
 
-convertFromFileToBuilder : File -> Int -> List (Storable NewKeyValue KeyValue) -> Builder.Model
-convertFromFileToBuilder file requestCollectionId keyValuesToRun =
-    { id = file.id
+convertFromFileToBuilder : File -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> Builder.Model
+convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
+    { notification = notification
+    , id = file.id
     , requestCollectionId = requestCollectionId
     , keyValues = keyValuesToRun
     , name = file.name

@@ -41,7 +41,8 @@ import Animation
 
 
 type alias Model =
-    { id : Uuid.Uuid
+    { notification : Maybe String
+    , id : Uuid.Uuid
     , requestCollectionId : Int
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
@@ -275,7 +276,11 @@ update msg model =
                 (newModel, Cmd.none)
 
         ServerError ->
-            Debug.todo "server error"
+            let
+                newModel =
+                    { model | notification = Just "server error" }
+            in
+                (newModel, Cmd.none)
 
 
 -- * util
@@ -304,8 +309,11 @@ remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -
 remoteComputationDoneToMsg result =
     case result of
         Ok backRequestComputationResult ->
+            ServerError
+        {-
             RemoteComputationDone <|
                 Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
+                -}
 
         Err error ->
             RemoteComputationFailed

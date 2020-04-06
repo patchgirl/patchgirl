@@ -74,19 +74,31 @@ init { session, requestCollection, environments } url navigationKey =
         initialLoadingStyle =
             Animation.style [ Animation.opacity 0 ]
 
-        loadingStyle =
+        loadingAnimation =
             Animation.interrupt
                 [ Animation.to
                       [ Animation.opacity 1
                       ]
                 ] initialLoadingStyle
 
+        initialNotificationAnimation =
+            Animation.style [ Animation.opacity 0 ]
+
+        notificationAnimation =
+            Animation.interrupt
+                [ Animation.to
+                      [ Animation.opacity 1
+                      ]
+                ] initialNotificationAnimation
+
         model =
             { session = session
             , page = page
             , url = url
             , navigationKey = navigationKey
-            , loadingStyle = loadingStyle
+            , loadingAnimation = loadingAnimation
+            , notification = Nothing
+            , notificationAnimation = notificationAnimation
             , showMainMenuName = Nothing
             , initializePassword1 = ""
             , initializePassword2 = ""
@@ -157,12 +169,12 @@ update msg model =
 
         Animate subMsg ->
             let
-                newLoadingStyle =
-                    Animation.update subMsg model.loadingStyle
-
                 newModel =
                     { model
-                        | loadingStyle = newLoadingStyle
+                        | loadingAnimation =
+                          Animation.update subMsg model.loadingAnimation
+                        , notificationAnimation =
+                          Animation.update subMsg model.notificationAnimation
                     }
             in
                 (newModel, Cmd.none)
@@ -174,11 +186,11 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     let
-        loadingStyle =
-            List.map htmlAttribute (Animation.render model.loadingStyle)
+        loadingAnimation =
+            List.map htmlAttribute (Animation.render model.loadingAnimation)
 
         bodyAttr =
-            [ Background.color lightGrey ] ++ loadingStyle
+            [ Background.color lightGrey ] ++ loadingAnimation ++ [ inFront (notificationView model) ]
 
         body =
             layout bodyAttr (mainView model)
@@ -186,6 +198,9 @@ view model =
         { title = "PatchGirl"
         , body = [body]
         }
+
+
+-- *** main view
 
 
 mainView : Model -> Element Msg
@@ -207,6 +222,28 @@ mainView model =
                 EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
                 ScenarioPage -> map ScenarioMsg (Scenario.view model)
         ]
+
+
+-- *** notification view
+
+
+notificationView : Model -> Element Msg
+notificationView model =
+    case model.notification of
+        Just message ->
+            let
+                animationStyle =
+                    List.map htmlAttribute (Animation.render model.notificationAnimation)
+            in
+                el ( [ alignRight
+                     , height (px 10)
+                     ] ++ animationStyle
+                   )
+                (text message)
+
+        Nothing ->
+            none
+
 
 
 -- ** subscriptions
@@ -242,6 +279,7 @@ subscriptions model =
             List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles)
     in
         Sub.batch
-            ( [ Animation.subscription Animate [ model.loadingStyle ]
+            ( [ --Animation.subscription Animate [ model.loadingAnimation ]
+              --, Animation.subscription Animate [ model.notificationAnimation ]
               ] ++ buildersSubs
             )

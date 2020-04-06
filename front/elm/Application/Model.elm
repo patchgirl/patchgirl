@@ -17,7 +17,10 @@ type alias Model =
     , navigationKey : Navigation.Key
     , url : Url.Url
     , session : Session
-    , loadingStyle : Animation.State -- use to fade in the app on init
+    , loadingAnimation : Animation.State -- use to fade in the app on init
+    -- NOTIFICATION
+    , notification : Maybe String
+    , notificationAnimation : Animation.State
     -- MENU
     , showMainMenuName : Maybe MainMenuName
     -- INITIALIZE PASSWORD
