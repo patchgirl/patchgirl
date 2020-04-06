@@ -155,17 +155,23 @@ startMainApp model =
 
                         newBackgroundStyle =
                             Animation.interrupt
-                                [ --Animation.wait (Time.millisToPosix 5000000)
+                                [
                                 Animation.to
                                       [ Animation.opacity 0
                                       ]
                                 , Messenger.send (LoaderConcealed loadedData)
                                 ] model.backgroundStyle
 
+                        newLoaderStyle =
+                            Animation.interrupt
+                                [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                                ] model.loaderStyle
+
                         newModel =
                             { model
                                 | appState = DataLoaded
                                 , backgroundStyle = newBackgroundStyle
+                                , loaderStyle = newLoaderStyle
                             }
                     in
                         (newModel, Cmd.none)
