@@ -34,6 +34,7 @@ import Application.Model exposing (..)
 type alias UserData =
     { session : Session
     , requestCollection : RequestCollection
+--    , scenarioCollection : ScenarioCollection
     , environments : List Environment
     }
 

@@ -103,33 +103,33 @@ CREATE TYPE public.scenario_node_type AS ENUM (
 CREATE FUNCTION public.request_nodes_as_json(node_id uuid) RETURNS jsonb[]
     LANGUAGE plpgsql
     AS $$
-      DECLARE result jsonb[];
-      BEGIN
-        SELECT array_agg (
-          CASE WHEN tag = 'RequestFolder' THEN
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'children', COALESCE(request_nodes_as_json(id), '{}'::jsonb[])
-            )
-          ELSE
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'http_body', http_body,
-              'http_url', http_url,
-              'http_method', http_method,
-              'http_headers', http_headers
-            )
-          END
-        ) INTO result
-        FROM request_node
-        WHERE request_node_parent_id = node_id;
-        RETURN result;
-      END;
-      $$;
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'RequestFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(request_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'http_body', http_body,
+        'http_url', http_url,
+        'http_method', http_method,
+        'http_headers', http_headers
+      )
+    END
+  ) INTO result
+  FROM request_node
+  WHERE request_node_parent_id = node_id;
+  RETURN result;
+END;
+$$;
 
 
 --
@@ -139,34 +139,34 @@ CREATE FUNCTION public.request_nodes_as_json(node_id uuid) RETURNS jsonb[]
 CREATE FUNCTION public.root_request_nodes_as_json(rc_id integer) RETURNS jsonb[]
     LANGUAGE plpgsql
     AS $$
-      DECLARE result jsonb[];
-      BEGIN
-        SELECT array_agg (
-          CASE WHEN tag = 'RequestFolder' THEN
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'children', COALESCE(request_nodes_as_json(id), '{}'::jsonb[])
-            )
-          ELSE
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'http_body', http_body,
-              'http_url', http_url,
-              'http_method', http_method,
-              'http_headers', http_headers
-            )
-          END
-        ) INTO result
-        FROM request_node rn
-        INNER JOIN request_collection_to_request_node rcrn ON rcrn.request_node_id = rn.id
-        WHERE rcrn.request_collection_id = rc_id;
-        RETURN result;
-      END;
-      $$;
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'RequestFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(request_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'http_body', http_body,
+        'http_url', http_url,
+        'http_method', http_method,
+        'http_headers', http_headers
+      )
+    END
+  ) INTO result
+  FROM request_node rn
+  INNER JOIN request_collection_to_request_node rcrn ON rcrn.request_node_id = rn.id
+  WHERE rcrn.request_collection_id = rc_id;
+  RETURN result;
+END;
+$$;
 
 
 --
@@ -176,31 +176,31 @@ CREATE FUNCTION public.root_request_nodes_as_json(rc_id integer) RETURNS jsonb[]
 CREATE FUNCTION public.root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb[]
     LANGUAGE plpgsql
     AS $$
-      DECLARE result jsonb[];
-      BEGIN
-        SELECT array_agg (
-          CASE WHEN tag = 'ScenarioFolder' THEN
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
-            )
-          ELSE
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'scene_node_id', scene_node_id
-            )
-          END
-        ) INTO result
-        FROM scenario_node rn
-        INNER JOIN scenario_collection_to_scenario_node rcrn ON rcrn.scenario_node_id = rn.id
-        WHERE rcrn.scenario_collection_id = rc_id;
-        RETURN result;
-      END;
-      $$;
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'ScenarioFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'scene_node_id', scene_node_id
+      )
+    END
+  ) INTO result
+  FROM scenario_node rn
+  INNER JOIN scenario_collection_to_scenario_node rcrn ON rcrn.scenario_node_id = rn.id
+  WHERE rcrn.scenario_collection_id = rc_id;
+  RETURN result;
+END;
+$$;
 
 
 --
@@ -210,30 +210,30 @@ CREATE FUNCTION public.root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb[]
 CREATE FUNCTION public.scenario_nodes_as_json(node_id uuid) RETURNS jsonb[]
     LANGUAGE plpgsql
     AS $$
-      DECLARE result jsonb[];
-      BEGIN
-        SELECT array_agg (
-          CASE WHEN tag = 'ScenarioFolder' THEN
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
-            )
-          ELSE
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'tag', tag,
-              'scene_node_id', scene_node_id
-            )
-          END
-        ) INTO result
-        FROM scenario_node
-        WHERE scenario_node_parent_id = node_id;
-        RETURN result;
-      END;
-      $$;
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'ScenarioFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(scenario_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'scene_node_id', scene_node_id
+      )
+    END
+  ) INTO result
+  FROM scenario_node
+  WHERE scenario_node_parent_id = node_id;
+  RETURN result;
+END;
+$$;
 
 
 SET default_tablespace = '';
@@ -397,7 +397,7 @@ CREATE TABLE public.request_node (
 --
 
 CREATE TABLE public.scenario_collection (
-    id uuid NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     account_id uuid
 );
 

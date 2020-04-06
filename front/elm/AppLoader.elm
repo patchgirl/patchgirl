@@ -67,6 +67,7 @@ type LoaderState
     | AppDataPending -- second state: we wait for the backend to give us the session's related data
       { session : Client.Session
       , mRequestCollection : Maybe Client.RequestCollection
+      , mScenarioCollection : Maybe Client.ScenarioCollection
       , mEnvironments : Maybe (List Client.Environment)
       }
     | DataLoaded -- third state: we can fade out the loader
@@ -121,6 +122,7 @@ urlToPage url =
 type alias LoadedData =
     { session : Client.Session
     , requestCollection : Client.RequestCollection
+    , scenarioCollection : Client.ScenarioCollection
     , environments : List Client.Environment
     }
 
@@ -143,13 +145,14 @@ loadedDataEncoder { session, requestCollection, environments } =
 startMainApp : Model -> (Model, Cmd Msg)
 startMainApp model =
     case model.appState of
-        AppDataPending { session, mRequestCollection, mEnvironments } ->
-            case (mRequestCollection, mEnvironments) of
-                (Just requestCollection, Just environments) ->
+        AppDataPending { session, mRequestCollection, mScenarioCollection, mEnvironments } ->
+            case (mRequestCollection, mScenarioCollection, mEnvironments) of
+                (Just requestCollection, Just scenarioCollection, Just environments) ->
                     let
                         loadedData =
                             { session = session
                             , requestCollection = requestCollection
+                            , scenarioCollection = scenarioCollection
                             , environments = environments
                             }
 
@@ -194,7 +197,7 @@ type Msg
     | Animate Animation.Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-
+    | ScenarioCollectionFetched Client.ScenarioCollection
 
 -- * init
 
@@ -248,11 +251,15 @@ update msg model =
                 newAppState =
                     AppDataPending { session = session
                                    , mRequestCollection = Nothing
+                                   , mScenarioCollection = Nothing
                                    , mEnvironments = Nothing
                                    }
 
                 getRequestCollection =
                     Client.getApiRequestCollection "" (getCsrfToken (Client.convertSessionFromBackToFront session)) requestCollectionResultToMsg
+
+                getScenarioCollection =
+                    Client.getApiScenarioCollection "" (getCsrfToken (Client.convertSessionFromBackToFront session)) scenarioCollectionResultToMsg
 
                 getEnvironments =
                     Client.getApiEnvironment "" (getCsrfToken (Client.convertSessionFromBackToFront session)) environmentsResultToMsg
@@ -268,6 +275,7 @@ update msg model =
                 getAppData =
                     Cmd.batch
                         [ getRequestCollection
+                        , getScenarioCollection
                         , getEnvironments
                         , setBlankUrl
                         ]
@@ -297,6 +305,19 @@ update msg model =
                     let
                         newState =
                             AppDataPending { pending | mRequestCollection = Just requestCollection }
+                    in
+                        { model | appState = newState }
+                            |> startMainApp
+
+                _ ->
+                    Debug.todo "already initialized app received initialization infos"
+
+        ScenarioCollectionFetched scenarioCollection ->
+            case model.appState of
+                AppDataPending pending ->
+                    let
+                        newState =
+                            AppDataPending { pending | mScenarioCollection = Just scenarioCollection }
                     in
                         { model | appState = newState }
                             |> startMainApp
@@ -372,6 +393,15 @@ requestCollectionResultToMsg result =
     case result of
         Ok requestCollection ->
             RequestCollectionFetched requestCollection
+
+        Err error ->
+            ServerError error
+
+scenarioCollectionResultToMsg : Result Http.Error Client.ScenarioCollection -> Msg
+scenarioCollectionResultToMsg result =
+    case result of
+        Ok scenarioCollection ->
+            ScenarioCollectionFetched scenarioCollection
 
         Err error ->
             ServerError error

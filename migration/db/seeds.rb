@@ -1,3 +1,9 @@
+# * util
+
+
+# ** request folder
+
+
 def insert_request_folder(id, request_node_parent_id, tag, name)
   %{
     INSERT INTO request_node (
@@ -13,6 +19,10 @@ def insert_request_folder(id, request_node_parent_id, tag, name)
     );
   }
 end
+
+
+# ** request file
+
 
 def insert_request_file(id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
 
@@ -39,6 +49,51 @@ def insert_request_file(id, request_node_parent_id, tag, name, http_url, http_me
   }
 end
 
+
+# ** scenario folder
+
+
+def insert_scenario_folder(id, tag, name, scenario_node_parent_id)
+  %{
+    INSERT INTO scenario_node (
+      id,
+      tag,
+      name,
+      scenario_node_parent_id
+    ) values (
+      '#{id}',
+      '#{tag}',
+      '#{name}',
+      #{scenario_node_parent_id.nil? ? 'NULL' : "'#{scenario_node_parent_id}'"}
+    );
+  }
+end
+
+
+# ** request file
+
+
+def insert_scenario_file(id, tag, name, scenario_node_parent_id)
+
+  %{
+    INSERT INTO scenario_node (
+      id,
+      tag,
+      name,
+      scenario_node_parent_id
+    ) values (
+     '#{id}',
+      '#{tag}',
+      '#{name}',
+      #{scenario_node_parent_id.nil? ? 'NULL' : "'#{scenario_node_parent_id}'"}
+    );
+  }
+end
+
+
+# ** delete visitor data
+
+
 def delete_visitor_data
   %{
      -- delete visitor account
@@ -62,6 +117,26 @@ def delete_visitor_data
 end
 
 ActiveRecord::Migration[5.2].execute delete_visitor_data
+
+
+# * account
+
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO account (
+      id,
+      github_id,
+      email
+    ) values (
+      '00000000-0000-1000-a000-000000000000',
+      0,
+      'visitor@patchgirl.io'
+    );
+}
+
+
+# * request node
+
 
 json_headers = %{ARRAY[('Content-Type','application/json')]::header_type[]}
 headers = %{ARRAY[('key1','value1')]::header_type[]}
@@ -89,23 +164,25 @@ request_nodes.each do |request_node_query|
 end
 
 
-# account
+# * scenario node
 
 
-ActiveRecord::Migration[5.2].execute %{
-    INSERT INTO account (
-      id,
-      github_id,
-      email
-    ) values (
-      '00000000-0000-1000-a000-000000000000',
-      0,
-      'visitor@patchgirl.io'
-    );
-}
+scenario_nodes = [
+  insert_scenario_folder('5b679f6c-698c-4b01-8ba8-75975e347558', 'ScenarioFolder', "users", nil),
+  insert_scenario_file(  '0a0341c1-0f82-4c39-afbd-0e3f92ae003d', 'ScenarioFile', 'scenario1', '5b679f6c-698c-4b01-8ba8-75975e347558'),
+  insert_scenario_file(  'd9c1b525-8a4c-4b8e-aac0-31eaac7bd1ae', 'ScenarioFile', 'scenario2', '5b679f6c-698c-4b01-8ba8-75975e347558'),
+  insert_scenario_folder('6b9f367f-77dc-4b79-9742-346a48528b64', 'ScenarioFolder', "session", nil),
+  insert_scenario_file(  'a4f7bd1b-496d-4acb-b753-4381f55a9f4b', 'ScenarioFile', 'login sucessful', '6b9f367f-77dc-4b79-9742-346a48528b64'),
+  insert_scenario_file(  '44dc7b43-9c6c-43fb-9f0e-60637aaaca9c', 'ScenarioFile', 'login sucessful', '6b9f367f-77dc-4b79-9742-346a48528b64'),
+]
+
+scenario_nodes.each do |scenario_node_query|
+  puts scenario_node_query
+  ActiveRecord::Migration[5.2].execute scenario_node_query
+end
 
 
-# request collection
+# * request collection
 
 
 ActiveRecord::Migration[5.2].execute %{
@@ -124,7 +201,29 @@ ActiveRecord::Migration[5.2].execute %{
     ) values (1,'da0a3654-5e30-471f-ba03-f87760976981');
   }
 
-# environment
+
+# * scenario collection
+
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO scenario_collection (account_id, id)
+    values ('00000000-0000-1000-a000-000000000000', 'a9e3fbc2-de07-40a5-afd8-2460ef1e202c');
+  }
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO scenario_collection_to_scenario_node (
+      scenario_collection_id,
+      scenario_node_id
+    ) values ('a9e3fbc2-de07-40a5-afd8-2460ef1e202c','5b679f6c-698c-4b01-8ba8-75975e347558');
+
+    INSERT INTO scenario_collection_to_scenario_node (
+      scenario_collection_id,
+      scenario_node_id
+    ) values ('a9e3fbc2-de07-40a5-afd8-2460ef1e202c','6b9f367f-77dc-4b79-9742-346a48528b64');
+  }
+
+
+# * environment
 
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO environment (
