@@ -279,7 +279,7 @@ subscriptions model =
             List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles)
     in
         Sub.batch
-            ( [ --Animation.subscription Animate [ model.loadingAnimation ]
-              --, Animation.subscription Animate [ model.notificationAnimation ]
+            ( [ Animation.subscription Animate [ model.loadingAnimation ]
+              , Animation.subscription Animate [ model.notificationAnimation ]
               ] ++ buildersSubs
             )
