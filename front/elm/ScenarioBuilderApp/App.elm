@@ -12,6 +12,7 @@ import Html as Html
 import Html.Attributes as Html
 import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
+import Application.Model as Application
 
 import Application.Type exposing (..)
 import Page exposing(..)
@@ -61,8 +62,32 @@ update msg model =
             in
                 (newModel, Cmd.map ScenarioTreeMsg newSubMsg)
 
-        _ ->
-            (model, Cmd.none)
+        ScenarioBuilderMsg subMsg ->
+            case getBuilder model of
+                Just builder ->
+                    let
+                        (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                            model.scenarioCollection
+
+                        (newBuilder, newSubMsg) =
+                            ScenarioBuilder.update subMsg builder
+
+                        newBuilderTree =
+                            List.map (ScenarioTree.modifyScenarioNode builder.id (changeFileBuilder newBuilder)) scenarioNodes
+
+                        newModel =
+                            { model
+                                | scenarioCollection = ScenarioCollection scenarioCollectionId newBuilderTree
+                                , notification = newBuilder.notification
+                            }
+
+                        newMsg =
+                            Cmd.map ScenarioBuilderMsg newSubMsg
+                    in
+                        (newModel, newMsg)
+
+                _ ->
+                    (model, Cmd.none)
 
 
 -- * util
@@ -77,6 +102,48 @@ getSelectedBuilderId model =
         _ ->
             Nothing
 
+getBuilder : Model a -> Maybe ScenarioBuilder.Model
+getBuilder model =
+    let
+        (ScenarioCollection scenarioCollectionId scenarioNodes) = model.scenarioCollection
+        mFile : Maybe ScenarioFileRecord
+        mFile = Maybe.andThen (ScenarioTree.findFile scenarioNodes) (getSelectedBuilderId model)
+    in
+        case mFile of
+            Just file ->
+                let
+                    keyValuesToRun =
+                        (Application.getEnvironmentKeyValuesToRun model)
+
+                in
+                    Just (convertFromFileToBuilder file scenarioCollectionId keyValuesToRun model.notification)
+
+            _ ->
+                Nothing
+
+convertFromFileToBuilder : ScenarioFileRecord -> Uuid.Uuid -> List (Storable NewKeyValue KeyValue) -> Maybe String -> ScenarioBuilder.Model
+convertFromFileToBuilder file scenarioCollectionId keyValuesToRun notification =
+    { notification = notification
+    , id = file.id
+    , scenarioCollectionId = scenarioCollectionId
+    , keyValues = keyValuesToRun
+    , name = file.name
+    }
+
+convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord
+convertFromBuilderToFile builder =
+    { id = builder.id
+    , name = builder.name
+    , sceneNodeId = Nothing
+    }
+
+changeFileBuilder : ScenarioBuilder.Model -> ScenarioNode -> ScenarioNode
+changeFileBuilder builder node =
+    case node of
+        ScenarioFolder f ->
+            ScenarioFolder f
+        ScenarioFile f ->
+            ScenarioFile (convertFromBuilderToFile builder)
 
 -- * view
 

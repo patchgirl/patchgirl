@@ -4,13 +4,19 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
+import Application.Type exposing (..)
+import Uuid
 
 
 -- * model
 
 
 type alias Model =
-    {
+    { notification : Maybe String
+    , id : Uuid.Uuid
+    , scenarioCollectionId : Uuid.Uuid
+    , keyValues : List (Storable NewKeyValue KeyValue)
+    , name : Editable String
     }
 
 
