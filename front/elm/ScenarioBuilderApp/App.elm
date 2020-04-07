@@ -16,7 +16,7 @@ import Json.Decode as Json
 import Application.Type exposing (..)
 import Page exposing(..)
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
-import ScenarioBuilderApp.ScenarioBuilderTree.App as ScenarioBuilderTree
+import ScenarioBuilderApp.ScenarioTree.App as ScenarioTree
 
 
 -- * model
@@ -38,7 +38,7 @@ type alias Model a =
 
 type Msg
   = ScenarioBuilderMsg ScenarioBuilder.Msg
-  | ScenarioTreeMsg ScenarioBuilderTree.Msg
+  | ScenarioTreeMsg ScenarioTree.Msg
   | EnvSelectionMsg Int
 
 
@@ -57,7 +57,7 @@ update msg model =
 
         ScenarioTreeMsg subMsg ->
             let
-                (newModel, newSubMsg) = ScenarioBuilderTree.update subMsg model
+                (newModel, newSubMsg) = ScenarioTree.update subMsg model
             in
                 (newModel, Cmd.map ScenarioTreeMsg newSubMsg)
 
@@ -96,7 +96,7 @@ view model =
                  , boxShadow
                  ]
               [ el [ ] <| envSelectionView <| List.map .name model.environments
-              , el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioBuilderTree.view model))
+              , el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
               ]
         , el [ alignTop, width (fillPortion 9) ]
             <| builderView model (getSelectedBuilderId model)

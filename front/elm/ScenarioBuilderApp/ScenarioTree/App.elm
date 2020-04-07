@@ -1,4 +1,4 @@
-module ScenarioBuilderApp.ScenarioBuilderTree.App exposing (..)
+module ScenarioBuilderApp.ScenarioTree.App exposing (..)
 
 
 import Element exposing (..)
