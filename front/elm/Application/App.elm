@@ -19,12 +19,11 @@ import Tuple as Tuple
 import Page exposing (..)
 import Url.Parser as Url exposing ((</>))
 import Animation
-import BuilderApp.App as BuilderApp
-import BuilderApp.Builder.App as Builder
+import RequestBuilderApp.App as RequestBuilderApp
+import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import EnvironmentEdition.App as EnvironmentEdition
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import EnvironmentToRunSelection.App as EnvSelection
-import BuilderApp.BuilderTree.App as BuilderTree
 import Application.Model exposing (..)
 
 
@@ -46,8 +45,7 @@ type Msg
     = LinkClicked UrlRequest
     | UrlChanged Url.Url
     | ServerError Http.Error
-    | BuilderTreeMsg BuilderTree.Msg
-    | BuilderAppMsg BuilderApp.Msg
+    | BuilderAppMsg RequestBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
     | MainNavBarMsg MainNavBar.Msg
@@ -140,15 +138,9 @@ update msg model =
                 External url ->
                     (model, Navigation.load url)
 
-        BuilderTreeMsg subMsg ->
-            let
-                (newModel, newSubMsg) = BuilderTree.update subMsg model
-            in
-                (newModel, Cmd.map BuilderTreeMsg newSubMsg)
-
         BuilderAppMsg subMsg ->
             let
-                (newModel, newMsg) = BuilderApp.update subMsg model
+                (newModel, newMsg) = RequestBuilderApp.update subMsg model
             in
                 (newModel, Cmd.map BuilderAppMsg newMsg)
 
@@ -207,7 +199,7 @@ mainView : Model -> Element Msg
 mainView model =
     let
         builderView =
-            map BuilderAppMsg (BuilderApp.view model)
+            map BuilderAppMsg (RequestBuilderApp.view model)
     in
         column [ width fill, height fill
                , centerY
@@ -273,10 +265,10 @@ subscriptions model =
             getRequestFiles requestNodes
 
         builderMsg msg =
-            BuilderAppMsg (BuilderApp.BuilderMsg msg)
+            BuilderAppMsg (RequestBuilderApp.BuilderMsg msg)
 
         buildersSubs =
-            List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles)
+            List.map (Sub.map builderMsg) (List.map RequestBuilder.subscriptions requestFiles)
     in
         Sub.batch
             ( [ Animation.subscription Animate [ model.loadingAnimation ]

@@ -1,9 +1,9 @@
-module BuilderApp.App exposing (..)
+module RequestBuilderApp.App exposing (..)
 
 import Uuid
 
-import BuilderApp.BuilderTree.App as BuilderTree
-import BuilderApp.Builder.App as Builder
+import RequestBuilderApp.RequestTree.App as RequestTree
+import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import Util.Maybe as Maybe
 import Api.Generated as Client
 import Api.Converter as Client
@@ -46,8 +46,8 @@ type alias Model a =
 
 
 type Msg
-  = BuilderMsg Builder.Msg
-  | TreeMsg BuilderTree.Msg
+  = BuilderMsg RequestBuilder.Msg
+  | TreeMsg RequestTree.Msg
   | EnvSelectionMsg Int
 
 
@@ -66,7 +66,7 @@ update msg model =
 
         TreeMsg subMsg ->
             let
-                (newModel, newSubMsg) = BuilderTree.update subMsg model
+                (newModel, newSubMsg) = RequestTree.update subMsg model
             in
                 (newModel, Cmd.map TreeMsg newSubMsg)
 
@@ -78,10 +78,10 @@ update msg model =
                             model.requestCollection
 
                         (newBuilder, newSubMsg) =
-                            Builder.update subMsg builder
+                            RequestBuilder.update subMsg builder
 
                         newBuilderTree =
-                            List.map (BuilderTree.modifyRequestNode builder.id (changeFileBuilder newBuilder)) requestNodes
+                            List.map (RequestTree.modifyRequestNode builder.id (changeFileBuilder newBuilder)) requestNodes
 
                         newModel =
                             { model
@@ -110,12 +110,12 @@ getSelectedBuilderId model =
         _ ->
             Nothing
 
-getBuilder : Model a -> Maybe Builder.Model
+getBuilder : Model a -> Maybe RequestBuilder.Model
 getBuilder model =
     let
         (RequestCollection requestCollectionId requestNodes) = model.requestCollection
         mFile : Maybe RequestFileRecord
-        mFile = Maybe.andThen (BuilderTree.findFile requestNodes) (getSelectedBuilderId model)
+        mFile = Maybe.andThen (RequestTree.findFile requestNodes) (getSelectedBuilderId model)
     in
         case (getSelectedBuilderId model, mFile) of
             (Just _, Just file) ->
@@ -129,7 +129,7 @@ getBuilder model =
             _ ->
                 Nothing
 
-convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> Builder.Model
+convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> RequestBuilder.Model
 convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     { notification = notification
     , id = file.id
@@ -145,7 +145,7 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     , runRequestIconAnimation = file.runRequestIconAnimation
     }
 
-convertFromBuilderToFile : Builder.Model -> RequestFileRecord
+convertFromBuilderToFile : RequestBuilder.Model -> RequestFileRecord
 convertFromBuilderToFile builder =
     { id = builder.id
     , name = builder.name
@@ -158,7 +158,7 @@ convertFromBuilderToFile builder =
     , runRequestIconAnimation = builder.runRequestIconAnimation
     }
 
-changeFileBuilder : Builder.Model -> RequestNode -> RequestNode
+changeFileBuilder : RequestBuilder.Model -> RequestNode -> RequestNode
 changeFileBuilder builder node =
     case node of
         RequestFolder f ->
@@ -185,7 +185,7 @@ view model =
                  , boxShadow
                  ]
               [ el [ ] <| envSelectionView <| List.map .name model.environments
-              , el [ paddingXY 10 0 ] (map TreeMsg (BuilderTree.view model))
+              , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
               ]
         , el [ alignTop, width (fillPortion 9) ]
             <| builderView model (getSelectedBuilderId model)
@@ -210,7 +210,7 @@ builderView model mId =
     case getBuilder model of
         Just builder ->
             el [ width fill, height fill, spacing 20 ]
-                (map BuilderMsg (Builder.view builder))
+                (map BuilderMsg (RequestBuilder.view builder))
 
         Nothing ->
             el [ centerX ] (text "No request selected")

@@ -1,6 +1,6 @@
-module BuilderApp.BuilderTree.App exposing (..)
+module RequestBuilderApp.RequestTree.App exposing (..)
 
-import BuilderApp.Builder.App as Builder
+--import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import Application.Type exposing (..)
 import Random
 import Uuid

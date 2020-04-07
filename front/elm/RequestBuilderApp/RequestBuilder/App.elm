@@ -1,4 +1,4 @@
-module BuilderApp.Builder.App exposing (..)
+module RequestBuilderApp.RequestBuilder.App exposing (..)
 
 import Browser
 import Http
