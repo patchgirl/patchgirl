@@ -295,15 +295,17 @@ centerView model =
                     Nothing
     in
         row [ centerX, centerY, paddingXY 10 0, height fill ]
-            [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage (ReqPage currentDisplayedBuilderId)))
+            [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive OpenReqPage ( model.page == ReqPage currentDisplayedBuilderId
+                                                                                  || model.page == HomePage
+                                                                                  )))
                   { url = href (ReqPage Nothing)
                   , label = el [] (text "Request")
                   }
-            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage))
+            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive OpenEnvPage (model.page == EnvPage)))
                 { url = href EnvPage
                 , label = el [] (text "Environment")
                 }
-            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenScenarioPage ScenarioPage))
+            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive OpenScenarioPage (model.page == ScenarioPage)))
                 { url = href ScenarioPage
                 , label = el [] (text "Scenario")
                 }
@@ -325,10 +327,10 @@ mainLinkAttribute =
     , Font.color secondaryColor
     ]
 
-mainLinkAttributeWhenActive : Model a -> Msg -> Page -> List (Attribute Msg)
-mainLinkAttributeWhenActive model event page =
+mainLinkAttributeWhenActive : Msg -> Bool -> List (Attribute Msg)
+mainLinkAttributeWhenActive event active =
     [ Events.onClick event ] ++
-        case model.page == page of
+        case active of
             True -> [ Background.color secondaryColor
                     , Font.color primaryColor
                     ]
