@@ -609,8 +609,6 @@ view model =
             , treeView
             ]
 
-
-
 nodeView : Maybe Uuid.Uuid -> List ScenarioNode -> List (Element Msg)
 nodeView mDisplayedScenarioNodeMenuIndex scenarioCollection =
     case scenarioCollection of
