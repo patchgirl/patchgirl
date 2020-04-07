@@ -22,13 +22,12 @@ import Element.Font as Font
 import Element.Events as Events
 import Element.Input as Input
 
-import ViewUtil exposing (..)
+import Util exposing (..)
 
 import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
 
-import Util.View as Util
 import Application.Type exposing (..)
 import Dict as Dict
 import Json.Print as Json
@@ -754,7 +753,7 @@ responseView model =
 urlView : Model -> Element Msg
 urlView model =
     el [ alignLeft, width fill ] <|
-        Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+        Input.text [ Util.onEnter AskRun ]
             { onChange = UpdateUrl
             , text = editedOrNotEditedValue model.httpUrl
             , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
@@ -811,13 +810,13 @@ headersView model =
 headerView : Model -> Int -> (String, String) -> Element Msg
 headerView model idx (headerKey, headerValue) =
     row [ width fill, spacing 10 ]
-        [ Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+        [ Input.text [ Util.onEnter AskRun ]
             { onChange = UpdateHeaderKey idx
             , text = headerKey
             , placeholder = Nothing
             , label = Input.labelLeft [ centerY ] (text "key: ")
             }
-        , Input.text [ htmlAttribute <| Util.onEnter AskRun ]
+        , Input.text [ Util.onEnter AskRun ]
             { onChange = UpdateHeaderValue idx
             , text = headerValue
             , placeholder = Nothing

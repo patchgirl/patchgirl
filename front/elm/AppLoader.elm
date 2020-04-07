@@ -9,7 +9,7 @@ import Application.Type exposing (..)
 import Http
 import Api.Generated as Client
 import Api.Converter as Client
-import ViewUtil exposing (..)
+import Util exposing (..)
 import Browser.Navigation as Navigation
 import Url as Url
 import Element.Background as Background

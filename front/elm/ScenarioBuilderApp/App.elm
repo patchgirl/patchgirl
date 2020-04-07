@@ -4,7 +4,7 @@ import Uuid
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
-import ViewUtil exposing (..)
+import Util exposing (..)
 import Element.Border as Border
 import Element.Events as Events
 import Html.Events as Html

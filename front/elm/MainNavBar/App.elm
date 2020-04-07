@@ -8,7 +8,7 @@ import Element.Events as Events
 import Element.Input as Input
 import Element.Font as Font
 import Uuid
-import ViewUtil exposing (..)
+import Util exposing (..)
 
 import Html as Html
 import Html.Attributes as Html

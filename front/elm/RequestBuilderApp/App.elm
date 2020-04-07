@@ -4,7 +4,6 @@ import Uuid
 
 import RequestBuilderApp.RequestTree.App as RequestTree
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
-import Util.Maybe as Maybe
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
@@ -21,7 +20,7 @@ import Element.Events as Events
 import Html.Events as Html
 import Html as Html
 import Html.Attributes as Html
-import ViewUtil exposing (..)
+import Util exposing (..)
 
 import Json.Decode as Json
 import Html.Events.Extra exposing (targetValueIntParse)

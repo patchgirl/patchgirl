@@ -5,7 +5,6 @@ import Application.Type exposing (..)
 import Random
 import Uuid
 import Http
-import Util.Maybe as Maybe
 import Api.Generated as Client
 
 import Element exposing (..)
@@ -13,8 +12,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Input as Input
-import Util.View as Util
-import ViewUtil exposing (..)
+import Util exposing (..)
 import Page exposing(..)
 import Animation
 
@@ -79,7 +77,7 @@ update msg model =
     ToggleMenu id ->
         let
             newDisplayedRequestNodeMenuIndex =
-                case Maybe.exists model.displayedRequestNodeMenuId ((==) id) of
+                case maybeExists model.displayedRequestNodeMenuId ((==) id) of
                     True -> Nothing -- menu already displayed
                     False -> Just id
 
@@ -469,7 +467,7 @@ findNode requestNodes id =
                         False ->
                             findNode folder.children id
     in
-        List.head <| Maybe.catMaybes (List.map find requestNodes)
+        List.head <| catMaybes (List.map find requestNodes)
 
 modifyRequestNode : Uuid.Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
 modifyRequestNode id f requestNode =
@@ -651,7 +649,7 @@ fileReadView name id =
 fileEditView : String -> Uuid.Uuid -> Element Msg
 fileEditView name id =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
+      [ Util.onEnterWithInput (AskRename id)
       ]
       { onChange = ChangeName id
       , text = name
@@ -755,7 +753,7 @@ folderReadView id name isOpen =
 folderEditView : Uuid.Uuid -> String -> Element Msg
 folderEditView id name =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
+      [ Util.onEnterWithInput (AskRename id)
       ]
       { onChange = ChangeName id
       , text = name

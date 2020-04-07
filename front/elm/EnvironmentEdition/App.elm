@@ -7,13 +7,13 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import Element.Events as Events
-import ViewUtil exposing (..)
+import Util exposing (..)
 import Application.Type exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http
 import Application.Type exposing (..)
-import Util.View as Util
+
 
 -- * environment edition
 
@@ -321,7 +321,7 @@ entryView mSelectedEnvId environment =
             }
 
     editView =
-        Input.text [ htmlAttribute <| Util.onEnterWithInput (AskRename environment.id) ]
+        Input.text [ Util.onEnterWithInput (AskRename environment.id) ]
             { onChange = (ChangeName environment.id)
             , text = editedOrNotEditedValue environment.name
             , placeholder = Just <| Input.placeholder [] (text "environment name")

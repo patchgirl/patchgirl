@@ -12,9 +12,7 @@ import Api.Generated as Client
 import Random
 import Page exposing(..)
 import Application.Type exposing (..)
-import Util.Maybe as Maybe
-import ViewUtil exposing (..)
-import Util.View as Util
+import Util exposing (..)
 
 
 -- * model
@@ -77,7 +75,7 @@ update msg model =
     ToggleMenu id ->
         let
             newDisplayedScenarioNodeMenuIndex =
-                case Maybe.exists model.displayedScenarioNodeMenuId ((==) id) of
+                case maybeExists model.displayedScenarioNodeMenuId ((==) id) of
                     True -> Nothing -- menu already displayed
                     False -> Just id
 
@@ -466,7 +464,7 @@ findNode scenarioNodes id =
                         False ->
                             findNode folder.children id
     in
-        List.head <| Maybe.catMaybes (List.map find scenarioNodes)
+        List.head <| catMaybes (List.map find scenarioNodes)
 
 modifyScenarioNode : Uuid.Uuid -> (ScenarioNode -> ScenarioNode) -> ScenarioNode -> ScenarioNode
 modifyScenarioNode id f scenarioNode =
@@ -643,7 +641,7 @@ fileReadView name id =
 fileEditView : String -> Uuid.Uuid -> Element Msg
 fileEditView name id =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
+      [ Util.onEnterWithInput (AskRename id)
       ]
       { onChange = ChangeName id
       , text = name
@@ -747,7 +745,7 @@ folderReadView id name isOpen =
 folderEditView : Uuid.Uuid -> String -> Element Msg
 folderEditView id name =
   Input.text
-      [ htmlAttribute <| Util.onEnterWithInput (AskRename id)
+      [ Util.onEnterWithInput (AskRename id)
       ]
       { onChange = ChangeName id
       , text = name

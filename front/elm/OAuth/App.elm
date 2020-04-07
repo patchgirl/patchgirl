@@ -8,7 +8,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Input as Input
 import Html exposing (Html)
-import ViewUtil exposing (..)
+import Util exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
 import Http as Http

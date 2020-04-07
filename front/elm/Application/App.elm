@@ -6,7 +6,7 @@ import Api.Converter as Client
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
-import ViewUtil exposing (..)
+import Util exposing (..)
 import Html as Html
 import Uuid
 

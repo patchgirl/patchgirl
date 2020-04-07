@@ -1,4 +1,4 @@
-module ViewUtil exposing (..)
+module Util exposing (..)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -196,7 +196,7 @@ labelError labelText =
         el (attributes ++ labelAttrs) (text labelText)
 
 
--- * util
+-- * onEnter
 
 
 onEnter : a -> Attribute a
@@ -209,3 +209,42 @@ onEnter msg =
         Json.fail "not ENTER"
     in
       Html.on "keydown" (Json.andThen isEnter Html.keyCode) |> htmlAttribute
+
+onEnter2 : a -> Attribute a
+onEnter2 msg =
+  let
+    isEnter code =
+      if code == 13 then
+        Json.succeed msg
+      else
+        Json.fail "not ENTER"
+    in
+      Html.on "keydown" (Json.andThen isEnter Html.keyCode) |> htmlAttribute
+
+onEnterWithInput : (String -> a) -> Attribute a
+onEnterWithInput tagger =
+  let
+    isEnter code =
+      if code == 13 then
+        Json.succeed ""
+      else
+        Json.fail ""
+    decodeEnter = Json.andThen isEnter Html.keyCode
+  in
+      htmlAttribute
+          <| Html.on "keydown"
+          <| Json.map2(\key value -> tagger value) decodeEnter Html.targetValue
+
+
+-- * maybe
+
+
+maybeExists : (Maybe a) -> (a -> Bool) -> Bool
+maybeExists m f =
+  case m of
+    Just a -> f a
+    Nothing -> False
+
+catMaybes : List (Maybe a) -> List a
+catMaybes =
+    List.filterMap identity
