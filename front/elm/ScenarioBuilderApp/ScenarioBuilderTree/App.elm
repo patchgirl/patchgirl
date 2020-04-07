@@ -1,22 +1,20 @@
-module BuilderApp.BuilderTree.App exposing (..)
+module ScenarioBuilderApp.ScenarioBuilderTree.App exposing (..)
 
-import BuilderApp.Builder.App as Builder
-import Application.Type exposing (..)
-import Random
-import Uuid
-import Http
-import Util.Maybe as Maybe
-import Api.Generated as Client
 
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Input as Input
-import Util.View as Util
-import ViewUtil exposing (..)
+import Uuid
+import Http
+import Api.Generated as Client
+import Random
 import Page exposing(..)
-import Animation
+import Application.Type exposing (..)
+import Util.Maybe as Maybe
+import ViewUtil exposing (..)
+import Util.View as Util
 
 
 -- * model
@@ -24,8 +22,8 @@ import Animation
 
 type alias Model a =
     { a
-        | requestCollection : RequestCollection
-        , displayedRequestNodeMenuId : Maybe Uuid.Uuid
+        | scenarioCollection : ScenarioCollection
+        , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
     }
@@ -62,7 +60,7 @@ type Msg
   | AskDelete Uuid.Uuid
   | Delete Uuid.Uuid
   | DoNothing
-  | BuilderTreeServerError
+  | ScenarioBuilderTreeServerError
 
 
 -- * update
@@ -78,30 +76,30 @@ update msg model =
 
     ToggleMenu id ->
         let
-            newDisplayedRequestNodeMenuIndex =
-                case Maybe.exists model.displayedRequestNodeMenuId ((==) id) of
+            newDisplayedScenarioNodeMenuIndex =
+                case Maybe.exists model.displayedScenarioNodeMenuId ((==) id) of
                     True -> Nothing -- menu already displayed
                     False -> Just id
 
             newModel =
                 { model |
-                      displayedRequestNodeMenuId = newDisplayedRequestNodeMenuIndex
+                      displayedScenarioNodeMenuId = newDisplayedScenarioNodeMenuIndex
                 }
         in
             (newModel, Cmd.none)
 
     ToggleFolder id ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestNodes =
-                List.map (modifyRequestNode id toggleFolder) requestNodes
+            newScenarioNodes =
+                List.map (modifyScenarioNode id toggleFolder) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                      RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                      ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
@@ -112,38 +110,39 @@ update msg model =
 
     GenerateRandomUUIDForFolder parentNodeId ->
         let
-            newMsg = Random.generate (AskMkdir parentNodeId) Uuid.uuidGenerator
+            newMsg =
+                Random.generate (AskMkdir parentNodeId) Uuid.uuidGenerator
         in
             (model, newMsg)
 
     AskMkdir parentNodeId newId ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestFolder =
-                { newRequestFolderId = newId
-                , newRequestFolderParentNodeId = parentNodeId
-                , newRequestFolderName = "new folder"
+            newScenarioFolder =
+                { newScenarioFolderId = newId
+                , newScenarioFolderParentNodeId = parentNodeId
+                , newScenarioFolderName = "new folder"
                 }
 
             newMsg =
-                Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (createRequestFolderResultToMsg parentNodeId newId)
+                Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFolder "" "" scenarioCollectionId newScenarioFolder (createScenarioFolderResultToMsg parentNodeId newId)
         in
             (model, newMsg)
 
     Mkdir parentNodeId newId ->
         let
-            (RequestCollection id requestNodes) =
-                model.requestCollection
+            (ScenarioCollection id scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestNodes =
-                List.map (modifyRequestNode parentNodeId (mkdir newId)) requestNodes
+            newScenarioNodes =
+                List.map (modifyScenarioNode parentNodeId (mkdir newId)) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                      RequestCollection id newRequestNodes
+                    | scenarioCollection =
+                      ScenarioCollection id newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
@@ -160,30 +159,31 @@ update msg model =
 
     AskTouch parentNodeId newId ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestFile =
-                   { newRequestFileId = newId
-                   , newRequestFileParentNodeId = parentNodeId
+            newScenarioFile =
+                   { newScenarioFileId = newId
+                   , newScenarioFileName = "new scenario"
+                   , newScenarioFileParentNodeId = parentNodeId
                    }
 
             newMsg =
-                Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId newRequestFile (newRequestFileResultToMsg parentNodeId newId)
+                Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFile "" "" scenarioCollectionId newScenarioFile (newScenarioFileResultToMsg parentNodeId newId)
         in
             (model, newMsg)
 
     Touch parentNodeId newId ->
         let
-            (RequestCollection id requestNodes) = model.requestCollection
+            (ScenarioCollection id scenarioNodes) = model.scenarioCollection
 
-            newRequestNodes =
-                List.map (modifyRequestNode parentNodeId (touch newId)) requestNodes
+            newScenarioNodes =
+                List.map (modifyScenarioNode parentNodeId (touch newId)) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                      RequestCollection id newRequestNodes
+                    | scenarioCollection =
+                      ScenarioCollection id newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
@@ -194,60 +194,60 @@ update msg model =
 
     ShowRenameInput id ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestNodes =
-                List.map (modifyRequestNode id displayRenameInput) requestNodes
+            newScenarioNodes =
+                List.map (modifyScenarioNode id displayRenameInput) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                      RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                      ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
 
     ChangeName id newName ->
         let
-            (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) = model.scenarioCollection
 
-            newRequestNodes =
-                List.map (modifyRequestNode id (tempRename newName)) requestNodes
+            newScenarioNodes =
+                List.map (modifyScenarioNode id (tempRename newName)) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                      RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                      ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
 
     AskRename id newName ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
             payload =
-                Client.UpdateRequestNode { updateRequestNodeName = newName }
+                Client.UpdateScenarioNode { updateScenarioNodeName = newName }
 
             newMsg =
-                Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id payload (renameNodeResultToMsg id newName)
+                Client.putApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id payload (renameNodeResultToMsg id newName)
         in
             (model, newMsg)
 
     Rename id newName ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestNodes =
-                List.map (modifyRequestNode id (rename newName)) requestNodes
+            newScenarioNodes =
+                List.map (modifyScenarioNode id (rename newName)) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                      RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                      ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
@@ -258,24 +258,24 @@ update msg model =
 
     AskDelete id ->
         let
-            (RequestCollection requestCollectionId _) = model.requestCollection
+            (ScenarioCollection scenarioCollectionId _) = model.scenarioCollection
 
             newMsg =
-                Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id (deleteRequestNodeResultToMsg id)
+                Client.deleteApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id (deleteScenarioNodeResultToMsg id)
         in
             (model, newMsg)
 
     Delete id ->
         let
-            (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) = model.scenarioCollection
 
-            newRequestNodes =
-                List.concatMap (deleteRequestNode id) requestNodes
+            newScenarioNodes =
+                List.concatMap (deleteScenarioNode id) scenarioNodes
 
             newModel =
                 { model
-                    | requestCollection =
-                        RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                        ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
@@ -291,29 +291,31 @@ update msg model =
 
     AskTouchRoot newId ->
         let
-            (RequestCollection requestCollectionId _) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId _) =
+                model.scenarioCollection
 
-            newRootRequestFile =
-                Client.NewRootRequestFile { newRootRequestFileId = newId }
+            newRootScenarioFile =
+                { newRootScenarioFileId = newId
+                , newRootScenarioFileName = "new scenario"
+                }
 
             newMsg =
-                Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId newRootRequestFile (createRootRequestFileResultToMsg newId)
+                Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFile "" "" scenarioCollectionId newRootScenarioFile (createRootScenarioFileResultToMsg newId)
         in
             (model, newMsg)
 
     TouchRoot newId ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestNodes =
-                requestNodes ++ [ mkDefaultFile newId ]
+            newScenarioNodes =
+                scenarioNodes ++ [ mkDefaultFile newId ]
 
             newModel =
                 { model
-                    | requestCollection =
-                        RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                        ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
@@ -330,43 +332,37 @@ update msg model =
 
     AskMkdirRoot newId ->
         let
-            (RequestCollection requestCollectionId _) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId _) =
+                model.scenarioCollection
 
-            newRootRequestFolder =
-                Client.NewRootRequestFolder { newRootRequestFolderId = newId }
+            newRootScenarioFolder =
+                Client.NewRootScenarioFolder { newRootScenarioFolderId = newId }
 
             newMsg =
-                Client.postApiRequestCollectionByRequestCollectionIdRootRequestFolder "" "" requestCollectionId newRootRequestFolder (createRootRequestFolderResultToMsg newId)
+                Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFolder "" "" scenarioCollectionId newRootScenarioFolder (createRootScenarioFolderResultToMsg newId)
         in
             (model, newMsg)
 
     MkdirRoot newId ->
         let
-            (RequestCollection requestCollectionId requestNodes) =
-                model.requestCollection
+            (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                model.scenarioCollection
 
-            newRequestNodes =
-                requestNodes ++ [ mkDefaultFolder newId ]
+            newScenarioNodes =
+                scenarioNodes ++ [ mkDefaultFolder newId ]
 
             newModel =
                 { model
-                    | requestCollection =
-                        RequestCollection requestCollectionId newRequestNodes
+                    | scenarioCollection =
+                        ScenarioCollection scenarioCollectionId newScenarioNodes
                 }
         in
             (newModel, Cmd.none)
 
 
--- ** other
 
 
-    BuilderTreeServerError ->
-        Debug.todo "error with builder tree"
-
-
-    DoNothing ->
-        (model, Cmd.none)
+    _ -> (model, Cmd.none)
 
 
 -- * util
@@ -382,78 +378,79 @@ renameNodeResultToMsg id newName result =
             Rename id newName
 
         Err error ->
-            BuilderTreeServerError
+            ScenarioBuilderTreeServerError
 
-createRequestFolderResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
-createRequestFolderResultToMsg parentNodeId id result =
+createScenarioFolderResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+createScenarioFolderResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
             Mkdir parentNodeId id
 
         Err error ->
-            BuilderTreeServerError
+            ScenarioBuilderTreeServerError
 
-deleteRequestNodeResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
-deleteRequestNodeResultToMsg id result =
+deleteScenarioNodeResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteScenarioNodeResultToMsg id result =
     case result of
         Ok _ ->
             Delete id
 
         Err error ->
-            BuilderTreeServerError
+            ScenarioBuilderTreeServerError
 
-newRequestFileResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
-newRequestFileResultToMsg parentNodeId id result =
+newScenarioFileResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+newScenarioFileResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
             Touch parentNodeId id
 
         Err error ->
-            BuilderTreeServerError
+            ScenarioBuilderTreeServerError
 
-createRootRequestFileResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
-createRootRequestFileResultToMsg id result =
+createRootScenarioFileResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootScenarioFileResultToMsg id result =
     case result of
         Ok _ ->
             TouchRoot id
 
         Err error ->
-            BuilderTreeServerError
+            ScenarioBuilderTreeServerError
 
-createRootRequestFolderResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
-createRootRequestFolderResultToMsg id result =
+createRootScenarioFolderResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootScenarioFolderResultToMsg id result =
     case result of
         Ok _ ->
             MkdirRoot id
 
         Err error ->
-            BuilderTreeServerError
+            ScenarioBuilderTreeServerError
 
 
 -- ** tree manipulation
 
-getRequestNodeId : RequestNode -> Uuid.Uuid
-getRequestNodeId requestNode =
-    case requestNode of
-        RequestFolder { id } -> id
-        RequestFile { id } -> id
 
-findFile : List RequestNode -> Uuid.Uuid -> Maybe RequestFileRecord
-findFile requestNodes id =
-    case findNode requestNodes id of
-        Just (RequestFile file) ->
+getScenarioNodeId : ScenarioNode -> Uuid.Uuid
+getScenarioNodeId scenarioNode =
+    case scenarioNode of
+        ScenarioFolder { id } -> id
+        ScenarioFile { id } -> id
+
+findFile : List ScenarioNode -> Uuid.Uuid -> Maybe ScenarioFileRecord
+findFile scenarioNodes id =
+    case findNode scenarioNodes id of
+        Just (ScenarioFile file) ->
             Just file
 
         _ ->
             Nothing
 
-findNode : List RequestNode -> Uuid.Uuid -> Maybe RequestNode
-findNode requestNodes id =
+findNode : List ScenarioNode -> Uuid.Uuid -> Maybe ScenarioNode
+findNode scenarioNodes id =
     let
-        find : RequestNode -> Maybe RequestNode
-        find requestNode =
-            case requestNode of
-                (RequestFile file) as node ->
+        find : ScenarioNode -> Maybe ScenarioNode
+        find scenarioNode =
+            case scenarioNode of
+                (ScenarioFile file) as node ->
                     case file.id == id of
                         True ->
                             Just node
@@ -461,7 +458,7 @@ findNode requestNodes id =
                         False ->
                             Nothing
 
-                (RequestFolder folder) as node ->
+                (ScenarioFolder folder) as node ->
                     case folder.id == id of
                         True ->
                             Just node
@@ -469,120 +466,115 @@ findNode requestNodes id =
                         False ->
                             findNode folder.children id
     in
-        List.head <| Maybe.catMaybes (List.map find requestNodes)
+        List.head <| Maybe.catMaybes (List.map find scenarioNodes)
 
-modifyRequestNode : Uuid.Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
-modifyRequestNode id f requestNode =
-    case getRequestNodeId requestNode == id of
-        True -> f requestNode
+modifyScenarioNode : Uuid.Uuid -> (ScenarioNode -> ScenarioNode) -> ScenarioNode -> ScenarioNode
+modifyScenarioNode id f scenarioNode =
+    case getScenarioNodeId scenarioNode == id of
+        True -> f scenarioNode
         False ->
-            case requestNode of
-                RequestFile requestFile ->
-                    RequestFile requestFile
+            case scenarioNode of
+                ScenarioFile scenarioFile ->
+                    ScenarioFile scenarioFile
 
-                RequestFolder requestFolder ->
-                    RequestFolder { requestFolder
+                ScenarioFolder scenarioFolder ->
+                    ScenarioFolder { scenarioFolder
                                       | children =
-                                        List.map (modifyRequestNode id f) requestFolder.children
+                                        List.map (modifyScenarioNode id f) scenarioFolder.children
                                   }
 
-deleteRequestNode : Uuid.Uuid -> RequestNode -> List RequestNode
-deleteRequestNode idToDelete requestNode =
-    case getRequestNodeId requestNode == idToDelete of
+deleteScenarioNode : Uuid.Uuid -> ScenarioNode -> List ScenarioNode
+deleteScenarioNode idToDelete scenarioNode =
+    case getScenarioNodeId scenarioNode == idToDelete of
         True -> []
         False ->
-            case requestNode of
-                RequestFile requestFile ->
-                    [RequestFile requestFile]
+            case scenarioNode of
+                ScenarioFile scenarioFile ->
+                    [ScenarioFile scenarioFile]
 
-                RequestFolder requestFolder ->
-                    [ RequestFolder { requestFolder
+                ScenarioFolder scenarioFolder ->
+                    [ ScenarioFolder { scenarioFolder
                                       | children =
-                                        List.concatMap (deleteRequestNode idToDelete) requestFolder.children
+                                        List.concatMap (deleteScenarioNode idToDelete) scenarioFolder.children
                                   }
                     ]
 
-toggleFolder : RequestNode -> RequestNode
+toggleFolder : ScenarioNode -> ScenarioNode
 toggleFolder node =
   case node of
-    RequestFile _ as file -> file
-    RequestFolder folder ->
-        RequestFolder { folder
+    ScenarioFile _ as file -> file
+    ScenarioFolder folder ->
+        ScenarioFolder { folder
                           | open = (not folder.open)
                       }
 
-mkdir : Uuid.Uuid -> RequestNode -> RequestNode
+mkdir : Uuid.Uuid -> ScenarioNode -> ScenarioNode
 mkdir id node =
   case node of
-    RequestFile _ as file -> file
-    RequestFolder folder ->
-        RequestFolder { folder
+    ScenarioFile _ as file -> file
+    ScenarioFolder folder ->
+        ScenarioFolder { folder
                           | children = mkDefaultFolder id :: folder.children
                           , open = True
                       }
 
-touch : Uuid.Uuid -> RequestNode -> RequestNode
+touch : Uuid.Uuid -> ScenarioNode -> ScenarioNode
 touch id parentNode =
   case parentNode of
-    RequestFile _ as file -> file
-    RequestFolder folder ->
-      RequestFolder { folder
+    ScenarioFile _ as file -> file
+    ScenarioFolder folder ->
+      ScenarioFolder { folder
                         | children = mkDefaultFile id  :: folder.children
                         , open = True
                     }
 
-displayRenameInput : RequestNode -> RequestNode
+displayRenameInput : ScenarioNode -> ScenarioNode
 displayRenameInput node =
   case node of
-    RequestFolder folder ->
+    ScenarioFolder folder ->
         let
             oldValue = notEditedValue folder.name
         in
-            RequestFolder { folder | name = Edited oldValue oldValue }
+            ScenarioFolder { folder | name = Edited oldValue oldValue }
 
-    RequestFile file ->
+    ScenarioFile file ->
         let
             oldValue = notEditedValue file.name
         in
-            RequestFile { file | name = Edited oldValue oldValue }
+            ScenarioFile { file | name = Edited oldValue oldValue }
 
-rename : String -> RequestNode -> RequestNode
+rename : String -> ScenarioNode -> ScenarioNode
 rename newName node =
   case node of
-    RequestFolder folder ->
-        RequestFolder { folder | name = NotEdited newName }
-    RequestFile file ->
-        RequestFile { file | name = NotEdited newName }
+    ScenarioFolder folder ->
+        ScenarioFolder { folder | name = NotEdited newName }
+    ScenarioFile file ->
+        ScenarioFile { file | name = NotEdited newName }
 
-tempRename : String -> RequestNode -> RequestNode
+tempRename : String -> ScenarioNode -> ScenarioNode
 tempRename newName node =
     case node of
-        RequestFolder folder ->
-            RequestFolder { folder | name = changeEditedValue newName folder.name }
+        ScenarioFolder folder ->
+            ScenarioFolder { folder | name = changeEditedValue newName folder.name }
 
-        RequestFile file ->
-            RequestFile { file | name = changeEditedValue newName file.name }
+        ScenarioFile file ->
+            ScenarioFile { file | name = changeEditedValue newName file.name }
 
-mkDefaultFolder : Uuid.Uuid -> RequestNode
+mkDefaultFolder : Uuid.Uuid -> ScenarioNode
 mkDefaultFolder id =
-    RequestFolder { id = id
+    ScenarioFolder { id = id
                   , name = NotEdited "new folder"
                   , open = False
                   , children = []
                   }
 
-mkDefaultFile : Uuid.Uuid -> RequestNode
+mkDefaultFile : Uuid.Uuid -> ScenarioNode
 mkDefaultFile id =
-    RequestFile { id = id
-                , name = NotEdited "new request"
-                , httpUrl = NotEdited ""
-                , httpMethod = NotEdited HttpGet
-                , httpHeaders = NotEdited []
-                , httpBody = NotEdited ""
-                , showResponseView = False
-                , requestComputationResult = Nothing
-                , runRequestIconAnimation = Animation.style []
-                }
+    ScenarioFile { id = id
+                 , name = NotEdited ""
+                 , sceneNodeId = Nothing
+                 }
+
 
 
 -- * view
@@ -591,7 +583,7 @@ mkDefaultFile id =
 view : Model a -> Element Msg
 view model =
     let
-        (RequestCollection _ requestNodes) = model.requestCollection
+        (ScenarioCollection _ scenarioNodes) = model.scenarioCollection
 
         mainMenuView =
             row [ spacing 10 ]
@@ -601,12 +593,12 @@ view model =
                       }
                 , Input.button []
                       { onPress = Just <| GenerateRandomUUIDForRootFile
-                      , label = iconWithText "note_add" "new request"
+                      , label = iconWithText "note_add" "new scenario"
                       }
                 ]
 
         treeView =
-            column [ spacing 10 ] (nodeView model.displayedRequestNodeMenuId requestNodes)
+            column [ spacing 10 ] (nodeView model.displayedScenarioNodeMenuId scenarioNodes)
 
     in
         column [ alignTop, spacing 20, centerX ]
@@ -616,25 +608,25 @@ view model =
 
 
 
-nodeView : Maybe Uuid.Uuid -> List RequestNode -> List (Element Msg)
-nodeView mDisplayedRequestNodeMenuIndex requestCollection =
-    case requestCollection of
+nodeView : Maybe Uuid.Uuid -> List ScenarioNode -> List (Element Msg)
+nodeView mDisplayedScenarioNodeMenuIndex scenarioCollection =
+    case scenarioCollection of
       [] -> []
       node :: tail ->
         case node of
-          (RequestFolder { id, name, open, children }) ->
+          (ScenarioFolder { id, name, open, children }) ->
             let
-              folderChildrenView = nodeView mDisplayedRequestNodeMenuIndex children
-              tailView = nodeView mDisplayedRequestNodeMenuIndex tail
+              folderChildrenView = nodeView mDisplayedScenarioNodeMenuIndex children
+              tailView = nodeView mDisplayedScenarioNodeMenuIndex tail
               currentFolderView =
-                  folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open
+                  folderView id mDisplayedScenarioNodeMenuIndex name folderChildrenView open
             in
               currentFolderView :: tailView
 
-          (RequestFile { id, name }) ->
+          (ScenarioFile { id, name }) ->
             let
-              tailView = nodeView mDisplayedRequestNodeMenuIndex tail
-              currentFileView = fileView id mDisplayedRequestNodeMenuIndex name
+              tailView = nodeView mDisplayedScenarioNodeMenuIndex tail
+              currentFileView = fileView id mDisplayedScenarioNodeMenuIndex name
             in
               currentFileView :: tailView
 
@@ -660,7 +652,7 @@ fileEditView name id =
       }
 
 fileView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> Element Msg
-fileView id mDisplayedRequestNodeMenuIndex name =
+fileView id mDisplayedScenarioNodeMenuIndex name =
     let
         modeView =
             case name of
@@ -668,7 +660,7 @@ fileView id mDisplayedRequestNodeMenuIndex name =
                 Edited oldValue newValue -> fileEditView newValue id
 
         showMenu =
-            mDisplayedRequestNodeMenuIndex == Just id
+            mDisplayedScenarioNodeMenuIndex == Just id
 
         menuView =
             case not showMenu of
@@ -764,7 +756,7 @@ folderEditView id name =
       }
 
 folderView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> List(Element Msg) -> Bool -> Element Msg
-folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open =
+folderView id mDisplayedScenarioNodeMenuIndex name folderChildrenView open =
     let
         modeView =
             case name of
@@ -774,7 +766,7 @@ folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open =
                     folderEditView id newValue
 
         showMenu =
-            Just id == mDisplayedRequestNodeMenuIndex
+            Just id == mDisplayedScenarioNodeMenuIndex
     in
         column [ width (fill |> maximum 300) ]
             [ row []

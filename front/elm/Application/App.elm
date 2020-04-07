@@ -22,7 +22,7 @@ import Animation
 import BuilderApp.App as BuilderApp
 import BuilderApp.Builder.App as Builder
 import EnvironmentEdition.App as EnvironmentEdition
-import ScenarioApp.App as Scenario
+import ScenarioBuilderApp.App as ScenarioBuilderApp
 import EnvironmentToRunSelection.App as EnvSelection
 import BuilderApp.BuilderTree.App as BuilderTree
 import Application.Model exposing (..)
@@ -34,7 +34,7 @@ import Application.Model exposing (..)
 type alias UserData =
     { session : Session
     , requestCollection : RequestCollection
---    , scenarioCollection : ScenarioCollection
+    , scenarioCollection : ScenarioCollection
     , environments : List Environment
     }
 
@@ -49,7 +49,7 @@ type Msg
     | BuilderTreeMsg BuilderTree.Msg
     | BuilderAppMsg BuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
-    | ScenarioMsg Scenario.Msg
+    | ScenarioMsg ScenarioBuilderApp.Msg
     | MainNavBarMsg MainNavBar.Msg
     | Animate Animation.Msg
 
@@ -58,13 +58,10 @@ type Msg
 
 
 init : UserData -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
-init { session, requestCollection, environments } url navigationKey =
+init { session, requestCollection, environments, scenarioCollection } url navigationKey =
     let
         page =
             urlToPage url
-
-        displayedRequestNodeMenuId =
-            Nothing
 
         selectedEnvironmentToEditId =
             Just 0
@@ -104,8 +101,10 @@ init { session, requestCollection, environments } url navigationKey =
             , initializePassword1 = ""
             , initializePassword2 = ""
             , initializePasswordState = InitialPasswordState
-            , displayedRequestNodeMenuId = displayedRequestNodeMenuId
             , requestCollection = requestCollection
+            , displayedRequestNodeMenuId = Nothing
+            , scenarioCollection = scenarioCollection
+            , displayedScenarioNodeMenuId = Nothing
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , environments = environments
@@ -159,7 +158,7 @@ update msg model =
                     (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
 
         ScenarioMsg subMsg ->
-            case Scenario.update subMsg model of
+            case ScenarioBuilderApp.update subMsg model of
                 (newModel, newSubMsg) ->
                     (newModel, Cmd.map ScenarioMsg newSubMsg)
 
@@ -221,7 +220,7 @@ mainView model =
                 NotFoundPage -> el [ centerY, centerX ] (text "not found")
                 ReqPage mId -> builderView
                 EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                ScenarioPage -> map ScenarioMsg (Scenario.view model)
+                ScenarioPage _ -> map ScenarioMsg (ScenarioBuilderApp.view model)
         ]
 
 
@@ -256,7 +255,7 @@ subscriptions model =
         (RequestCollection _ requestNodes) =
             model.requestCollection
 
-        getRequestFiles : List RequestNode -> List File
+        getRequestFiles : List RequestNode -> List RequestFileRecord
         getRequestFiles nodes =
             case nodes of
                 [] ->

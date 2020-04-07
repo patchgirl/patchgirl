@@ -67,7 +67,7 @@ update msg model =
         OpenScenarioPage ->
             let
                 newModel =
-                    { model | page = ScenarioPage }
+                    { model | page = ScenarioPage Nothing }
             in
                 (newModel, Cmd.none)
 
@@ -305,8 +305,8 @@ centerView model =
                 { url = href EnvPage
                 , label = el [] (text "Environment")
                 }
-            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive OpenScenarioPage (model.page == ScenarioPage)))
-                { url = href ScenarioPage
+            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive OpenScenarioPage (model.page == (ScenarioPage Nothing))))
+                { url = href (ScenarioPage Nothing)
                 , label = el [] (text "Scenario")
                 }
             ]

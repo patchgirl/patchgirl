@@ -30,6 +30,9 @@ type alias Model =
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : RequestCollection
+    -- SCENARIO APP
+    , scenarioCollection : ScenarioCollection
+    , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int

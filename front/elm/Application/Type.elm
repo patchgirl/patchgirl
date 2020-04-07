@@ -97,14 +97,14 @@ type RequestCollection  =
 
 
 type RequestNode
-    = RequestFolder Folder
-    | RequestFile File
+    = RequestFolder RequestFolderRecord
+    | RequestFile RequestFileRecord
 
 
 -- ** folder
 
 
-type alias Folder =
+type alias RequestFolderRecord =
   { id: Uuid.Uuid
   , name : Editable String
   , open : Bool
@@ -115,7 +115,7 @@ type alias Folder =
 -- ** file
 
 
-type alias File =
+type alias RequestFileRecord =
   { id: Uuid.Uuid
   , name : Editable String
   , httpUrl : Editable String
@@ -126,6 +126,43 @@ type alias File =
   , showResponseView : Bool
   , runRequestIconAnimation : Animation.State
   }
+
+
+-- * scenario collection
+
+
+type ScenarioCollection  =
+    ScenarioCollection Uuid.Uuid (List ScenarioNode)
+
+
+-- ** scenario node
+
+
+type ScenarioNode
+    = ScenarioFolder ScenarioFolderRecord
+    | ScenarioFile ScenarioFileRecord
+
+
+-- ** scenario folder record
+
+
+type alias ScenarioFolderRecord =
+    { id : Uuid.Uuid
+    , name : Editable String
+    , children : (List ScenarioNode)
+    , open : Bool
+    }
+
+
+-- ** scenario file record
+
+
+type alias ScenarioFileRecord =
+    { id : Uuid.Uuid
+    , name : Editable String
+    , sceneNodeId : Maybe Uuid.Uuid
+    }
+
 
 -- * initialize password state
 

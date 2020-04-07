@@ -131,11 +131,12 @@ type alias LoadedData =
 
 
 loadedDataEncoder : LoadedData -> E.Value
-loadedDataEncoder { session, requestCollection, environments } =
+loadedDataEncoder { session, requestCollection, environments, scenarioCollection } =
     E.object
         [ ("session", Client.jsonEncSession session)
         , ("environments", E.list Client.jsonEncEnvironment environments)
         , ("requestCollection", Client.jsonEncRequestCollection requestCollection)
+        , ("scenarioCollection", Client.jsonEncScenarioCollection scenarioCollection)
         ]
 
 

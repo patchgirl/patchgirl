@@ -48,6 +48,40 @@ convertRequestNodesFromBackToFront backRequestNodes =
         List.map convertRequestNodeFromBackToFront backRequestNodes
 
 
+-- * scenario collection
+
+
+convertScenarioCollectionFromBackToFront : Back.ScenarioCollection -> Front.ScenarioCollection
+convertScenarioCollectionFromBackToFront backScenarioCollection =
+    let
+        (Back.ScenarioCollection id backScenarioNodes) = backScenarioCollection
+    in
+        Front.ScenarioCollection id (convertScenarioNodesFromBackToFront backScenarioNodes)
+
+convertScenarioNodesFromBackToFront : List Back.ScenarioNode -> List Front.ScenarioNode
+convertScenarioNodesFromBackToFront backScenarioNodes =
+    let
+        convertScenarioNodeFromBackToFront : Back.ScenarioNode -> Front.ScenarioNode
+        convertScenarioNodeFromBackToFront backScenarioNode =
+            case backScenarioNode of
+                Back.ScenarioFolder folder ->
+                    Front.ScenarioFolder
+                        { id = folder.scenarioNodeId
+                        , name = NotEdited folder.scenarioNodeName
+                        , children = convertScenarioNodesFromBackToFront folder.scenarioNodeChildren
+                        , open = not (List.isEmpty folder.scenarioNodeChildren)
+                        }
+
+                Back.ScenarioFile file ->
+                    Front.ScenarioFile
+                        { id = file.scenarioNodeId
+                        , name = NotEdited file.scenarioNodeName
+                        , sceneNodeId = file.scenarioNodeSceneNodeId
+                        }
+    in
+        List.map convertScenarioNodeFromBackToFront backScenarioNodes
+
+
 -- * environment
 
 

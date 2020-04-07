@@ -13,7 +13,7 @@ type Page
     = HomePage
     | ReqPage (Maybe Uuid.Uuid)
     | EnvPage
-    | ScenarioPage
+    | ScenarioPage (Maybe Uuid.Uuid)
     | NotFoundPage
 
 
@@ -31,7 +31,8 @@ urlParser =
         , Url.map (\id -> ReqPage (Just id)) (Url.s "req" </> uuidParser)
         , Url.map (ReqPage Nothing) (Url.s "req")
         , Url.map EnvPage (Url.s "env")
-        , Url.map ScenarioPage (Url.s "scenario")
+        , Url.map (\id -> ScenarioPage (Just id)) (Url.s "scenario" </> uuidParser)
+        , Url.map (ScenarioPage Nothing) (Url.s "scenario")
         ]
 
 
@@ -55,7 +56,10 @@ href page =
                 EnvPage ->
                     ["env"]
 
-                ScenarioPage ->
+                ScenarioPage (Just uuid) ->
+                    ["scenario", Uuid.toString uuid]
+
+                ScenarioPage Nothing ->
                     ["scenario"]
 
                 NotFoundPage ->

@@ -81,7 +81,7 @@ update msg model =
                             Builder.update subMsg builder
 
                         newBuilderTree =
-                            List.map (BuilderTree.modifyRequestNode2 builder.id (changeFileBuilder newBuilder)) requestNodes
+                            List.map (BuilderTree.modifyRequestNode builder.id (changeFileBuilder newBuilder)) requestNodes
 
                         newModel =
                             { model
@@ -114,7 +114,7 @@ getBuilder : Model a -> Maybe Builder.Model
 getBuilder model =
     let
         (RequestCollection requestCollectionId requestNodes) = model.requestCollection
-        mFile : Maybe File
+        mFile : Maybe RequestFileRecord
         mFile = Maybe.andThen (BuilderTree.findFile requestNodes) (getSelectedBuilderId model)
     in
         case (getSelectedBuilderId model, mFile) of
@@ -129,7 +129,7 @@ getBuilder model =
             _ ->
                 Nothing
 
-convertFromFileToBuilder : File -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> Builder.Model
+convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> Builder.Model
 convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     { notification = notification
     , id = file.id
@@ -145,7 +145,7 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     , runRequestIconAnimation = file.runRequestIconAnimation
     }
 
-convertFromBuilderToFile : Builder.Model -> File
+convertFromBuilderToFile : Builder.Model -> RequestFileRecord
 convertFromBuilderToFile builder =
     { id = builder.id
     , name = builder.name
@@ -168,6 +168,7 @@ changeFileBuilder builder node =
 
 
 -- * view
+
 
 view : Model a -> Element Msg
 view model =
