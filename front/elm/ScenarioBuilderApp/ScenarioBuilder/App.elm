@@ -3,8 +3,11 @@ module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Element.Events as Events
+import Element.Input as Input
 import Application.Type exposing (..)
+import Util exposing (..)
 import Uuid
 
 
@@ -24,7 +27,7 @@ type alias Model =
 
 
 type Msg
-  = DoNothing
+  = SelectHttpRequest
 
 
 -- * update
@@ -42,7 +45,8 @@ update msg model =
 
 view : Model -> Element Msg
 view model =
-    none
-
-
--- * subscriptions
+    el [ width fill, centerX ]
+        (Input.button [ centerX ]
+            { onPress = Just SelectHttpRequest
+            , label = el [ centerX, centerY ] (iconWithTextAndColorAndAttr "send" "Select http request" primaryColor [])
+            })

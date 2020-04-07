@@ -165,8 +165,7 @@ view model =
               [ el [ ] <| envSelectionView <| List.map .name model.environments
               , el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
               ]
-        , el [ alignTop, width (fillPortion 9) ]
-            <| builderView model (getSelectedBuilderId model)
+        , builderView model
         ]
 
 envSelectionView : List (Editable String) -> Element Msg
@@ -183,6 +182,13 @@ envSelectionView environmentNames =
                     (List.indexedMap entryView environmentNames)
                 ]
 
-builderView : Model a -> Maybe Uuid.Uuid -> Element Msg
-builderView model mId =
-    none
+builderView : Model a -> Element Msg
+builderView model =
+    case getBuilder model of
+        Just builder ->
+            el [ width (fillPortion 9), width fill, height fill, alignTop ]
+                (map ScenarioBuilderMsg (ScenarioBuilder.view builder))
+
+        Nothing ->
+            el [ width (fillPortion 9), centerX, centerY ]
+                ( el [centerX ] (text "No scenario selected") )
