@@ -121,7 +121,7 @@ update msg model =
             newScenarioFolder =
                 { newScenarioFolderId = newId
                 , newScenarioFolderParentNodeId = parentNodeId
-                , newScenarioFolderName = "new folder"
+                , newScenarioFolderName = defaultFolderName
                 }
 
             newMsg =
@@ -162,7 +162,7 @@ update msg model =
 
             newScenarioFile =
                    { newScenarioFileId = newId
-                   , newScenarioFileName = "new scenario"
+                   , newScenarioFileName = defaultFileName
                    , newScenarioFileParentNodeId = parentNodeId
                    }
 
@@ -294,7 +294,7 @@ update msg model =
 
             newRootScenarioFile =
                 { newRootScenarioFileId = newId
-                , newRootScenarioFileName = "new scenario"
+                , newRootScenarioFileName = defaultFileName
                 }
 
             newMsg =
@@ -561,7 +561,7 @@ tempRename newName node =
 mkDefaultFolder : Uuid.Uuid -> ScenarioNode
 mkDefaultFolder id =
     ScenarioFolder { id = id
-                  , name = NotEdited "new folder"
+                  , name = NotEdited defaultFolderName
                   , open = False
                   , children = []
                   }
@@ -569,11 +569,15 @@ mkDefaultFolder id =
 mkDefaultFile : Uuid.Uuid -> ScenarioNode
 mkDefaultFile id =
     ScenarioFile { id = id
-                 , name = NotEdited ""
+                 , name = NotEdited defaultFileName
                  , sceneNodeId = Nothing
                  }
 
+defaultFolderName : String
+defaultFolderName = "new folder"
 
+defaultFileName : String
+defaultFileName = "new scenario"
 
 -- * view
 
@@ -587,11 +591,11 @@ view model =
             row [ spacing 10 ]
                 [ Input.button []
                       { onPress = Just <| GenerateRandomUUIDForRootFolder
-                      , label = iconWithText "create_new_folder" "new folder"
+                      , label = iconWithText "create_new_folder" defaultFolderName
                       }
                 , Input.button []
                       { onPress = Just <| GenerateRandomUUIDForRootFile
-                      , label = iconWithText "note_add" "new scenario"
+                      , label = iconWithText "note_add" defaultFileName
                       }
                 ]
 
@@ -634,7 +638,7 @@ nodeView mDisplayedScenarioNodeMenuIndex scenarioCollection =
 fileReadView : String -> Uuid.Uuid -> Element Msg
 fileReadView name id =
     link []
-            { url = href (ReqPage (Just id))
+            { url = href (ScenarioPage (Just id))
             , label = el [] <| iconWithTextAndColor "label" name secondaryColor
             }
 
