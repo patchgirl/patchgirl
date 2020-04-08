@@ -9,6 +9,8 @@ import Element.Input as Input
 import Application.Type exposing (..)
 import Util exposing (..)
 import Uuid
+import Dialog
+import Modal exposing (..)
 
 
 -- * model
@@ -16,6 +18,7 @@ import Uuid
 
 type alias Model =
     { notification : Maybe String
+    , whichModal : Maybe Modal
     , id : Uuid.Uuid
     , scenarioCollectionId : Uuid.Uuid
     , keyValues : List (Storable NewKeyValue KeyValue)
@@ -28,6 +31,7 @@ type alias Model =
 
 type Msg
   = SelectHttpRequest
+  | CloseModal
 
 
 -- * update
@@ -36,6 +40,13 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        CloseModal ->
+            let
+                newModel =
+                    { model | whichModal = Nothing }
+            in
+                (newModel, Cmd.none)
+
         _ ->
             (model, Cmd.none)
 
@@ -50,3 +61,33 @@ view model =
             { onPress = Just SelectHttpRequest
             , label = el [ centerX, centerY ] (iconWithTextAndColorAndAttr "send" "Select http request" primaryColor [])
             })
+
+
+-- * modal
+
+
+selectHttpRequestModal : RequestCollection -> Dialog.Config Msg
+selectHttpRequestModal requestCollection =
+    { closeMessage = Just CloseModal
+    , maskAttributes = []
+    , containerAttributes = [ padding 10 ]
+    , headerAttributes = []
+    , bodyAttributes = []
+    , footerAttributes = []
+    , header = Just (text "select http request")
+    , body = Nothing
+    , footer = Nothing
+    }
+
+confirmDeleteFolderModal : Dialog.Config Msg
+confirmDeleteFolderModal =
+    { closeMessage = Just CloseModal
+    , maskAttributes = []
+    , containerAttributes = [ padding 10 ]
+    , headerAttributes = []
+    , bodyAttributes = []
+    , footerAttributes = []
+    , header = Just (text "confirm delete folder")
+    , body = Nothing
+    , footer = Nothing
+    }

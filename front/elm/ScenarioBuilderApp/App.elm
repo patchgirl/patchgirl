@@ -1,6 +1,7 @@
 module ScenarioBuilderApp.App exposing (..)
 
 import Uuid
+import Modal exposing (..)
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
@@ -26,6 +27,7 @@ import ScenarioBuilderApp.ScenarioTree.App as ScenarioTree
 type alias Model a =
     { a
         | notification : Maybe String
+        , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection
         , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
@@ -79,6 +81,7 @@ update msg model =
                             { model
                                 | scenarioCollection = ScenarioCollection scenarioCollectionId newBuilderTree
                                 , notification = newBuilder.notification
+                                , whichModal = newBuilder.whichModal
                             }
 
                         newMsg =
@@ -116,14 +119,20 @@ getBuilder model =
                         (Application.getEnvironmentKeyValuesToRun model)
 
                 in
-                    Just (convertFromFileToBuilder file scenarioCollectionId keyValuesToRun model.notification)
+                    Just (convertFromFileToBuilder file scenarioCollectionId keyValuesToRun model.notification model.whichModal)
 
             _ ->
                 Nothing
 
-convertFromFileToBuilder : ScenarioFileRecord -> Uuid.Uuid -> List (Storable NewKeyValue KeyValue) -> Maybe String -> ScenarioBuilder.Model
-convertFromFileToBuilder file scenarioCollectionId keyValuesToRun notification =
+convertFromFileToBuilder : ScenarioFileRecord
+                         -> Uuid.Uuid
+                         -> List (Storable NewKeyValue KeyValue)
+                         -> Maybe String
+                         -> Maybe Modal
+                         -> ScenarioBuilder.Model
+convertFromFileToBuilder file scenarioCollectionId keyValuesToRun notification whichModal =
     { notification = notification
+    , whichModal = whichModal
     , id = file.id
     , scenarioCollectionId = scenarioCollectionId
     , keyValues = keyValuesToRun

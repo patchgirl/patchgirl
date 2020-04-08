@@ -6,6 +6,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "PaackEng/elm-ui-dialog": "1.0.0",
             "ThinkAlexandria/elm-pretty-print-json": "1.0.1",
             "andre-dietrich/parser-combinators": "3.1.0",
             "bartavelle/json-helpers": "2.0.2",
@@ -21,7 +22,7 @@
             "elm/url": "1.0.0",
             "elm-community/html-extra": "3.1.0",
             "elm-community/list-extra": "8.2.0",
-            "elm-community/maybe-extra": "5.0.0",
+            "elm-community/maybe-extra": "5.2.0",
             "hermanverschooten/ip": "1.0.1",
             "mdgriffith/elm-style-animation": "4.0.0",
             "mdgriffith/elm-ui": "1.1.5"

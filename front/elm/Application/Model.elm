@@ -7,6 +7,7 @@ import Uuid
 import Browser.Navigation as Navigation
 import Animation
 import Url as Url
+import Modal exposing(..)
 
 
 -- * model
@@ -21,6 +22,8 @@ type alias Model =
     -- NOTIFICATION
     , notification : Maybe String
     , notificationAnimation : Animation.State
+    -- MODAL
+    , whichModal : Maybe Modal
     -- MENU
     , showMainMenuName : Maybe MainMenuName
     -- INITIALIZE PASSWORD

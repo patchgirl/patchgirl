@@ -9,7 +9,9 @@ import Element.Background as Background
 import Util exposing (..)
 import Html as Html
 import Uuid
+import Dialog
 
+import Modal exposing (..)
 import MainNavBar.App as MainNavBar
 import Application.Type exposing (..)
 import Url as Url
@@ -23,11 +25,12 @@ import RequestBuilderApp.App as RequestBuilderApp
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import EnvironmentEdition.App as EnvironmentEdition
 import ScenarioBuilderApp.App as ScenarioBuilderApp
+import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import EnvironmentToRunSelection.App as EnvSelection
 import Application.Model exposing (..)
 
 
--- ** model
+-- * model
 
 
 type alias UserData =
@@ -38,7 +41,7 @@ type alias UserData =
     }
 
 
--- ** message
+-- * message
 
 
 type Msg
@@ -52,7 +55,7 @@ type Msg
     | Animate Animation.Msg
 
 
--- ** init
+-- * init
 
 
 init : UserData -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
@@ -95,6 +98,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , loadingAnimation = loadingAnimation
             , notification = Nothing
             , notificationAnimation = notificationAnimation
+            , whichModal = Just SelectHttpRequestModal
             , showMainMenuName = Nothing
             , initializePassword1 = ""
             , initializePassword2 = ""
@@ -111,7 +115,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
         (model, Cmd.none)
 
 
--- ** update
+-- * update
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -172,7 +176,7 @@ update msg model =
                 (newModel, Cmd.none)
 
 
--- ** view
+-- * view
 
 
 view : Model -> Browser.Document Msg
@@ -182,7 +186,10 @@ view model =
             List.map htmlAttribute (Animation.render model.loadingAnimation)
 
         bodyAttr =
-            [ Background.color lightGrey ] ++ loadingAnimation ++ [ inFront (notificationView model) ]
+            [ Background.color lightGrey ] ++
+            loadingAnimation ++
+            [ inFront (modalView model) ] ++
+            [ inFront (notificationView model) ]
 
         body =
             layout bodyAttr (mainView model)
@@ -192,7 +199,7 @@ view model =
         }
 
 
--- *** main view
+-- ** main view
 
 
 mainView : Model -> Element Msg
@@ -216,7 +223,32 @@ mainView model =
         ]
 
 
--- *** notification view
+-- ** modal view
+
+
+modalView : Model -> Element Msg
+modalView model =
+    let
+        scenarioBuilderMsg msg =
+            ScenarioMsg (ScenarioBuilderApp.ScenarioBuilderMsg msg)
+
+        modalConfig =
+            case model.whichModal of
+                Nothing ->
+                    Nothing
+
+                Just modal ->
+                    case modal of
+                        SelectHttpRequestModal ->
+                            Just (Dialog.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
+
+                        ConfirmScenarioFolderDeletionModal ->
+                            Just (Dialog.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
+    in
+        Dialog.view modalConfig
+
+
+-- ** notification view
 
 
 notificationView : Model -> Element Msg
@@ -238,7 +270,7 @@ notificationView model =
 
 
 
--- ** subscriptions
+-- * subscriptions
 
 
 subscriptions : Model -> Sub Msg
