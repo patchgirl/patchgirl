@@ -124,9 +124,11 @@ view model =
             addNewSceneView
 
         scenes ->
-            column [] [ column [] (List.map (sceneView model) scenes)
-                      , addNewSceneView
-                      ]
+            column [ centerX, width fill, spacing 50 ]
+                [ column [ centerX, spacing 30 ]
+                      (List.map (sceneView model) scenes)
+                , addNewSceneView
+                ]
 
 
 -- ** add new scene view
@@ -137,7 +139,11 @@ addNewSceneView =
     el [ width fill, centerX ]
         (Input.button [ centerX ]
             { onPress = Just ShowHttpRequestSelectionModal
-            , label = el [ centerX, centerY ] (iconWithTextAndColorAndAttr "send" "Select http request" primaryColor [])
+            , label =
+                row [ centerX, centerY ]
+                    [ addIcon
+                    , el [] (text "Add a scene to your scenario")
+                    ]
             })
 
 
@@ -155,12 +161,21 @@ sceneView model { id, requestFileNodeId } =
     in
         case mRequestFileRecord of
             Just { name } ->
-                row [] [ el [] (text (notEditedValue name))
-                       , Input.button []
-                           { onPress = Just (DeleteScene id)
-                           , label = text "X"
-                           }
-                       ]
+                el [ Border.solid
+                   , Border.width 1
+                   , Border.rounded 5
+                   , Border.color white
+                   , Background.color white
+                   , padding 20
+                   , boxShadow
+                   , centerX
+                   ] <|
+                    row [ spacing 20, centerX ] [ el [] (text (notEditedValue name))
+                                       , Input.button []
+                                           { onPress = Just (DeleteScene id)
+                                           , label = el [ alignRight ] clearIcon
+                                           }
+                                       ]
 
             _ -> none
 
