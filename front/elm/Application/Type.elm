@@ -169,7 +169,7 @@ type alias ScenarioFileRecord =
 
 type alias Scene =
     { id : Uuid.Uuid
-    , requestFileRecord : RequestFileRecord
+    , requestFileNodeId : Uuid.Uuid
     }
 
 

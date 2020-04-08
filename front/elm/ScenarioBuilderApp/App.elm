@@ -30,6 +30,7 @@ type alias Model a =
         | notification : Maybe String
         , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection
+        , requestCollection : RequestCollection
         , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
@@ -120,22 +121,24 @@ getBuilder model =
                         (Application.getEnvironmentKeyValuesToRun model)
 
                 in
-                    Just (convertFromFileToBuilder file scenarioCollectionId keyValuesToRun model.notification model.whichModal)
+                    Just (convertFromFileToBuilder file scenarioCollectionId model.requestCollection keyValuesToRun model.notification model.whichModal)
 
             _ ->
                 Nothing
 
 convertFromFileToBuilder : ScenarioFileRecord
                          -> Uuid.Uuid
+                         -> RequestCollection
                          -> List (Storable NewKeyValue KeyValue)
                          -> Maybe String
                          -> Maybe Modal
                          -> ScenarioBuilder.Model
-convertFromFileToBuilder file scenarioCollectionId keyValuesToRun notification whichModal =
+convertFromFileToBuilder file scenarioCollectionId requestCollection keyValuesToRun notification whichModal =
     { notification = notification
     , whichModal = whichModal
     , id = file.id
     , scenarioCollectionId = scenarioCollectionId
+    , requestCollection = requestCollection
     , scenes = file.scenes
     , keyValues = keyValuesToRun
     , name = file.name

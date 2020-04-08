@@ -12,6 +12,7 @@ import Util exposing (..)
 import Uuid
 import Modal exposing (Modal(..))
 import Modal
+import RequestBuilderApp.RequestTree.Util as RequestTree
 
 
 -- * model
@@ -21,6 +22,7 @@ type alias Model =
     { notification : Maybe String
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
+    , requestCollection : RequestCollection
     , scenarioCollectionId : Uuid.Uuid
     , scenes : List Scene
     , keyValues : List (Storable NewKeyValue KeyValue)
@@ -35,8 +37,8 @@ type Msg
   = DoNothing
   -- modal: select http request
   | ShowHttpRequestSelectionModal
-  | GenerateRandomUUIDForScene RequestFileRecord
-  | SelectRequestFile RequestFileRecord Uuid.Uuid
+  | GenerateRandomUUIDForScene Uuid.Uuid
+  | SelectRequestFile Uuid.Uuid Uuid.Uuid
   | CloseModal
 
 
@@ -53,16 +55,16 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        GenerateRandomUUIDForScene requestFileRecord ->
+        GenerateRandomUUIDForScene requestFileNodeId ->
             let
-                newMsg = Random.generate (SelectRequestFile requestFileRecord) Uuid.uuidGenerator
+                newMsg = Random.generate (SelectRequestFile requestFileNodeId) Uuid.uuidGenerator
             in
                 (model, newMsg)
 
-        SelectRequestFile requestFileRecord newSceneId ->
+        SelectRequestFile requestFileNodeId newSceneId ->
             let
                 newScene =
-                    mkDefaultScene newSceneId requestFileRecord
+                    mkDefaultScene newSceneId requestFileNodeId
 
                 newModel =
                     { model
@@ -86,10 +88,10 @@ update msg model =
 -- * util
 
 
-mkDefaultScene : Uuid.Uuid -> RequestFileRecord -> Scene
-mkDefaultScene id requestFileRecord =
+mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> Scene
+mkDefaultScene id requestFileNodeId =
     { id = id
-    , requestFileRecord = requestFileRecord
+    , requestFileNodeId = requestFileNodeId
     }
 
 
@@ -103,7 +105,7 @@ view model =
             addNewSceneView
 
         scenes ->
-            column [] [ column [] (List.map sceneView scenes)
+            column [] [ column [] (List.map (sceneView model) scenes)
                       , addNewSceneView
                       ]
 
@@ -123,9 +125,21 @@ addNewSceneView =
 -- ** scene view
 
 
-sceneView : Scene -> Element Msg
-sceneView { requestFileRecord } =
-    el [] (text (notEditedValue requestFileRecord.name))
+sceneView : Model -> Scene -> Element Msg
+sceneView model { requestFileNodeId } =
+    let
+        (RequestCollection _ requestNodes) =
+            model.requestCollection
+
+        mRequestFileRecord =
+            RequestTree.findFile requestNodes requestFileNodeId
+    in
+        case mRequestFileRecord of
+            Just { name } ->
+                el [] (text (notEditedValue name))
+
+            _ -> none
+
 
 
 -- * modal
@@ -160,7 +174,7 @@ selectHttpRequestModal requestCollection =
                         tailView = nodeView tail
                         currentFileView =
                             Input.button []
-                                { onPress = Just (GenerateRandomUUIDForScene requestFileRecord)
+                                { onPress = Just (GenerateRandomUUIDForScene requestFileRecord.id)
                                 , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                 }
                       in
