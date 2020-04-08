@@ -125,7 +125,7 @@ view model =
 
         scenes ->
             column [ centerX, width fill, spacing 50 ]
-                [ column [ centerX, spacing 30 ]
+                [ column [ centerX, spacing 10 ]
                       (List.map (sceneView model) scenes)
                 , addNewSceneView
                 ]
@@ -161,25 +161,35 @@ sceneView model { id, requestFileNodeId } =
     in
         case mRequestFileRecord of
             Just { name } ->
-                el [ Border.solid
-                   , Border.width 1
-                   , Border.rounded 5
-                   , Border.color white
-                   , Background.color white
-                   , padding 20
-                   , boxShadow
-                   , centerX
-                   ] <|
-                    row [ spacing 20, centerX ] [ el [] (text (notEditedValue name))
-                                       , Input.button []
-                                           { onPress = Just (DeleteScene id)
-                                           , label = el [ alignRight ] clearIcon
-                                           }
-                                       ]
+                column [ centerX, spacing 10 ]
+                    [ el [ Border.solid
+                    , Border.width 1
+                    , Border.rounded 5
+                    , Border.color white
+                    , Background.color white
+                    , padding 20
+                    , boxShadow
+                    , centerX
+                    ] <| row [ spacing 20, centerX ]
+                            [ el [] (text (notEditedValue name))
+                            , Input.button []
+                                { onPress = Just (DeleteScene id)
+                                , label = el [ alignRight ] clearIcon
+                                }
+                            ]
+                    , arrowView
+                    ]
 
             _ -> none
 
 
+
+-- ** arrow view
+
+
+arrowView : Element Msg
+arrowView =
+    el [ centerX] arrowDownwardIcon
 
 -- * modal
 

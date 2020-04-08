@@ -152,6 +152,8 @@ addIcon =
 clearIcon =
     icon "clear"
 
+arrowDownwardIcon =
+    icon "arrow_downward"
 
 -- * label
 
