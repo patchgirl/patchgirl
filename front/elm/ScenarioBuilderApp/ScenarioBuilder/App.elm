@@ -35,12 +35,13 @@ type alias Model =
 
 type Msg
   = DoNothing
-  -- modal: select http request
+  -- create scene
   | ShowHttpRequestSelectionModal
   | GenerateRandomUUIDForScene Uuid.Uuid
   | SelectRequestFile Uuid.Uuid Uuid.Uuid
   | CloseModal
-
+  -- delete scene
+  | DeleteScene Uuid.Uuid
 
 -- * update
 
@@ -48,6 +49,11 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+
+
+-- ** create scene
+
+
         ShowHttpRequestSelectionModal ->
             let
                 newModel =
@@ -78,6 +84,19 @@ update msg model =
             let
                 newModel =
                     { model | whichModal = Nothing }
+            in
+                (newModel, Cmd.none)
+
+-- ** delete scene
+
+
+        DeleteScene id ->
+            let
+                newScenes =
+                    List.filter (not << \scene -> scene.id == id) model.scenes
+
+                newModel =
+                    { model | scenes = newScenes }
             in
                 (newModel, Cmd.none)
 
@@ -126,7 +145,7 @@ addNewSceneView =
 
 
 sceneView : Model -> Scene -> Element Msg
-sceneView model { requestFileNodeId } =
+sceneView model { id, requestFileNodeId } =
     let
         (RequestCollection _ requestNodes) =
             model.requestCollection
@@ -136,7 +155,12 @@ sceneView model { requestFileNodeId } =
     in
         case mRequestFileRecord of
             Just { name } ->
-                el [] (text (notEditedValue name))
+                row [] [ el [] (text (notEditedValue name))
+                       , Input.button []
+                           { onPress = Just (DeleteScene id)
+                           , label = text "X"
+                           }
+                       ]
 
             _ -> none
 
