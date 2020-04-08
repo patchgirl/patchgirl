@@ -220,7 +220,7 @@ selectHttpRequestModal requestCollection =
 
     in
         { closeMessage = CloseModal
-        , header = text "select http request"
+        , header = text "Select an http request"
         , body = Just treeView
         , footer = Nothing
         }

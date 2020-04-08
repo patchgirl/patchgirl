@@ -149,6 +149,9 @@ sendIcon =
 addIcon =
     icon "add_circle_outline"
 
+clearIcon =
+    icon "clear"
+
 
 -- * label
 

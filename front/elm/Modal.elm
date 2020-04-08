@@ -2,6 +2,7 @@ module Modal exposing (Modal(..), Config, view, map)
 
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
@@ -41,6 +42,11 @@ view maybeConfig =
                 modalView =
                     column [ centerX
                            , Background.color lightGrey
+                           , moveDown 100
+                           , padding 20
+                           , spacing 30
+                           , boxShadow
+                           , Border.rounded 5
                            ]
                     [ headerView config
                     , bodyView config
@@ -50,16 +56,9 @@ view maybeConfig =
                 el [ Background.color (rgba 0 0 0 0.3)
                    , width fill
                    , height fill
-                   ] <|
-                    column [ width fill, height fill ]
-                        [ el [ width fill, height (px 100), Events.onClick config.closeMessage ] none
-                        , row [ width fill, height fill,paddingXY 0 100 ]
-                            [ el [ Events.onClick config.closeMessage ] none
-                            , modalView
-                            , el [ Events.onClick config.closeMessage ] none
-                            ]
-                        , el [ width fill, height (px 100), Events.onClick config.closeMessage ] none
-                        ]
+                   , Events.onClick config.closeMessage
+                   , inFront modalView
+                   ] none
 
 
 -- ** header
@@ -67,16 +66,16 @@ view maybeConfig =
 
 headerView : Config msg -> Element msg
 headerView { header, closeMessage } =
-    row [ width fill, padding 2]
-        [ el [ centerX ] header
+    row [ width fill, spacing 20]
+        [ el [] header
         , closeButton closeMessage
         ]
 
 closeButton : msg -> Element msg
 closeButton closeMessage =
-    Input.button [ alignRight, padding 1, Font.size 16 ]
+    Input.button [ alignRight, Font.size 16 ]
         { onPress = Just closeMessage
-        , label = text "x"
+        , label = clearIcon
         }
 
 
