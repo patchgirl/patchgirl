@@ -6,7 +6,6 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
-            "PaackEng/elm-ui-dialog": "1.0.0",
             "ThinkAlexandria/elm-pretty-print-json": "1.0.1",
             "andre-dietrich/parser-combinators": "3.1.0",
             "bartavelle/json-helpers": "2.0.2",

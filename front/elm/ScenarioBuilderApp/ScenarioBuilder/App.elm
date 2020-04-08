@@ -9,8 +9,8 @@ import Element.Input as Input
 import Application.Type exposing (..)
 import Util exposing (..)
 import Uuid
-import Dialog
-import Modal exposing (..)
+import Modal exposing (Modal(..))
+import Modal
 
 
 -- * model
@@ -66,7 +66,7 @@ view model =
 -- * modal
 
 
-selectHttpRequestModal : RequestCollection -> Dialog.Config Msg
+selectHttpRequestModal : RequestCollection -> Modal.Config Msg
 selectHttpRequestModal requestCollection =
     { closeMessage = Just CloseModal
     , maskAttributes = []
@@ -79,7 +79,7 @@ selectHttpRequestModal requestCollection =
     , footer = Nothing
     }
 
-confirmDeleteFolderModal : Dialog.Config Msg
+confirmDeleteFolderModal : Modal.Config Msg
 confirmDeleteFolderModal =
     { closeMessage = Just CloseModal
     , maskAttributes = []

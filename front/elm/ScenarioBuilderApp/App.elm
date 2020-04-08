@@ -1,7 +1,8 @@
 module ScenarioBuilderApp.App exposing (..)
 
 import Uuid
-import Modal exposing (..)
+import Modal
+import Modal exposing (Modal(..))
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background

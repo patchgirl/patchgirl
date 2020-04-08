@@ -9,9 +9,9 @@ import Element.Background as Background
 import Util exposing (..)
 import Html as Html
 import Uuid
-import Dialog
 
-import Modal exposing (..)
+import Modal
+import Modal exposing (Modal(..))
 import MainNavBar.App as MainNavBar
 import Application.Type exposing (..)
 import Url as Url
@@ -240,12 +240,12 @@ modalView model =
                 Just modal ->
                     case modal of
                         SelectHttpRequestModal ->
-                            Just (Dialog.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
+                            Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
 
                         ConfirmScenarioFolderDeletionModal ->
-                            Just (Dialog.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
+                            Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
     in
-        Dialog.view modalConfig
+        Modal.view modalConfig
 
 
 -- ** notification view
