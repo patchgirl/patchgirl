@@ -68,20 +68,20 @@ view model =
 
 selectHttpRequestModal : RequestCollection -> Modal.Config Msg
 selectHttpRequestModal requestCollection =
-    { closeMessage = Just CloseModal
+    { closeMessage = CloseModal
     , maskAttributes = []
     , containerAttributes = [ padding 10 ]
     , headerAttributes = []
     , bodyAttributes = []
     , footerAttributes = []
     , header = Just (text "select http request")
-    , body = Nothing
-    , footer = Nothing
+    , body = Just (text "please select a request from the following")
+    , footer = Just (text "Confirm    Cancel")
     }
 
 confirmDeleteFolderModal : Modal.Config Msg
 confirmDeleteFolderModal =
-    { closeMessage = Just CloseModal
+    { closeMessage = CloseModal
     , maskAttributes = []
     , containerAttributes = [ padding 10 ]
     , headerAttributes = []

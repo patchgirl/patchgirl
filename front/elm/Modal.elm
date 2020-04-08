@@ -18,7 +18,7 @@ type Modal
 
 
 type alias Config msg =
-    { closeMessage : Maybe msg
+    { closeMessage : msg
     , maskAttributes : List (Attribute msg)
     , containerAttributes : List (Attribute msg)
     , headerAttributes : List (Attribute msg)
@@ -41,14 +41,13 @@ view maybeConfig =
 
         Just config ->
             el
-                ([ Background.color dialogMask
-                 , width fill
-                 , height fill
-                 ]
-                    ++ config.maskAttributes
+                ( [ Background.color dialogMask
+                  , width fill
+                  , height fill
+                  ] ++ config.maskAttributes
                 )
             <|
-                column config.containerAttributes
+                column (config.containerAttributes ++ [ centerX, paddingXY 0 100 ] )
                     [ wrapHeader config
                     , wrapBody config
                     , wrapFooter config
@@ -57,16 +56,14 @@ view maybeConfig =
 
 wrapHeader : Config msg -> Element msg
 wrapHeader { header, headerAttributes, closeMessage } =
-    if header == Nothing && closeMessage == Nothing then
+    if header == Nothing then
         none
-
     else
         row
             ([ width fill, padding 2 ] ++ headerAttributes)
-            [ el [ alignLeft ] <| Maybe.withDefault none header
-            , maybe none closeButton closeMessage
+            [ el [ centerX ] <| Maybe.withDefault none header
+            , closeButton closeMessage
             ]
-
 
 closeButton : msg -> Element msg
 closeButton closeMessage =
@@ -74,7 +71,6 @@ closeButton closeMessage =
         { onPress = Just closeMessage
         , label = text "x"
         }
-
 
 wrapBody : Config msg -> Element msg
 wrapBody { body, bodyAttributes } =
@@ -93,7 +89,7 @@ wrapFooter { footer, footerAttributes } =
             none
 
         Just footer_ ->
-            el ([ width fill, padding 1 ] ++ footerAttributes) footer_
+            el ([ centerX, width fill, padding 1 ] ++ footerAttributes) footer_
 
 
 dialogMask =
@@ -106,7 +102,7 @@ dialogMask =
 
 map : (a -> b) -> Config a -> Config b
 map f config =
-    { closeMessage = Maybe.map f config.closeMessage
+    { closeMessage = f config.closeMessage
     , maskAttributes = List.map (Element.mapAttribute f) config.maskAttributes
     , containerAttributes = List.map (Element.mapAttribute f) config.containerAttributes
     , headerAttributes = List.map (Element.mapAttribute f) config.headerAttributes
