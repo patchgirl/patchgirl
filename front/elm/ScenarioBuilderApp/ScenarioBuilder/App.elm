@@ -2,6 +2,7 @@ module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 
 import Element exposing (..)
 import Element.Background as Background
+import Random
 import Element.Border as Border
 import Element.Font as Font
 import Element.Events as Events
@@ -21,6 +22,7 @@ type alias Model =
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
     , scenarioCollectionId : Uuid.Uuid
+    , scenes : List Scene
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
     }
@@ -33,7 +35,8 @@ type Msg
   = DoNothing
   -- modal: select http request
   | ShowHttpRequestSelectionModal
-  | SelectRequestFile Uuid.Uuid
+  | GenerateRandomUUIDForScene RequestFileRecord
+  | SelectRequestFile RequestFileRecord Uuid.Uuid
   | CloseModal
 
 
@@ -50,6 +53,25 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
+        GenerateRandomUUIDForScene requestFileRecord ->
+            let
+                newMsg = Random.generate (SelectRequestFile requestFileRecord) Uuid.uuidGenerator
+            in
+                (model, newMsg)
+
+        SelectRequestFile requestFileRecord newSceneId ->
+            let
+                newScene =
+                    mkDefaultScene newSceneId requestFileRecord
+
+                newModel =
+                    { model
+                        | whichModal = Nothing
+                        , scenes = model.scenes ++ [ newScene ]
+                    }
+            in
+                (Debug.log "test" newModel, Cmd.none)
+
         CloseModal ->
             let
                 newModel =
@@ -61,16 +83,49 @@ update msg model =
             (model, Cmd.none)
 
 
+-- * util
+
+
+mkDefaultScene : Uuid.Uuid -> RequestFileRecord -> Scene
+mkDefaultScene id requestFileRecord =
+    { id = id
+    , requestFileRecord = requestFileRecord
+    }
+
+
 -- * view
 
 
 view : Model -> Element Msg
 view model =
+    case Debug.log "test2" model.scenes of
+        [] ->
+            addNewSceneView
+
+        scenes ->
+            column [] [ column [] (List.map sceneView scenes)
+                      , addNewSceneView
+                      ]
+
+
+-- ** add new scene view
+
+
+addNewSceneView : Element Msg
+addNewSceneView =
     el [ width fill, centerX ]
         (Input.button [ centerX ]
             { onPress = Just ShowHttpRequestSelectionModal
             , label = el [ centerX, centerY ] (iconWithTextAndColorAndAttr "send" "Select http request" primaryColor [])
             })
+
+
+-- ** scene view
+
+
+sceneView : Scene -> Element Msg
+sceneView { requestFileRecord } =
+    el [] (text (notEditedValue requestFileRecord.name))
 
 
 -- * modal
@@ -100,13 +155,13 @@ selectHttpRequestModal requestCollection =
                       in
                         currentFolderView :: tailView
 
-                    (RequestFile { id, name }) ->
+                    RequestFile requestFileRecord ->
                       let
                         tailView = nodeView tail
                         currentFileView =
                             Input.button []
-                                { onPress = Just (SelectRequestFile id)
-                                , label = el [] <| iconWithTextAndColor "label" (notEditedValue name) secondaryColor
+                                { onPress = Just (GenerateRandomUUIDForScene requestFileRecord)
+                                , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                 }
                       in
                         currentFileView :: tailView
@@ -128,8 +183,8 @@ selectHttpRequestModal requestCollection =
     in
         { closeMessage = CloseModal
         , header = text "select http request"
-        , body = Just  treeView
-        , footer = Just (text "Confirm    Cancel")
+        , body = Just treeView
+        , footer = Nothing
         }
 
 confirmDeleteFolderModal : Modal.Config Msg

@@ -570,7 +570,7 @@ mkDefaultFile : Uuid.Uuid -> ScenarioNode
 mkDefaultFile id =
     ScenarioFile { id = id
                  , name = NotEdited defaultFileName
-                 , sceneNodeId = Nothing
+                 , scenes = []
                  }
 
 defaultFolderName : String

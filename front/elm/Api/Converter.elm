@@ -76,7 +76,7 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                     Front.ScenarioFile
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
-                        , sceneNodeId = file.scenarioNodeSceneNodeId
+                        , scenes = []
                         }
     in
         List.map convertScenarioNodeFromBackToFront backScenarioNodes

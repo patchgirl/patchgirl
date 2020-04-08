@@ -160,9 +160,16 @@ type alias ScenarioFolderRecord =
 type alias ScenarioFileRecord =
     { id : Uuid.Uuid
     , name : Editable String
-    , sceneNodeId : Maybe Uuid.Uuid
+    , scenes : List Scene
     }
 
+
+-- ** scene
+
+type alias Scene =
+    { id : Uuid.Uuid
+    , requestFileRecord : RequestFileRecord
+    }
 
 -- * initialize password state
 

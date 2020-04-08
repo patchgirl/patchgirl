@@ -136,6 +136,7 @@ convertFromFileToBuilder file scenarioCollectionId keyValuesToRun notification w
     , whichModal = whichModal
     , id = file.id
     , scenarioCollectionId = scenarioCollectionId
+    , scenes = file.scenes
     , keyValues = keyValuesToRun
     , name = file.name
     }
@@ -144,7 +145,7 @@ convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord
 convertFromBuilderToFile builder =
     { id = builder.id
     , name = builder.name
-    , sceneNodeId = Nothing
+    , scenes = builder.scenes
     }
 
 changeFileBuilder : ScenarioBuilder.Model -> ScenarioNode -> ScenarioNode
