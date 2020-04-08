@@ -98,7 +98,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , loadingAnimation = loadingAnimation
             , notification = Nothing
             , notificationAnimation = notificationAnimation
-            , whichModal = Just SelectHttpRequestModal
+            , whichModal = Nothing
             , showMainMenuName = Nothing
             , initializePassword1 = ""
             , initializePassword2 = ""

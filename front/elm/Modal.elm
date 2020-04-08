@@ -2,8 +2,10 @@ module Modal exposing (Modal(..), Config, view, map)
 
 import Element exposing (..)
 import Element.Background as Background
+import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
+import Util exposing(..)
 
 
 -- * model
@@ -19,12 +21,7 @@ type Modal
 
 type alias Config msg =
     { closeMessage : msg
-    , maskAttributes : List (Attribute msg)
-    , containerAttributes : List (Attribute msg)
-    , headerAttributes : List (Attribute msg)
-    , bodyAttributes : List (Attribute msg)
-    , footerAttributes : List (Attribute msg)
-    , header : Maybe (Element msg)
+    , header : Element msg
     , body : Maybe (Element msg)
     , footer : Maybe (Element msg)
     }
@@ -40,30 +37,40 @@ view maybeConfig =
             none
 
         Just config ->
-            el
-                ( [ Background.color dialogMask
-                  , width fill
-                  , height fill
-                  ] ++ config.maskAttributes
-                )
-            <|
-                column (config.containerAttributes ++ [ centerX, paddingXY 0 100 ] )
-                    [ wrapHeader config
-                    , wrapBody config
-                    , wrapFooter config
+            let
+                modalView =
+                    column [ centerX
+                           , Background.color lightGrey
+                           ]
+                    [ headerView config
+                    , bodyView config
+                    , footerView config
                     ]
+            in
+                el [ Background.color (rgba 0 0 0 0.3)
+                   , width fill
+                   , height fill
+                   ] <|
+                    column [ width fill, height fill ]
+                        [ el [ width fill, height (px 100), Events.onClick config.closeMessage ] none
+                        , row [ width fill, height fill,paddingXY 0 100 ]
+                            [ el [ Events.onClick config.closeMessage ] none
+                            , modalView
+                            , el [ Events.onClick config.closeMessage ] none
+                            ]
+                        , el [ width fill, height (px 100), Events.onClick config.closeMessage ] none
+                        ]
 
 
-wrapHeader : Config msg -> Element msg
-wrapHeader { header, headerAttributes, closeMessage } =
-    if header == Nothing then
-        none
-    else
-        row
-            ([ width fill, padding 2 ] ++ headerAttributes)
-            [ el [ centerX ] <| Maybe.withDefault none header
-            , closeButton closeMessage
-            ]
+-- ** header
+
+
+headerView : Config msg -> Element msg
+headerView { header, closeMessage } =
+    row [ width fill, padding 2]
+        [ el [ centerX ] header
+        , closeButton closeMessage
+        ]
 
 closeButton : msg -> Element msg
 closeButton closeMessage =
@@ -72,29 +79,31 @@ closeButton closeMessage =
         , label = text "x"
         }
 
-wrapBody : Config msg -> Element msg
-wrapBody { body, bodyAttributes } =
+
+-- ** body
+
+
+bodyView : Config msg -> Element msg
+bodyView { body } =
     case body of
         Nothing ->
             none
 
         Just body_ ->
-            el ([ width fill, padding 1 ] ++ bodyAttributes) body_
+            el [ width fill ] body_
 
 
-wrapFooter : Config msg -> Element msg
-wrapFooter { footer, footerAttributes } =
+-- ** footer
+
+
+footerView : Config msg -> Element msg
+footerView { footer } =
     case footer of
         Nothing ->
             none
 
         Just footer_ ->
-            el ([ centerX, width fill, padding 1 ] ++ footerAttributes) footer_
-
-
-dialogMask =
-    rgba 0 0 0 0.3
-
+            el [ centerX, width fill ] footer_
 
 
 -- * util
@@ -103,12 +112,7 @@ dialogMask =
 map : (a -> b) -> Config a -> Config b
 map f config =
     { closeMessage = f config.closeMessage
-    , maskAttributes = List.map (Element.mapAttribute f) config.maskAttributes
-    , containerAttributes = List.map (Element.mapAttribute f) config.containerAttributes
-    , headerAttributes = List.map (Element.mapAttribute f) config.headerAttributes
-    , bodyAttributes = List.map (Element.mapAttribute f) config.bodyAttributes
-    , footerAttributes = List.map (Element.mapAttribute f) config.footerAttributes
-    , header = Maybe.map (Element.map f) config.header
+    , header = (Element.map f) config.header
     , body = Maybe.map (Element.map f) config.body
     , footer = Maybe.map (Element.map f) config.footer
     }
