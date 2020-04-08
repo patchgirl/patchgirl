@@ -11,6 +11,7 @@ import Application.Type exposing (..)
 import EnvironmentToRunSelection.App as EnvSelection
 import List.Extra as List
 import Application.Model as Application
+import RequestBuilderApp.RequestTree.Util as RequestTree
 
 import Element exposing (..)
 import Element.Background as Background
