@@ -14,3 +14,6 @@ format:
 
 analyze:
 	clear; elm-analyze -s
+
+check:
+	clear; npx elm-review
