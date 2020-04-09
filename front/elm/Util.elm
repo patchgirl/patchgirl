@@ -128,32 +128,42 @@ iconWithText : String -> String -> Element a
 iconWithText iconText someText =
     iconWithTextAndColor iconText someText black
 
+createFolderIcon : Element a
 createFolderIcon =
     icon "create_new_folder"
 
+createFileIcon : Element a
 createFileIcon =
     icon "note_add"
 
+editIcon : Element a
 editIcon =
     icon "edit"
 
+deleteIcon : Element a
 deleteIcon =
     icon "delete"
 
+playIcon : Element a
 playIcon =
     icon "play-arrow"
 
+sendIcon : Element a
 sendIcon =
     icon "send"
 
+addIcon : Element a
 addIcon =
     icon "add_circle_outline"
 
+clearIcon : Element a
 clearIcon =
     icon "clear"
 
+arrowDownwardIcon : Element a
 arrowDownwardIcon =
     icon "arrow_downward"
+
 
 -- * label
 

@@ -35,6 +35,7 @@ Once retrieved, it will send those data through a port to the real application
 -- * main
 
 
+main : Program () Model Msg
 main =
   Browser.application
     { init = init

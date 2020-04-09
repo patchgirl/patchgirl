@@ -18,7 +18,7 @@ type Page
 
 -- * parser
 
-
+uuidParser : Url.Parser (Uuid.Uuid -> b) b
 uuidParser =
     Url.custom "UUID" Uuid.fromString
 

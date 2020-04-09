@@ -30,7 +30,7 @@ config =
 --    , NoDebug.TodoOrToString.rule
 --    , NoExposingEverything.rule
 --    , NoImportingEverything.rule []
---    , NoMissingTypeAnnotation.rule
+--    NoMissingTypeAnnotation.rule
      NoUnused.CustomTypeConstructors.rule []
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule

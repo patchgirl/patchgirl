@@ -4,10 +4,12 @@ import Browser
 import Json.Encode as E
 import Json.Decode as D
 import Application.App as Application
+import Application.Model as Application
 import Application.Type exposing (..)
 import Api.Converter as Client
 import Api.Generated as Client
 
+main : Program E.Value Application.Model Application.Msg
 main =
   Browser.application
     { init = decodeLoadedData >> Application.init
