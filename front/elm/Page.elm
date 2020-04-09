@@ -1,8 +1,7 @@
 module Page exposing (Page(..), urlToPage, href)
 
 import Url
-import Url.Parser.Query as Query
-import Url.Parser as Url exposing ((</>), (<?>))
+import Url.Parser as Url exposing ((</>))
 import Uuid
 
 

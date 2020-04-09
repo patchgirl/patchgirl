@@ -32,8 +32,8 @@ config =
 --    , NoImportingEverything.rule []
 --    , NoMissingTypeAnnotation.rule
 --     NoUnused.CustomTypeConstructors.rule []
---    , NoUnused.Dependencies.rule
+     NoUnused.Dependencies.rule
 ----    , NoUnused.Exports.rule
-     NoUnused.Modules.rule
---    , NoUnused.Variables.rule
+    , NoUnused.Modules.rule
+    , NoUnused.Variables.rule
     ]

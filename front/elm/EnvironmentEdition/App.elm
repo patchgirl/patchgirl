@@ -333,9 +333,6 @@ entryView mSelectedEnvId environment =
         True -> editView
         False -> readView
 
-    active =
-        mSelectedEnvId == Just environment.id
-
   in
     row [ spacing 5 ]
       [ modeView

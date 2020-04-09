@@ -115,12 +115,3 @@ map f config =
     , body = Maybe.map (Element.map f) config.body
     , footer = Maybe.map (Element.map f) config.footer
     }
-
-maybe : b -> (a -> b) -> Maybe a -> b
-maybe default f value =
-    case value of
-        Just value_ ->
-            f value_
-
-        Nothing ->
-            default
