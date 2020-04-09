@@ -191,7 +191,7 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_node_id', scene_node_id
+        'scene_nodes', root_scene_node_as_json(scene_node_id)
       )
     END
   ) INTO result
@@ -199,6 +199,31 @@ BEGIN
   INNER JOIN scenario_collection_to_scenario_node rcrn ON rcrn.scenario_node_id = rn.id
   WHERE rcrn.scenario_collection_id = rc_id;
   RETURN result;
+END;
+$$;
+
+
+--
+-- Name: root_scene_node_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.root_scene_node_as_json(node_id uuid) RETURNS jsonb[]
+    LANGUAGE plpgsql
+    AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT
+    array_agg(
+      jsonb_build_object(
+        'id', id,
+        'scene_node_parent_id', scene_node_parent_id,
+        'request_node_id', request_node_id
+      )
+    ) || scene_node_as_json(node_id)
+  INTO result
+  FROM scene_node
+  WHERE id = node_id;
+  RETURN result || ARRAY[]::jsonb[]; -- always returns empty array if result is NULL;
 END;
 $$;
 
@@ -225,12 +250,38 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_node_id', scene_node_id
+        'scene_nodes', root_scene_node_as_json(scene_node_id)
       )
     END
   ) INTO result
   FROM scenario_node
   WHERE scenario_node_parent_id = node_id;
+  RETURN result;
+END;
+$$;
+
+
+--
+-- Name: scene_node_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.scene_node_as_json(node_id uuid) RETURNS jsonb[]
+    LANGUAGE plpgsql
+    AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT
+    array_agg(
+      jsonb_build_object(
+        'id', id,
+        'scene_node_parent_id', scene_node_parent_id,
+        'request_node_id', request_node_id
+      )
+    ) || scene_node_as_json(id)
+  INTO result
+  FROM scene_node
+  WHERE scene_node_parent_id = node_id
+  GROUP BY id;
   RETURN result;
 END;
 $$;
@@ -695,7 +746,7 @@ ALTER TABLE ONLY public.scene_node
 --
 
 ALTER TABLE ONLY public.scene_node
-    ADD CONSTRAINT scene_node_scene_node_parent_id_fkey FOREIGN KEY (scene_node_parent_id) REFERENCES public.scene_node(id) ON DELETE CASCADE;
+    ADD CONSTRAINT scene_node_scene_node_parent_id_fkey FOREIGN KEY (scene_node_parent_id) REFERENCES public.scene_node(id);
 
 
 --

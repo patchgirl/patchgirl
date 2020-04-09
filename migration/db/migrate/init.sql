@@ -61,7 +61,7 @@ CREATE TABLE request_collection_to_request_node(
 
 CREATE TABLE scene_node(
   id UUID PRIMARY KEY,
-  scene_node_parent_id UUID REFERENCES scene_node(id) ON DELETE CASCADE,
+  scene_node_parent_id UUID REFERENCES scene_node(id),
   request_node_id UUID REFERENCES request_node(id)
 );
 
@@ -181,7 +181,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- * scene node as json
+-- * scenario node as json
 
 
 CREATE OR REPLACE FUNCTION root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb[] AS $$
@@ -200,7 +200,7 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_node_id', scene_node_id
+        'scene_nodes', root_scene_node_as_json(scene_node_id)
       )
     END
   ) INTO result
@@ -210,7 +210,6 @@ BEGIN
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
-
 
 CREATE OR REPLACE FUNCTION scenario_nodes_as_json(node_id uuid) RETURNS jsonb[] AS $$
 DECLARE result jsonb[];
@@ -228,12 +227,53 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_node_id', scene_node_id
+        'scene_nodes', root_scene_node_as_json(scene_node_id)
       )
     END
   ) INTO result
   FROM scenario_node
   WHERE scenario_node_parent_id = node_id;
   RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- * scene node as json
+
+
+CREATE OR REPLACE FUNCTION scene_node_as_json(node_id uuid) RETURNS jsonb[] AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT
+    array_agg(
+      jsonb_build_object(
+        'id', id,
+        'scene_node_parent_id', scene_node_parent_id,
+        'request_node_id', request_node_id
+      )
+    ) || scene_node_as_json(id)
+  INTO result
+  FROM scene_node
+  WHERE scene_node_parent_id = node_id
+  GROUP BY id;
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION root_scene_node_as_json(node_id uuid) RETURNS jsonb[] AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT
+    array_agg(
+      jsonb_build_object(
+        'id', id,
+        'scene_node_parent_id', scene_node_parent_id,
+        'request_node_id', request_node_id
+      )
+    ) || scene_node_as_json(node_id)
+  INTO result
+  FROM scene_node
+  WHERE id = node_id;
+  RETURN result || ARRAY[]::jsonb[]; -- always returns empty array if result is NULL;
 END;
 $$ LANGUAGE plpgsql;

@@ -70,22 +70,43 @@ def insert_scenario_folder(id, tag, name, scenario_node_parent_id)
 end
 
 
-# ** request file
+# ** scenario file
 
 
-def insert_scenario_file(id, tag, name, scenario_node_parent_id)
+def insert_scenario_file(id, tag, name, scenario_node_parent_id, scene_node_id)
 
   %{
     INSERT INTO scenario_node (
       id,
       tag,
       name,
-      scenario_node_parent_id
+      scenario_node_parent_id,
+      scene_node_id
     ) values (
      '#{id}',
       '#{tag}',
       '#{name}',
-      #{scenario_node_parent_id.nil? ? 'NULL' : "'#{scenario_node_parent_id}'"}
+      #{scenario_node_parent_id.nil? ? 'NULL' : "'#{scenario_node_parent_id}'"},
+      #{scene_node_id.nil? ? 'NULL' : "'#{scene_node_id}'"}
+    );
+  }
+end
+
+
+# ** scene node
+
+
+def insert_scene_node(id, scene_node_parent_id, request_node_id)
+
+  %{
+    INSERT INTO scene_node (
+      id,
+      scene_node_parent_id,
+      request_node_id
+    ) values (
+     '#{id}',
+      #{scene_node_parent_id.nil? ? 'NULL' : "'#{scene_node_parent_id}'"},
+     '#{request_node_id}'
     );
   }
 end
@@ -164,16 +185,29 @@ request_nodes.each do |request_node_query|
 end
 
 
+# * scene_node
+
+
+scene_nodes = [
+  insert_scene_node('782358aa-e293-4976-b754-6d8db4762dd1', nil, '913d508c-fef3-4034-98da-9e328debb196'),
+  insert_scene_node('1932b624-ab1e-48b9-b779-1a3d1fe774c9', '782358aa-e293-4976-b754-6d8db4762dd1', 'e46ee2de-f1ce-4b13-b1ec-b529ae87da54'),
+  insert_scene_node('ef6ed855-81f9-4a6c-9cd5-75fd3b819c91', '1932b624-ab1e-48b9-b779-1a3d1fe774c9', 'b3b24406-a7c0-4c68-bdcc-279e843340a0')
+]
+
+scene_nodes.each do |scene_node_query|
+  puts scene_node_query
+  ActiveRecord::Migration[5.2].execute scene_node_query
+end
+
+
 # * scenario node
 
 
 scenario_nodes = [
   insert_scenario_folder('5b679f6c-698c-4b01-8ba8-75975e347558', 'ScenarioFolder', "users", nil),
-  insert_scenario_file(  '0a0341c1-0f82-4c39-afbd-0e3f92ae003d', 'ScenarioFile', 'scenario1', '5b679f6c-698c-4b01-8ba8-75975e347558'),
-  insert_scenario_file(  'd9c1b525-8a4c-4b8e-aac0-31eaac7bd1ae', 'ScenarioFile', 'scenario2', '5b679f6c-698c-4b01-8ba8-75975e347558'),
+  insert_scenario_file(  '0a0341c1-0f82-4c39-afbd-0e3f92ae003d', 'ScenarioFile', 'scenario1', '5b679f6c-698c-4b01-8ba8-75975e347558', '782358aa-e293-4976-b754-6d8db4762dd1'),
+  insert_scenario_file(  'd9c1b525-8a4c-4b8e-aac0-31eaac7bd1ae', 'ScenarioFile', 'scenario2', '5b679f6c-698c-4b01-8ba8-75975e347558', nil),
   insert_scenario_folder('6b9f367f-77dc-4b79-9742-346a48528b64', 'ScenarioFolder', "session", nil),
-  insert_scenario_file(  'a4f7bd1b-496d-4acb-b753-4381f55a9f4b', 'ScenarioFile', 'login sucessful', '6b9f367f-77dc-4b79-9742-346a48528b64'),
-  insert_scenario_file(  '44dc7b43-9c6c-43fb-9f0e-60637aaaca9c', 'ScenarioFile', 'login sucessful', '6b9f367f-77dc-4b79-9742-346a48528b64'),
 ]
 
 scenario_nodes.each do |scenario_node_query|

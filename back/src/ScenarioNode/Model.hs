@@ -25,6 +25,41 @@ import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           GHC.Generics
 
 
+-- * scene
+
+
+data Scene
+  = Scene { _sceneId                :: UUID
+          , _sceneRequestFileNodeId :: UUID
+          }
+  deriving (Eq, Show, Generic)
+
+$(makeLenses ''Scene)
+
+instance ToJSON Scene where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON Scene where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * scene from pg
+
+
+newtype SceneFromPG = SceneFromPG Scene
+
+instance FromJSON SceneFromPG where
+  parseJSON = withObject "SceneFromPG" $ \o -> do
+    _sceneId <- o .: "id"
+    _sceneRequestFileNodeId <- o .: "request_node_id"
+    return $ SceneFromPG $ Scene{..}
+
+fromSceneFromPGTOScene :: SceneFromPG -> Scene
+fromSceneFromPGTOScene (SceneFromPG scene) = scene
+
+
 -- * scenario node
 
 
@@ -33,9 +68,9 @@ data ScenarioNode
                    , _scenarioNodeName     :: String
                    , _scenarioNodeChildren :: [ScenarioNode]
                    }
-  | ScenarioFile { _scenarioNodeId          :: UUID
-                 , _scenarioNodeName        :: String
-                 , _scenarioNodeSceneNodeId :: Maybe UUID
+  | ScenarioFile { _scenarioNodeId     :: UUID
+                 , _scenarioNodeName   :: String
+                 , _scenarioNodeScenes :: [Scene]
                  }
   deriving (Eq, Show, Generic)
 
@@ -84,7 +119,8 @@ instance FromJSON ScenarioNodeFromPG where
       ScenarioFileType -> do
         _scenarioNodeId <- o .: "id"
         _scenarioNodeName <- o .: "name"
-        _scenarioNodeSceneNodeId <- o .: "scene_node_id"
+        scenesFromPG <- o .: "scene_nodes" :: Parser [SceneFromPG]
+        let _scenarioNodeScenes = map fromSceneFromPGTOScene scenesFromPG
         return $ ScenarioNodeFromPG $ ScenarioFile{..}
       ScenarioFolderType -> do
         pgChildren <- o .: "children" :: Parser [ScenarioNodeFromPG]
