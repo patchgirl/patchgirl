@@ -173,16 +173,6 @@ type alias Scene =
     }
 
 
--- * initialize password state
-
-
-type InitializePasswordState
-    = InitialPasswordState
-    | FilledPasswordState
-    | FailedPasswordState String
-    | SucceededPasswordState
-
-
 -- * builder
 
 

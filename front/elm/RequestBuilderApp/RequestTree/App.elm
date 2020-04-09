@@ -59,7 +59,6 @@ type Msg
   -- delete
   | AskDelete Uuid.Uuid
   | Delete Uuid.Uuid
-  | DoNothing
   | BuilderTreeServerError
 
 
@@ -361,10 +360,6 @@ update msg model =
 
     BuilderTreeServerError ->
         Debug.todo "error with builder tree"
-
-
-    DoNothing ->
-        (model, Cmd.none)
 
 
 -- * util

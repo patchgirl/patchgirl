@@ -14,7 +14,6 @@ import Util exposing(..)
 
 type Modal
     = SelectHttpRequestModal
-    | ConfirmScenarioFolderDeletionModal
 
 
 -- * config

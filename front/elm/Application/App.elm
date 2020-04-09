@@ -47,7 +47,6 @@ type alias UserData =
 type Msg
     = LinkClicked UrlRequest
     | UrlChanged Url.Url
-    | ServerError Http.Error
     | BuilderAppMsg RequestBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
@@ -100,9 +99,6 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , notificationAnimation = notificationAnimation
             , whichModal = Nothing
             , showMainMenuName = Nothing
-            , initializePassword1 = ""
-            , initializePassword2 = ""
-            , initializePasswordState = InitialPasswordState
             , requestCollection = requestCollection
             , displayedRequestNodeMenuId = Nothing
             , scenarioCollection = scenarioCollection
@@ -121,9 +117,6 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ServerError error ->
-            Debug.todo "server error" error
-
         UrlChanged url ->
             let
                 newPage =
@@ -242,8 +235,6 @@ modalView model =
                         SelectHttpRequestModal ->
                             Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
 
-                        ConfirmScenarioFolderDeletionModal ->
-                            Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
     in
         Modal.view modalConfig
 

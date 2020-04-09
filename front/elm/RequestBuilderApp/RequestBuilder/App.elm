@@ -61,7 +61,6 @@ type alias Model =
 type Msg
   = UpdateUrl String
   | SetHttpMethod HttpMethod
-  | UpdateHeaders String
   | SetHttpBody String
   | SetHttpBodyResponse String
   | AddHeaderInput
@@ -95,15 +94,6 @@ update msg model =
             let
                 newModel =
                     { model | httpMethod = changeEditedValue newMethod model.httpMethod }
-            in
-                (newModel, Cmd.none)
-
-        UpdateHeaders rawHeaders ->
-            let
-                newModel =
-                    case parseHeaders rawHeaders of
-                        httpHeaders ->
-                            { model | httpHeaders = changeEditedValue httpHeaders model.httpHeaders }
             in
                 (newModel, Cmd.none)
 
@@ -308,11 +298,8 @@ remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -
 remoteComputationDoneToMsg result =
     case result of
         Ok backRequestComputationResult ->
-            ServerError
-        {-
             RemoteComputationDone <|
                 Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
-                -}
 
         Err error ->
             RemoteComputationFailed

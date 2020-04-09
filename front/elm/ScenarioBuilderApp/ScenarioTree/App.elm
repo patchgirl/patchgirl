@@ -57,7 +57,6 @@ type Msg
   -- delete
   | AskDelete Uuid.Uuid
   | Delete Uuid.Uuid
-  | DoNothing
   | ScenarioBuilderTreeServerError
 
 

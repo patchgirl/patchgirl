@@ -26,10 +26,6 @@ type alias Model =
     , whichModal : Maybe Modal
     -- MENU
     , showMainMenuName : Maybe MainMenuName
-    -- INITIALIZE PASSWORD
-    , initializePassword1 : String
-    , initializePassword2 : String
-    , initializePasswordState : InitializePasswordState
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : RequestCollection

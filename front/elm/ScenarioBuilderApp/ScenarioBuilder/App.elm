@@ -34,9 +34,8 @@ type alias Model =
 
 
 type Msg
-  = DoNothing
   -- create scene
-  | ShowHttpRequestSelectionModal
+  = ShowHttpRequestSelectionModal
   | GenerateRandomUUIDForScene Uuid.Uuid
   | SelectRequestFile Uuid.Uuid Uuid.Uuid
   | CloseModal
@@ -99,9 +98,6 @@ update msg model =
                     { model | scenes = newScenes }
             in
                 (newModel, Cmd.none)
-
-        _ ->
-            (model, Cmd.none)
 
 
 -- * util
