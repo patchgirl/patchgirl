@@ -45,7 +45,7 @@ createScenarioFileHandler
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultConfig) $ do
 
 
 -- ** create scenario file
@@ -89,7 +89,7 @@ spec =
                                                         , _fakeScenarioFileName        = "new scenario"
                                                         , _fakeScenarioFileSceneNodeId = Nothing
                                                         }
-{-
+
 -- ** create root scenario file
 
 
@@ -99,7 +99,7 @@ spec =
           accountId <- insertFakeAccount defaultNewFakeAccount1 connection
           token <- signedUserToken accountId
           let newRootScenarioFile = mkNewRootScenarioFile UUID.nil
-          try clientEnv (createRootScenarioFileHandler token 1 newRootScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (createRootScenarioFileHandler token UUID.nil newRootScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
         cleanDBAfter $ \connection -> do
@@ -109,15 +109,13 @@ spec =
           let newRootScenarioFile = mkNewRootScenarioFile UUID.nil
           _ <- try clientEnv (createRootScenarioFileHandler token scenarioCollectionId newRootScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile UUID.nil connection
-          fakeScenarioFile `shouldBe`  FakeScenarioFile { _fakeScenarioFileParentId   = Nothing
-                                                      , _fakeScenarioFileName       = "new scenario"
-                                                      , _fakeScenarioFileHttpUrl    = ""
-                                                      , _fakeScenarioFileHttpMethod = Get
-                                                      , _fakeScenarioFileHttpBody   = ""
-                                                      , _fakeScenarioFileHttpHeaders = HttpHeaders []
-                                                      }
+          fakeScenarioFile `shouldBe` FakeScenarioFile { _fakeScenarioFileParentId = Nothing
+                                                       , _fakeScenarioFileName = "new scenario"
+                                                       , _fakeScenarioFileSceneNodeId = Nothing
+                                                       }
 
--}
+
+
   where
     mkNewScenarioFile :: UUID -> UUID -> NewScenarioFile
     mkNewScenarioFile id parentId =
@@ -125,8 +123,9 @@ spec =
                       , _newScenarioFileParentNodeId = parentId
                       , _newScenarioFileName = "new scenario"
                       }
-{-
+
     mkNewRootScenarioFile :: UUID -> NewRootScenarioFile
     mkNewRootScenarioFile id =
-      NewRootScenarioFile { _newRootScenarioFileId = id }
--}
+      NewRootScenarioFile { _newRootScenarioFileId = id
+                          , _newRootScenarioFileName = "new scenario"
+                          }

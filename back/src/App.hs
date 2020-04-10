@@ -258,6 +258,36 @@ scenarioFolderApiServer =
   :<|> authorizeWithAccountId createRootScenarioFolderHandler
 
 
+-- ** scene
+
+{-
+type PSceneApi auths =
+  Flat (Auth auths CookieSession :> ScenarioFileApi)
+
+
+type ScenarioFileApi =
+  Flat (
+    "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+      "scenarioFile" :> (
+          -- createScenarioFile
+          ReqBody '[JSON] NewScenarioFile :> Post '[JSON] ()
+      ) :<|>
+      "rootScenarioFile" :> (
+          -- create root scenario file
+          ReqBody '[JSON] NewRootScenarioFile :> Post '[JSON] ()
+      )
+    )
+  )
+
+scenarioFileApiServer
+  :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFile -> AppM ())
+scenarioFileApiServer =
+  authorizeWithAccountId createScenarioFileHandler
+  :<|> authorizeWithAccountId createRootScenarioFileHandler
+
+-}
+
 -- ** request node
 
 
