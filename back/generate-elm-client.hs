@@ -133,6 +133,7 @@ deriveElmDef deriveElmDefOption ''NewRootScenarioFile
 deriveElmDef deriveElmDefOption ''NewRootScenarioFolder
 deriveElmDef deriveElmDefOption ''ScenarioCollection
 deriveElmDef deriveElmDefOption ''ScenarioNode
+deriveElmDef deriveElmDefOption ''Scene
 
 
 -- * imports
@@ -216,6 +217,7 @@ main =
       , DefineElm (Proxy :: Proxy NewRootScenarioFile)
       , DefineElm (Proxy :: Proxy ScenarioCollection)
       , DefineElm (Proxy :: Proxy ScenarioNode)
+      , DefineElm (Proxy :: Proxy Scene)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))

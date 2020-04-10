@@ -58,6 +58,10 @@ convertScenarioCollectionFromBackToFront backScenarioCollection =
     in
         Front.ScenarioCollection id (convertScenarioNodesFromBackToFront backScenarioNodes)
 
+
+-- ** scenarioNode
+
+
 convertScenarioNodesFromBackToFront : List Back.ScenarioNode -> List Front.ScenarioNode
 convertScenarioNodesFromBackToFront backScenarioNodes =
     let
@@ -76,10 +80,20 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                     Front.ScenarioFile
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
-                        , scenes = []
+                        , scenes = List.map convertSceneFromBackToFront file.scenarioNodeScenes
                         }
     in
         List.map convertScenarioNodeFromBackToFront backScenarioNodes
+
+
+-- ** scene
+
+
+convertSceneFromBackToFront : Back.Scene -> Front.Scene
+convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId } =
+    { id = sceneId
+    , requestFileNodeId = sceneRequestFileNodeId
+    }
 
 
 -- * environment
