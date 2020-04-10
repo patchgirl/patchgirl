@@ -25,6 +25,28 @@ import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           GHC.Generics
 
 
+
+-- * new scene
+
+
+data NewScene
+  = NewScene { _newSceneId                :: UUID
+             , _newSceneSceneNodeParentId :: UUID
+             , _newSceneRequestFileNodeId :: UUID
+             }
+  deriving (Eq, Show, Generic)
+
+$(makeLenses ''NewScene)
+
+instance ToJSON NewScene where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewScene where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
 -- * scene
 
 

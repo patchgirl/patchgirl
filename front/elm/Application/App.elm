@@ -232,8 +232,8 @@ modalView model =
 
                 Just modal ->
                     case modal of
-                        SelectHttpRequestModal ->
-                            Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal model.requestCollection))
+                        SelectHttpRequestModal withSceneParent ->
+                            Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection))
 
     in
         Modal.view modalConfig

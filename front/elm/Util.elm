@@ -263,3 +263,21 @@ maybeExists m f =
 catMaybes : List (Maybe a) -> List a
 catMaybes =
     List.filterMap identity
+
+
+-- * list
+
+
+addToListAfterPredicate : List a -> (a -> Bool) -> a -> List a
+addToListAfterPredicate list predicate newElem =
+    case list of
+        (x :: xs) ->
+            case predicate x of
+                False ->
+                    x :: addToListAfterPredicate xs predicate newElem
+
+                True ->
+                    x :: newElem :: xs
+
+        [] ->
+            []

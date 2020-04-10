@@ -9,6 +9,7 @@ import qualified Control.Monad.IO.Class as IO
 import qualified Control.Monad.Loops    as Loops
 import qualified Control.Monad.Reader   as Reader
 import           Data.Functor           ((<&>))
+import qualified Data.List              as List
 import qualified Data.Maybe             as Maybe
 import           Data.UUID
 import qualified Servant
@@ -199,3 +200,35 @@ createScenarioFolderHandler accountId scenarioCollectionId newScenarioFolder = d
 
     True ->
       IO.liftIO . Monad.void $ insertScenarioFolder newScenarioFolder connection
+
+
+-- * create scene
+
+
+createSceneHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> NewScene
+  -> m ()
+createSceneHandler accountId scenarioNodeId newScene = do
+  connection <- getDBConnection
+  mScenarioNode <- IO.liftIO $
+    selectScenarioNodesFromAccountId accountId connection <&> findNodeInScenarioNodes scenarioNodeId
+  let
+    sceneAuthorized :: Bool
+    sceneAuthorized =
+      case mScenarioNode of
+        Just ScenarioFile { _scenarioNodeScenes } ->
+          Maybe.isJust $ List.find (\scene -> newScene ^. newSceneSceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
+        _ -> False
+
+  case sceneAuthorized of
+    False ->
+      Servant.throwError Servant.err404
+    True ->
+      undefined
+      --IO.liftIO . Monad.void $ insertScenarioFile newScenarioFile connection

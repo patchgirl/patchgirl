@@ -1,4 +1,4 @@
-module Modal exposing (Modal(..), Config, view, map)
+module Modal exposing (Modal(..), Config, view, map, WithSceneParent(..))
 
 import Element exposing (..)
 import Element.Background as Background
@@ -7,13 +7,17 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
 import Util exposing(..)
-
+import Uuid
 
 -- * model
 
 
 type Modal
-    = SelectHttpRequestModal
+    = SelectHttpRequestModal WithSceneParent
+
+type WithSceneParent
+    = Root
+    | SceneParent Uuid.Uuid
 
 
 -- * config

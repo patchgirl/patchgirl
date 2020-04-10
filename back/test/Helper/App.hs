@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
+module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
 
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
@@ -36,12 +36,7 @@ import           Test.Hspec                       (SpecWith, aroundWith,
 -- * helper
 
 
-withAccountAndToken :: Int -> Connection -> IO (UUID, Auth.Token)
-withAccountAndToken githubId connection = do
-  accountId <- insertFakeAccount githubId connection
-  token <- signedUserToken accountId
-  return (accountId, token)
-
+-- ** servant
 
 try :: ClientEnv -> ClientM a -> IO a
 try clientEnv action =
@@ -61,6 +56,16 @@ withClient app innerSpec =
       testWithApplication app $ \ port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)
+
+
+-- ** user
+
+
+withAccountAndToken :: Int -> Connection -> IO (UUID, Auth.Token)
+withAccountAndToken githubId connection = do
+  accountId <- insertFakeAccount githubId connection
+  token <- signedUserToken accountId
+  return (accountId, token)
 
 signedUserToken1 :: IO (Auth.Token, UUID)
 signedUserToken1 = do
@@ -125,15 +130,35 @@ defaultConfig =
 
 -- * db
 
-
 cleanDBAfter :: (Connection -> IO a) -> IO a
 cleanDBAfter f = do
   connection <- runReaderT getDBConnection defaultConfig
   withConnection f connection
+  where
+    withConnection :: (Connection -> IO a) -> Connection -> IO a
+    withConnection f connection =
+      finally (f connection) $ listTables connection >>= mapM_ (truncateTable connection)
 
-withConnection :: (Connection -> IO a) -> Connection -> IO a
-withConnection f connection =
-  finally (f connection) $ listTables connection >>= mapM_ (truncateTable connection)
+
+data Test =
+  Test { connection :: Connection
+       , accountId  :: UUID
+       , token      :: Auth.Token
+       }
+
+createAccountAndcleanDBAfter :: (Test -> IO a) -> IO a
+createAccountAndcleanDBAfter f = do
+  connection <- runReaderT getDBConnection defaultConfig
+  accountId <- insertFakeAccount 1 connection
+  token <- signedUserToken accountId
+  withConnection f Test { connection = connection
+                         , accountId = accountId
+                         , token = token
+                         }
+    where
+      withConnection :: (Test -> IO a) -> Test -> IO a
+      withConnection f test@Test { connection }  =
+        finally (f test) $ listTables connection >>= mapM_ (truncateTable connection)
 
 
 listTables :: Connection -> IO [Text]

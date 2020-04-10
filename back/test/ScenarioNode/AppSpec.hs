@@ -54,43 +54,33 @@ spec =
 
     describe "update scenario node" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (updateScenarioNodeHandler token UUID.nil UUID.nil updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId _ <- insertSampleScenarioCollection accountId connection
           try clientEnv (updateScenarioNodeHandler token scenarioCollectionId UUID.nil updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the scenario node doesnt belong to the account" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
+        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
-          accountId1 <- insertFakeAccount defaultNewFakeAccount1 connection
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId2 connection
           let nodeId = head scenarioNodes ^. scenarioNodeId
-          token <- signedUserToken accountId1
           try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "modifies a scenario folder" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
           let nodeId = head scenarioNodes ^. scenarioNodeId
-          token <- signedUserToken accountId
           _ <- try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode)
           FakeScenarioFolder { _fakeScenarioFolderName } <- selectFakeScenarioFolder nodeId connection
           _fakeScenarioFolderName `shouldBe` "newName"
 
       it "modifies a scenario file" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
           let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
-          token <- signedUserToken accountId
           _ <- try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode)
           FakeScenarioFile { _fakeScenarioFileName } <- selectFakeScenarioFile nodeId connection
           _fakeScenarioFileName `shouldBe` "newName"
@@ -101,33 +91,25 @@ spec =
 
     describe "delete scenario node" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (deleteScenarioNodeHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId _ <- insertSampleScenarioCollection accountId connection
           try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the scenario node doesnt belong to the account" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId1 <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId2 connection
           let nodeId = head scenarioNodes ^. scenarioNodeId
-          token <- signedUserToken accountId1
           try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "delete a scenario node" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
           let nodeId = head scenarioNodes ^. scenarioNodeId
-          token <- signedUserToken accountId
           selectNodeExists nodeId connection `shouldReturn` True
           _ <- try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId)
           selectNodeExists nodeId connection `shouldReturn` False

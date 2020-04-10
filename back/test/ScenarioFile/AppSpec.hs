@@ -21,7 +21,6 @@ import qualified Servant.Auth.Server      as Auth
 import           Servant.Client           (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
 import           Helper.App
 import           ScenarioCollection.DB
@@ -53,33 +52,25 @@ spec =
 
     describe "create a scenario file" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let newScenarioFile = mkNewScenarioFile UUID.nil UUID.nil
           try clientEnv (createScenarioFileHandler token UUID.nil newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node parent doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId _ <- insertSampleScenarioCollection accountId connection
-          token <- signedUserToken accountId
           let newScenarioFile = mkNewScenarioFile UUID.nil UUID.nil
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
-      it "returns 500 when scenario node parent exist but isn't a scenario folder" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+      it "returns 404 when scenario node parent exist but isn't a scenario folder" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
           let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
-          token <- signedUserToken accountId
           let newScenarioFile = mkNewScenarioFile UUID.nil fileId
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
           let newScenarioFile = mkNewScenarioFile UUID.nil folderId
@@ -95,16 +86,12 @@ spec =
 
     describe "create a root scenario file" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let newRootScenarioFile = mkNewRootScenarioFile UUID.nil
           try clientEnv (createRootScenarioFileHandler token UUID.nil newRootScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           scenarioCollectionId <- insertFakeScenarioCollection accountId connection
           let newRootScenarioFile = mkNewRootScenarioFile UUID.nil
           _ <- try clientEnv (createRootScenarioFileHandler token scenarioCollectionId newRootScenarioFile)

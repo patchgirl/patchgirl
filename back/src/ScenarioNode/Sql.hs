@@ -9,7 +9,19 @@ import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified GHC.Int                          as Int
 
+import           ScenarioCollection.Sql
 import           ScenarioNode.Model
+
+
+-- * select scenario nodes from account id
+
+
+selectScenarioNodesFromAccountId :: UUID -> PG.Connection -> IO [ScenarioNode]
+selectScenarioNodesFromAccountId accountId connection =
+  selectScenarioCollectionId accountId connection >>= \case
+    Nothing -> pure []
+    Just scenarioCollectionId ->
+      selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
 
 
 -- * select scenario nodes from scenario collection id

@@ -21,7 +21,6 @@ import qualified Servant.Auth.Server      as Auth
 import           Servant.Client           (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
 import           Helper.App
 import           ScenarioCollection.DB
@@ -32,11 +31,11 @@ import           ScenarioNode.Model
 
 -- * client
 
-{-
-createSceneHandler :: Auth.Token -> UUID -> NewScenarioFile -> ClientM ()
+
+createSceneHandler :: Auth.Token -> UUID -> NewScene -> ClientM ()
 createSceneHandler =
-  client (Proxy :: Proxy (PScene '[Auth.JWT]))
--}
+  client (Proxy :: Proxy (PSceneApi '[Auth.JWT]))
+
 
 -- * spec
 
@@ -49,6 +48,36 @@ spec =
 -- ** create scenario file
 
 
-    describe "create a scenario file" $ do
+    describe "create a scene" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
-        True `shouldBe` True
+        createAccountAndcleanDBAfter $ \Test { token } -> do
+          let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
+          try clientEnv (createSceneHandler token UUID.nil newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          ScenarioCollection _ _ <- insertSampleScenarioCollection accountId connection
+          let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
+          try clientEnv (createSceneHandler token UUID.nil newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario node exists but isn't a scenario file" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          ScenarioCollection _ scenarioNodes <- insertSampleScenarioCollection accountId connection
+          let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
+          let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
+          try clientEnv (createSceneHandler token folderId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario node exists but isn't a scenario folder" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          ScenarioCollection _ scenarioNodes <- insertSampleScenarioCollection accountId connection
+          let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
+          try clientEnv (createSceneHandler token fileId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+  where
+    mkNewScene :: UUID -> UUID -> UUID -> NewScene
+    mkNewScene id parentId requestFileId =
+      NewScene { _newSceneId = id
+               , _newSceneSceneNodeParentId = parentId
+               , _newSceneRequestFileNodeId = requestFileId
+               }

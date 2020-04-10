@@ -35,12 +35,13 @@ type alias Model =
 
 type Msg
   -- create scene
-  = ShowHttpRequestSelectionModal
-  | GenerateRandomUUIDForScene Uuid.Uuid
-  | SelectRequestFile Uuid.Uuid Uuid.Uuid
+  = ShowHttpRequestSelectionModal Modal.WithSceneParent
+  | GenerateRandomUUIDForScene Modal.WithSceneParent Uuid.Uuid
+  | SelectRequestFile Modal.WithSceneParent Uuid.Uuid Uuid.Uuid
   | CloseModal
   -- delete scene
   | DeleteScene Uuid.Uuid
+
 
 -- * update
 
@@ -53,31 +54,39 @@ update msg model =
 -- ** create scene
 
 
-        ShowHttpRequestSelectionModal ->
+        ShowHttpRequestSelectionModal withSceneParent ->
             let
                 newModel =
-                    { model | whichModal = Just SelectHttpRequestModal }
+                    { model | whichModal = Just (SelectHttpRequestModal withSceneParent) }
             in
                 (newModel, Cmd.none)
 
-        GenerateRandomUUIDForScene requestFileNodeId ->
+        GenerateRandomUUIDForScene withSceneParent requestFileNodeId ->
             let
-                newMsg = Random.generate (SelectRequestFile requestFileNodeId) Uuid.uuidGenerator
+                newMsg = Random.generate (SelectRequestFile withSceneParent requestFileNodeId) Uuid.uuidGenerator
             in
                 (model, newMsg)
 
-        SelectRequestFile requestFileNodeId newSceneId ->
+        SelectRequestFile withSceneParent requestFileNodeId newSceneId ->
             let
                 newScene =
                     mkDefaultScene newSceneId requestFileNodeId
 
+                newScenes =
+                    case withSceneParent of
+                        Modal.Root ->
+                            model.scenes ++ [ newScene ]
+
+                        Modal.SceneParent parentId ->
+                            addToListAfterPredicate model.scenes (\scene -> scene.id == parentId) newScene
+
                 newModel =
                     { model
                         | whichModal = Nothing
-                        , scenes = model.scenes ++ [ newScene ]
+                        , scenes = newScenes
                     }
             in
-                (Debug.log "test" newModel, Cmd.none)
+                (newModel, Cmd.none)
 
         CloseModal ->
             let
@@ -104,11 +113,10 @@ update msg model =
 
 
 mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> Scene
-mkDefaultScene id requestFileNodeId =
+mkDefaultScene  id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
     }
-
 
 -- * view
 
@@ -120,11 +128,7 @@ view model =
             addNewSceneView
 
         scenes ->
-            column [ centerX, width fill, spacing 50 ]
-                [ column [ centerX, spacing 10 ]
-                      (List.map (sceneView model) scenes)
-                , addNewSceneView
-                ]
+            column [ centerX, spacing 10 ] (List.map (sceneView model) scenes)
 
 
 -- ** add new scene view
@@ -134,7 +138,7 @@ addNewSceneView : Element Msg
 addNewSceneView =
     el [ width fill, centerX ]
         (Input.button [ centerX ]
-            { onPress = Just ShowHttpRequestSelectionModal
+            { onPress = Just (ShowHttpRequestSelectionModal Modal.Root)
             , label =
                 row [ centerX, centerY ]
                     [ addIcon
@@ -173,7 +177,7 @@ sceneView model { id, requestFileNodeId } =
                                 , label = el [ alignRight ] clearIcon
                                 }
                             ]
-                    , arrowView
+                    , arrowView id
                     ]
 
             _ -> none
@@ -183,15 +187,19 @@ sceneView model { id, requestFileNodeId } =
 -- ** arrow view
 
 
-arrowView : Element Msg
-arrowView =
-    el [ centerX] arrowDownwardIcon
+arrowView : Uuid.Uuid -> Element Msg
+arrowView id =
+    Input.button [ centerX ]
+        { onPress = Just (ShowHttpRequestSelectionModal (Modal.SceneParent id))
+        , label = arrowDownwardIcon
+        }
+
 
 -- * modal
 
 
-selectHttpRequestModal : RequestCollection -> Modal.Config Msg
-selectHttpRequestModal requestCollection =
+selectHttpRequestModal : Modal.WithSceneParent -> RequestCollection -> Modal.Config Msg
+selectHttpRequestModal withSceneParent requestCollection =
     let
         (RequestCollection _ requestNodes) =
             requestCollection
@@ -219,7 +227,7 @@ selectHttpRequestModal requestCollection =
                         tailView = nodeView tail
                         currentFileView =
                             Input.button []
-                                { onPress = Just (GenerateRandomUUIDForScene requestFileRecord.id)
+                                { onPress = Just (GenerateRandomUUIDForScene withSceneParent requestFileRecord.id)
                                 , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                 }
                       in

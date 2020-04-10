@@ -10,7 +10,6 @@
 
 module RequestCollection.AppSpec where
 
-import           Account.DB
 import           App
 import           Helper.App
 import qualified Network.HTTP.Types      as HTTP
@@ -40,23 +39,17 @@ spec =
 
     describe "get request collection by id" $ do
       it "returns notFound404 when requestCollection does not exist" $ \clientEnv ->
-        cleanDBAfter $ \_ -> do
-          (token, _) <- signedUserToken1
+        createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (getRequestCollectionById token) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns an empty request collection if the account doesnt have a request collection" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           requestCollectionId <- insertFakeRequestCollection accountId connection
-          token <- signedUserToken accountId
           requestCollection <- try clientEnv (getRequestCollectionById token)
           requestCollection `shouldBe` RequestCollection requestCollectionId []
 
-
       it "returns the account's request collection" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           expectedRequestCollection <- insertSampleRequestCollection accountId connection
-          token <- signedUserToken accountId
           requestCollection <- try clientEnv (getRequestCollectionById token)
           requestCollection `shouldBe` expectedRequestCollection

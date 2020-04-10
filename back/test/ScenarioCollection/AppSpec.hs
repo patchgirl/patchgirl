@@ -10,7 +10,6 @@
 
 module ScenarioCollection.AppSpec where
 
-import           Account.DB
 import           App
 import           Helper.App
 import qualified Network.HTTP.Types       as HTTP
@@ -40,22 +39,17 @@ spec =
 
     describe "get scenario collection by id" $ do
       it "returns notFound404 when scenarioCollection does not exist" $ \clientEnv ->
-        cleanDBAfter $ \_ -> do
-          (token, _) <- signedUserToken1
+        createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (getScenarioCollectionById token) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns an empty scenario collection if the account doesnt have a scenario collection" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           scenarioCollectionId <- insertFakeScenarioCollection accountId connection
-          token <- signedUserToken accountId
           scenarioCollection <- try clientEnv (getScenarioCollectionById token)
           scenarioCollection `shouldBe` ScenarioCollection scenarioCollectionId []
 
       it "returns the account's scenario collection" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           expectedScenarioCollection <- insertSampleScenarioCollection accountId connection
-          token <- signedUserToken accountId
           scenarioCollection <- try clientEnv (getScenarioCollectionById token)
           scenarioCollection `shouldBe` expectedScenarioCollection
