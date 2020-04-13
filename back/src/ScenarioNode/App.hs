@@ -16,6 +16,9 @@ import qualified Servant
 
 import           DB
 import           PatchGirl
+import           RequestCollection.Sql
+import           RequestNode.Model
+import           RequestNode.Sql
 import           ScenarioCollection.Sql
 import           ScenarioNode.Model
 import           ScenarioNode.Sql
@@ -218,6 +221,16 @@ createSceneHandler accountId scenarioNodeId newScene = do
   connection <- getDBConnection
   mScenarioNode <- IO.liftIO $
     selectScenarioNodesFromAccountId accountId connection <&> findNodeInScenarioNodes scenarioNodeId
+
+  let
+    requestAuthorized :: IO Bool
+    requestAuthorized = IO.liftIO $
+      selectRequestCollectionId accountId connection >>= \case
+        Nothing -> pure False
+        Just collectionId -> do
+          requestNodes <- selectRequestNodesFromRequestCollectionId collectionId connection
+          pure $ Maybe.isJust $ List.find (\requestNode -> newScene ^. newSceneRequestFileNodeId == requestNode ^. requestNodeId) requestNodes
+
   let
     sceneAuthorized :: Bool
     sceneAuthorized =
@@ -226,7 +239,8 @@ createSceneHandler accountId scenarioNodeId newScene = do
           Maybe.isJust $ List.find (\scene -> newScene ^. newSceneSceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
         _ -> False
 
-  case sceneAuthorized of
+  authorized <- IO.liftIO $ Loops.andM [ requestAuthorized, pure sceneAuthorized ]
+  case authorized of
     False ->
       Servant.throwError Servant.err404
     True ->

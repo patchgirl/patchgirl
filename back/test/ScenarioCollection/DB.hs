@@ -7,13 +7,20 @@
 
 module ScenarioCollection.DB where
 
+import           Control.Lens.Operators           ((^.))
+import qualified Data.Maybe                       as Maybe
 import           Data.UUID
 import qualified Data.UUID.V4                     as UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
+import           RequestCollection.DB
+import           RequestCollection.Model
+import           RequestNode.DB
+import           RequestNode.Model
 import           ScenarioCollection.Model
 import           ScenarioNode.Sql
+import           Scene.DB
 
 
 -- * new fake scenario collection
@@ -114,23 +121,39 @@ insertFakeScenarioFile newFakeScenarioFile connection = do
   insert a collection that looks like this:
 
 
-       1     2
-      / \
-     3   4
-    / \
-   5   6
-
-
+                     1/     2/
+                    /
+                   3/
+                  / \
+                 5   6
+                 |
+               scene1
 -}
 
 insertSampleScenarioCollection :: UUID -> Connection -> IO ScenarioCollection
 insertSampleScenarioCollection accountId connection = do
+
+
+-- ** insert request collection
+
+
+  RequestCollection _ requestNodes <- insertSampleRequestCollection accountId connection
+  let requestFileId = (Maybe.fromJust $ getFirstFile requestNodes) ^. requestNodeId
+  let newFakeScene =
+        NewFakeScene { _fakeSceneParentId = Nothing
+                     , _fakeSceneRequestId = requestFileId
+                     }
+  scene1Id <- insertFakeScene newFakeScene connection
+
+
+-- ** insert scenario collection
+
+
   n1Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n1 id) connection
   n2Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n2 id) connection
   n3Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n3 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n4 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 id n3Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 id n3Id (Just scene1Id)) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id Nothing) connection
   scenarioCollectionId <- insertFakeScenarioCollection accountId connection
   let fakeScenarioCollectionToScenarioNode1 =
         NewFakeScenarioCollectionToScenarioNode { _fakeScenarioCollectionToScenarioNodeScenarioCollectionId = scenarioCollectionId
@@ -143,45 +166,51 @@ insertSampleScenarioCollection accountId connection = do
   _ <- insertFakeScenarioCollectionToScenarioNode fakeScenarioCollectionToScenarioNode1 connection
   _ <- insertFakeScenarioCollectionToScenarioNode fakeScenarioCollectionToScenarioNode2 connection
   scenarioNodes <- selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
+
   return $
     ScenarioCollection scenarioCollectionId scenarioNodes
 
   where
 
+
 -- ** level 1
 
-    n1 id = NewFakeScenarioFolder { _newFakeScenarioFolderId = id
-                                 , _newFakeScenarioFolderParentId = Nothing
-                                 , _newFakeScenarioName           = "1/"
-                                 }
+    n1 id =
+      NewFakeScenarioFolder { _newFakeScenarioFolderId = id
+                            , _newFakeScenarioFolderParentId = Nothing
+                            , _newFakeScenarioName           = "1/"
+                            }
 
-    n2 id = NewFakeScenarioFolder { _newFakeScenarioFolderId = id
-                                 , _newFakeScenarioFolderParentId = Nothing
-                                 , _newFakeScenarioName           = "2/"
-                                 }
+    n2 id =
+      NewFakeScenarioFolder { _newFakeScenarioFolderId = id
+                            , _newFakeScenarioFolderParentId = Nothing
+                            , _newFakeScenarioName           = "2/"
+                            }
+
+
 -- ** level 2
 
-    n3 id parentId = NewFakeScenarioFolder { _newFakeScenarioFolderId = id
-                                          , _newFakeScenarioFolderParentId = Just parentId
-                                          , _newFakeScenarioName           = "3/"
-                                          }
 
-    n4 id parentId = NewFakeScenarioFile { _fakeScenarioFileId = id
-                                         , _fakeScenarioFileParentId = Just parentId
-                                         , _fakeScenarioFileName       = "4"
-                                         , _fakeScenarioFileSceneId   = Nothing
-                                         }
+    n3 id parentId =
+      NewFakeScenarioFolder { _newFakeScenarioFolderId = id
+                            , _newFakeScenarioFolderParentId = Just parentId
+                            , _newFakeScenarioName           = "3/"
+                            }
+
 
 -- ** level 3
 
-    n5 id parentId = NewFakeScenarioFile { _fakeScenarioFileId = id
-                                         , _fakeScenarioFileParentId = Just parentId
-                                         , _fakeScenarioFileName       = "5"
-                                         , _fakeScenarioFileSceneId   = Nothing
-                                         }
 
-    n6 id parentId = NewFakeScenarioFile { _fakeScenarioFileId = id
-                                         , _fakeScenarioFileParentId = Just parentId
-                                         , _fakeScenarioFileName       = "6"
-                                         , _fakeScenarioFileSceneId   = Nothing
-                                         }
+    n5 id parentId sceneId =
+      NewFakeScenarioFile { _fakeScenarioFileId = id
+                          , _fakeScenarioFileParentId = Just parentId
+                          , _fakeScenarioFileName = "5"
+                          , _fakeScenarioFileSceneId  = sceneId
+                          }
+
+    n6 id parentId sceneId =
+      NewFakeScenarioFile { _fakeScenarioFileId = id
+                          , _fakeScenarioFileParentId = Just parentId
+                          , _fakeScenarioFileName = "6"
+                          , _fakeScenarioFileSceneId = sceneId
+                          }
