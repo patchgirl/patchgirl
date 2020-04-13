@@ -138,7 +138,7 @@ insertSampleScenarioCollection accountId connection = do
 
 
   RequestCollection _ requestNodes <- insertSampleRequestCollection accountId connection
-  let requestFileId = (Maybe.fromJust $ getFirstFile requestNodes) ^. requestNodeId
+  let requestFileId = (Maybe.fromJust . getFirstFile) requestNodes ^. requestNodeId
   let newFakeScene =
         NewFakeScene { _fakeSceneParentId = Nothing
                      , _fakeSceneRequestId = requestFileId
