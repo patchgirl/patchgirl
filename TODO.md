@@ -2,8 +2,6 @@
 
 ## Back
 
-- rename all PXXXXXApi to XXXAPi
-
 ## Front
 
 - http response header and body in tabs instead of in the same view
