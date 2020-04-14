@@ -22,12 +22,10 @@ import qualified Servant.Auth.Server     as Auth
 import           Servant.Client          (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
+import           DBUtil
 import           Helper.App
-import           RequestCollection.DB
 import           RequestCollection.Model
-import           RequestNode.DB
 import           RequestNode.Model
 
 
@@ -91,9 +89,9 @@ spec =
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let nodeId = head requestNodes ^. requestNodeId
-          selectNodeExists nodeId connection `shouldReturn` True
+          selectRequestNodeExists nodeId connection `shouldReturn` True
           _ <- try clientEnv (deleteRequestNodeHandler token requestCollectionId nodeId)
-          selectNodeExists nodeId connection `shouldReturn` False
+          selectRequestNodeExists nodeId connection `shouldReturn` False
 
   where
     updateRequestNode :: UpdateRequestNode

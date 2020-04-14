@@ -21,18 +21,13 @@ import qualified Servant.Auth.Server      as Auth
 import           Servant.Client           (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
+import           DBUtil
 import           Helper.App
-import           RequestCollection.DB
 import           RequestCollection.Model
-import           RequestNode.DB
 import           RequestNode.Model
-import           ScenarioCollection.DB
 import           ScenarioCollection.Model
-import           ScenarioNode.DB
 import           ScenarioNode.Model
-import           Scene.DB
 
 
 -- * client

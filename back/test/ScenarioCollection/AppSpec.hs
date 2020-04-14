@@ -13,13 +13,14 @@ module ScenarioCollection.AppSpec where
 import           App
 import           Helper.App
 import qualified Network.HTTP.Types       as HTTP
-import           ScenarioCollection.DB
 import           ScenarioCollection.Model
 import           Servant
 import qualified Servant.Auth.Client      as Auth
 import           Servant.Auth.Server      (JWT)
 import           Servant.Client
 import           Test.Hspec
+
+import           DBUtil
 
 
 -- * client

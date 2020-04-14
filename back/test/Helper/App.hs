@@ -10,7 +10,7 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
 
-import           Account.DB
+import           DBUtil
 import           Config
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL

@@ -11,7 +11,7 @@
 
 module Environment.AppSpec where
 
-import           Account.DB
+import           DBUtil
 import           App
 import qualified Data.Maybe                 as Maybe
 import           Data.UUID                  (UUID)

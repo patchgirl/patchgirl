@@ -22,10 +22,9 @@ import           Servant.Client           (ClientM, client)
 import           Test.Hspec
 
 import           App
+import           DBUtil
 import           Helper.App
-import           ScenarioCollection.DB
 import           ScenarioCollection.Model
-import           ScenarioNode.DB
 import           ScenarioNode.Model
 
 

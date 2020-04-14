@@ -23,12 +23,10 @@ import qualified Servant.Auth.Server      as Auth
 import           Servant.Client           (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
+import           DBUtil
 import           Helper.App
-import           ScenarioCollection.DB
 import           ScenarioCollection.Model
-import           ScenarioNode.DB
 import           ScenarioNode.Model
 
 
@@ -110,9 +108,9 @@ spec =
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let nodeId = head scenarioNodes ^. scenarioNodeId
-          selectNodeExists nodeId connection `shouldReturn` True
+          selectScenarioNodeExists nodeId connection `shouldReturn` True
           _ <- try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId)
-          selectNodeExists nodeId connection `shouldReturn` False
+          selectScenarioNodeExists nodeId connection `shouldReturn` False
 
   where
     updateScenarioNode :: UpdateScenarioNode
