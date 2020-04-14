@@ -194,3 +194,22 @@ insertScene NewScene {..} connection =
             SET scene_node_parent_id = (SELECT id FROM new_scene)
             WHERE scene_node_parent_id = (SELECT scene_node_parent_id FROM new_scene)
           |]
+
+
+-- * delete scene
+
+
+deleteScene :: UUID -> PG.Connection -> IO Int.Int64
+deleteScene sceneId connection =
+  PG.execute connection updateQuery (PG.Only sceneId)
+  where
+    updateQuery =
+      [sql|
+          WITH delete_scene AS (
+            DELETE FROM scene_node
+            WHERE id = ?
+            RETURNING id, scene_node_parent_id
+          ) UPDATE scene_node
+            SET scene_node_parent_id = (SELECT scene_node_parent_id FROM delete_scene)
+            WHERE scene_node_parent_id = (SELECT id FROM delete_scene)
+          |]

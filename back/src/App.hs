@@ -264,24 +264,27 @@ scenarioFolderApiServer =
 
 
 type PSceneApi auths =
-  Flat (Auth auths CookieSession :> SceneFileApi)
+  Flat (Auth auths CookieSession :> SceneApi) -- todo rename scenefileapi to sceneapi
 
 
-type SceneFileApi =
+type SceneApi =
   Flat (
     "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
       "scene" :> (
-          -- createScene
-          ReqBody '[JSON] NewScene :> Post '[JSON] ()
+          -- create scene
+          ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
+          -- delete scene
+          Capture "sceneId" UUID :> Delete '[JSON] ()
       )
     )
   )
 
 sceneApiServer
   :: (AuthResult CookieSession -> UUID -> NewScene -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
 sceneApiServer =
   authorizeWithAccountId createSceneHandler
-
+  :<|> authorizeWithAccountId deleteSceneHandler
 
 
 -- ** request node

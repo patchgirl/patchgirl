@@ -34,7 +34,8 @@ import           ScenarioNode.Model
 
 
 createSceneHandler :: Auth.Token -> UUID -> NewScene -> ClientM ()
-createSceneHandler =
+deleteSceneHandler :: Auth.Token -> UUID -> UUID -> ClientM ()
+createSceneHandler :<|> deleteSceneHandler =
   client (Proxy :: Proxy (PSceneApi '[Auth.JWT]))
 
 
@@ -43,10 +44,10 @@ createSceneHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultConfig) $ do
 
 
--- ** create scenario file
+-- ** create scene
 
 
     describe "create a scene" $ do
@@ -67,13 +68,6 @@ spec =
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
           let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
           try clientEnv (createSceneHandler token folderId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
-
-      it "returns 404 when scenario node exists but isn't a scenario folder" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
-          let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
-          try clientEnv (createSceneHandler token fileId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the related request file doesnt belong to the account" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
@@ -102,6 +96,33 @@ spec =
                                                      })
 
 
+-- ** delete scene
+
+
+    describe "delete a scene" $ do
+      it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (deleteSceneHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          _ <- insertSampleScenarioCollection accountId connection
+          try clientEnv (deleteSceneHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario node exists but is a scenario folder" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
+          try clientEnv (deleteSceneHandler token folderId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "delete a scene" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          (RequestCollection _ _, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
+          let scenarioFileId = scenarioFile ^. scenarioNodeId
+          let sceneId' = head (scenarioFile ^. scenarioNodeScenes) ^. sceneId
+          try clientEnv (deleteSceneHandler token scenarioFileId sceneId')
+          selectFakeScene sceneId' connection >>= (`shouldSatisfy` Maybe.isNothing)
 
   where
     mkNewScene :: UUID -> UUID -> UUID -> NewScene

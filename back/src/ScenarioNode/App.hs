@@ -77,30 +77,6 @@ deleteScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId = do
       IO.liftIO . Monad.void $ deleteScenarioNodeDB scenarioNodeId connection
 
 
--- * util
-
-
-isScenarioFolder :: ScenarioNode -> Bool
-isScenarioFolder = \case
-  ScenarioFolder {} -> True
-  _ -> False
-
-findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
-findNodeInScenarioNodes nodeIdToFind scenarioNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findNodeInScenarioNode scenarioNodes
-  where
-    findNodeInScenarioNode :: ScenarioNode -> Maybe ScenarioNode
-    findNodeInScenarioNode scenarioNode =
-      case scenarioNode ^. scenarioNodeId == nodeIdToFind of
-        True -> Just scenarioNode
-        False ->
-          case scenarioNode of
-            ScenarioFile {} ->
-              Nothing
-            ScenarioFolder {} ->
-              findNodeInScenarioNodes nodeIdToFind (scenarioNode ^. scenarioNodeChildren)
-
-
 -- * create root scenario file
 
 
@@ -245,3 +221,62 @@ createSceneHandler accountId scenarioNodeId newScene = do
       Servant.throwError Servant.err404
     True ->
       IO.liftIO . Monad.void $ insertScene newScene connection
+
+
+-- * delete scene
+
+
+deleteSceneHandler
+  :: ( Reader.MonadReader Config m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> UUID
+  -> m ()
+deleteSceneHandler accountId scenarioNodeId sceneId' = do
+  connection <- getDBConnection
+  IO.liftIO (selectScenarioCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+
+    Just scenarioCollectionId -> do
+      scenarioNodes <- IO.liftIO $ selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
+      let
+        sceneAuthorized =
+          findNodeInScenarioNodes scenarioNodeId scenarioNodes >>= \case
+            ScenarioFile { _scenarioNodeScenes } ->
+              List.find (\scene -> scene ^. sceneId == sceneId') _scenarioNodeScenes
+            _ ->
+              Nothing
+
+      case sceneAuthorized of
+        Nothing ->
+          Servant.throwError Servant.err404
+        Just _ ->
+          IO.liftIO . Monad.void $ deleteScene sceneId' connection
+
+
+-- * util
+
+
+isScenarioFolder :: ScenarioNode -> Bool
+isScenarioFolder = \case
+  ScenarioFolder {} -> True
+  _ -> False
+
+findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
+findNodeInScenarioNodes nodeIdToFind scenarioNodes =
+  Maybe.listToMaybe . Maybe.catMaybes $ map findNodeInScenarioNode scenarioNodes
+  where
+    findNodeInScenarioNode :: ScenarioNode -> Maybe ScenarioNode
+    findNodeInScenarioNode scenarioNode =
+      case scenarioNode ^. scenarioNodeId == nodeIdToFind of
+        True -> Just scenarioNode
+        False ->
+          case scenarioNode of
+            ScenarioFile {} ->
+              Nothing
+            ScenarioFolder {} ->
+              findNodeInScenarioNodes nodeIdToFind (scenarioNode ^. scenarioNodeChildren)

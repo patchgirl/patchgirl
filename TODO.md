@@ -2,7 +2,7 @@
 
 ## Back
 
-- hspec: util function to start test with an account
+- rename all PXXXXXApi to XXXAPi
 
 ## Front
 
