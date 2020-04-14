@@ -130,18 +130,18 @@ insertFakeScenarioFile newFakeScenarioFile connection = do
                scene1
 -}
 
-insertSampleScenarioCollection :: UUID -> Connection -> IO ScenarioCollection
+insertSampleScenarioCollection :: UUID -> Connection -> IO (RequestCollection, ScenarioCollection)
 insertSampleScenarioCollection accountId connection = do
 
 
 -- ** insert request collection
 
 
-  RequestCollection _ requestNodes <- insertSampleRequestCollection accountId connection
+  requestCollection@(RequestCollection _ requestNodes) <- insertSampleRequestCollection accountId connection
   let requestFileId = (Maybe.fromJust . getFirstFile) requestNodes ^. requestNodeId
   let newFakeScene =
-        NewFakeScene { _fakeSceneParentId = Nothing
-                     , _fakeSceneRequestId = requestFileId
+        NewFakeScene { _newFakeSceneParentId = Nothing
+                     , _newFakeSceneRequestId = requestFileId
                      }
   scene1Id <- insertFakeScene newFakeScene connection
 
@@ -167,8 +167,7 @@ insertSampleScenarioCollection accountId connection = do
   _ <- insertFakeScenarioCollectionToScenarioNode fakeScenarioCollectionToScenarioNode2 connection
   scenarioNodes <- selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
 
-  return $
-    ScenarioCollection scenarioCollectionId scenarioNodes
+  return (requestCollection, ScenarioCollection scenarioCollectionId scenarioNodes)
 
   where
 

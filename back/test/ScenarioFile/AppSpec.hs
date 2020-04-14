@@ -58,20 +58,20 @@ spec =
 
       it "returns 404 when scenario node parent doesnt exist" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          ScenarioCollection scenarioCollectionId _ <- insertSampleScenarioCollection accountId connection
+          (_, ScenarioCollection scenarioCollectionId _) <- insertSampleScenarioCollection accountId connection
           let newScenarioFile = mkNewScenarioFile UUID.nil UUID.nil
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node parent exist but isn't a scenario folder" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
+          (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
           let newScenarioFile = mkNewScenarioFile UUID.nil fileId
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          ScenarioCollection scenarioCollectionId scenarioNodes <- insertSampleScenarioCollection accountId connection
+          (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
           let newScenarioFile = mkNewScenarioFile UUID.nil folderId
           _ <- try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile)

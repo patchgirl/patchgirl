@@ -50,6 +50,6 @@ spec =
 
       it "returns the account's scenario collection" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          expectedScenarioCollection <- insertSampleScenarioCollection accountId connection
+          (_, expectedScenarioCollection) <- insertSampleScenarioCollection accountId connection
           scenarioCollection <- try clientEnv (getScenarioCollectionById token)
           scenarioCollection `shouldBe` expectedScenarioCollection

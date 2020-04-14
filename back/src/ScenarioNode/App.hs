@@ -17,6 +17,7 @@ import qualified Servant
 import           DB
 import           PatchGirl
 import           RequestCollection.Sql
+import           RequestNode.App
 import           RequestNode.Model
 import           RequestNode.Sql
 import           ScenarioCollection.Sql
@@ -229,7 +230,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
         Nothing -> pure False
         Just collectionId -> do
           requestNodes <- selectRequestNodesFromRequestCollectionId collectionId connection
-          pure $ Maybe.isJust $ List.find (\requestNode -> newScene ^. newSceneRequestFileNodeId == requestNode ^. requestNodeId) requestNodes
+          pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneRequestFileNodeId) requestNodes
 
   let
     sceneAuthorized :: Bool
@@ -244,5 +245,4 @@ createSceneHandler accountId scenarioNodeId newScene = do
     False ->
       Servant.throwError Servant.err404
     True ->
-      undefined
-      --IO.liftIO . Monad.void $ insertScenarioFile newScenarioFile connection
+      IO.liftIO . Monad.void $ insertScene newScene connection

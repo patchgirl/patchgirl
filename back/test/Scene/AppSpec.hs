@@ -12,7 +12,7 @@ module Scene.AppSpec where
 
 import           Control.Lens.Getter      ((^.))
 import qualified Data.Maybe               as Maybe
-import           Data.UUID
+import           Data.UUID                (UUID)
 import qualified Data.UUID                as UUID
 import qualified Network.HTTP.Types       as HTTP
 import           Servant                  hiding (Header)
@@ -32,6 +32,8 @@ import           ScenarioCollection.DB
 import           ScenarioCollection.Model
 import           ScenarioNode.DB
 import           ScenarioNode.Model
+import           Scene.DB
+
 
 -- * client
 
@@ -60,20 +62,20 @@ spec =
 
       it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          ScenarioCollection _ _ <- insertSampleScenarioCollection accountId connection
+          _ <- insertSampleScenarioCollection accountId connection
           let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
           try clientEnv (createSceneHandler token UUID.nil newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node exists but isn't a scenario file" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          ScenarioCollection _ scenarioNodes <- insertSampleScenarioCollection accountId connection
+          (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
           let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
           try clientEnv (createSceneHandler token folderId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node exists but isn't a scenario folder" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
-          ScenarioCollection _ scenarioNodes <- insertSampleScenarioCollection accountId connection
+          (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
           let newScene = mkNewScene UUID.nil UUID.nil UUID.nil
           try clientEnv (createSceneHandler token fileId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
@@ -81,7 +83,7 @@ spec =
       it "returns 404 if the related request file doesnt belong to the account" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
-          ScenarioCollection _ scenarioNodes <- insertSampleScenarioCollection accountId connection
+          (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
           RequestCollection _ requestNodes <- insertSampleRequestCollection accountId2 connection
           let requestFileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
@@ -89,6 +91,21 @@ spec =
           let scenarioFirstScene = head $ scenarioFile ^. scenarioNodeScenes
           let newScene = mkNewScene UUID.nil (scenarioFirstScene ^. sceneId) requestFileId
           try clientEnv (createSceneHandler token scenarioFileId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "creates a scene" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          (RequestCollection _ requestNodes, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let requestFileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
+          let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
+          let scenarioFileId = scenarioFile ^. scenarioNodeId
+          let scenarioFirstScene = head $ scenarioFile ^. scenarioNodeScenes
+          let newScene = mkNewScene UUID.nil (scenarioFirstScene ^. sceneId) requestFileId
+          try clientEnv (createSceneHandler token scenarioFileId newScene)
+          newCreatedScene <- selectFakeScene UUID.nil connection
+          newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene ^. sceneId
+                                                     , _fakeSceneRequestId = requestFileId
+                                                     })
+
 
 
   where
