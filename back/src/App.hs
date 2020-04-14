@@ -78,17 +78,17 @@ combinedApiServer cookieSettings jwtSettings =
 
 
 type RestApi auths =
-  PRequestCollectionApi auths :<|>
-  PScenarioCollectionApi auths :<|>
-  PEnvironmentApi auths :<|>
-  PScenarioNodeApi auths :<|>
-  PScenarioFileApi auths :<|>
-  PScenarioFolderApi auths :<|>
-  PSceneApi auths :<|>
-  PRequestNodeApi auths :<|>
-  PRequestFileApi auths :<|>
-  PRequestFolderApi auths :<|>
-  PRequestComputationApi auths :<|>
+  RequestCollectionApi auths :<|>
+  ScenarioCollectionApi auths :<|>
+  EnvironmentApi auths :<|>
+  ScenarioNodeApi auths :<|>
+  ScenarioFileApi auths :<|>
+  ScenarioFolderApi auths :<|>
+  SceneApi auths :<|>
+  RequestNodeApi auths :<|>
+  RequestFileApi auths :<|>
+  RequestFolderApi auths :<|>
+  RequestComputationApi auths :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
@@ -116,11 +116,8 @@ restApiServer cookieSettings jwtSettings =
 -- ** request collection
 
 
-type PRequestCollectionApi auths =
-  Flat (Auth auths CookieSession :> RequestCollectionApi)
-
-type RequestCollectionApi =
-    "api" :> "requestCollection" :> Get '[JSON] RequestCollection
+type RequestCollectionApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Get '[JSON] RequestCollection)
 
 requestCollectionApiServer :: (AuthResult CookieSession -> AppM RequestCollection)
 requestCollectionApiServer =
@@ -130,11 +127,8 @@ requestCollectionApiServer =
 -- ** scenario collection
 
 
-type PScenarioCollectionApi auths =
-  Flat (Auth auths CookieSession :> ScenarioCollectionApi)
-
-type ScenarioCollectionApi =
-    "api" :> "scenarioCollection" :> Get '[JSON] ScenarioCollection
+type ScenarioCollectionApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Get '[JSON] ScenarioCollection)
 
 scenarioCollectionApiServer :: (AuthResult CookieSession -> AppM ScenarioCollection)
 scenarioCollectionApiServer =
@@ -144,24 +138,19 @@ scenarioCollectionApiServer =
 -- ** environment
 
 
-type PEnvironmentApi auths =
-  Flat (Auth auths CookieSession :> EnvironmentApi)
-
-type EnvironmentApi =
-  Flat (
-    "api" :> "environment" :> (
-      ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
-      Get '[JSON] [Environment] :<|> -- getEnvironments
-      Capture "environmentId" Int :> (
-        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
-        Delete '[JSON] () :<|>  -- deleteEnvironment
-        "keyValue" :> (
-          ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
-          Capture "keyValueId" Int :> Delete '[JSON] () -- deleteKeyValues
-        )
+type EnvironmentApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "environment" :> (
+    ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
+    Get '[JSON] [Environment] :<|> -- getEnvironments
+    Capture "environmentId" Int :> (
+      ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
+      Delete '[JSON] () :<|>  -- deleteEnvironment
+      "keyValue" :> (
+        ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
+        Capture "keyValueId" Int :> Delete '[JSON] () -- deleteKeyValues
       )
     )
-  )
+  ))
 
 environmentApiServer
   :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
@@ -182,18 +171,13 @@ environmentApiServer =
 -- ** scenario node
 
 
-type PScenarioNodeApi auths =
-  Flat (Auth auths CookieSession :> ScenarioNodeApi)
-
-type ScenarioNodeApi =
-  Flat (
-    "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
-      -- rename scenario node
-      ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () :<|>
-      -- delete scenario node
-      Delete '[JSON] ()
-    )
-  )
+type ScenarioNodeApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+    -- rename scenario node
+    ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () :<|>
+    -- delete scenario node
+    Delete '[JSON] ()
+  ))
 
 scenarioNodeApiServer
   :: (AuthResult CookieSession -> UUID -> UUID -> UpdateScenarioNode -> AppM ())
@@ -205,23 +189,17 @@ scenarioNodeApiServer =
 -- ** scenario file
 
 
-type PScenarioFileApi auths =
-  Flat (Auth auths CookieSession :> ScenarioFileApi)
-
-
-type ScenarioFileApi =
-  Flat (
-    "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
-      "scenarioFile" :> (
-          -- createScenarioFile
-          ReqBody '[JSON] NewScenarioFile :> Post '[JSON] ()
-      ) :<|>
+type ScenarioFileApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+    "scenarioFile" :> (
+      -- createScenarioFile
+      ReqBody '[JSON] NewScenarioFile :> Post '[JSON] ()
+    ) :<|>
       "rootScenarioFile" :> (
-          -- create root scenario file
-          ReqBody '[JSON] NewRootScenarioFile :> Post '[JSON] ()
+        -- create root scenario file
+        ReqBody '[JSON] NewRootScenarioFile :> Post '[JSON] ()
       )
-    )
-  )
+  ))
 
 scenarioFileApiServer
   :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
@@ -234,23 +212,17 @@ scenarioFileApiServer =
 -- ** scenario folder
 
 
-type PScenarioFolderApi auths =
-  Flat (Auth auths CookieSession :> ScenarioFolderApi)
-
-
-type ScenarioFolderApi =
-  Flat (
-    "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
-        "scenarioFolder" :> (
-        -- create scenario folder
-        ReqBody '[JSON] NewScenarioFolder :> Post '[JSON] ()
-      ) :<|>
+type ScenarioFolderApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+    "scenarioFolder" :> (
+      -- create scenario folder
+      ReqBody '[JSON] NewScenarioFolder :> Post '[JSON] ()
+    ) :<|>
       "rootScenarioFolder" :> (
         -- create root scenario folder
         ReqBody '[JSON] NewRootScenarioFolder :> Post '[JSON] ()
       )
-    )
-  )
+    ))
 
 scenarioFolderApiServer
   :: (AuthResult CookieSession -> UUID -> NewScenarioFolder -> AppM ())
@@ -263,21 +235,15 @@ scenarioFolderApiServer =
 -- ** scene
 
 
-type PSceneApi auths =
-  Flat (Auth auths CookieSession :> SceneApi) -- todo rename scenefileapi to sceneapi
-
-
-type SceneApi =
-  Flat (
-    "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
-      "scene" :> (
-          -- create scene
-          ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
-          -- delete scene
-          Capture "sceneId" UUID :> Delete '[JSON] ()
-      )
+type SceneApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+    "scene" :> (
+      -- create scene
+      ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
+      -- delete scene
+      Capture "sceneId" UUID :> Delete '[JSON] ()
     )
-  )
+  ))
 
 sceneApiServer
   :: (AuthResult CookieSession -> UUID -> NewScene -> AppM ())
@@ -290,18 +256,13 @@ sceneApiServer =
 -- ** request node
 
 
-type PRequestNodeApi auths =
-  Flat (Auth auths CookieSession :> RequestNodeApi)
-
-type RequestNodeApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
-      -- rename request node
-      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
-      -- delete request node
-      Delete '[JSON] ()
-    )
-  )
+type RequestNodeApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
+    -- rename request node
+    ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
+    -- delete request node
+    Delete '[JSON] ()
+  ))
 
 requestNodeApiServer
   :: (AuthResult CookieSession -> Int -> UUID -> UpdateRequestNode -> AppM ())
@@ -314,24 +275,16 @@ requestNodeApiServer =
 -- ** request file api
 
 
-type PRequestFileApi auths =
-  Flat (Auth auths CookieSession :> RequestFileApi)
-
-
-type RequestFileApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
-      "requestFile" :> (
-          -- createRequestFile
-          ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
-      ) :<|>
-      "rootRequestFile" :> (
-          -- create root request file
-          ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
-      ) :<|>
-      Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
-    )
-  )
+type RequestFileApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
+    "requestFile" :> (
+      -- createRequestFile
+      ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
+    ) :<|> "rootRequestFile" :> (
+      -- create root request file
+      ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
+    ) :<|> Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
+  ))
 
 requestFileApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFile -> AppM ())
@@ -346,23 +299,16 @@ requestFileApiServer =
 -- ** request folder api
 
 
-type PRequestFolderApi auths =
-  Flat (Auth auths CookieSession :> RequestFolderApi)
-
-
-type RequestFolderApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
-        "requestFolder" :> (
-        -- create request folder
-        ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
-      ) :<|>
-      "rootRequestFolder" :> (
-        -- create root request folder
-        ReqBody '[JSON] NewRootRequestFolder :> Post '[JSON] ()
-      )
+type RequestFolderApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
+    "requestFolder" :> (
+      -- create request folder
+      ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
+    ) :<|> "rootRequestFolder" :> (
+      -- create root request folder
+      ReqBody '[JSON] NewRootRequestFolder :> Post '[JSON] ()
     )
-  )
+  ))
 
 requestFolderApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFolder -> AppM ())
@@ -375,17 +321,12 @@ requestFolderApiServer =
 -- ** request computation
 
 
-type PRequestComputationApi auths =
-  Flat (Auth auths CookieSession :> RequestComputationApi)
+type RequestComputationApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestComputation" :> (
+    ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
+  ))
 
-type RequestComputationApi =
-  Flat (
-    "api" :> "requestComputation" :> (
-      ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
-    )
-  )
-
-requestComputationApiServer :: AuthResult CookieSession -> ServerT RequestComputationApi AppM
+requestComputationApiServer :: AuthResult CookieSession -> RequestComputationInput -> AppM RequestComputationResult
 requestComputationApiServer =
   authorizeWithAccountId runRequestComputationHandler
 

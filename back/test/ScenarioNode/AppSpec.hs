@@ -36,7 +36,7 @@ import           ScenarioNode.Model
 updateScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> UpdateScenarioNode -> ClientM ()
 deleteScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> ClientM ()
 updateScenarioNodeHandler :<|> deleteScenarioNodeHandler =
-  client (Proxy :: Proxy (PScenarioNodeApi '[Auth.JWT]))
+  client (Proxy :: Proxy (ScenarioNodeApi '[Auth.JWT]))
 
 
 -- * spec

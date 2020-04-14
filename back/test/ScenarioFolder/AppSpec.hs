@@ -34,7 +34,7 @@ import           ScenarioNode.Model
 createScenarioFolder :: Auth.Token -> UUID -> NewScenarioFolder -> ClientM ()
 createRootScenarioFolder :: Auth.Token -> UUID -> NewRootScenarioFolder -> ClientM ()
 createScenarioFolder :<|> createRootScenarioFolder =
-  client (Proxy :: Proxy (PScenarioFolderApi '[Auth.JWT]))
+  client (Proxy :: Proxy (ScenarioFolderApi '[Auth.JWT]))
 
 
 -- * spec

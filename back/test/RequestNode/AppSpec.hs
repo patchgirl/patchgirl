@@ -35,7 +35,7 @@ import           RequestNode.Model
 updateRequestNodeHandler :: Auth.Token -> Int -> UUID -> UpdateRequestNode -> ClientM ()
 deleteRequestNodeHandler :: Auth.Token -> Int -> UUID -> ClientM ()
 updateRequestNodeHandler :<|> deleteRequestNodeHandler =
-  client (Proxy :: Proxy (PRequestNodeApi '[Auth.JWT]))
+  client (Proxy :: Proxy (RequestNodeApi '[Auth.JWT]))
 
 
 -- * spec

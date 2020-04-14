@@ -34,7 +34,7 @@ import           RequestNode.Model
 createRequestFolder :: Auth.Token -> Int -> NewRequestFolder -> ClientM ()
 createRootRequestFolder :: Auth.Token -> Int -> NewRootRequestFolder -> ClientM ()
 createRequestFolder :<|> createRootRequestFolder =
-  client (Proxy :: Proxy (PRequestFolderApi '[Auth.JWT]))
+  client (Proxy :: Proxy (RequestFolderApi '[Auth.JWT]))
 
 
 -- * spec

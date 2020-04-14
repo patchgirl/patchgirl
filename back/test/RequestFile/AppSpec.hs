@@ -38,7 +38,7 @@ updateRequestFileHandler :: Auth.Token -> Int -> UUID -> UpdateRequestFile -> Cl
 createRequestFileHandler
   :<|> createRootRequestFileHandler
   :<|> updateRequestFileHandler =
-  client (Proxy :: Proxy (PRequestFileApi '[Auth.JWT]))
+  client (Proxy :: Proxy (RequestFileApi '[Auth.JWT]))
 
 
 -- * spec

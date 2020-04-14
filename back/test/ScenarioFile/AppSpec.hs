@@ -35,7 +35,7 @@ createScenarioFileHandler :: Auth.Token -> UUID -> NewScenarioFile -> ClientM ()
 createRootScenarioFileHandler :: Auth.Token -> UUID -> NewRootScenarioFile -> ClientM ()
 createScenarioFileHandler
   :<|> createRootScenarioFileHandler =
-  client (Proxy :: Proxy (PScenarioFileApi '[Auth.JWT]))
+  client (Proxy :: Proxy (ScenarioFileApi '[Auth.JWT]))
 
 
 -- * spec

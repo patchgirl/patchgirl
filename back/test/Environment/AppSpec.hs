@@ -11,11 +11,11 @@
 
 module Environment.AppSpec where
 
-import           DBUtil
 import           App
 import qualified Data.Maybe                 as Maybe
 import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
+import           DBUtil
 import           Environment.App
 import           Environment.DB
 import           Helper.App
@@ -42,7 +42,7 @@ createEnvironment
   :<|> deleteEnvironment
   :<|> updateKeyValues
   :<|> deleteKeyValue =
-  client (Proxy :: Proxy (PEnvironmentApi '[Auth.JWT]))
+  client (Proxy :: Proxy (EnvironmentApi '[Auth.JWT]))
 
 
 -- * spec

@@ -28,7 +28,7 @@ import           DBUtil
 
 getScenarioCollectionById :: Auth.Token -> ClientM ScenarioCollection
 getScenarioCollectionById =
-  client (Proxy :: Proxy (PScenarioCollectionApi '[JWT]))
+  client (Proxy :: Proxy (ScenarioCollectionApi '[JWT]))
 
 
 -- * spec

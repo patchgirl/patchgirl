@@ -27,7 +27,7 @@ import           Test.Hspec
 
 getRequestCollectionById :: Auth.Token -> ClientM RequestCollection
 getRequestCollectionById =
-  client (Proxy :: Proxy (PRequestCollectionApi '[JWT]))
+  client (Proxy :: Proxy (RequestCollectionApi '[JWT]))
 
 
 -- * spec
