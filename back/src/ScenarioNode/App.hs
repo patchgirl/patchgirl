@@ -18,7 +18,6 @@ import           DB
 import           PatchGirl
 import           RequestCollection.Sql
 import           RequestNode.App
-import           RequestNode.Model
 import           RequestNode.Sql
 import           ScenarioCollection.Sql
 import           ScenarioNode.Model
