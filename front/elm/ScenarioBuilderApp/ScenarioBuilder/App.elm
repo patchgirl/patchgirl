@@ -9,9 +9,11 @@ import Element.Events as Events
 import Element.Input as Input
 import Application.Type exposing (..)
 import Util exposing (..)
-import Uuid
+import Http
+import Uuid exposing (Uuid)
 import Modal exposing (Modal(..))
 import Modal
+import Api.Generated as Client
 import RequestBuilderApp.RequestTree.Util as RequestTree
 
 
@@ -19,7 +21,8 @@ import RequestBuilderApp.RequestTree.Util as RequestTree
 
 
 type alias Model =
-    { notification : Maybe String
+    { session: Session
+    , notification : Maybe String
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
     , requestCollection : RequestCollection
@@ -35,12 +38,15 @@ type alias Model =
 
 type Msg
   -- create scene
-  = ShowHttpRequestSelectionModal Modal.WithSceneParent
-  | GenerateRandomUUIDForScene Modal.WithSceneParent Uuid.Uuid
-  | SelectRequestFile Modal.WithSceneParent Uuid.Uuid Uuid.Uuid
+  = ShowHttpRequestSelectionModal (Maybe Uuid)
+  | GenerateRandomUUIDForScene (Maybe Uuid) Uuid.Uuid
+  | SelectRequestFile (Maybe Uuid) Uuid.Uuid Uuid.Uuid
+  | AskCreateScene (Maybe Uuid) Uuid Uuid
   | CloseModal
   -- delete scene
+  | AskDeleteScene Uuid.Uuid
   | DeleteScene Uuid.Uuid
+  | ServerError
 
 
 -- * update
@@ -54,30 +60,44 @@ update msg model =
 -- ** create scene
 
 
-        ShowHttpRequestSelectionModal withSceneParent ->
+        ShowHttpRequestSelectionModal sceneParentId ->
             let
                 newModel =
-                    { model | whichModal = Just (SelectHttpRequestModal withSceneParent) }
+                    { model | whichModal = Just (SelectHttpRequestModal sceneParentId) }
             in
                 (newModel, Cmd.none)
 
-        GenerateRandomUUIDForScene withSceneParent requestFileNodeId ->
+        GenerateRandomUUIDForScene sceneParentId requestFileNodeId ->
             let
-                newMsg = Random.generate (SelectRequestFile withSceneParent requestFileNodeId) Uuid.uuidGenerator
+                newMsg =
+                    Random.generate (AskCreateScene sceneParentId requestFileNodeId) Uuid.uuidGenerator
             in
                 (model, newMsg)
 
-        SelectRequestFile withSceneParent requestFileNodeId newSceneId ->
+        AskCreateScene sceneParentId requestFileNodeId newSceneId ->
+            let
+                payload =
+                       { newSceneId = newSceneId
+                       , newSceneSceneNodeParentId = sceneParentId
+                       , newSceneRequestFileNodeId = requestFileNodeId
+                       }
+
+                newMsg =
+                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId requestFileNodeId newSceneId)
+            in
+                (model, newMsg)
+
+        SelectRequestFile sceneParentId requestFileNodeId newSceneId ->
             let
                 newScene =
                     mkDefaultScene newSceneId requestFileNodeId
 
                 newScenes =
-                    case withSceneParent of
-                        Modal.Root ->
+                    case sceneParentId of
+                        Nothing ->
                             model.scenes ++ [ newScene ]
 
-                        Modal.SceneParent parentId ->
+                        Just parentId ->
                             addToListAfterPredicate model.scenes (\scene -> scene.id == parentId) newScene
 
                 newModel =
@@ -88,15 +108,16 @@ update msg model =
             in
                 (newModel, Cmd.none)
 
-        CloseModal ->
-            let
-                newModel =
-                    { model | whichModal = Nothing }
-            in
-                (newModel, Cmd.none)
 
 -- ** delete scene
 
+
+        AskDeleteScene sceneId ->
+            let
+                newMsg =
+                    Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) model.id sceneId (deleteSceneResultToMsg sceneId)
+            in
+                (model, newMsg)
 
         DeleteScene id ->
             let
@@ -109,6 +130,20 @@ update msg model =
                 (newModel, Cmd.none)
 
 
+-- ** other
+
+
+        CloseModal ->
+            let
+                newModel =
+                    { model | whichModal = Nothing }
+            in
+                (newModel, Cmd.none)
+
+        ServerError ->
+            (model, Cmd.none)
+
+
 -- * util
 
 
@@ -118,12 +153,31 @@ mkDefaultScene  id requestFileNodeId =
     , requestFileNodeId = requestFileNodeId
     }
 
+deleteSceneResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteSceneResultToMsg sceneId result =
+    case result of
+        Ok () ->
+            DeleteScene sceneId
+
+        Err error ->
+            Debug.todo "server error" ServerError
+
+createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> Result Http.Error () -> Msg
+createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
+    case result of
+        Ok () ->
+            SelectRequestFile sceneParentId requestFileNodeId newSceneId
+
+        Err error ->
+            Debug.todo "server error" ServerError
+
+
 -- * view
 
 
 view : Model -> Element Msg
 view model =
-    case Debug.log "test2" model.scenes of
+    case model.scenes of
         [] ->
             addNewSceneView
 
@@ -138,7 +192,7 @@ addNewSceneView : Element Msg
 addNewSceneView =
     el [ width fill, centerX ]
         (Input.button [ centerX ]
-            { onPress = Just (ShowHttpRequestSelectionModal Modal.Root)
+            { onPress = Just (ShowHttpRequestSelectionModal Nothing)
             , label =
                 row [ centerX, centerY ]
                     [ addIcon
@@ -173,7 +227,7 @@ sceneView model { id, requestFileNodeId } =
                     ] <| row [ spacing 20, centerX ]
                             [ el [] (text (notEditedValue name))
                             , Input.button []
-                                { onPress = Just (DeleteScene id)
+                                { onPress = Just (AskDeleteScene id)
                                 , label = el [ alignRight ] clearIcon
                                 }
                             ]
@@ -190,7 +244,7 @@ sceneView model { id, requestFileNodeId } =
 arrowView : Uuid.Uuid -> Element Msg
 arrowView id =
     Input.button [ centerX ]
-        { onPress = Just (ShowHttpRequestSelectionModal (Modal.SceneParent id))
+        { onPress = Just (ShowHttpRequestSelectionModal (Just id))
         , label = arrowDownwardIcon
         }
 
@@ -198,8 +252,8 @@ arrowView id =
 -- * modal
 
 
-selectHttpRequestModal : Modal.WithSceneParent -> RequestCollection -> Modal.Config Msg
-selectHttpRequestModal withSceneParent requestCollection =
+selectHttpRequestModal : Maybe Uuid -> RequestCollection -> Modal.Config Msg
+selectHttpRequestModal sceneParentId requestCollection =
     let
         (RequestCollection _ requestNodes) =
             requestCollection
@@ -227,7 +281,7 @@ selectHttpRequestModal withSceneParent requestCollection =
                         tailView = nodeView tail
                         currentFileView =
                             Input.button []
-                                { onPress = Just (GenerateRandomUUIDForScene withSceneParent requestFileRecord.id)
+                                { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id)
                                 , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                 }
                       in

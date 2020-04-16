@@ -28,6 +28,7 @@ import ScenarioBuilderApp.ScenarioTree.App as ScenarioTree
 type alias Model a =
     { a
         | notification : Maybe String
+        , session : Session
         , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection
         , requestCollection : RequestCollection
@@ -121,20 +122,22 @@ getBuilder model =
                         (Application.getEnvironmentKeyValuesToRun model)
 
                 in
-                    Just (convertFromFileToBuilder file scenarioCollectionId model.requestCollection keyValuesToRun model.notification model.whichModal)
+                    Just (convertFromFileToBuilder file scenarioCollectionId model.session model.requestCollection keyValuesToRun model.notification model.whichModal)
 
             _ ->
                 Nothing
 
 convertFromFileToBuilder : ScenarioFileRecord
                          -> Uuid.Uuid
+                         -> Session
                          -> RequestCollection
                          -> List (Storable NewKeyValue KeyValue)
                          -> Maybe String
                          -> Maybe Modal
                          -> ScenarioBuilder.Model
-convertFromFileToBuilder file scenarioCollectionId requestCollection keyValuesToRun notification whichModal =
+convertFromFileToBuilder file scenarioCollectionId session requestCollection keyValuesToRun notification whichModal =
     { notification = notification
+    , session = session
     , whichModal = whichModal
     , id = file.id
     , scenarioCollectionId = scenarioCollectionId

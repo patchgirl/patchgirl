@@ -11,7 +11,7 @@ import Util exposing (..)
 import Application.Type exposing (..)
 import Api.Generated as Client
 import Api.Converter as Client
-import Http as Http
+import Http
 import Application.Type exposing (..)
 
 

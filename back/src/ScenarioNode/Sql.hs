@@ -197,13 +197,17 @@ insertScene scenarioNodeId NewScene {..} connection =
              )
              VALUES (?, NULL, ?)
              RETURNING id
-          ) UPDATE scene_node
+          ), current_scenario_node AS(
+            SELECT id, scene_node_id
+            FROM scenario_node
+            WHERE id = ?
+          ), son_scene AS (
+            UPDATE scene_node
             SET scene_node_parent_id = (SELECT id FROM new_scene)
-            WHERE id = (
-              SELECT scene_node_id
-              FROM scenario_node
-              WHERE id = ?
-            )
+            WHERE id = (SELECT scene_node_id FROM current_scenario_node)
+          ) UPDATE scenario_node
+            SET scene_node_id = (SELECT id FROM new_scene)
+            WHERE id = (SELECT id FROM current_scenario_node)
           |]
 
     insertSceneRawQuery =
@@ -235,7 +239,12 @@ deleteScene sceneId connection =
             DELETE FROM scene_node
             WHERE id = ?
             RETURNING id, scene_node_parent_id
-          ) UPDATE scene_node
+          ), update_son_scene AS(
+            UPDATE scene_node
             SET scene_node_parent_id = (SELECT scene_node_parent_id FROM delete_scene)
             WHERE scene_node_parent_id = (SELECT id FROM delete_scene)
+            RETURNING id
+          ) UPDATE scenario_node
+            SET scene_node_id = (SELECT id FROM update_son_scene)
+            WHERE scene_node_id = (SELECT id FROM delete_scene)
           |]
