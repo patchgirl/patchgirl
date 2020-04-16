@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeOperators              #-}
 
@@ -11,7 +10,6 @@ import qualified Control.Monad.Except                  as Except
 import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
 import           Data.UUID
-import qualified GHC.Generics                          as Generics
 import qualified GHC.Natural                           as Natural
 import qualified Network.Wai.Handler.Warp              as Warp
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
@@ -469,7 +467,6 @@ newtype AppM a =
            , Applicative
            , Monad
            , IO.MonadIO
-           , Generics.Generic
            )
 
 appMToHandler
