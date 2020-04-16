@@ -3,7 +3,11 @@
 
 [![Build Status](https://travis-ci.com/patchgirl/patchgirl.svg?branch=master)](https://travis-ci.com/patchgirl/patchgirl)
 
-A postman/postwoman like, web app to test your APIs !
+A postman/postwoman like, web app to test your APIs ! 
+PatchGirl is only built with functional programming languages:
+- **NixOS** for the operating system
+- **Haskell** for the backend API 
+- **Elm** for the front end single page app
 
 ## [Live demo](https://patchgirl.io) 🚀
 
