@@ -207,12 +207,15 @@ createSceneHandler accountId scenarioNodeId newScene = do
           requestNodes <- selectRequestNodesFromRequestCollectionId collectionId connection
           pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneRequestFileNodeId) requestNodes
 
-  let
     sceneAuthorized :: Bool
     sceneAuthorized =
       case mScenarioNode of
         Just ScenarioFile { _scenarioNodeScenes } ->
-          Maybe.isJust $ List.find (\scene -> newScene ^. newSceneSceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
+          case newScene ^. newSceneSceneNodeParentId of
+            Just sceneNodeParentId ->
+              Maybe.isJust $ List.find (\scene -> sceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
+            Nothing ->
+              True
         _ -> False
 
   authorized <- IO.liftIO $ Loops.andM [ requestAuthorized, pure sceneAuthorized ]
@@ -220,7 +223,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
     False ->
       Servant.throwError Servant.err404
     True ->
-      IO.liftIO . Monad.void $ insertScene newScene connection
+      IO.liftIO . Monad.void $ insertScene scenarioNodeId newScene connection
 
 
 -- * delete scene

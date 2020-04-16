@@ -173,14 +173,40 @@ insertScenarioFolder NewScenarioFolder {..} connection =
 -- * insert scene
 
 
-insertScene :: NewScene -> PG.Connection -> IO Int.Int64
-insertScene NewScene {..} connection =
-  PG.execute connection rawQuery ( _newSceneId
-                                 , _newSceneSceneNodeParentId
-                                 , _newSceneRequestFileNodeId
-                                 )
+insertScene :: UUID -> NewScene -> PG.Connection -> IO Int.Int64
+insertScene scenarioNodeId NewScene {..} connection =
+  case _newSceneSceneNodeParentId of
+    Nothing ->
+      PG.execute connection insertRootSceneRawQuery ( _newSceneId
+                                                    , _newSceneRequestFileNodeId
+                                                    , scenarioNodeId
+                                                    )
+    Just sceneNodeParentId ->
+      PG.execute connection insertSceneRawQuery ( _newSceneId
+                                                , sceneNodeParentId
+                                                , _newSceneRequestFileNodeId
+                                                )
   where
-    rawQuery =
+    insertRootSceneRawQuery =
+      [sql|
+          WITH new_scene AS (
+            INSERT INTO scene_node (
+              id,
+              scene_node_parent_id,
+              request_node_id
+             )
+             VALUES (?, NULL, ?)
+             RETURNING id
+          ) UPDATE scene_node
+            SET scene_node_parent_id = (SELECT id FROM new_scene)
+            WHERE id = (
+              SELECT scene_node_id
+              FROM scenario_node
+              WHERE id = ?
+            )
+          |]
+
+    insertSceneRawQuery =
       [sql|
           WITH new_scene AS (
             INSERT INTO scene_node (

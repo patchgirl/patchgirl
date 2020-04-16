@@ -31,7 +31,7 @@ import           GHC.Generics
 
 data NewScene
   = NewScene { _newSceneId                :: UUID
-             , _newSceneSceneNodeParentId :: UUID
+             , _newSceneSceneNodeParentId :: Maybe UUID
              , _newSceneRequestFileNodeId :: UUID
              }
   deriving (Eq, Show, Generic)
