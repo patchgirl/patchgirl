@@ -90,7 +90,7 @@ signInOnGithubHandler
                   ] Session
        )
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
-  githubConfig <- Reader.ask <&> githubConfig
+  githubConfig <- Reader.ask <&> configGithub
   (liftIO . runMaybeT . getGithubProfile) (mkGithubOAuthCredentials githubConfig) >>= \case
     Nothing ->
       createVisitorSession cookieSettings jwtSettings

@@ -101,7 +101,7 @@ visitorToken = do
 
 mkToken :: CookieSession -> Maybe UTCTime -> IO Auth.Token
 mkToken cookieSession mexp = do
-  key <- Auth.readKey $ appKeyFilePath defaultConfig
+  key <- Auth.readKey $ configAppKeyFilePath defaultConfig
   Right token <- Auth.makeJWT cookieSession (Auth.defaultJWTSettings key) mexp
   return $ Auth.Token $ BSL.toStrict token
 
@@ -111,20 +111,21 @@ mkToken cookieSession mexp = do
 
 defaultConfig :: Config
 defaultConfig =
-  Config { port = 3001
-         , appKeyFilePath = ".appKey.test"
-         , dbConfig = DBConfig { dbPort = 5432
+  Config { configPort = 3001
+         , configAppKeyFilePath = ".appKey.test"
+         , configDB = DBConfig { dbPort = 5432
                                , dbName = "test"
                                , dbUser = "postgres"
                                , dbPassword = ""
                                }
-         , githubConfig = GithubConfig { githubConfigClientId    = "whatever"
+         , configGithub = GithubConfig { githubConfigClientId    = "whatever"
                                        , githubConfigClientSecret = "whatever"
                                        }
          }
 
 
 -- * db
+
 
 cleanDBAfter :: (Connection -> IO a) -> IO a
 cleanDBAfter f = do

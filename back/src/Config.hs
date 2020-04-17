@@ -40,10 +40,10 @@ instance FromDhall GithubConfig
 
 
 data Config
-  = Config { port           :: Natural
-           , appKeyFilePath :: String
-           , dbConfig       :: DBConfig
-           , githubConfig   :: GithubConfig
+  = Config { configPort           :: Natural
+           , configAppKeyFilePath :: String
+           , configDB             :: DBConfig
+           , configGithub         :: GithubConfig
            }
   deriving (Generic, Show)
 

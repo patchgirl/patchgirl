@@ -491,11 +491,11 @@ run = do
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config
+  Warp.run (Natural.naturalToInt $ configPort config) =<< promMiddleware <$> mkApp config
 
 mkApp :: Config -> IO Application
 mkApp config = do
-  key <- readKey $ appKeyFilePath config
+  key <- readKey $ configAppKeyFilePath config
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =
