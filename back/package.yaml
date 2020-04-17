@@ -75,7 +75,6 @@ dependencies:
   - cookie
   - bytestring
   - utf8-string
-  - hailgun
   - email-validate
   - dhall
   - http-client

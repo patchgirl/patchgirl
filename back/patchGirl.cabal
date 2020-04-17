@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ebdc6bde5bfac629546bb42311dc8e9eac0f575235d64615a3cc5eb1a0a003d3
+-- hash: 87c07c5744d91ff1d3d23e00fc520a8cde4970c665ac1f8125e629ed81b1295a
 
 name:           patchGirl
 version:        0.0.0
@@ -58,7 +58,6 @@ library
     , dhall
     , elm-bridge
     , email-validate
-    , hailgun
     , http-client
     , http-client-tls
     , http-conduit
@@ -108,7 +107,6 @@ executable patchGirl
     , dhall
     , elm-bridge
     , email-validate
-    , hailgun
     , http-client
     , http-client-tls
     , http-conduit
@@ -178,7 +176,6 @@ test-suite spec
     , dhall
     , elm-bridge
     , email-validate
-    , hailgun
     , hspec
     , http-client
     , http-client-tls
