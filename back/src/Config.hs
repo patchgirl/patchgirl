@@ -10,19 +10,6 @@ importConfig =
   input auto "./config.dhall"
 
 
--- * mailgun
-
-
-data MailgunConfig
-  = MailgunConfig { domain      :: Text
-                  , apiKey      :: Text
-                  , authorEmail :: Text
-                  }
-  deriving (Generic, Show)
-
-instance FromDhall MailgunConfig
-
-
 -- * db
 
 
@@ -56,9 +43,15 @@ data Config
   = Config { port           :: Natural
            , appKeyFilePath :: String
            , dbConfig       :: DBConfig
-           , mailgun        :: MailgunConfig
            , githubConfig   :: GithubConfig
            }
   deriving (Generic, Show)
 
 instance FromDhall Config
+
+{-
+data Env
+  = Env { logConfigLog :: (String -> IO ())
+        ,
+        }
+-}

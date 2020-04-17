@@ -10,7 +10,6 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
 
-import           DBUtil
 import           Config
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
@@ -18,6 +17,7 @@ import qualified Data.Maybe                       as Maybe
 import           Data.Time                        (UTCTime)
 import           Data.UUID                        (UUID)
 import qualified Data.UUID                        as UUID
+import           DBUtil
 import           Model
 import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
@@ -118,10 +118,6 @@ defaultConfig =
                                , dbUser = "postgres"
                                , dbPassword = ""
                                }
-         , mailgun = MailgunConfig { domain      = "whatever"
-                                   , apiKey      = "whatever"
-                                   , authorEmail = "admin@mail.com"
-                                   }
          , githubConfig = GithubConfig { githubConfigClientId    = "whatever"
                                        , githubConfigClientSecret = "whatever"
                                        }

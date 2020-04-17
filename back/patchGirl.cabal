@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0320bb85bb8e226bceb02ac7ab57eda9f5dc992690f26bf090cf0878ec0a0f8f
+-- hash: ebdc6bde5bfac629546bb42311dc8e9eac0f575235d64615a3cc5eb1a0a003d3
 
 name:           patchGirl
 version:        0.0.0
@@ -23,7 +23,6 @@ library
       Github.App
       Health.App
       Http
-      Mailgun.App
       Model
       PatchGirl
       RequestCollection.App

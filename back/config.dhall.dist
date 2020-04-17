@@ -7,11 +7,6 @@ let config =
     , dbUser = ""
     , dbPassword = ""
     }
-  , mailgun = {
-    domain = ""
-    , apiKey = ""
-    , authorEmail = ""
-    }
   , githubConfig = {
     githubConfigClientId = ""
     , githubConfigClientSecret = ""
