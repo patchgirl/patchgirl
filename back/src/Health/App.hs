@@ -5,7 +5,6 @@
 module Health.App where
 
 import           Config
-import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Data.Aeson
@@ -13,7 +12,6 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           GHC.Generics
-import           Servant
 
 
 -- * Model
@@ -49,7 +47,6 @@ selectDBIsRunning connection = do
 getAppHealthHandler
   :: ( MonadReader Config m
      , MonadIO m
-     , MonadError ServerError m
      )
   => m AppHealth
 getAppHealthHandler = do

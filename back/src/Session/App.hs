@@ -119,8 +119,6 @@ signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
 
 deleteSessionHandler
   :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
      )
   => CookieSettings
   -> m (Headers '[ Header "Set-Cookie" SetCookie

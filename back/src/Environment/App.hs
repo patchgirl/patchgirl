@@ -158,10 +158,10 @@ selectEnvironments accountId connection = do
           AND account_id = ?;
           |]
 
+
 getEnvironmentsHandler
   :: ( MonadReader Config m
      , MonadIO m
-     , MonadError ServerError m
      )
   => UUID
   -> m [Environment]
@@ -220,7 +220,6 @@ bindEnvironmentToAccount accountId environmentId connection = do
 createEnvironmentHandler
   :: ( MonadReader Config m
      , MonadIO m
-     , MonadError ServerError m
      )
   => UUID
   -> NewEnvironment

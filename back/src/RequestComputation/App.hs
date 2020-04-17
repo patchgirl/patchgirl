@@ -6,7 +6,6 @@
 module RequestComputation.App where
 
 
-import           Control.Monad.Except        (MonadError)
 import           Control.Monad.IO.Class      (MonadIO)
 import           Control.Monad.Reader        (MonadReader)
 import           Control.Monad.Trans         (liftIO)
@@ -25,7 +24,6 @@ import qualified Network.HTTP.Client.TLS     as Tls
 import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types.Header   as Http
 import           PatchGirl
-import           Servant.Server              (ServerError)
 
 
 -- * model
@@ -95,7 +93,6 @@ instance FromJSON RequestComputationOutput where
 runRequestComputationHandler
   :: ( MonadReader Config m
      , MonadIO m
-     , MonadError ServerError m
      )
   => UUID
   -> RequestComputationInput

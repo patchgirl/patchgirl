@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0a8a9a28877d40058c0675c38adadd389b5410921342f1270d5015b5e35db6a0
+-- hash: 0320bb85bb8e226bceb02ac7ab57eda9f5dc992690f26bf090cf0878ec0a0f8f
 
 name:           patchGirl
 version:        0.0.0
@@ -46,8 +46,8 @@ library
       Paths_patchGirl
   hs-source-dirs:
       src
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
-  ghc-options: -Wall -fno-warn-name-shadowing
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , aeson-qq
@@ -96,8 +96,8 @@ executable patchGirl
   main-is: exe/Main.hs
   other-modules:
       Paths_patchGirl
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
-  ghc-options: -Wall -fno-warn-name-shadowing
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , aeson-qq
@@ -166,8 +166,8 @@ test-suite spec
       Paths_patchGirl
   hs-source-dirs:
       test
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
-  ghc-options: -Wall -fno-warn-name-shadowing
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , aeson-qq

@@ -6,7 +6,6 @@
 
 module Account.App where
 
-import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Control.Monad.Trans              (liftIO)
@@ -14,7 +13,6 @@ import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           PatchGirl
-import           Servant.Server                   (ServerError)
 
 
 -- * reset visitor account
@@ -23,7 +21,6 @@ import           Servant.Server                   (ServerError)
 resetVisitorAccountHandler
   :: ( MonadReader Config m
      , MonadIO m
-     , MonadError ServerError m
      )
   => m ()
 resetVisitorAccountHandler = do
