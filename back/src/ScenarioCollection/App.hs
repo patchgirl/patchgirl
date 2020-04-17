@@ -19,7 +19,7 @@ import           Servant
 
 
 getScenarioCollectionHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )

@@ -43,7 +43,7 @@ whoAmI =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultEnv) $ do
 
 
 -- ** who am i

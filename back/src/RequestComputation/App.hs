@@ -91,7 +91,7 @@ instance FromJSON RequestComputationOutput where
 
 
 runRequestComputationHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      )
   => UUID

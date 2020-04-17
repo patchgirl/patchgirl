@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultConfig, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
+module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultEnv, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
 
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
@@ -10,7 +10,6 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
 
-import           Config
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
 import qualified Data.Maybe                       as Maybe
@@ -18,6 +17,7 @@ import           Data.Time                        (UTCTime)
 import           Data.UUID                        (UUID)
 import qualified Data.UUID                        as UUID
 import           DBUtil
+import           Env
 import           Model
 import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
@@ -101,7 +101,7 @@ visitorToken = do
 
 mkToken :: CookieSession -> Maybe UTCTime -> IO Auth.Token
 mkToken cookieSession mexp = do
-  key <- Auth.readKey $ configAppKeyFilePath defaultConfig
+  key <- Auth.readKey $ envAppKeyFilePath defaultEnv
   Right token <- Auth.makeJWT cookieSession (Auth.defaultJWTSettings key) mexp
   return $ Auth.Token $ BSL.toStrict token
 
@@ -109,19 +109,19 @@ mkToken cookieSession mexp = do
 -- * config
 
 
-defaultConfig :: Config
-defaultConfig =
-  Config { configPort = 3001
-         , configAppKeyFilePath = ".appKey.test"
-         , configDB = DBConfig { dbPort = 5432
-                               , dbName = "test"
-                               , dbUser = "postgres"
-                               , dbPassword = ""
-                               }
-         , configGithub = GithubConfig { githubConfigClientId    = "whatever"
-                                       , githubConfigClientSecret = "whatever"
-                                       }
-         }
+defaultEnv :: Env
+defaultEnv =
+  Env { envPort = 3001
+      , envAppKeyFilePath = ".appKey.test"
+      , envDB = DBConfig { dbPort = 5432
+                         , dbName = "test"
+                         , dbUser = "postgres"
+                         , dbPassword = ""
+                         }
+      , envGithub = GithubConfig { githubConfigClientId    = "whatever"
+                                 , githubConfigClientSecret = "whatever"
+                                 }
+      }
 
 
 -- * db
@@ -129,7 +129,7 @@ defaultConfig =
 
 cleanDBAfter :: (Connection -> IO a) -> IO a
 cleanDBAfter f = do
-  connection <- runReaderT getDBConnection defaultConfig
+  connection <- runReaderT getDBConnection defaultEnv
   withConnection f connection
   where
     withConnection :: (Connection -> IO a) -> Connection -> IO a
@@ -145,7 +145,7 @@ data Test =
 
 createAccountAndcleanDBAfter :: (Test -> IO a) -> IO a
 createAccountAndcleanDBAfter f = do
-  connection <- runReaderT getDBConnection defaultConfig
+  connection <- runReaderT getDBConnection defaultEnv
   accountId <- insertFakeAccount 1 connection
   token <- signedUserToken accountId
   withConnection f Test { connection = connection

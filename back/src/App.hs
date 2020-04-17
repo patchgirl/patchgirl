@@ -36,7 +36,7 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
                                                         throwAll)
 
 import           Account.App
-import           Config
+import           Env
 import           Environment.App
 import           Github.App
 import           Health.App
@@ -461,9 +461,9 @@ assetApiServer =
 
 
 newtype AppM a =
-  AppM { unAppM :: Except.ExceptT ServerError (Reader.ReaderT Config IO) a }
+  AppM { unAppM :: Except.ExceptT ServerError (Reader.ReaderT Env IO) a }
   deriving ( Except.MonadError ServerError
-           , Reader.MonadReader Config
+           , Reader.MonadReader Env
            , Functor
            , Applicative
            , Monad
@@ -471,11 +471,11 @@ newtype AppM a =
            )
 
 appMToHandler
-  :: Config
+  :: Env
   -> AppM a
   -> Handler a
-appMToHandler config r = do
-  eitherErrorOrResult <- IO.liftIO $ flip Reader.runReaderT config . Except.runExceptT . unAppM $ r
+appMToHandler env r = do
+  eitherErrorOrResult <- IO.liftIO $ flip Reader.runReaderT env . Except.runExceptT . unAppM $ r
   case eitherErrorOrResult of
     Left error   -> throwError error
     Right result -> return result
@@ -486,16 +486,15 @@ appMToHandler config r = do
 
 run :: IO ()
 run = do
-  config :: Config <- importConfig
-  print config
+  env :: Env <- createEnv undefined
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ configPort config) =<< promMiddleware <$> mkApp config
+  Warp.run (Natural.naturalToInt $ envPort env ) =<< promMiddleware <$> mkApp env
 
-mkApp :: Config -> IO Application
-mkApp config = do
-  key <- readKey $ configAppKeyFilePath config
+mkApp :: Env -> IO Application
+mkApp env = do
+  key <- readKey $ envAppKeyFilePath env
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =
@@ -509,6 +508,6 @@ mkApp config = do
     apiServer =
       combinedApiServer cookieSettings jwtSettings
     server =
-      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
+      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler env) apiServer
   return $
     serveWithContext combinedApiProxy context server

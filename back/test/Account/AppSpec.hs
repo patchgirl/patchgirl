@@ -27,7 +27,7 @@ resetVisitorAccount =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultEnv) $
 
 
 -- ** reset visitor account

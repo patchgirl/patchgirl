@@ -21,7 +21,7 @@ import           RequestNode.Sql
 
 
 updateRequestNodeHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -48,7 +48,7 @@ updateRequestNodeHandler accountId _ requestNodeId updateRequestNode = do
 
 
 deleteRequestNodeHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -95,7 +95,7 @@ findNodeInRequestNodes nodeIdToFind requestNodes =
 
 
 createRootRequestFileHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -116,7 +116,7 @@ createRootRequestFileHandler accountId requestCollectionId newRootRequestFile = 
 
 
 createRequestFileHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -144,7 +144,7 @@ createRequestFileHandler accountId requestCollectionId newRequestFile = do
 
 
 updateRequestFileHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -171,7 +171,7 @@ updateRequestFileHandler accountId _ requestNodeId updateRequestFile = do
 
 
 createRootRequestFolderHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -192,7 +192,7 @@ createRootRequestFolderHandler accountId requestCollectionId newRootRequestFolde
 
 
 createRequestFolderHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )

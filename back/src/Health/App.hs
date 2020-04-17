@@ -3,7 +3,7 @@
 
 module Health.App where
 
-import           Config
+import           Env
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Data.Aeson
@@ -44,7 +44,7 @@ selectDBIsRunning connection = do
 
 
 getAppHealthHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      )
   => m AppHealth

@@ -39,7 +39,7 @@ createRequestFolder :<|> createRootRequestFolder =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultEnv) $ do
 
 
 -- ** create request folder

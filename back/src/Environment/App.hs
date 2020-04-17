@@ -160,7 +160,7 @@ selectEnvironments accountId connection = do
 
 
 getEnvironmentsHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      )
   => UUID
@@ -218,7 +218,7 @@ bindEnvironmentToAccount accountId environmentId connection = do
           |]
 
 createEnvironmentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      )
   => UUID
@@ -249,7 +249,7 @@ instance FromJSON UpdateEnvironment where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 updateEnvironmentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -282,7 +282,7 @@ updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
 
 
 deleteEnvironmentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -313,7 +313,7 @@ deleteEnvironmentDB environmentId connection = do
 
 
 deleteKeyValueHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -397,7 +397,7 @@ insertManyKeyValuesDB environmentId NewKeyValue {..} connection = do
 
 
 updateKeyValuesHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )

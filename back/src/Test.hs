@@ -3,6 +3,7 @@ module Test where
 
 import           Control.Monad.Except     (MonadError)
 import           Control.Monad.Reader     (MonadReader)
+import           Env
 import           PatchGirl
 import           Servant                  (err404, err500, throwError)
 import           Servant.API.ContentTypes (NoContent (..))
@@ -10,8 +11,9 @@ import           Servant.Server           (ServerError)
 
 -- * Handler
 
+
 deleteNoContentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      )
   => m NoContent
 deleteNoContentHandler =

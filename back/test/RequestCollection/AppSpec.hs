@@ -32,7 +32,7 @@ getRequestCollectionById =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultEnv) $
 
     describe "get request collection by id" $ do
       it "returns notFound404 when requestCollection does not exist" $ \clientEnv ->

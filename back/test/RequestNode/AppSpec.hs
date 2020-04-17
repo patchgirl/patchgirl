@@ -39,7 +39,7 @@ updateRequestNodeHandler :<|> deleteRequestNodeHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultEnv) $ do
 
 
 -- ** update request node

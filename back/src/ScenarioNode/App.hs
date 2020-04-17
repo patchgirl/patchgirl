@@ -27,7 +27,7 @@ import           ScenarioNode.Sql
 
 
 updateScenarioNodeHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -54,7 +54,7 @@ updateScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId updateSc
 
 
 deleteScenarioNodeHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -80,7 +80,7 @@ deleteScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId = do
 
 
 createRootScenarioFileHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -102,7 +102,7 @@ createRootScenarioFileHandler accountId scenarioCollectionId newRootScenarioFile
 
 
 createScenarioFileHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -130,7 +130,7 @@ createScenarioFileHandler accountId scenarioCollectionId newScenarioFile = do
 
 
 createRootScenarioFolderHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -154,7 +154,7 @@ createRootScenarioFolderHandler accountId scenarioCollectionId newRootScenarioFo
 
 
 createScenarioFolderHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -184,7 +184,7 @@ createScenarioFolderHandler accountId scenarioCollectionId newScenarioFolder = d
 
 
 createSceneHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
@@ -229,7 +229,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
 
 
 deleteSceneHandler
-  :: ( Reader.MonadReader Config m
+  :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )

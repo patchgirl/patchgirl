@@ -33,7 +33,7 @@ getScenarioCollectionById =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $
+  withClient (mkApp defaultEnv) $
 
     describe "get scenario collection by id" $ do
       it "returns notFound404 when scenarioCollection does not exist" $ \clientEnv ->

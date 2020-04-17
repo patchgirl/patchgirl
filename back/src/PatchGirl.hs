@@ -1,5 +1,5 @@
 module PatchGirl
-  ( module Config
+  ( module Env
   ) where
 
-import           Config
+import           Env

@@ -19,7 +19,7 @@ import           PatchGirl
 
 
 resetVisitorAccountHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      )
   => m ()

@@ -48,7 +48,7 @@ visitorId =
 
 
 whoAmIHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -78,7 +78,7 @@ whoAmIHandler cookieSettings jwtSettings = \case
 
 
 signInOnGithubHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -90,7 +90,7 @@ signInOnGithubHandler
                   ] Session
        )
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
-  githubConfig <- Reader.ask <&> configGithub
+  githubConfig <- Reader.ask <&> envGithub
   (liftIO . runMaybeT . getGithubProfile) (mkGithubOAuthCredentials githubConfig) >>= \case
     Nothing ->
       createVisitorSession cookieSettings jwtSettings
@@ -118,7 +118,7 @@ signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
 
 
 deleteSessionHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      )
   => CookieSettings
   -> m (Headers '[ Header "Set-Cookie" SetCookie

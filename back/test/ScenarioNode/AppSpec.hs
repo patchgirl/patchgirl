@@ -40,7 +40,7 @@ updateScenarioNodeHandler :<|> deleteScenarioNodeHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultEnv) $ do
 
 
 -- ** update scenario node
