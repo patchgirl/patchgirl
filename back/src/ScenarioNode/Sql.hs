@@ -1,5 +1,4 @@
 
-{-# LANGUAGE FlexibleContexts #-}
 
 module ScenarioNode.Sql where
 
