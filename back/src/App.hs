@@ -16,6 +16,7 @@ import qualified Network.Wai.Handler.Warp              as Warp
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
 import qualified Prometheus
 import qualified Prometheus.Metric.GHC                 as Prometheus
+import qualified Say
 import           Servant                               hiding (BadPassword,
                                                         NoSuchUser)
 import           Servant.API.ContentTypes              (NoContent)
@@ -486,7 +487,7 @@ appMToHandler env r = do
 
 run :: IO ()
 run = do
-  env :: Env <- createEnv undefined
+  env :: Env <- createEnv Say.sayString
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True

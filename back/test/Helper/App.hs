@@ -9,6 +9,7 @@ import           Data.Text                        (Text)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
+import qualified Say
 
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
@@ -121,6 +122,7 @@ defaultEnv =
       , envGithub = GithubConfig { githubConfigClientId    = "whatever"
                                  , githubConfigClientSecret = "whatever"
                                  }
+      , envLog = Say.sayString
       }
 
 

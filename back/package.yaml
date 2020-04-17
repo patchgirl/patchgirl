@@ -90,3 +90,4 @@ dependencies:
   - strings
   - control-monad-free
   - monad-loops
+  - say
