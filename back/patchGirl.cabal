@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ede39e150f6f494fd46ea29ca618031f963aff195a7e5dcaaff80f638a28570e
+-- hash: 02fa47d407339d7fa535facd587aa2f1207875b007240a143acc689040e75913
 
 name:           patchGirl
 version:        0.0.0
@@ -78,6 +78,7 @@ library
     , servant-elm
     , servant-flatten
     , servant-server
+    , stm
     , strings
     , text
     , time
@@ -129,6 +130,7 @@ executable patchGirl
     , servant-elm
     , servant-flatten
     , servant-server
+    , stm
     , strings
     , text
     , time
@@ -200,6 +202,7 @@ test-suite spec
     , servant-elm
     , servant-flatten
     , servant-server
+    , stm
     , strings
     , text
     , time

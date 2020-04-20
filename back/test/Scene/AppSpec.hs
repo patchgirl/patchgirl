@@ -41,7 +41,7 @@ createSceneHandler :<|> deleteSceneHandler =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultEnv) $ do
+  withClient (defaultEnv2 >>= mkApp) $ do
 
 
 -- ** create scene

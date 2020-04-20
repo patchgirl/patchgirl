@@ -91,3 +91,4 @@ dependencies:
   - control-monad-free
   - monad-loops
   - say
+  - stm

@@ -487,7 +487,7 @@ appMToHandler env r = do
 
 run :: IO ()
 run = do
-  env :: Env <- createEnv Say.sayString
+  env :: Env <- createEnv Say.sayString Say.sayString
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True

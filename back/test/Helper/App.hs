@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultEnv, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
+module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
 
+import           Control.Concurrent.STM
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
 import           Data.Functor                     ((<&>))
@@ -38,6 +39,7 @@ import           Test.Hspec                       (SpecWith, aroundWith,
 
 
 -- ** servant
+
 
 try :: ClientEnv -> ClientM a -> IO a
 try clientEnv action =
@@ -123,6 +125,27 @@ defaultEnv =
                                  , githubConfigClientSecret = "whatever"
                                  }
       , envLog = Say.sayString
+      , envHttpRequest = Say.sayString
+      }
+
+
+defaultEnv2 :: IO Env
+defaultEnv2 = do
+  logs <- newTVarIO ""
+  let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
+  return $
+    Env { envPort = 3001
+        , envAppKeyFilePath = ".appKey.test"
+        , envDB = DBConfig { dbPort = 5432
+                           , dbName = "test"
+                           , dbUser = "postgres"
+                           , dbPassword = ""
+                           }
+        , envGithub = GithubConfig { githubConfigClientId    = "whatever"
+                                   , githubConfigClientSecret = "whatever"
+                                   }
+        , envLog = logFunc
+        , envHttpRequest = Say.sayString
       }
 
 

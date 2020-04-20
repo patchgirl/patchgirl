@@ -5,14 +5,15 @@ module Env(createEnv, Env(..), DBConfig(..), GithubConfig(..)) where
 import           Data.Text (Text)
 import           Dhall
 
-createEnv :: (String -> IO ()) -> IO Env
-createEnv log = do
+createEnv :: (String -> IO ()) -> (String -> IO ()) -> IO Env
+createEnv log httpRequest = do
   Config{..} <- input auto "./config.dhall"
   return $ Env { envPort = configPort
                , envAppKeyFilePath = configAppKeyFilePath
                , envDB = configDB
                , envGithub = configGithub
                , envLog = log
+               , envHttpRequest = httpRequest
                }
 
 
@@ -65,4 +66,5 @@ data Env
         , envDB             :: DBConfig
         , envGithub         :: GithubConfig
         , envLog            :: String -> IO ()
+        , envHttpRequest    :: String -> IO ()
         }
