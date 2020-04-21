@@ -90,7 +90,7 @@ signInOnGithubHandler
                   ] Session
        )
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
-  githubConfig <- Reader.ask <&> envGithub
+  githubConfig <- Reader.ask <&> _envGithub
   (liftIO . runMaybeT . getGithubProfile) (mkGithubOAuthCredentials githubConfig) >>= \case
     Nothing ->
       createVisitorSession cookieSettings jwtSettings
@@ -109,8 +109,8 @@ signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
     getGithubProfile =
       Maybe.MaybeT . getGithubAccessTokenClient >=> Maybe.MaybeT . getGithubProfileClient
     mkGithubOAuthCredentials GithubConfig {..} =
-      GithubOAuthCredentials { _githubOAuthCredentialsClientId = T.unpack githubConfigClientId
-                             , _githubOAuthCredentialsClientSecret = T.unpack githubConfigClientSecret
+      GithubOAuthCredentials { _githubOAuthCredentialsClientId = T.unpack _githubConfigClientId
+                             , _githubOAuthCredentialsClientSecret = T.unpack _githubConfigClientSecret
                              , _githubOAuthCredentialsCode = _signInWithGithubCode
                              }
 

@@ -7,11 +7,13 @@
 module App where
 
 
+import           Control.Lens.Getter                   ((^.))
 import qualified Control.Monad.Except                  as Except
 import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
 import           Data.UUID
 import qualified GHC.Natural                           as Natural
+import qualified Network.HTTP.Client.TLS               as Tls
 import qualified Network.Wai.Handler.Warp              as Warp
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
 import qualified Prometheus
@@ -44,6 +46,7 @@ import           Health.App
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestComputation.App
+import           RequestComputation.Model
 import           RequestNode.App
 import           RequestNode.Model
 import           ScenarioCollection.App
@@ -328,7 +331,7 @@ type RequestComputationApi auths =
 
 requestComputationApiServer :: AuthResult CookieSession -> RequestComputationInput -> AppM RequestComputationResult
 requestComputationApiServer =
-  authorizeWithAccountId runRequestComputationHandler
+  authorize runRequestComputationHandler
 
 
 -- ** session
@@ -432,8 +435,7 @@ authorizeWithAccountId f = \case
     f (_cookieAccountId cookieSession)
 
 authorize
-  :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
-  => (t -> p) -> AuthResult t -> p
+  :: (ThrowAll a) => a -> AuthResult b -> a
 authorize f = \case
   BadPassword ->
     throwAll err402
@@ -444,8 +446,8 @@ authorize f = \case
   Indefinite ->
     throwAll err405
 
-  Authenticated cookieSession ->
-    f cookieSession
+  Authenticated _ ->
+    f
 
 testApiServer :: ServerT TestApi AppM
 testApiServer =
@@ -487,15 +489,16 @@ appMToHandler env r = do
 
 run :: IO ()
 run = do
-  env :: Env <- createEnv Say.sayString Say.sayString
+  env :: Env <- createEnv Say.sayString ioRequestRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ envPort env ) =<< promMiddleware <$> mkApp env
+  Warp.run (Natural.naturalToInt $ _envPort env ) =<< promMiddleware <$> mkApp env
 
 mkApp :: Env -> IO Application
 mkApp env = do
-  key <- readKey $ envAppKeyFilePath env
+  Tls.setGlobalManager =<< Tls.newTlsManager -- this manager will mainly be used by RequestComputation
+  key <- readKey $ env ^. envAppKeyFilePath
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =

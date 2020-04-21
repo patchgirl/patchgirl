@@ -2,6 +2,8 @@
 
 ## Back
 
+- use http method/scheme from library
+
 ## Front
 
 - http response header and body in tabs instead of in the same view

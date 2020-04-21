@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
 
 module Http where
 
@@ -20,7 +20,7 @@ data Method
   | Patch
   | Head
   | Options
-  deriving (Eq, Show, Read, Generic, ToJSON, FromJSON)
+  deriving (Eq, Show, Read, Ord, Generic, ToJSON, FromJSON)
 
 instance PG.FromField Method where
    fromField f mdata =
@@ -55,7 +55,7 @@ instance PG.ToField Method where
 data Scheme
   = Http
   | Https
-  deriving (Eq, Show, Read, Generic)
+  deriving (Eq, Show, Read, Ord, Generic)
 
 instance ToJSON Scheme
 instance FromJSON Scheme

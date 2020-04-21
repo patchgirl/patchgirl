@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 02fa47d407339d7fa535facd587aa2f1207875b007240a143acc689040e75913
+-- hash: 85137f2f889cba5c2bb03ccaea6754180b5135967866bd2e18a59ba1600334dc
 
 name:           patchGirl
 version:        0.0.0
@@ -29,6 +29,7 @@ library
       RequestCollection.Model
       RequestCollection.Sql
       RequestComputation.App
+      RequestComputation.Model
       RequestNode.App
       RequestNode.Model
       RequestNode.Sql
@@ -53,6 +54,7 @@ library
     , base
     , bytestring
     , case-insensitive
+    , containers
     , control-monad-free
     , cookie
     , dhall
@@ -104,6 +106,7 @@ executable patchGirl
     , base
     , bytestring
     , case-insensitive
+    , containers
     , control-monad-free
     , cookie
     , dhall
@@ -155,6 +158,7 @@ test-suite spec
       Helper.App
       RequestCollection.AppSpec
       RequestCollection.DB
+      RequestComputation.AppSpec
       RequestFile.AppSpec
       RequestFolder.AppSpec
       RequestNode.AppSpec
@@ -175,6 +179,7 @@ test-suite spec
     , base
     , bytestring
     , case-insensitive
+    , containers
     , control-monad-free
     , cookie
     , dhall

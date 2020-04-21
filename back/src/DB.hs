@@ -15,9 +15,9 @@ getDBConnection
      )
   => m PG.Connection
 getDBConnection = do
-  DBConfig {..} <- ask <&> envDB
-  liftIO $ PG.connect PG.defaultConnectInfo { PG.connectDatabase = TS.unpack dbName
-                                            , PG.connectUser = TS.unpack dbUser
-                                            , PG.connectPort = fromInteger $ toInteger $ naturalToInt dbPort
-                                            , PG.connectPassword = TS.unpack dbPassword
+  DBConfig {..} <- ask <&> _envDB
+  liftIO $ PG.connect PG.defaultConnectInfo { PG.connectDatabase = TS.unpack _dbName
+                                            , PG.connectUser = TS.unpack _dbUser
+                                            , PG.connectPort = fromInteger $ toInteger $ naturalToInt _dbPort
+                                            , PG.connectPassword = TS.unpack _dbPassword
                                             }

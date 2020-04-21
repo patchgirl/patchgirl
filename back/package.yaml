@@ -92,3 +92,4 @@ dependencies:
   - monad-loops
   - say
   - stm
+  - containers

@@ -21,8 +21,7 @@ import qualified Data.UUID                        as UUID
 import           DBUtil
 import           Env
 import           Model
-import           Network.HTTP.Client              (defaultManagerSettings,
-                                                   newManager)
+import qualified Network.HTTP.Client              as Client
 import           Network.HTTP.Types               (Status)
 import           Network.Wai.Handler.Warp         (testWithApplication)
 import           Servant
@@ -31,8 +30,7 @@ import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
                                                            makeJWT, readKey)
 import           Servant.Client
 import           Session.Model
-import           Test.Hspec                       (SpecWith, aroundWith,
-                                                   beforeAll)
+import qualified Test.Hspec                       as Hspec
 
 
 -- * helper
@@ -51,12 +49,11 @@ errorsWithStatus status servantError =
     FailureResponse _ response -> responseStatusCode response == status
     _                          -> False
 
-withClient :: IO Application -> SpecWith ClientEnv -> SpecWith ()
+withClient :: IO Application -> Hspec.SpecWith ClientEnv -> Hspec.SpecWith ()
 withClient app innerSpec =
-  beforeAll (newManager defaultManagerSettings) $
-    flip aroundWith innerSpec $ \action httpManager ->
-
-      testWithApplication app $ \ port -> do
+  Hspec.beforeAll (Client.newManager Client.defaultManagerSettings) $
+    flip Hspec.aroundWith innerSpec $ \action httpManager ->
+      testWithApplication app $ \port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
         action (ClientEnv httpManager testBaseUrl Nothing)
 
@@ -104,7 +101,7 @@ visitorToken = do
 
 mkToken :: CookieSession -> Maybe UTCTime -> IO Auth.Token
 mkToken cookieSession mexp = do
-  key <- Auth.readKey $ envAppKeyFilePath defaultEnv
+  key <- Auth.readKey $ _envAppKeyFilePath defaultEnv
   Right token <- Auth.makeJWT cookieSession (Auth.defaultJWTSettings key) mexp
   return $ Auth.Token $ BSL.toStrict token
 
@@ -114,18 +111,18 @@ mkToken cookieSession mexp = do
 
 defaultEnv :: Env
 defaultEnv =
-  Env { envPort = 3001
-      , envAppKeyFilePath = ".appKey.test"
-      , envDB = DBConfig { dbPort = 5432
-                         , dbName = "test"
-                         , dbUser = "postgres"
-                         , dbPassword = ""
+  Env { _envPort = 3001
+      , _envAppKeyFilePath = ".appKey.test"
+      , _envDB = DBConfig { _dbPort = 5432
+                         , _dbName = "test"
+                         , _dbUser = "postgres"
+                         , _dbPassword = ""
                          }
-      , envGithub = GithubConfig { githubConfigClientId    = "whatever"
-                                 , githubConfigClientSecret = "whatever"
+      , _envGithub = GithubConfig { _githubConfigClientId    = "whatever"
+                                 , _githubConfigClientSecret = "whatever"
                                  }
-      , envLog = Say.sayString
-      , envHttpRequest = Say.sayString
+      , _envLog = Say.sayString
+      , _envHttpRequest = undefined
       }
 
 
@@ -134,18 +131,18 @@ defaultEnv2 = do
   logs <- newTVarIO ""
   let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
   return $
-    Env { envPort = 3001
-        , envAppKeyFilePath = ".appKey.test"
-        , envDB = DBConfig { dbPort = 5432
-                           , dbName = "test"
-                           , dbUser = "postgres"
-                           , dbPassword = ""
+    Env { _envPort = 3001
+        , _envAppKeyFilePath = ".appKey.test"
+        , _envDB = DBConfig { _dbPort = 5432
+                           , _dbName = "test"
+                           , _dbUser = "postgres"
+                           , _dbPassword = ""
                            }
-        , envGithub = GithubConfig { githubConfigClientId    = "whatever"
-                                   , githubConfigClientSecret = "whatever"
+        , _envGithub = GithubConfig { _githubConfigClientId    = "whatever"
+                                   , _githubConfigClientSecret = "whatever"
                                    }
-        , envLog = logFunc
-        , envHttpRequest = Say.sayString
+        , _envLog = logFunc
+        , _envHttpRequest = undefined
       }
 
 

@@ -1,19 +1,34 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Env(createEnv, Env(..), DBConfig(..), GithubConfig(..)) where
+module Env( createEnv
+          , Env(..)
+          , envPort
+          , envAppKeyFilePath
+          , envDB
+          , envGithub
+          , envLog
+          , envHttpRequest
+          , DBConfig(..)
+          , GithubConfig(..)
+          ) where
 
-import           Data.Text (Text)
+import qualified Control.Lens             as Lens
+import qualified Data.ByteString.UTF8     as BSU
+import           Data.Text                (Text)
 import           Dhall
+import qualified Network.HTTP.Client      as Http
+import           RequestComputation.Model
 
-createEnv :: (String -> IO ()) -> (String -> IO ()) -> IO Env
+
+createEnv :: (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
 createEnv log httpRequest = do
   Config{..} <- input auto "./config.dhall"
-  return $ Env { envPort = configPort
-               , envAppKeyFilePath = configAppKeyFilePath
-               , envDB = configDB
-               , envGithub = configGithub
-               , envLog = log
-               , envHttpRequest = httpRequest
+  return $ Env { _envPort = _configPort
+               , _envAppKeyFilePath = _configAppKeyFilePath
+               , _envDB = _configDB
+               , _envGithub = _configGithub
+               , _envLog = log
+               , _envHttpRequest = httpRequest
                }
 
 
@@ -21,10 +36,10 @@ createEnv log httpRequest = do
 
 
 data DBConfig
-  = DBConfig { dbPort     :: Natural
-             , dbName     :: Text
-             , dbUser     :: Text
-             , dbPassword :: Text
+  = DBConfig { _dbPort     :: Natural
+             , _dbName     :: Text
+             , _dbUser     :: Text
+             , _dbPassword :: Text
              }
   deriving (Generic, Show)
 
@@ -35,8 +50,8 @@ instance FromDhall DBConfig
 
 
 data GithubConfig
-  = GithubConfig { githubConfigClientId     :: Text
-                 , githubConfigClientSecret :: Text
+  = GithubConfig { _githubConfigClientId     :: Text
+                 , _githubConfigClientSecret :: Text
                  }
   deriving (Generic, Show)
 
@@ -47,10 +62,10 @@ instance FromDhall GithubConfig
 
 
 data Config
-  = Config { configPort           :: Natural
-           , configAppKeyFilePath :: String
-           , configDB             :: DBConfig
-           , configGithub         :: GithubConfig
+  = Config { _configPort           :: Natural
+           , _configAppKeyFilePath :: String
+           , _configDB             :: DBConfig
+           , _configGithub         :: GithubConfig
            }
   deriving (Generic, Show)
 
@@ -61,10 +76,12 @@ instance FromDhall Config
 
 
 data Env
-  = Env { envPort           :: Natural
-        , envAppKeyFilePath :: String
-        , envDB             :: DBConfig
-        , envGithub         :: GithubConfig
-        , envLog            :: String -> IO ()
-        , envHttpRequest    :: String -> IO ()
+  = Env { _envPort           :: Natural
+        , _envAppKeyFilePath :: String
+        , _envDB             :: DBConfig
+        , _envGithub         :: GithubConfig
+        , _envLog            :: String -> IO ()
+        , _envHttpRequest    :: Http.Request -> IO (HttpResponse BSU.ByteString)
         }
+
+$(Lens.makeLenses ''Env)
