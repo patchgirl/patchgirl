@@ -198,7 +198,7 @@ type RequestComputationResult
     = RequestTimeout
     | RequestNetworkError
     | RequestBadUrl
-    | GotRequestComputationOutput RequestComputationOutput
+    | RequestComputationSucceeded RequestComputationOutput
 
 
 -- ** request computation input

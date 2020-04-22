@@ -39,7 +39,7 @@ import           Health.App
 import           Http
 import           Model                    (CaseInsensitive)
 import           RequestCollection.Model
-import           RequestComputation.App
+import           RequestComputation.Model
 import           RequestNode.Model
 import           ScenarioCollection.Model
 import           ScenarioNode.Model
@@ -135,6 +135,7 @@ deriveElmDef deriveElmDefOption ''ScenarioCollection
 deriveElmDef deriveElmDefOption ''ScenarioNode
 deriveElmDef deriveElmDefOption ''Scene
 deriveElmDef deriveElmDefOption ''NewScene
+deriveElmDef deriveElmDefOption ''HttpException
 
 
 -- * imports
@@ -220,6 +221,7 @@ main =
       , DefineElm (Proxy :: Proxy ScenarioNode)
       , DefineElm (Proxy :: Proxy Scene)
       , DefineElm (Proxy :: Proxy NewScene)
+      , DefineElm (Proxy :: Proxy HttpException)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))

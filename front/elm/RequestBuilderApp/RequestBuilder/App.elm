@@ -219,12 +219,14 @@ update msg model =
 
         SetHttpBodyResponse newBody ->
             case model.requestComputationResult of
-                Just (GotRequestComputationOutput response) ->
+                Just (RequestComputationSucceeded response) ->
                     let
                         newRequestComputationOutput =
                             { response | body = newBody }
                         newModel =
-                            { model | requestComputationResult = Just (GotRequestComputationOutput newRequestComputationOutput) }
+                            { model
+                                | requestComputationResult = Just (RequestComputationSucceeded newRequestComputationOutput)
+                            }
                     in
                         (newModel, Cmd.none)
 
@@ -381,18 +383,18 @@ convertResultToResponse result =
             RequestNetworkError
 
         Err (BadStatus metadata body) ->
-            GotRequestComputationOutput { statusCode = metadata.statusCode
-                        , statusText = metadata.statusText
-                        , headers = metadata.headers
-                        , body = body
-                        }
+            RequestComputationSucceeded { statusCode = metadata.statusCode
+                                        , statusText = metadata.statusText
+                                        , headers = metadata.headers
+                                        , body = body
+                                        }
 
         Ok (metadata, body) ->
-            GotRequestComputationOutput { statusCode = metadata.statusCode
-                        , statusText = metadata.statusText
-                        , headers = metadata.headers
-                        , body = body
-                        }
+            RequestComputationSucceeded { statusCode = metadata.statusCode
+                                        , statusText = metadata.statusText
+                                        , headers = metadata.headers
+                                        , body = body
+                                        }
 
 expectStringDetailed : (Result DetailedError ( Http.Metadata, String ) -> msg) -> Http.Expect msg
 expectStringDetailed msg =
@@ -717,7 +719,7 @@ responseView model =
             Nothing ->
                 none
 
-            Just (GotRequestComputationOutput requestComputationOutput) ->
+            Just (RequestComputationSucceeded requestComputationOutput) ->
                 column [ spacing 10 ]
                     [ statusResponseView requestComputationOutput
                     , bodyResponseView requestComputationOutput

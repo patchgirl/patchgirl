@@ -169,25 +169,20 @@ convertSessionFromBackToFront backSession =
 convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
 convertRequestComputationResultFromBackToFront backRequestComputationResult =
     case backRequestComputationResult of
-        Back.RequestTimeout ->
-            Front.RequestTimeout
-
-        Back.RequestNetworkError ->
-            Front.RequestNetworkError
-
-        Back.RequestBadUrl ->
-            Front.RequestBadUrl
-
-        Back.GotRequestComputationOutput { requestComputationOutputStatusCode
+        Back.RequestComputationSucceeded { requestComputationOutputStatusCode
                                          , requestComputationOutputHeaders
                                          , requestComputationOutputBody
                                          } ->
-            Front.GotRequestComputationOutput
+            Front.RequestComputationSucceeded
                 { statusCode = requestComputationOutputStatusCode
                 , statusText = ""
                 , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) requestComputationOutputHeaders
                 , body = requestComputationOutputBody
                 }
+
+        Back.RequestComputationFailed httpException ->
+            Front.RequestTimeout
+
 
 convertRequestComputationInputFromFrontToFromBack : Front.RequestComputationInput -> Back.RequestComputationInput
 convertRequestComputationInputFromFrontToFromBack frontRequestInput =
