@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
 
@@ -34,7 +33,7 @@ runRequestComputationHandler
 runRequestComputationHandler requestComputationInput = do
   runner <- Reader.ask <&> _envHttpRequest
   IO.liftIO $
-    (Exception.try $ buildRequest requestComputationInput >>= runner) <&> responseToComputationResult
+    Exception.try (buildRequest requestComputationInput >>= runner) <&> responseToComputationResult
 
 
 -- * build request
@@ -65,7 +64,7 @@ buildRequest RequestComputationInput {..} = do
 
 
 ioRequestRunner :: Http.Request -> IO (HttpResponse BSU.ByteString)
-ioRequestRunner request = do
+ioRequestRunner request =
   Http.httpBS request <&> fromResponseToHttpResponse
 
 
@@ -97,7 +96,7 @@ responseToComputationResult = \case
           Http.InvalidHeader _-> InvalidHeader
           Http.InvalidRequestHeader _ -> InvalidRequestHeader
           Http.InternalException _ -> InternalException
-          Http.ProxyConnectException _ _ _ -> ProxyConnectException
+          Http.ProxyConnectException {} -> ProxyConnectException
           Http.NoResponseDataReceived -> NoResponseDataReceived
           Http.WrongRequestBodyStreamSize _ _ -> WrongRequestBodyStreamSize
           Http.ResponseBodyTooShort _ _ -> ResponseBodyTooShort
