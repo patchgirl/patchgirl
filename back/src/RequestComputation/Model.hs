@@ -5,26 +5,23 @@ module RequestComputation.Model ( RequestComputationInput(..)
                                 , RequestComputationResult(..)
                                 , HttpResponse(..)
                                 , fromResponseToHttpResponse
+                                , HttpException(..)
                                 ) where
 
 
-import           Data.Aeson                 (FromJSON, ToJSON (..),
-                                             genericParseJSON, genericToJSON,
-                                             parseJSON)
-import           Data.Aeson.Types           (defaultOptions, fieldLabelModifier)
-import           GHC.Generics               (Generic)
+import qualified Data.Aeson          as Aeson
+import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
+import           GHC.Generics        (Generic)
 import           Http
-import qualified Network.HTTP.Client        as Http
-import qualified Network.HTTP.Simple        as Http
-import qualified Network.HTTP.Types.Header  as Http
-import qualified Network.HTTP.Types.Status  as Http
-import qualified Network.HTTP.Types.Version as Http
+import qualified Network.HTTP.Client as Http
+import qualified Network.HTTP.Simple as Http
+import qualified Network.HTTP.Types  as Http
 
 
 -- * model
 
 
--- ** response
+-- ** http response
 
 
 data HttpResponse body = HttpResponse { httpResponseStatus  :: Http.Status
@@ -52,32 +49,13 @@ data RequestComputationInput
                             }
   deriving (Eq, Show, Read, Generic, Ord)
 
-instance ToJSON RequestComputationInput where
+instance Aeson.ToJSON RequestComputationInput where
   toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-instance FromJSON RequestComputationInput where
+instance Aeson.FromJSON RequestComputationInput where
   parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
--- ** request computation result
-
-
-data RequestComputationResult
-    = RequestTimeout
-    | RequestNetworkError
-    | RequestBadUrl
-    | GotRequestComputationOutput RequestComputationOutput
-    deriving (Eq, Show, Generic)
-
-instance ToJSON RequestComputationResult where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON RequestComputationResult where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
 -- ** request computation output
@@ -90,9 +68,63 @@ data RequestComputationOutput
                              }
   deriving (Eq, Show, Read, Generic)
 
-instance ToJSON RequestComputationOutput where
+instance Aeson.ToJSON RequestComputationOutput where
   toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-instance FromJSON RequestComputationOutput where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+instance Aeson.FromJSON RequestComputationOutput where
+  parseJSON = Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- ** request computation result
+
+
+data RequestComputationResult
+    = RequestComputationFailed HttpException
+    | RequestComputationSucceeded RequestComputationOutput
+    deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON RequestComputationResult where
+  toJSON =
+    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON RequestComputationResult where
+  parseJSON =
+    Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- ** http exception
+
+
+data HttpException
+  = InvalidUrlException String String
+  | TooManyRedirects
+  | OverlongHeaders
+  | ResponseTimeout
+  | ConnectionTimeout
+  | ConnectionFailure String
+  | InvalidStatusLine
+  | InvalidHeader
+  | InvalidRequestHeader
+  | InternalException
+  | ProxyConnectException
+  | NoResponseDataReceived
+  | WrongRequestBodyStreamSize
+  | ResponseBodyTooShort
+  | InvalidChunkHeaders
+  | IncompleteHeaders
+  | InvalidDestinationHost
+  | HttpZlibException
+  | InvalidProxyEnvironmentVariable
+  | ConnectionClosed
+  | InvalidProxySettings
+  | UnknownException
+  deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON HttpException where
+  toJSON =
+    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON HttpException where
+  parseJSON =
+    Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }

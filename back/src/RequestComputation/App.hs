@@ -33,18 +33,8 @@ runRequestComputationHandler
   -> m RequestComputationResult
 runRequestComputationHandler requestComputationInput = do
   runner <- Reader.ask <&> _envHttpRequest
-
-  eResponse <- IO.liftIO . Exception.try $ buildRequest requestComputationInput >>= runner
-  return $ case eResponse of
-    Left (Http.InvalidUrlException _ _) ->
-      RequestBadUrl
-
-    Left (Http.HttpExceptionRequest _ _) ->
-      RequestNetworkError
-
-    Right response ->
-      GotRequestComputationOutput $ createRequestComputationOutput response
-
+  IO.liftIO $
+    (Exception.try $ buildRequest requestComputationInput >>= runner) <&> responseToComputationResult
 
 
 -- * build request
@@ -82,13 +72,44 @@ ioRequestRunner request = do
 -- * create request computation output
 
 
-createRequestComputationOutput :: HttpResponse BSU.ByteString -> RequestComputationOutput
-createRequestComputationOutput response =
-  RequestComputationOutput
-    { _requestComputationOutputStatusCode = Http.statusCode $ httpResponseStatus response
-    , _requestComputationOutputHeaders    = parseResponseHeaders response
-    , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
-    }
+responseToComputationResult :: Either Http.HttpException (HttpResponse BSU.ByteString) -> RequestComputationResult
+responseToComputationResult = \case
+    Right response ->
+      RequestComputationSucceeded $
+        RequestComputationOutput { _requestComputationOutputStatusCode = Http.statusCode $ httpResponseStatus response
+                                 , _requestComputationOutputHeaders    = parseResponseHeaders response
+                                 , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
+                                 }
+
+    Left (Http.InvalidUrlException url reason) ->
+      RequestComputationFailed (InvalidUrlException url reason)
+
+    Left (Http.HttpExceptionRequest _ content) ->
+      RequestComputationFailed matching
+      where
+        matching = case content of
+          Http.TooManyRedirects _ -> TooManyRedirects
+          Http.OverlongHeaders -> OverlongHeaders
+          Http.ResponseTimeout -> ResponseTimeout
+          Http.ConnectionTimeout -> ConnectionTimeout
+          Http.ConnectionFailure f -> ConnectionFailure (show f)
+          Http.InvalidStatusLine _ -> InvalidStatusLine
+          Http.InvalidHeader _-> InvalidHeader
+          Http.InvalidRequestHeader _ -> InvalidRequestHeader
+          Http.InternalException _ -> InternalException
+          Http.ProxyConnectException _ _ _ -> ProxyConnectException
+          Http.NoResponseDataReceived -> NoResponseDataReceived
+          Http.WrongRequestBodyStreamSize _ _ -> WrongRequestBodyStreamSize
+          Http.ResponseBodyTooShort _ _ -> ResponseBodyTooShort
+          Http.InvalidChunkHeaders -> InvalidChunkHeaders
+          Http.IncompleteHeaders -> IncompleteHeaders
+          Http.InvalidDestinationHost _ -> InvalidDestinationHost
+          Http.HttpZlibException _ -> HttpZlibException
+          Http.InvalidProxyEnvironmentVariable _ _ -> InvalidProxyEnvironmentVariable
+          Http.ConnectionClosed -> ConnectionClosed
+          Http.InvalidProxySettings _ -> InvalidProxySettings
+          _ -> UnknownException
+
 
 parseResponseHeaders :: HttpResponse BSU.ByteString -> [(String,String)]
 parseResponseHeaders response =
