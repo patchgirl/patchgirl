@@ -181,8 +181,33 @@ convertRequestComputationResultFromBackToFront backRequestComputationResult =
                 }
 
         Back.RequestComputationFailed httpException ->
-            Front.RequestTimeout
+            let
+                frontException = case httpException of
+                    Back.InvalidUrlException a b -> Front.InvalidUrlException a b
+                    Back.TooManyRedirects -> Front.TooManyRedirects
+                    Back.OverlongHeaders -> Front.OverlongHeaders
+                    Back.ResponseTimeout -> Front.ResponseTimeout
+                    Back.ConnectionTimeout -> Front.ConnectionTimeout
+                    Back.ConnectionFailure a -> Front.ConnectionFailure a
+                    Back.InvalidStatusLine -> Front.InvalidStatusLine
+                    Back.InvalidHeader -> Front.InvalidHeader
+                    Back.InvalidRequestHeader -> Front.InvalidRequestHeader
+                    Back.InternalException -> Front.InternalException
+                    Back.ProxyConnectException -> Front.ProxyConnectException
+                    Back.NoResponseDataReceived -> Front.NoResponseDataReceived
+                    Back.WrongRequestBodyStreamSize -> Front.WrongRequestBodyStreamSize
+                    Back.ResponseBodyTooShort -> Front.ResponseBodyTooShort
+                    Back.InvalidChunkHeaders -> Front.InvalidChunkHeaders
+                    Back.IncompleteHeaders -> Front.IncompleteHeaders
+                    Back.InvalidDestinationHost -> Front.InvalidDestinationHost
+                    Back.HttpZlibException -> Front.HttpZlibException
+                    Back.InvalidProxyEnvironmentVariable -> Front.InvalidProxyEnvironmentVariable
+                    Back.ConnectionClosed -> Front.ConnectionClosed
+                    Back.InvalidProxySettings -> Front.InvalidProxySettings
+                    Back.UnknownException -> Front.UnknownException
 
+            in
+                RequestComputationFailed frontException
 
 convertRequestComputationInputFromFrontToFromBack : Front.RequestComputationInput -> Back.RequestComputationInput
 convertRequestComputationInputFromFrontToFromBack frontRequestInput =

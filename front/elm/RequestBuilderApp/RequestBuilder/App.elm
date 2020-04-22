@@ -374,13 +374,13 @@ convertResultToResponse : Result DetailedError (Http.Metadata, String) -> Reques
 convertResultToResponse result =
     case result of
         Err (BadUrl url) ->
-            RequestBadUrl
+            RequestComputationFailed (InvalidUrlException url url)
 
         Err Timeout ->
-            RequestTimeout
+            RequestComputationFailed ResponseTimeout
 
         Err NetworkError ->
-            RequestNetworkError
+            RequestComputationFailed (ConnectionFailure "network error")
 
         Err (BadStatus metadata body) ->
             RequestComputationSucceeded { statusCode = metadata.statusCode
@@ -726,14 +726,8 @@ responseView model =
                     , headersResponseView requestComputationOutput
                     ]
 
-            Just RequestTimeout ->
-                el errorAttributes (text "timeout")
-
-            Just RequestNetworkError ->
-                el errorAttributes (text "network error")
-
-            Just RequestBadUrl ->
-                el errorAttributes (text "bad url")
+            Just (RequestComputationFailed httpException) ->
+                el errorAttributes (text (httpExceptionToMessage httpException))
 
 
 -- ** url

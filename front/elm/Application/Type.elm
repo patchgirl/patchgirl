@@ -195,11 +195,62 @@ type alias Builder =
 
 
 type RequestComputationResult
-    = RequestTimeout
-    | RequestNetworkError
-    | RequestBadUrl
+    = RequestComputationFailed HttpException
     | RequestComputationSucceeded RequestComputationOutput
 
+
+-- ** http exception
+
+
+type HttpException  =
+    InvalidUrlException String String
+    | TooManyRedirects
+    | OverlongHeaders
+    | ResponseTimeout
+    | ConnectionTimeout
+    | ConnectionFailure String
+    | InvalidStatusLine
+    | InvalidHeader
+    | InvalidRequestHeader
+    | InternalException
+    | ProxyConnectException
+    | NoResponseDataReceived
+    | WrongRequestBodyStreamSize
+    | ResponseBodyTooShort
+    | InvalidChunkHeaders
+    | IncompleteHeaders
+    | InvalidDestinationHost
+    | HttpZlibException
+    | InvalidProxyEnvironmentVariable
+    | ConnectionClosed
+    | InvalidProxySettings
+    | UnknownException
+
+httpExceptionToMessage : HttpException -> String
+httpExceptionToMessage httpException =
+    case httpException of
+        InvalidUrlException url _ -> "Invalid Url:" ++ url
+        TooManyRedirects -> "Too Many Redirects"
+        OverlongHeaders -> "Overlong Headers"
+        ResponseTimeout -> "Response Timeout"
+        ConnectionTimeout -> "Connection Timeout"
+        ConnectionFailure reason -> "Connection Failure: " ++ reason
+        InvalidStatusLine -> "Invalid Status Line"
+        InvalidHeader -> "Invalid Header"
+        InvalidRequestHeader -> "Invalid Request Header"
+        InternalException -> "Internal Exception"
+        ProxyConnectException -> "Proxy Connect Exception"
+        NoResponseDataReceived -> "No Response Data Received"
+        WrongRequestBodyStreamSize -> "Wrong Request Body Stream Size"
+        ResponseBodyTooShort -> "Response Body Too Short"
+        InvalidChunkHeaders -> "Invalid Chunk Headers"
+        IncompleteHeaders -> "Incomplete Headers"
+        InvalidDestinationHost -> "Invalid Destination Host"
+        HttpZlibException -> "Http Zlib Exception"
+        InvalidProxyEnvironmentVariable -> "Invalid Proxy Environment Variable"
+        ConnectionClosed -> "Connection Closed"
+        InvalidProxySettings -> "Invalid Proxy Settings"
+        UnknownException -> "Unknown Exception"
 
 -- ** request computation input
 
