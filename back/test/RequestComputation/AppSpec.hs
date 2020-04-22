@@ -8,19 +8,12 @@
 module RequestComputation.AppSpec where
 
 import           App
-import qualified Control.Exception        as Exception
-import qualified Control.Monad.IO.Class   as IO
 import qualified Data.ByteString.UTF8     as BSU
-import           Data.Functor             ((<&>))
-import           Data.Map                 (Map)
-import qualified Data.Map                 as Map
-import           Env
 import           FakeHttpRequest
 import           Helper.App
 import qualified Http
 import qualified Network.HTTP.Client      as HTTP
 import qualified Network.HTTP.Types       as HTTP
-import           System.IO.Unsafe         as IO
 
 import           RequestComputation.Model
 import           Servant

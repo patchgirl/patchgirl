@@ -64,6 +64,7 @@ withHttpMock mock = do
                          , httpResponseBody = BSU.fromString ""
                          }
 
+withExceptionHttpMock :: HTTP.HttpException -> IO Application
 withExceptionHttpMock mock = do
   env <- defaultEnv2 <&> envHttpRequest .~ exceptionRunnerMock mock
   mkApp env
@@ -72,7 +73,10 @@ withExceptionHttpMock mock = do
     exceptionRunnerMock exception =
       Exception.throw exception
 
-instance Ord FakeHttpRequest
+instance Ord FakeHttpRequest where
+  FakeHttpRequest r1 `compare` FakeHttpRequest r2 =
+    HTTP.host r1 `compare` HTTP.host r2
+
 instance Eq FakeHttpRequest where
    FakeHttpRequest r1 == FakeHttpRequest r2 =
      HTTP.method r1 == HTTP.method r2 &&
