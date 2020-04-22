@@ -12,8 +12,8 @@ import qualified Data.Maybe                 as Maybe
 import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
 import           DBUtil
-import           Environment.App
 import           Environment.DB
+import           Environment.Model
 import           Helper.App
 import qualified Network.HTTP.Types         as HTTP
 import           Servant
@@ -99,7 +99,7 @@ spec =
 -- ** update environments
 
 
-    let updateEnvironmentPayload = UpdateEnvironment { _name = "test2" }
+    let updateEnvironmentPayload = UpdateEnvironment { _updateEnvironmentName = "test2" }
 
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->

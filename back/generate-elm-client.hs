@@ -17,41 +17,42 @@
 -- * third party lib
 
 
-import           Control.Lens             ((&), (<>~))
-import qualified Data.Aeson               as Aeson
-import qualified Data.Text                as T
+import           Control.Lens              ((&), (<>~))
+import qualified Data.Aeson                as Aeson
+import qualified Data.Text                 as T
 import           Data.Word
 import           Debug.Trace
-import           Elm.Module               as Elm
+import           Elm.Module                as Elm
 import           Elm.TyRep
-import           ElmOption                (deriveElmDefOption)
-import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
-                                           Symbol, TypeError, symbolVal)
+import           ElmOption                 (deriveElmDefOption)
+import           GHC.TypeLits              (ErrorMessage (Text), KnownSymbol,
+                                            Symbol, TypeError, symbolVal)
 
 
 -- * patchgirl lib
 
 
 import           App
-import           Environment.App
+import           Environment.Model
 import           Github.App
 import           Health.App
 import           Http
-import           Model                    (CaseInsensitive)
+import           Model                     (CaseInsensitive)
 import           RequestCollection.Model
 import           RequestComputation.Model
 import           RequestNode.Model
 import           ScenarioCollection.Model
+import           ScenarioComputation.Model
 import           ScenarioNode.Model
-import           Servant                  ((:<|>))
-import           Servant.API              ((:>), Capture, Get, JSON)
-import           Servant.API.ContentTypes (NoContent)
-import           Servant.API.Flatten      (Flat)
-import           Servant.Auth             (Auth (..), Cookie)
-import           Servant.Auth.Client      (Token)
-import           Servant.Auth.Server      (JWT)
+import           Servant                   ((:<|>))
+import           Servant.API               ((:>), Capture, Get, JSON)
+import           Servant.API.ContentTypes  (NoContent)
+import           Servant.API.Flatten       (Flat)
+import           Servant.Auth              (Auth (..), Cookie)
+import           Servant.Auth.Client       (Token)
+import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
-import           Servant.Foreign          hiding (Static)
+import           Servant.Foreign           hiding (Static)
 import           Session.Model
 
 
@@ -136,6 +137,12 @@ deriveElmDef deriveElmDefOption ''ScenarioNode
 deriveElmDef deriveElmDefOption ''Scene
 deriveElmDef deriveElmDefOption ''NewScene
 deriveElmDef deriveElmDefOption ''HttpException
+deriveElmDef deriveElmDefOption ''ScenarioComputationInput
+deriveElmDef deriveElmDefOption ''ScenarioComputationOutput
+deriveElmDef deriveElmDefOption ''InputScenario
+deriveElmDef deriveElmDefOption ''InputScene
+deriveElmDef deriveElmDefOption ''OutputScenario
+deriveElmDef deriveElmDefOption ''OutputScene
 
 
 -- * imports
@@ -222,6 +229,12 @@ main =
       , DefineElm (Proxy :: Proxy Scene)
       , DefineElm (Proxy :: Proxy NewScene)
       , DefineElm (Proxy :: Proxy HttpException)
+      , DefineElm (Proxy :: Proxy ScenarioComputationInput)
+      , DefineElm (Proxy :: Proxy ScenarioComputationOutput)
+      , DefineElm (Proxy :: Proxy InputScenario)
+      , DefineElm (Proxy :: Proxy InputScene)
+      , DefineElm (Proxy :: Proxy OutputScenario)
+      , DefineElm (Proxy :: Proxy OutputScene)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))

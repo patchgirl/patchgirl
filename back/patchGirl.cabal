@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9cf2c6b2b72a2c71c366f5bc32fcfdab77ce149fbd21ef7d64e3a1266a4af098
+-- hash: 87e195ad315e75aab296688c2c0baaf2656d23809b5ad4ed09642c947d2364d0
 
 name:           patchGirl
 version:        0.0.0
@@ -19,6 +19,7 @@ library
       ElmOption
       Env
       Environment.App
+      Environment.Model
       Foo
       Github.App
       Health.App
@@ -36,6 +37,8 @@ library
       ScenarioCollection.App
       ScenarioCollection.Model
       ScenarioCollection.Sql
+      ScenarioComputation.App
+      ScenarioComputation.Model
       ScenarioNode.App
       ScenarioNode.Model
       ScenarioNode.Sql

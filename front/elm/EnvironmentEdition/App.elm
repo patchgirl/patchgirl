@@ -113,7 +113,7 @@ update msg model =
     AskRename id name ->
         let
             payload =
-                Client.UpdateEnvironment { name = name }
+                Client.UpdateEnvironment { updateEnvironmentName = name }
 
             newMsg =
                 Client.putApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id name)

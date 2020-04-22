@@ -41,6 +41,7 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
 import           Account.App
 import           Env
 import           Environment.App
+import           Environment.Model
 import           Github.App
 import           Health.App
 import           RequestCollection.App
@@ -51,6 +52,8 @@ import           RequestNode.App
 import           RequestNode.Model
 import           ScenarioCollection.App
 import           ScenarioCollection.Model
+import           ScenarioComputation.App
+import           ScenarioComputation.Model
 import           ScenarioNode.App
 import           ScenarioNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
@@ -92,6 +95,7 @@ type RestApi auths =
   RequestFileApi auths :<|>
   RequestFolderApi auths :<|>
   RequestComputationApi auths :<|>
+  ScenarioComputationApi auths :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
@@ -110,6 +114,7 @@ restApiServer cookieSettings jwtSettings =
   :<|> requestFileApiServer
   :<|> requestFolderApiServer
   :<|> requestComputationApiServer
+  :<|> scenarioComputationApiServer
   :<|> sessionApiServer cookieSettings jwtSettings
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
@@ -332,6 +337,19 @@ type RequestComputationApi auths =
 requestComputationApiServer :: AuthResult CookieSession -> RequestComputationInput -> AppM RequestComputationResult
 requestComputationApiServer =
   authorize runRequestComputationHandler
+
+
+-- ** scenario computation
+
+
+type ScenarioComputationApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioComputation" :> (
+    ReqBody '[JSON] ScenarioComputationInput :> Post '[JSON] ScenarioComputationOutput
+  ))
+
+scenarioComputationApiServer :: AuthResult CookieSession -> ScenarioComputationInput -> AppM ScenarioComputationOutput
+scenarioComputationApiServer =
+  authorize runScenarioComputationHandler
 
 
 -- ** session
