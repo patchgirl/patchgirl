@@ -1,16 +1,14 @@
 let config =
   { port = 3000
-  , appKeyFilePath = ""
-  , dbConfig = {
-    dbPort = 5433
-    , dbName = ""
-    , dbUser = ""
-    , dbPassword = ""
-    }
-  , githubConfig = {
-    githubConfigClientId = ""
-    , githubConfigClientSecret = ""
-    }
+  , appKeyFilePath = ".appKey.test"
+  , db = { port = 5433
+         , name = ""
+         , user = ""
+         , password = ""
+         }
+  , github = { clientId = ""
+             , clientSecret = ""
+             }
   }
 
 in
