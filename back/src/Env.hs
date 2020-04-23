@@ -15,14 +15,16 @@ module Env( createEnv
 import qualified Control.Lens             as Lens
 import qualified Data.ByteString.UTF8     as BSU
 import           Data.Text                (Text)
-import           Dhall
+import           Dhall                    (Natural)
+import qualified Dhall
+import           GHC.Generics             (Generic)
 import qualified Network.HTTP.Client      as Http
 import           RequestComputation.Model
 
 
 createEnv :: (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
 createEnv log httpRequest = do
-  Config{..} <- input auto "./config.dhall"
+  Config{..} <- Dhall.input Dhall.auto "./config.dhall"
   return $ Env { _envPort = _configPort
                , _envAppKeyFilePath = _configAppKeyFilePath
                , _envDB = _configDB
@@ -43,7 +45,9 @@ data DBConfig
              }
   deriving (Generic, Show)
 
-instance FromDhall DBConfig
+instance Dhall.FromDhall DBConfig where
+  autoWith _ = Dhall.record $
+    DBConfig <$> Dhall.field "port" Dhall.natural <*> Dhall.field "name" Dhall.strictText <*> Dhall.field "user" Dhall.strictText <*> Dhall.field "password" Dhall.strictText
 
 
 -- * github
@@ -55,7 +59,9 @@ data GithubConfig
                  }
   deriving (Generic, Show)
 
-instance FromDhall GithubConfig
+instance Dhall.FromDhall GithubConfig where
+  autoWith _ = Dhall.record $
+    GithubConfig <$> Dhall.field "clientId" Dhall.strictText <*> Dhall.field "clientSecret" Dhall.strictText
 
 
 -- * config
@@ -69,7 +75,9 @@ data Config
            }
   deriving (Generic, Show)
 
-instance FromDhall Config
+instance Dhall.FromDhall Config where
+  autoWith _ = Dhall.record $
+    Config <$> Dhall.field "port" Dhall.natural <*> Dhall.field "appKeyFilePath" Dhall.string <*> Dhall.field "db" Dhall.auto <*> Dhall.field "github" Dhall.auto
 
 
 -- * env
