@@ -6,6 +6,7 @@ module ScenarioComputation.Model  ( ScenarioComputationOutput(..)
                                   , InputScenario(..)
                                   , OutputScene(..)
                                   , OutputScenario(..)
+                                  , SceneComputation(..)
                                   ) where
 
 
@@ -19,7 +20,7 @@ import           RequestComputation.Model
 
 
 data InputScene
-  = InputScene { _inputSeneId                       :: UUID
+  = InputScene { _inputSceneId                      :: UUID
                , _inputSceneRequestFileNodeId       :: UUID
                , _inputSceneRequestComputationInput :: RequestComputationInput
                }
@@ -52,13 +53,29 @@ instance Aeson.FromJSON InputScenario where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
+-- * scene computation
+
+
+data SceneComputation
+  = SceneRun RequestComputationResult
+  | SceneNotRun
+  deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON SceneComputation where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON SceneComputation where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
 -- * output scene
 
-
 data OutputScene
-  = OutputScene { _outputSeneId                 :: UUID
-                , _outputSceneRequestFileNodeId :: UUID
-                , _outputSceneRequestComputationOutput :: RequestComputationResult
+  = OutputScene { _outputSceneId                       :: UUID
+                , _outputSceneRequestFileNodeId        :: UUID
+                , _outputSceneRequestComputationOutput :: SceneComputation
                 }
   deriving (Eq, Show, Generic)
 

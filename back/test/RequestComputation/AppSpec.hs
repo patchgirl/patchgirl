@@ -52,7 +52,7 @@ spec = do
 
 
   describe "invalid url" $
-    withClient (withExceptionHttpMock (HTTP.InvalidUrlException "" "")) $
+    withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` (RequestComputationFailed $ InvalidUrlException "" "")
