@@ -55,7 +55,7 @@ spec = do
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` (RequestComputationFailed $ InvalidUrlException "" "")
+          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` RequestComputationFailed (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
