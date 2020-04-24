@@ -215,7 +215,7 @@ newEnvironmentResultToMsg name result =
         Ok id ->
             EnvironmentCreated id name
 
-        Err error ->
+        Err _ ->
             EnvServerError
 
 
@@ -225,7 +225,7 @@ updateEnvironmentResultToMsg id name result =
         Ok () ->
             EnvironmentRenamed id name
 
-        Err error ->
+        Err _ ->
             Debug.todo "server error" EnvServerError
 
 
@@ -235,7 +235,7 @@ deleteEnvironmentResultToMsg id result =
         Ok () ->
             EnvironmentDeleted id
 
-        Err error ->
+        Err _ ->
             Debug.todo "server error" EnvServerError
 
 
@@ -503,7 +503,7 @@ updateKeyValuesResultToMsg result =
             in
             KeyValuesUpserted keyValues
 
-        Err error ->
+        Err _ ->
             Debug.todo "server error" KeyValueServerError
 
 
@@ -513,7 +513,7 @@ deleteKeyValueResultToMsg id result =
         Ok () ->
             KeyDeleted id
 
-        Err error ->
+        Err _ ->
             Debug.todo "server error" KeyValueServerError
 
 
@@ -523,7 +523,7 @@ removeKeyValueWithId id keyValues =
         fold : Storable NewKeyValue KeyValue -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
         fold storable acc =
             case storable of
-                New new ->
+                New _ ->
                     acc ++ [ storable ]
 
                 Saved saved ->
@@ -534,7 +534,7 @@ removeKeyValueWithId id keyValues =
                         False ->
                             acc ++ [ storable ]
 
-                Edited2 saved edited ->
+                Edited2 saved _ ->
                     case saved.id == id of
                         True ->
                             acc

@@ -177,8 +177,8 @@ view model =
             List.map htmlAttribute (Animation.render model.loadingAnimation)
 
         bodyAttr =
-            [ Background.color lightGrey ]
-                ++ loadingAnimation
+            (Background.color lightGrey)
+                :: loadingAnimation
                 ++ [ inFront (modalView model)
                    , inFront (notificationView model)
                    ]
@@ -216,7 +216,7 @@ mainView model =
                 NotFoundPage ->
                     el [ centerY, centerX ] (text "not found")
 
-                ReqPage mId ->
+                ReqPage _ ->
                     builderView
 
                 EnvPage ->
