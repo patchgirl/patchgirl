@@ -16,6 +16,7 @@ import Modal
 import Api.Generated as Client
 import Api.Converter as Client
 import RequestBuilderApp.RequestTree.Util as RequestTree
+import RequestComputation exposing(..)
 
 
 -- * model
@@ -139,12 +140,24 @@ update msg model =
 
         AskRunScenario ->
             let
+                findFileRecord : Uuid -> Maybe RequestFileRecord
+                findFileRecord id =
+                    let
+                        (RequestCollection _ requestNodes) =
+                            model.requestCollection
+                    in
+                        RequestTree.findFile requestNodes id
+
                 sceneToInputScene : Scene -> Client.InputScene
                 sceneToInputScene scene =
-                    { inputSceneId = scene.id
-                    , inputSceneRequestFileNodeId = scene.requestFileNodeId
-                    , inputSceneRequestComputationInput = Debug.todo "" -- RequestComputationInput
-                    }
+                    let
+                        requestComputationInput = Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord scene.requestFileNodeId)
+                    in
+                        { inputSceneId = scene.id
+                        , inputSceneRequestFileNodeId = scene.requestFileNodeId
+                        , inputSceneRequestComputationInput =
+                            Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
+                        }
 
                 payload =
                        { inputScenarioId = model.id
@@ -187,12 +200,12 @@ mkDefaultScene  id requestFileNodeId =
 
 runScenarioResultToMsg : Result Http.Error Client.ScenarioComputationOutput -> Msg
 runScenarioResultToMsg result =
-    case result of
+    case Debug.log "test" result of
         Ok scenarioComputationOutput ->
             ScenarioProcessed (Client.convertScenarioComputationOutputFromBackToFront scenarioComputationOutput)
 
         Err error ->
-            Debug.todo "server error" ServerError
+            Debug.todo "server error"  ServerError
 
 deleteSceneResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
 deleteSceneResultToMsg sceneId result =

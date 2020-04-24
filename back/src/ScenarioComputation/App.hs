@@ -52,12 +52,17 @@ buildOutputScenario InputScenario{..} =
       (_:xs) -> lastSceneWasSuccessful xs
 
     buildOutputScene :: (Reader.MonadReader Env m, IO.MonadIO m) => InputScene -> m OutputScene
-    buildOutputScene InputScene{..} =
-      runRequestComputationHandler _inputSceneRequestComputationInput <&> \requestComputationResult ->
-        OutputScene { _outputSceneId = _inputSceneId
-                    , _outputSceneRequestFileNodeId = _inputSceneRequestFileNodeId
-                    , _outputSceneRequestComputationOutput = SceneRun requestComputationResult
-                    }
+    buildOutputScene inputScene@InputScene{..} =
+      case _inputSceneRequestComputationInput of
+        Nothing ->
+          return $ notRunOutputScene inputScene
+
+        Just requestComputationInput ->
+          runRequestComputationHandler requestComputationInput <&> \requestComputationResult ->
+            OutputScene { _outputSceneId = _inputSceneId
+                        , _outputSceneRequestFileNodeId = _inputSceneRequestFileNodeId
+                        , _outputSceneRequestComputationOutput = SceneRun requestComputationResult
+                        }
 
     notRunOutputScene :: InputScene -> OutputScene
     notRunOutputScene InputScene{..} =

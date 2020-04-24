@@ -22,7 +22,7 @@ import           RequestComputation.Model
 data InputScene
   = InputScene { _inputSceneId                      :: UUID
                , _inputSceneRequestFileNodeId       :: UUID
-               , _inputSceneRequestComputationInput :: RequestComputationInput
+               , _inputSceneRequestComputationInput :: Maybe RequestComputationInput
                }
   deriving (Eq, Show, Generic)
 

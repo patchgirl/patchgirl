@@ -167,13 +167,16 @@ buildInputScene :: Http.Method -> String -> InputScene
 buildInputScene method url =
   InputScene { _inputSceneId = UUID.nil
              , _inputSceneRequestFileNodeId = UUID.nil
-             , _inputSceneRequestComputationInput = RequestComputationInput { _requestComputationInputMethod = method
-                                                                            , _requestComputationInputHeaders = []
-                                                                            , _requestComputationInputScheme = Http.Http
-                                                                            , _requestComputationInputUrl = url
-                                                                            , _requestComputationInputBody = ""
-                                                                            }
+             , _inputSceneRequestComputationInput = Just requestComputationInput
              }
+  where
+    requestComputationInput =
+      RequestComputationInput { _requestComputationInputMethod = method
+                              , _requestComputationInputHeaders = []
+                              , _requestComputationInputScheme = Http.Http
+                              , _requestComputationInputUrl = url
+                              , _requestComputationInputBody = ""
+                              }
 
 
 -- ** build output scene

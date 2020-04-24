@@ -209,8 +209,8 @@ convertRequestComputationResultFromBackToFront backRequestComputationResult =
             in
                 RequestComputationFailed frontException
 
-convertRequestComputationInputFromFrontToFromBack : Front.RequestComputationInput -> Back.RequestComputationInput
-convertRequestComputationInputFromFrontToFromBack frontRequestInput =
+convertRequestComputationInputFromFrontToBack : Front.RequestComputationInput -> Back.RequestComputationInput
+convertRequestComputationInputFromFrontToBack frontRequestInput =
    { requestComputationInputMethod = convertMethodFromFrontToBack frontRequestInput.method
    , requestComputationInputHeaders = frontRequestInput.headers
    , requestComputationInputScheme = convertSchemeFromFrontToBack frontRequestInput.scheme
