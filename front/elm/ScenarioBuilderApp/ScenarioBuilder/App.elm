@@ -1,30 +1,30 @@
 module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 
+import Api.Converter as Client
+import Api.Generated as Client
+import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
-import Random
-import List.Extra as List
 import Element.Border as Border
-import Element.Font as Font
 import Element.Events as Events
+import Element.Font as Font
 import Element.Input as Input
-import Application.Type exposing (..)
-import Util exposing (..)
 import Http
-import Uuid exposing (Uuid)
+import List.Extra as List
 import Modal exposing (Modal(..))
-import Modal
-import Api.Generated as Client
-import Api.Converter as Client
+import Random
 import RequestBuilderApp.RequestTree.Util as RequestTree
-import RequestComputation exposing(..)
+import RequestComputation exposing (..)
+import Util exposing (..)
+import Uuid exposing (Uuid)
+
 
 
 -- * model
 
 
 type alias Model =
-    { session: Session
+    { session : Session
     , notification : Maybe String
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
@@ -37,62 +37,61 @@ type alias Model =
     }
 
 
+
 -- * message
 
 
-type Msg
-  -- create scene
-  = ShowHttpRequestSelectionModal (Maybe Uuid)
-  | GenerateRandomUUIDForScene (Maybe Uuid) Uuid.Uuid
-  | SelectRequestFile (Maybe Uuid) Uuid.Uuid Uuid.Uuid
-  | AskCreateScene (Maybe Uuid) Uuid Uuid
-  | CloseModal
-  -- delete scene
-  | AskDeleteScene Uuid.Uuid
-  | DeleteScene Uuid.Uuid
-  | ServerError
-  -- scenario
-  | AskRunScenario
-  | ScenarioProcessed ScenarioComputationOutput
+type
+    Msg
+    -- create scene
+    = ShowHttpRequestSelectionModal (Maybe Uuid)
+    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid.Uuid
+    | SelectRequestFile (Maybe Uuid) Uuid.Uuid Uuid.Uuid
+    | AskCreateScene (Maybe Uuid) Uuid Uuid
+    | CloseModal
+      -- delete scene
+    | AskDeleteScene Uuid.Uuid
+    | DeleteScene Uuid.Uuid
+    | ServerError
+      -- scenario
+    | AskRunScenario
+    | ScenarioProcessed ScenarioComputationOutput
+
 
 
 -- * update
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-
-
--- ** create scene
-
-
+        -- ** create scene
         ShowHttpRequestSelectionModal sceneParentId ->
             let
                 newModel =
                     { model | whichModal = Just (SelectHttpRequestModal sceneParentId) }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         GenerateRandomUUIDForScene sceneParentId requestFileNodeId ->
             let
                 newMsg =
                     Random.generate (AskCreateScene sceneParentId requestFileNodeId) Uuid.uuidGenerator
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         AskCreateScene sceneParentId requestFileNodeId newSceneId ->
             let
                 payload =
-                       { newSceneId = newSceneId
-                       , newSceneSceneNodeParentId = sceneParentId
-                       , newSceneRequestFileNodeId = requestFileNodeId
-                       }
+                    { newSceneId = newSceneId
+                    , newSceneSceneNodeParentId = sceneParentId
+                    , newSceneRequestFileNodeId = requestFileNodeId
+                    }
 
                 newMsg =
                     Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId requestFileNodeId newSceneId)
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         SelectRequestFile sceneParentId requestFileNodeId newSceneId ->
             let
@@ -113,33 +112,27 @@ update msg model =
                         , scenes = newScenes
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
-
--- ** delete scene
-
-
+        -- ** delete scene
         AskDeleteScene sceneId ->
             let
                 newMsg =
                     Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) model.id sceneId (deleteSceneResultToMsg sceneId)
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         DeleteScene id ->
             let
                 newScenes =
-                    List.filter (not << \scene -> scene.id == id) model.scenes
+                    List.filter (not << (\scene -> scene.id == id)) model.scenes
 
                 newModel =
                     { model | scenes = newScenes }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
-
--- ** scenario
-
-
+        -- ** scenario
         AskRunScenario ->
             let
                 findFileRecord : Uuid -> Maybe RequestFileRecord
@@ -148,28 +141,29 @@ update msg model =
                         (RequestCollection _ requestNodes) =
                             model.requestCollection
                     in
-                        RequestTree.findFile requestNodes id
+                    RequestTree.findFile requestNodes id
 
                 sceneToInputScene : Scene -> Client.InputScene
                 sceneToInputScene scene =
                     let
-                        requestComputationInput = Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord scene.requestFileNodeId)
+                        requestComputationInput =
+                            Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord scene.requestFileNodeId)
                     in
-                        { inputSceneId = scene.id
-                        , inputSceneRequestFileNodeId = scene.requestFileNodeId
-                        , inputSceneRequestComputationInput =
-                            Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
-                        }
+                    { inputSceneId = scene.id
+                    , inputSceneRequestFileNodeId = scene.requestFileNodeId
+                    , inputSceneRequestComputationInput =
+                        Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
+                    }
 
                 payload =
-                       { inputScenarioId = model.id
-                       , inputScenarioScenes = List.map sceneToInputScene model.scenes
-                       }
+                    { inputScenarioId = model.id
+                    , inputScenarioScenes = List.map sceneToInputScene model.scenes
+                    }
 
                 newMsg =
                     Client.postApiScenarioComputation "" (getCsrfToken model.session) payload runScenarioResultToMsg
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         ScenarioProcessed scenarioComputationOutput ->
             let
@@ -180,7 +174,7 @@ update msg model =
                             List.find (\s -> s.sceneId == scene.id) scenarioComputationOutput.scenes
                                 |> Maybe.map .requestComputationOutput
                     in
-                        { scene | computationOutput = sceneComputation }
+                    { scene | computationOutput = sceneComputation }
 
                 newScenes =
                     List.map mergeSceneComputationOutputResult model.scenes
@@ -188,32 +182,31 @@ update msg model =
                 newModel =
                     { model | scenes = newScenes }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
-
--- ** other
-
-
+        -- ** other
         CloseModal ->
             let
                 newModel =
                     { model | whichModal = Nothing }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         ServerError ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
+
 
 
 -- * util
 
 
 mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> Scene
-mkDefaultScene  id requestFileNodeId =
+mkDefaultScene id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
     , computationOutput = Nothing
     }
+
 
 runScenarioResultToMsg : Result Http.Error Client.ScenarioComputationOutput -> Msg
 runScenarioResultToMsg result =
@@ -222,7 +215,8 @@ runScenarioResultToMsg result =
             ScenarioProcessed (Client.convertScenarioComputationOutputFromBackToFront scenarioComputationOutput)
 
         Err error ->
-            Debug.todo "server error"  ServerError
+            Debug.todo "server error" ServerError
+
 
 deleteSceneResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
 deleteSceneResultToMsg sceneId result =
@@ -233,6 +227,7 @@ deleteSceneResultToMsg sceneId result =
         Err error ->
             Debug.todo "server error" ServerError
 
+
 createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> Result Http.Error () -> Msg
 createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
     case result of
@@ -241,6 +236,7 @@ createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
 
         Err error ->
             Debug.todo "server error" ServerError
+
 
 
 -- * view
@@ -260,19 +256,19 @@ view model =
         scenarioSettingView =
             column [ width fill, centerX ]
                 [ Input.button [ centerX ]
-                      { onPress = Just AskRunScenario
-                      , label =
-                          row [ centerX, centerY ]
-                              [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
-                              ]
-                      }
+                    { onPress = Just AskRunScenario
+                    , label =
+                        row [ centerX, centerY ]
+                            [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
+                            ]
+                    }
                 ]
-
     in
-        wrappedRow [ width fill, centerX ]
-            [ el [ width (fillPortion 8) ] scenesView
-            , el [ width (fillPortion 2) ] scenarioSettingView
-            ]
+    wrappedRow [ width fill, centerX ]
+        [ el [ width (fillPortion 8) ] scenesView
+        , el [ width (fillPortion 2) ] scenarioSettingView
+        ]
+
 
 
 -- ** add new scene view
@@ -288,7 +284,9 @@ addNewSceneView =
                     [ addIcon
                     , el [] (text "Add a scene to your scenario")
                     ]
-            })
+            }
+        )
+
 
 
 -- ** scene view
@@ -305,37 +303,44 @@ sceneView model { id, requestFileNodeId, computationOutput } =
 
         sceneComputationColor =
             case computationOutput of
-                Nothing -> Border.color white
-                Just SceneNotRun -> Border.color primaryColor
-                Just (SceneRun _) -> Border.color secondaryColor
+                Nothing ->
+                    Border.color white
 
+                Just SceneNotRun ->
+                    Border.color primaryColor
+
+                Just (SceneRun _) ->
+                    Border.color secondaryColor
     in
-        case mRequestFileRecord of
-            Just { name } ->
-                column [ centerX, spacing 10 ]
-                    [ Input.button
-                          [ Border.solid
-                          , Border.width 1
-                          , Border.rounded 5
-                          , sceneComputationColor
-                          , Background.color white
-                          , padding 20
-                          , boxShadow
-                          , centerX
-                          ] { onPress = Just (AskDeleteScene id)
-                            , label =
-                                row [ spacing 20, centerX ]
-                                    [ el [] (text (notEditedValue name))
-                                    , Input.button []
-                                        { onPress = Just (AskDeleteScene id)
-                                        , label = el [ alignRight ] clearIcon
-                                        }
-                                    ]
-                            }
-                    , arrowView id
+    case mRequestFileRecord of
+        Just { name } ->
+            column [ centerX, spacing 10 ]
+                [ Input.button
+                    [ Border.solid
+                    , Border.width 1
+                    , Border.rounded 5
+                    , sceneComputationColor
+                    , Background.color white
+                    , padding 20
+                    , boxShadow
+                    , centerX
                     ]
+                    { onPress = Just (AskDeleteScene id)
+                    , label =
+                        row [ spacing 20, centerX ]
+                            [ el [] (text (notEditedValue name))
+                            , Input.button []
+                                { onPress = Just (AskDeleteScene id)
+                                , label = el [ alignRight ] clearIcon
+                                }
+                            ]
+                    }
+                , arrowView id
+                ]
 
-            _ -> none
+        _ ->
+            none
+
 
 
 -- ** arrow view
@@ -358,6 +363,7 @@ detailedSceneView model scene =
     none
 
 
+
 -- * modal
 
 
@@ -373,49 +379,64 @@ selectHttpRequestModal sceneParentId requestCollection =
         nodeView : List RequestNode -> List (Element Msg)
         nodeView nodes =
             case nodes of
-                [] -> []
+                [] ->
+                    []
+
                 node :: tail ->
-                  case node of
-                    (RequestFolder { id, name, open, children }) ->
-                      let
-                        folderChildrenView = nodeView children
-                        tailView = nodeView tail
-                        currentFolderView =
-                            folderView id name folderChildrenView open
-                      in
-                        currentFolderView :: tailView
+                    case node of
+                        RequestFolder { id, name, open, children } ->
+                            let
+                                folderChildrenView =
+                                    nodeView children
 
-                    RequestFile requestFileRecord ->
-                      let
-                        tailView = nodeView tail
-                        currentFileView =
-                            Input.button []
-                                { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id)
-                                , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
-                                }
-                      in
-                        currentFileView :: tailView
+                                tailView =
+                                    nodeView tail
 
-        folderView : Uuid.Uuid -> Editable String -> List(Element Msg) -> Bool -> Element Msg
+                                currentFolderView =
+                                    folderView id name folderChildrenView open
+                            in
+                            currentFolderView :: tailView
+
+                        RequestFile requestFileRecord ->
+                            let
+                                tailView =
+                                    nodeView tail
+
+                                currentFileView =
+                                    Input.button []
+                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id)
+                                        , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
+                                        }
+                            in
+                            currentFileView :: tailView
+
+        folderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
         folderView id name folderChildrenView open =
             let
                 folderIcon =
                     case open of
-                        False -> "keyboard_arrow_right"
-                        True -> "keyboard_arrow_down"
-            in
-                column [] [ iconWithText folderIcon (notEditedValue name)
-                          , case open of
-                                True -> column [ spacing 10, paddingXY 20 10 ] folderChildrenView
-                                False -> none
-                          ]
+                        False ->
+                            "keyboard_arrow_right"
 
+                        True ->
+                            "keyboard_arrow_down"
+            in
+            column []
+                [ iconWithText folderIcon (notEditedValue name)
+                , case open of
+                    True ->
+                        column [ spacing 10, paddingXY 20 10 ] folderChildrenView
+
+                    False ->
+                        none
+                ]
     in
-        { closeMessage = CloseModal
-        , header = text "Select an http request"
-        , body = Just treeView
-        , footer = Nothing
-        }
+    { closeMessage = CloseModal
+    , header = text "Select an http request"
+    , body = Just treeView
+    , footer = Nothing
+    }
+
 
 confirmDeleteFolderModal : Modal.Config Msg
 confirmDeleteFolderModal =

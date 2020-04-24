@@ -1,4 +1,4 @@
-module Modal exposing (Modal(..), Config, view, map)
+module Modal exposing (Config, Modal(..), map, view)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -6,14 +6,17 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Util exposing(..)
+import Util exposing (..)
 import Uuid exposing (Uuid)
+
+
 
 -- * model
 
 
 type Modal
     = SelectHttpRequestModal (Maybe Uuid)
+
 
 
 -- * config
@@ -25,6 +28,7 @@ type alias Config msg =
     , body : Maybe (Element msg)
     , footer : Maybe (Element msg)
     }
+
 
 
 -- * view
@@ -39,25 +43,29 @@ view maybeConfig =
         Just config ->
             let
                 modalView =
-                    column [ centerX
-                           , Background.color lightGrey
-                           , moveDown 100
-                           , padding 20
-                           , spacing 30
-                           , boxShadow
-                           , Border.rounded 5
-                           ]
-                    [ headerView config
-                    , bodyView config
-                    , footerView config
-                    ]
+                    column
+                        [ centerX
+                        , Background.color lightGrey
+                        , moveDown 100
+                        , padding 20
+                        , spacing 30
+                        , boxShadow
+                        , Border.rounded 5
+                        ]
+                        [ headerView config
+                        , bodyView config
+                        , footerView config
+                        ]
             in
-                el [ Background.color (rgba 0 0 0 0.3)
-                   , width fill
-                   , height fill
-                   , Events.onClick config.closeMessage
-                   , inFront modalView
-                   ] none
+            el
+                [ Background.color (rgba 0 0 0 0.3)
+                , width fill
+                , height fill
+                , Events.onClick config.closeMessage
+                , inFront modalView
+                ]
+                none
+
 
 
 -- ** header
@@ -65,10 +73,11 @@ view maybeConfig =
 
 headerView : Config msg -> Element msg
 headerView { header, closeMessage } =
-    row [ width fill, spacing 20]
+    row [ width fill, spacing 20 ]
         [ el [] header
         , closeButton closeMessage
         ]
+
 
 closeButton : msg -> Element msg
 closeButton closeMessage =
@@ -76,6 +85,7 @@ closeButton closeMessage =
         { onPress = Just closeMessage
         , label = clearIcon
         }
+
 
 
 -- ** body
@@ -91,6 +101,7 @@ bodyView { body } =
             el [ width fill ] body_
 
 
+
 -- ** footer
 
 
@@ -104,13 +115,14 @@ footerView { footer } =
             el [ centerX, width fill ] footer_
 
 
+
 -- * util
 
 
 map : (a -> b) -> Config a -> Config b
 map f config =
     { closeMessage = f config.closeMessage
-    , header = (Element.map f) config.header
+    , header = Element.map f config.header
     , body = Maybe.map (Element.map f) config.body
     , footer = Maybe.map (Element.map f) config.footer
     }

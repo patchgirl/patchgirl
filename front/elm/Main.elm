@@ -1,24 +1,26 @@
 module Main exposing (..)
 
-import Browser
-import Json.Encode as E
-import Json.Decode as D
+import Api.Converter as Client
+import Api.Generated as Client
 import Application.App as Application
 import Application.Model as Application
 import Application.Type exposing (..)
-import Api.Converter as Client
-import Api.Generated as Client
+import Browser
+import Json.Decode as D
+import Json.Encode as E
+
 
 main : Program E.Value Application.Model Application.Msg
 main =
-  Browser.application
-    { init = decodeLoadedData >> Application.init
-    , update = Application.update
-    , subscriptions = Application.subscriptions
-    , view = Application.view
-    , onUrlRequest = Application.LinkClicked
-    , onUrlChange = Application.UrlChanged
-    }
+    Browser.application
+        { init = decodeLoadedData >> Application.init
+        , update = Application.update
+        , subscriptions = Application.subscriptions
+        , view = Application.view
+        , onUrlRequest = Application.LinkClicked
+        , onUrlChange = Application.UrlChanged
+        }
+
 
 decodeLoadedData : E.Value -> Application.UserData
 decodeLoadedData json =
@@ -41,8 +43,8 @@ loadedDataDecoder =
             , scenarioCollection = scenarioCollection
             }
     in
-        D.map4 mkLoadedData
-            (D.at ["session"] (D.map Client.convertSessionFromBackToFront Client.jsonDecSession))
-            (D.at ["environments"] (D.map (List.map Client.convertEnvironmentFromBackToFront) (D.list Client.jsonDecEnvironment)))
-            (D.at ["requestCollection"] (D.map Client.convertRequestCollectionFromBackToFront Client.jsonDecRequestCollection))
-            (D.at ["scenarioCollection"] (D.map Client.convertScenarioCollectionFromBackToFront Client.jsonDecScenarioCollection))
+    D.map4 mkLoadedData
+        (D.at [ "session" ] (D.map Client.convertSessionFromBackToFront Client.jsonDecSession))
+        (D.at [ "environments" ] (D.map (List.map Client.convertEnvironmentFromBackToFront) (D.list Client.jsonDecEnvironment)))
+        (D.at [ "requestCollection" ] (D.map Client.convertRequestCollectionFromBackToFront Client.jsonDecRequestCollection))
+        (D.at [ "scenarioCollection" ] (D.map Client.convertScenarioCollectionFromBackToFront Client.jsonDecScenarioCollection))

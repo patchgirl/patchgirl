@@ -1,40 +1,35 @@
 module RequestBuilderApp.RequestBuilder.App exposing (..)
 
-import Browser
-import Http
-import Debug
-import Time
-import Url
-import Json.Decode as Json
-import List.Extra as List
-import Combine
-import Regex
-import Uuid
-import Api.Generated as Client
+import Animation
 import Api.Converter as Client
-import Maybe.Extra as Maybe
+import Api.Generated as Client
 import Application.Type exposing (..)
-
+import Browser
+import Combine
+import Debug
+import Dict as Dict
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Font as Font
 import Element.Events as Events
+import Element.Font as Font
 import Element.Input as Input
-
-import Util exposing (..)
-
 import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
-
-import Application.Type exposing (..)
-import Dict as Dict
+import Http
+import Json.Decode as Json
 import Json.Print as Json
-
+import List.Extra as List
+import Maybe.Extra as Maybe
 import PrivateAddress exposing (..)
-import Animation
-import RequestComputation exposing(..)
+import Regex
+import RequestComputation exposing (..)
+import Time
+import Url
+import Util exposing (..)
+import Uuid
+
 
 
 -- * model
@@ -48,7 +43,7 @@ type alias Model =
     , name : Editable String
     , httpUrl : Editable String
     , httpMethod : Editable HttpMethod
-    , httpHeaders : Editable (List (String, String))
+    , httpHeaders : Editable (List ( String, String ))
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
@@ -56,32 +51,34 @@ type alias Model =
     }
 
 
+
 -- * message
 
 
 type Msg
-  = UpdateUrl String
-  | SetHttpMethod HttpMethod
-  | SetHttpBody String
-  | SetHttpBodyResponse String
-  | AddHeaderInput
-  | UpdateHeaderKey Int String
-  | UpdateHeaderValue Int String
-  | DeleteHeader Int
-  | AskRun
-  | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
-  | RemoteComputationDone RequestComputationResult -- request ran from the server
-  | RemoteComputationFailed
-  | ServerError
-  | AskSave
-  | SaveSuccessfully
-  | Animate Animation.Msg
+    = UpdateUrl String
+    | SetHttpMethod HttpMethod
+    | SetHttpBody String
+    | SetHttpBodyResponse String
+    | AddHeaderInput
+    | UpdateHeaderKey Int String
+    | UpdateHeaderValue Int String
+    | DeleteHeader Int
+    | AskRun
+    | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
+    | RemoteComputationDone RequestComputationResult -- request ran from the server
+    | RemoteComputationFailed
+    | ServerError
+    | AskSave
+    | SaveSuccessfully
+    | Animate Animation.Msg
+
 
 
 -- * update
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateUrl newHttpUrl ->
@@ -89,19 +86,19 @@ update msg model =
                 newModel =
                     { model | httpUrl = changeEditedValue newHttpUrl model.httpUrl }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         SetHttpMethod newMethod ->
             let
                 newModel =
                     { model | httpMethod = changeEditedValue newMethod model.httpMethod }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         UpdateHeaderKey idx newKey ->
             let
                 editedHttpHeaders =
-                    List.updateAt idx (\(_, value) -> (newKey, value)) (editedOrNotEditedValue model.httpHeaders)
+                    List.updateAt idx (\( _, value ) -> ( newKey, value )) (editedOrNotEditedValue model.httpHeaders)
 
                 newHttpHeaders =
                     changeEditedValue editedHttpHeaders model.httpHeaders
@@ -109,12 +106,12 @@ update msg model =
                 newModel =
                     { model | httpHeaders = newHttpHeaders }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         UpdateHeaderValue idx newValue ->
             let
                 editedHttpHeaders =
-                    List.updateAt idx (\(key, _) -> (key, newValue)) (editedOrNotEditedValue model.httpHeaders)
+                    List.updateAt idx (\( key, _ ) -> ( key, newValue )) (editedOrNotEditedValue model.httpHeaders)
 
                 newHttpHeaders =
                     changeEditedValue editedHttpHeaders model.httpHeaders
@@ -122,14 +119,14 @@ update msg model =
                 newModel =
                     { model | httpHeaders = newHttpHeaders }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         SetHttpBody httpBody ->
             let
                 newModel =
                     { model | httpBody = changeEditedValue httpBody model.httpBody }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         AskSave ->
             let
@@ -145,7 +142,7 @@ update msg model =
                 newMsg =
                     Client.putApiRequestCollectionByRequestCollectionIdByRequestNodeId "" "" 1 model.id payload updateRequestFileResultToMsg
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         SaveSuccessfully ->
             let
@@ -158,7 +155,7 @@ update msg model =
                         , httpBody = NotEdited (editedOrNotEditedValue model.httpBody)
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         AskRun ->
             let
@@ -166,10 +163,13 @@ update msg model =
                     buildRequestToRun model.keyValues model
 
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.loop [ Animation.to [ Animation.rotate (Animation.turn 1) ]
-                                                         , Animation.set [ Animation.rotate (Animation.turn 0) ]
-                                                         ]
-                                        ] model.runRequestIconAnimation
+                    Animation.interrupt
+                        [ Animation.loop
+                            [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                            , Animation.set [ Animation.rotate (Animation.turn 0) ]
+                            ]
+                        ]
+                        model.runRequestIconAnimation
 
                 newModel =
                     { model
@@ -177,14 +177,16 @@ update msg model =
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
-                (newModel, newMsg)
+            ( newModel, newMsg )
 
         RemoteComputationDone remoteComputationResult ->
             let
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 1) ]
-                                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
-                                        ] model.runRequestIconAnimation
+                    Animation.interrupt
+                        [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
+                        ]
+                        model.runRequestIconAnimation
 
                 newModel =
                     { model
@@ -192,21 +194,24 @@ update msg model =
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         RemoteComputationFailed ->
             let
                 newRunRequestIconAnimation =
-                    Animation.interrupt [ Animation.to [ Animation.rotate (Animation.turn 1) ]
-                                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
-                                        ] model.runRequestIconAnimation
+                    Animation.interrupt
+                        [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
+                        ]
+                        model.runRequestIconAnimation
+
                 newModel =
                     { model
                         | requestComputationResult = Nothing
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         LocalComputationDone result ->
             let
@@ -215,8 +220,7 @@ update msg model =
                         | requestComputationResult = Just (convertResultToResponse result)
                     }
             in
-                (newModel, Cmd.none)
-
+            ( newModel, Cmd.none )
 
         SetHttpBodyResponse newBody ->
             case model.requestComputationResult of
@@ -224,25 +228,26 @@ update msg model =
                     let
                         newRequestComputationOutput =
                             { response | body = newBody }
+
                         newModel =
                             { model
                                 | requestComputationResult = Just (RequestComputationSucceeded newRequestComputationOutput)
                             }
                     in
-                        (newModel, Cmd.none)
+                    ( newModel, Cmd.none )
 
                 _ ->
-                    (model, Cmd.none)
+                    ( model, Cmd.none )
 
         AddHeaderInput ->
             let
                 newHttpHeaders =
-                    Edited (notEditedValue model.httpHeaders) (editedOrNotEditedValue model.httpHeaders ++ [ ("", "") ])
+                    Edited (notEditedValue model.httpHeaders) (editedOrNotEditedValue model.httpHeaders ++ [ ( "", "" ) ])
 
                 newModel =
                     { model | httpHeaders = newHttpHeaders }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         DeleteHeader idx ->
             let
@@ -255,24 +260,25 @@ update msg model =
                 newModel =
                     { model | httpHeaders = newHttpHeaders }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         Animate subMsg ->
             let
                 newModel =
                     { model
                         | runRequestIconAnimation =
-                          Animation.update subMsg model.runRequestIconAnimation
+                            Animation.update subMsg model.runRequestIconAnimation
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         ServerError ->
             let
                 newModel =
                     { model | notification = Just "server error" }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
+
 
 
 -- * util
@@ -280,12 +286,14 @@ update msg model =
 
 isBuilderDirty : Model -> Bool
 isBuilderDirty model =
-    isDirty model.httpMethod ||
-        isDirty model.httpHeaders ||
-            List.any isDirty [ model.name
-                             , model.httpUrl
-                             , model.httpBody
-                             ]
+    isDirty model.httpMethod
+        || isDirty model.httpHeaders
+        || List.any isDirty
+            [ model.name
+            , model.httpUrl
+            , model.httpBody
+            ]
+
 
 updateRequestFileResultToMsg : Result Http.Error () -> Msg
 updateRequestFileResultToMsg result =
@@ -307,24 +315,31 @@ remoteComputationDoneToMsg result =
         Err error ->
             RemoteComputationFailed
 
-parseHeaders : String -> List(String, String)
+
+parseHeaders : String -> List ( String, String )
 parseHeaders headers =
-  let
-    parseRawHeader : String -> (String, String)
-    parseRawHeader rawHeader =
-      case String.split ":" rawHeader of
-        [headerKey, headerValue] -> (headerKey, headerValue)
-        _ -> ("", "")
-  in
-      String.lines headers |> List.map parseRawHeader
+    let
+        parseRawHeader : String -> ( String, String )
+        parseRawHeader rawHeader =
+            case String.split ":" rawHeader of
+                [ headerKey, headerValue ] ->
+                    ( headerKey, headerValue )
+
+                _ ->
+                    ( "", "" )
+    in
+    String.lines headers |> List.map parseRawHeader
+
 
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> Model -> Cmd Msg
 buildRequestToRun envKeyValues builder =
     let
-        request = buildRequestComputationInput envKeyValues builder
+        request =
+            buildRequestComputationInput envKeyValues builder
 
-        mkHeader : (String, String) -> Http.Header
-        mkHeader (headerKey, headerValue) = Http.header headerKey headerValue
+        mkHeader : ( String, String ) -> Http.Header
+        mkHeader ( headerKey, headerValue ) =
+            Http.header headerKey headerValue
 
         schemeToString : Scheme -> String
         schemeToString scheme =
@@ -334,30 +349,28 @@ buildRequestToRun envKeyValues builder =
 
                 Https ->
                     "https"
-
     in
-        case isPrivateAddress request.url of
-            True ->
-                let
-                    cmdRequest =
-                        { method = methodToString request.method
-                        , headers = List.map mkHeader request.headers
-                        , url = (schemeToString request.scheme) ++ "://" ++ request.url
-                        , body = Http.stringBody "application/json" request.body
-                        , expect = expectStringDetailed LocalComputationDone
-                        , timeout = Nothing
-                        , tracker = Nothing
-                        }
+    case isPrivateAddress request.url of
+        True ->
+            let
+                cmdRequest =
+                    { method = methodToString request.method
+                    , headers = List.map mkHeader request.headers
+                    , url = schemeToString request.scheme ++ "://" ++ request.url
+                    , body = Http.stringBody "application/json" request.body
+                    , expect = expectStringDetailed LocalComputationDone
+                    , timeout = Nothing
+                    , tracker = Nothing
+                    }
+            in
+            Http.request cmdRequest
 
-                in
-                    Http.request cmdRequest
-
-            False ->
-                let
-                    backRequestComputationInput =
-                        Client.convertRequestComputationInputFromFrontToBack request
-                in
-                    Client.postApiRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
+        False ->
+            let
+                backRequestComputationInput =
+                    Client.convertRequestComputationInputFromFrontToBack request
+            in
+            Client.postApiRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError
@@ -365,6 +378,7 @@ type DetailedError
     | Timeout
     | NetworkError
     | BadStatus Http.Metadata String
+
 
 convertResponseStringToResult : Http.Response String -> Result DetailedError ( Http.Metadata, String )
 convertResponseStringToResult httpResponse =
@@ -384,7 +398,8 @@ convertResponseStringToResult httpResponse =
         Http.GoodStatus_ metadata body ->
             Ok ( metadata, body )
 
-convertResultToResponse : Result DetailedError (Http.Metadata, String) -> RequestComputationResult
+
+convertResultToResponse : Result DetailedError ( Http.Metadata, String ) -> RequestComputationResult
 convertResultToResponse result =
     case result of
         Err (BadUrl url) ->
@@ -397,22 +412,26 @@ convertResultToResponse result =
             RequestComputationFailed (ConnectionFailure "network error")
 
         Err (BadStatus metadata body) ->
-            RequestComputationSucceeded { statusCode = metadata.statusCode
-                                        , statusText = metadata.statusText
-                                        , headers = metadata.headers
-                                        , body = body
-                                        }
+            RequestComputationSucceeded
+                { statusCode = metadata.statusCode
+                , statusText = metadata.statusText
+                , headers = metadata.headers
+                , body = body
+                }
 
-        Ok (metadata, body) ->
-            RequestComputationSucceeded { statusCode = metadata.statusCode
-                                        , statusText = metadata.statusText
-                                        , headers = metadata.headers
-                                        , body = body
-                                        }
+        Ok ( metadata, body ) ->
+            RequestComputationSucceeded
+                { statusCode = metadata.statusCode
+                , statusText = metadata.statusText
+                , headers = metadata.headers
+                , body = body
+                }
+
 
 expectStringDetailed : (Result DetailedError ( Http.Metadata, String ) -> msg) -> Http.Expect msg
 expectStringDetailed msg =
     Http.expectStringResponse msg convertResponseStringToResult
+
 
 
 -- * view
@@ -424,44 +443,49 @@ view model =
         builderView =
             column [ width fill, spacing 10 ]
                 [ column [ width fill ]
-                      [ row [ width fill, spacing 10 ]
-                            [ urlView model
-                            ]
-                      ]
+                    [ row [ width fill, spacing 10 ]
+                        [ urlView model
+                        ]
+                    ]
                 , methodView model
                 , headersView model
                 , bodyView model
                 ]
     in
-        case model.showResponseView of
-            False ->
-                column [ width fill
-                       , Background.color white
-                       , boxShadow
-                       , padding 20
-                       ]
-                    [ titleView model
-                    , el [ width fill ] builderView
-                    ]
+    case model.showResponseView of
+        False ->
+            column
+                [ width fill
+                , Background.color white
+                , boxShadow
+                , padding 20
+                ]
+                [ titleView model
+                , el [ width fill ] builderView
+                ]
 
-            True ->
-                wrappedRow [ alignTop, width fill, spacing 10 ]
-                    [ column [ width (fillPortion 1)
-                             , alignTop
-                             , Background.color white
-                             , boxShadow
-                             , padding 20
-                             ]
-                          [ titleView model
-                          , el [ alignTop ] builderView
-                          ]
-                    , el [ width (fillPortion 1)
-                         , Background.color white
-                         , boxShadow
-                         , alignTop
-                         , padding 30
-                         ] (responseView model)
+        True ->
+            wrappedRow [ alignTop, width fill, spacing 10 ]
+                [ column
+                    [ width (fillPortion 1)
+                    , alignTop
+                    , Background.color white
+                    , boxShadow
+                    , padding 20
                     ]
+                    [ titleView model
+                    , el [ alignTop ] builderView
+                    ]
+                , el
+                    [ width (fillPortion 1)
+                    , Background.color white
+                    , boxShadow
+                    , alignTop
+                    , padding 30
+                    ]
+                    (responseView model)
+                ]
+
 
 
 -- ** title
@@ -470,12 +494,14 @@ view model =
 titleView : Model -> Element Msg
 titleView model =
     let
-        name = notEditedValue model.name
+        name =
+            notEditedValue model.name
     in
-        row [ paddingXY 0 10, spacing 10 ]
-            [ el [] <| iconWithTextAndColor "label" (name) secondaryColor
-            , mainActionButtonsView model
-            ]
+    row [ paddingXY 0 10, spacing 10 ]
+        [ el [] <| iconWithTextAndColor "label" name secondaryColor
+        , mainActionButtonsView model
+        ]
+
 
 mainActionButtonsView : Model -> Element Msg
 mainActionButtonsView model =
@@ -505,24 +531,24 @@ mainActionButtonsView model =
                 attrs =
                     Animation.render model.runRequestIconAnimation
             in
-                iconWithTextAndColorAndAttr "send" "Run" primaryColor attrs
-
+            iconWithTextAndColorAndAttr "send" "Run" primaryColor attrs
     in
-        row rowParam
-            [ Input.button inputParam
-                { onPress = Just <| AskRun
-                , label = el [ centerY ] runIcon
-                }
-            , case isBuilderDirty model of
-                  True ->
-                      Input.button inputParam
-                          { onPress = Just <| AskSave
-                          , label = el [ centerY ] <| iconWithTextAndColor "save" "Save" primaryColor
-                          }
+    row rowParam
+        [ Input.button inputParam
+            { onPress = Just <| AskRun
+            , label = el [ centerY ] runIcon
+            }
+        , case isBuilderDirty model of
+            True ->
+                Input.button inputParam
+                    { onPress = Just <| AskSave
+                    , label = el [ centerY ] <| iconWithTextAndColor "save" "Save" primaryColor
+                    }
 
-                  False ->
-                      none
-            ]
+            False ->
+                none
+        ]
+
 
 
 -- ** response
@@ -536,29 +562,38 @@ responseView model =
             case Dict.get "content-type" responseHeaders of
                 Just contentType ->
                     case String.contains "application/json" contentType of
-                        True -> Result.withDefault body (Json.prettyString { indent = 4, columns = 4 } body)
-                        False -> body
-                _ -> body
+                        True ->
+                            Result.withDefault body (Json.prettyString { indent = 4, columns = 4 } body)
+
+                        False ->
+                            body
+
+                _ ->
+                    body
 
         statusResponseView : RequestComputationOutput -> Element Msg
         statusResponseView requestComputationOutput =
             let
                 statusText =
                     String.fromInt requestComputationOutput.statusCode
+
                 statusLabel =
                     if requestComputationOutput.statusCode >= 200 && requestComputationOutput.statusCode < 300 then
                         labelSuccess statusText
+
                     else if requestComputationOutput.statusCode >= 400 && requestComputationOutput.statusCode < 500 then
                         labelWarning statusText
+
                     else if requestComputationOutput.statusCode >= 500 then
                         labelError statusText
+
                     else
                         labelWarning statusText
-                    in
-                        column [ spacing 5 ]
-                            [ text "status: "
-                            , statusLabel
-                            ]
+            in
+            column [ spacing 5 ]
+                [ text "status: "
+                , statusLabel
+                ]
 
         headersResponseView : RequestComputationOutput -> Element Msg
         headersResponseView requestComputationOutput =
@@ -568,13 +603,13 @@ responseView model =
                         |> List.map (joinTuple ": ")
                         |> String.join "\n"
             in
-                Input.multiline []
-                    { onChange = SetHttpBody
-                    , text = headers
-                    , placeholder = Nothing
-                    , label = labelInputView "Headers: "
-                    , spellcheck = False
-                    }
+            Input.multiline []
+                { onChange = SetHttpBody
+                , text = headers
+                , placeholder = Nothing
+                , label = labelInputView "Headers: "
+                , spellcheck = False
+                }
 
         bodyResponseView : RequestComputationOutput -> Element Msg
         bodyResponseView requestComputationOutput =
@@ -586,7 +621,8 @@ responseView model =
                     Input.multiline []
                         { onChange = SetHttpBodyResponse
                         , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
-                        , placeholder = Nothing                                , label = labelInputView "body: "
+                        , placeholder = Nothing
+                        , label = labelInputView "body: "
                         , spellcheck = False
                         }
 
@@ -594,21 +630,21 @@ responseView model =
             [ centerX
             , centerY
             ]
-
     in
-        case model.requestComputationResult of
-            Nothing ->
-                none
+    case model.requestComputationResult of
+        Nothing ->
+            none
 
-            Just (RequestComputationSucceeded requestComputationOutput) ->
-                column [ spacing 10 ]
-                    [ statusResponseView requestComputationOutput
-                    , bodyResponseView requestComputationOutput
-                    , headersResponseView requestComputationOutput
-                    ]
+        Just (RequestComputationSucceeded requestComputationOutput) ->
+            column [ spacing 10 ]
+                [ statusResponseView requestComputationOutput
+                , bodyResponseView requestComputationOutput
+                , headersResponseView requestComputationOutput
+                ]
 
-            Just (RequestComputationFailed httpException) ->
-                el errorAttributes (text (httpExceptionToMessage httpException))
+        Just (RequestComputationFailed httpException) ->
+            el errorAttributes (text (httpExceptionToMessage httpException))
+
 
 
 -- ** url
@@ -625,6 +661,7 @@ urlView model =
             }
 
 
+
 -- ** method
 
 
@@ -635,15 +672,16 @@ methodView model =
         , selected = Just <| editedOrNotEditedValue model.httpMethod
         , label = labelInputView "Method: "
         , options =
-              [ Input.option HttpGet (text "Get")
-              , Input.option HttpPost (text "Post")
-              , Input.option HttpPut (text "Put")
-              , Input.option HttpDelete (text "Delete")
-              , Input.option HttpPatch (text "Patch")
-              , Input.option HttpHead (text "Head")
-              , Input.option HttpOptions (text "Options")
-              ]
+            [ Input.option HttpGet (text "Get")
+            , Input.option HttpPost (text "Post")
+            , Input.option HttpPut (text "Put")
+            , Input.option HttpDelete (text "Delete")
+            , Input.option HttpPatch (text "Patch")
+            , Input.option HttpHead (text "Head")
+            , Input.option HttpOptions (text "Options")
+            ]
         }
+
 
 
 -- ** header
@@ -665,14 +703,15 @@ headersView model =
                         ]
                 }
     in
-        column [ width fill, spacing 20 ]
-            [ text "Header:"
-            , column [ width fill, spacing 10 ] headerInputs
-            , addHeaderButton
-            ]
+    column [ width fill, spacing 20 ]
+        [ text "Header:"
+        , column [ width fill, spacing 10 ] headerInputs
+        , addHeaderButton
+        ]
 
-headerView : Model -> Int -> (String, String) -> Element Msg
-headerView model idx (headerKey, headerValue) =
+
+headerView : Model -> Int -> ( String, String ) -> Element Msg
+headerView model idx ( headerKey, headerValue ) =
     row [ width fill, spacing 10 ]
         [ Input.text [ Util.onEnter AskRun ]
             { onChange = UpdateHeaderKey idx
@@ -696,6 +735,7 @@ headerView model idx (headerKey, headerValue) =
         ]
 
 
+
 -- ** body
 
 
@@ -710,6 +750,7 @@ bodyView model =
         }
 
 
+
 -- ** util
 
 
@@ -717,16 +758,19 @@ labelInputView : String -> Input.Label Msg
 labelInputView labelText =
     let
         size =
-            width (fill
-                  |> maximum 100
-                  |> minimum 100
-                  )
+            width
+                (fill
+                    |> maximum 100
+                    |> minimum 100
+                )
     in
-        Input.labelAbove [ centerY, size ] <| text labelText
+    Input.labelAbove [ centerY, size ] <| text labelText
 
-joinTuple : String -> (String, String) -> String
-joinTuple separator (key, value) =
+
+joinTuple : String -> ( String, String ) -> String
+joinTuple separator ( key, value ) =
     key ++ separator ++ value
+
 
 
 -- * subscriptions
@@ -735,7 +779,9 @@ joinTuple separator (key, value) =
 type alias ModelSubscriptions a =
     { a | runRequestIconAnimation : Animation.State }
 
+
 subscriptions : ModelSubscriptions a -> Sub Msg
 subscriptions model =
-    Sub.batch [ Animation.subscription Animate [ model.runRequestIconAnimation ]
-              ]
+    Sub.batch
+        [ Animation.subscription Animate [ model.runRequestIconAnimation ]
+        ]

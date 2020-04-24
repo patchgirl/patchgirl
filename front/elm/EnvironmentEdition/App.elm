@@ -1,23 +1,20 @@
 module EnvironmentEdition.App exposing (..)
 
-import List.Extra as List
-
+import Api.Converter as Client
+import Api.Generated as Client
+import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Input as Input
 import Element.Events as Events
-import Util exposing (..)
-import Application.Type exposing (..)
-import Api.Generated as Client
-import Api.Converter as Client
+import Element.Input as Input
 import Http
-import Application.Type exposing (..)
+import List.Extra as List
+import Util exposing (..)
+
 
 
 -- * environment edition
-
-
 -- ** model
 
 
@@ -28,6 +25,7 @@ type alias Model a =
         , selectedEnvironmentToEditId : Maybe Int
     }
 
+
 defaultEnvironment : Environment
 defaultEnvironment =
     { id = 0
@@ -37,173 +35,176 @@ defaultEnvironment =
     }
 
 
+
 -- ** message
 
 
 type Msg
-  = SelectEnvToEdit Int
-  | EnvironmentKeyValueEditionMsg KeyValueMsg
-  | AskEnvironmentCreation String
-  | EnvironmentCreated Int String
-  | ChangeName Int String
-  | AskRename Int String
-  | EnvironmentRenamed Int String
-  | AskDelete Int
-  | EnvironmentDeleted Int
-  | EnvServerError
-  | ShowRenameInput Int
+    = SelectEnvToEdit Int
+    | EnvironmentKeyValueEditionMsg KeyValueMsg
+    | AskEnvironmentCreation String
+    | EnvironmentCreated Int String
+    | ChangeName Int String
+    | AskRename Int String
+    | EnvironmentRenamed Int String
+    | AskDelete Int
+    | EnvironmentDeleted Int
+    | EnvServerError
+    | ShowRenameInput Int
+
 
 
 -- ** update
 
 
-update : Msg -> Model a -> (Model a, Cmd Msg)
+update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
-  case msg of
-    SelectEnvToEdit id ->
-      let
-          newModel =
-              { model | selectedEnvironmentToEditId = Just id }
-      in
-          (newModel, Cmd.none)
+    case msg of
+        SelectEnvToEdit id ->
+            let
+                newModel =
+                    { model | selectedEnvironmentToEditId = Just id }
+            in
+            ( newModel, Cmd.none )
 
-    AskEnvironmentCreation name ->
-        let
-            payload =
-                Client.NewEnvironment { newEnvironmentName = name }
+        AskEnvironmentCreation name ->
+            let
+                payload =
+                    Client.NewEnvironment { newEnvironmentName = name }
 
-            newMsg =
-                Client.postApiEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)
-        in
-            (model, newMsg)
+                newMsg =
+                    Client.postApiEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)
+            in
+            ( model, newMsg )
 
-    EnvironmentCreated id name ->
-        let
-            newEnvironment =
-                { id = id
-                , name = NotEdited name
-                , showRenameInput = True
-                , keyValues = []
-                }
+        EnvironmentCreated id name ->
+            let
+                newEnvironment =
+                    { id = id
+                    , name = NotEdited name
+                    , showRenameInput = True
+                    , keyValues = []
+                    }
 
-            newEnvironments =
-                model.environments ++ [ newEnvironment ]
+                newEnvironments =
+                    model.environments ++ [ newEnvironment ]
 
-            newModel =
-                { model | environments = newEnvironments }
-        in
-            (newModel, Cmd.none)
+                newModel =
+                    { model | environments = newEnvironments }
+            in
+            ( newModel, Cmd.none )
 
-    EnvServerError ->
-        Debug.todo "server error :-("
+        EnvServerError ->
+            Debug.todo "server error :-("
 
-    ShowRenameInput id ->
-        let
-            updateEnv old =
-                { old | showRenameInput = True }
+        ShowRenameInput id ->
+            let
+                updateEnv old =
+                    { old | showRenameInput = True }
 
-            newEnvironments =
-                List.updateIf (\elem -> elem.id == id) updateEnv model.environments
+                newEnvironments =
+                    List.updateIf (\elem -> elem.id == id) updateEnv model.environments
 
-            newModel =
-                { model | environments = newEnvironments }
-        in
-            (newModel, Cmd.none)
+                newModel =
+                    { model | environments = newEnvironments }
+            in
+            ( newModel, Cmd.none )
 
-    AskRename id name ->
-        let
-            payload =
-                Client.UpdateEnvironment { updateEnvironmentName = name }
+        AskRename id name ->
+            let
+                payload =
+                    Client.UpdateEnvironment { updateEnvironmentName = name }
 
-            newMsg =
-                Client.putApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id name)
-        in
-            (model, newMsg)
+                newMsg =
+                    Client.putApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id name)
+            in
+            ( model, newMsg )
 
-    EnvironmentRenamed id name ->
-        let
-            updateEnv old =
-                { old
-                    | name = NotEdited name
-                    , showRenameInput = False
-                }
+        EnvironmentRenamed id name ->
+            let
+                updateEnv old =
+                    { old
+                        | name = NotEdited name
+                        , showRenameInput = False
+                    }
 
-            mNewEnvs =
-                List.updateIf (\elem -> elem.id == id) updateEnv model.environments
+                mNewEnvs =
+                    List.updateIf (\elem -> elem.id == id) updateEnv model.environments
 
-            newModel =
-                { model
-                    | environments = mNewEnvs
-                }
-        in
-            (newModel, Cmd.none)
+                newModel =
+                    { model
+                        | environments = mNewEnvs
+                    }
+            in
+            ( newModel, Cmd.none )
 
-    AskDelete id ->
-        let
-            newMsg =
-                Client.deleteApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id (deleteEnvironmentResultToMsg id)
-        in
-            (model, newMsg)
+        AskDelete id ->
+            let
+                newMsg =
+                    Client.deleteApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id (deleteEnvironmentResultToMsg id)
+            in
+            ( model, newMsg )
 
-    EnvironmentDeleted id ->
-        let
-            newEnvironments =
-                List.filter (\elem -> elem.id /= id) model.environments
+        EnvironmentDeleted id ->
+            let
+                newEnvironments =
+                    List.filter (\elem -> elem.id /= id) model.environments
 
-            newSelectedEnvironmentToEditId =
-                case model.selectedEnvironmentToEditId == Just id of
-                    True -> Nothing
-                    False -> model.selectedEnvironmentToEditId
+                newSelectedEnvironmentToEditId =
+                    case model.selectedEnvironmentToEditId == Just id of
+                        True ->
+                            Nothing
 
-            newModel =
-                { model
-                    | selectedEnvironmentToEditId = newSelectedEnvironmentToEditId
-                    , environments = newEnvironments
-                }
+                        False ->
+                            model.selectedEnvironmentToEditId
 
-        in
-            (newModel, Cmd.none)
+                newModel =
+                    { model
+                        | selectedEnvironmentToEditId = newSelectedEnvironmentToEditId
+                        , environments = newEnvironments
+                    }
+            in
+            ( newModel, Cmd.none )
 
-    ChangeName id name ->
-        let
-            updateEnv old =
-                let
-                    newName =
-                        changeEditedValue name old.name
-                in
+        ChangeName id name ->
+            let
+                updateEnv old =
+                    let
+                        newName =
+                            changeEditedValue name old.name
+                    in
                     { old | name = newName }
 
-            mNewEnvs =
-                List.updateIf (\elem -> elem.id == id) updateEnv model.environments
+                mNewEnvs =
+                    List.updateIf (\elem -> elem.id == id) updateEnv model.environments
 
-            newModel =
-                { model
-                    | environments = mNewEnvs
-                }
-      in
-          (newModel, Cmd.none)
+                newModel =
+                    { model
+                        | environments = mNewEnvs
+                    }
+            in
+            ( newModel, Cmd.none )
 
+        EnvironmentKeyValueEditionMsg subMsg ->
+            case getEnvironmentToEdit model of
+                Nothing ->
+                    ( model, Cmd.none )
 
-    EnvironmentKeyValueEditionMsg subMsg ->
-        case getEnvironmentToEdit model of
-            Nothing ->
-                (model, Cmd.none)
+                Just environment ->
+                    case ( updateKeyValue subMsg ( model.session, environment ), model.selectedEnvironmentToEditId ) of
+                        ( ( newEnvironment, newSubMsg ), Just id ) ->
+                            let
+                                newEnvironments =
+                                    List.updateIf (\env -> env.id == id) (\_ -> newEnvironment) model.environments
 
-            Just environment ->
-                case ((updateKeyValue subMsg (model.session, environment)), model.selectedEnvironmentToEditId) of
-                    ((newEnvironment, newSubMsg), Just id) ->
-                        let
-                            newEnvironments =
-                                List.updateIf (\env -> env.id == id) (\_ -> newEnvironment) model.environments
+                                newModel =
+                                    { model | environments = newEnvironments }
+                            in
+                            ( newModel, Cmd.map EnvironmentKeyValueEditionMsg newSubMsg )
 
-                            newModel =
-                                { model | environments = newEnvironments }
+                        _ ->
+                            Debug.todo "error when trying to edit environment key value"
 
-                        in
-                            (newModel, Cmd.map EnvironmentKeyValueEditionMsg newSubMsg)
-
-                    _ ->
-                        Debug.todo "error when trying to edit environment key value"
 
 
 -- ** util
@@ -218,6 +219,7 @@ newEnvironmentResultToMsg name result =
         Err error ->
             EnvServerError
 
+
 updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
 updateEnvironmentResultToMsg id name result =
     case result of
@@ -226,6 +228,7 @@ updateEnvironmentResultToMsg id name result =
 
         Err error ->
             Debug.todo "server error" EnvServerError
+
 
 deleteEnvironmentResultToMsg : Int -> Result Http.Error () -> Msg
 deleteEnvironmentResultToMsg id result =
@@ -236,13 +239,16 @@ deleteEnvironmentResultToMsg id result =
         Err error ->
             Debug.todo "server error" EnvServerError
 
+
 getEnvironmentToEdit : Model a -> Maybe Environment
 getEnvironmentToEdit model =
     let
         selectEnvironment : Int -> Maybe Environment
-        selectEnvironment id = List.find (\env -> env.id == id) model.environments
+        selectEnvironment id =
+            List.find (\env -> env.id == id) model.environments
     in
-        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
+    Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
+
 
 
 -- ** view
@@ -266,8 +272,8 @@ view model =
                             , id = selectedEnv.id
                             }
                     in
-                        el []
-                            <| map EnvironmentKeyValueEditionMsg (envKeyValueView subModel)
+                    el [] <|
+                        map EnvironmentKeyValueEditionMsg (envKeyValueView subModel)
 
                 Nothing ->
                     el [] (text "no environment selected")
@@ -277,89 +283,98 @@ view model =
 
         addEnvButtonView =
             Input.button []
-                { onPress = Just <| (AskEnvironmentCreation "new environment")
+                { onPress = Just <| AskEnvironmentCreation "new environment"
                 , label =
                     row []
                         [ addIcon
                         , el [] (text "Add environment")
                         ]
                 }
-
     in
-        wrappedRow [ width fill
-                   , centerX
-                   , paddingXY 30 10
-                   , spacing 20
-                   ]
-        [ column [ alignLeft
-                   , alignTop
-                   , spacing 10
-                   , padding 10
-                   , Background.color white
-                   , boxShadow
-                   ]
-                [ column [ spacing 10 ] envListView
-                , el [ centerX ] addEnvButtonView
-                ]
-          , el [ centerX
-               , alignTop
-               , padding 20
-               , spacing 10
-               , Background.color white
-               , boxShadow
-               ] keyValuesEditionView
-          ]
+    wrappedRow
+        [ width fill
+        , centerX
+        , paddingXY 30 10
+        , spacing 20
+        ]
+        [ column
+            [ alignLeft
+            , alignTop
+            , spacing 10
+            , padding 10
+            , Background.color white
+            , boxShadow
+            ]
+            [ column [ spacing 10 ] envListView
+            , el [ centerX ] addEnvButtonView
+            ]
+        , el
+            [ centerX
+            , alignTop
+            , padding 20
+            , spacing 10
+            , Background.color white
+            , boxShadow
+            ]
+            keyValuesEditionView
+        ]
 
 
 entryView : Maybe Int -> Environment -> Element Msg
 entryView mSelectedEnvId environment =
-  let
-    readView =
-        Input.button []
-            { onPress = Just <| (SelectEnvToEdit environment.id)
-            , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) secondaryColor
-            }
+    let
+        readView =
+            Input.button []
+                { onPress = Just <| SelectEnvToEdit environment.id
+                , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) secondaryColor
+                }
 
-    editView =
-        Input.text [ Util.onEnterWithInput (AskRename environment.id) ]
-            { onChange = (ChangeName environment.id)
-            , text = editedOrNotEditedValue environment.name
-            , placeholder = Just <| Input.placeholder [] (text "environment name")
-            , label = Input.labelHidden "rename environment"
-            }
+        editView =
+            Input.text [ Util.onEnterWithInput (AskRename environment.id) ]
+                { onChange = ChangeName environment.id
+                , text = editedOrNotEditedValue environment.name
+                , placeholder = Just <| Input.placeholder [] (text "environment name")
+                , label = Input.labelHidden "rename environment"
+                }
 
-    modeView =
-      case environment.showRenameInput of
-        True -> editView
-        False -> readView
+        modeView =
+            case environment.showRenameInput of
+                True ->
+                    editView
 
-  in
+                False ->
+                    readView
+    in
     row [ spacing 5 ]
-      [ modeView
-      , Input.button []
-          { onPress = Just <| (ShowRenameInput environment.id)
-          , label = editIcon
-          }
-      , Input.button []
-          { onPress = Just <| (AskDelete environment.id)
-          , label = el [] deleteIcon
-          }
-      ]
+        [ modeView
+        , Input.button []
+            { onPress = Just <| ShowRenameInput environment.id
+            , label = editIcon
+            }
+        , Input.button []
+            { onPress = Just <| AskDelete environment.id
+            , label = el [] deleteIcon
+            }
+        ]
+
 
 labelInputView : String -> Input.Label Msg
 labelInputView labelText =
     let
         size =
-            width (fill
-                  |> maximum 100
-                  |> minimum 100
-                  )
+            width
+                (fill
+                    |> maximum 100
+                    |> minimum 100
+                )
     in
-        Input.labelAbove [ centerY, size ] <| text labelText
+    Input.labelAbove [ centerY, size ] <| text labelText
+
 
 
 -- * environment key value edition
 -- ** model
+
 
 type alias KeyValueModel a =
     { a
@@ -368,27 +383,34 @@ type alias KeyValueModel a =
         , id : Int
     }
 
+
 newDefaultKeyValue : Storable NewKeyValue KeyValue
 newDefaultKeyValue =
     New { key = "", value = "" }
 
+
+
 -- ** message
 
+
 type KeyValueMsg
-  = PromptKey Int String
-  | PromptValue Int String
-  | AddNewInput
-  | AskSave
-  | KeyValuesUpserted (List (Storable NewKeyValue KeyValue))
-  | AskDeleteKeyValue Int
-  | KeyDeleted Int
-  | DeleteNewKeyValue Int
-  | KeyValueServerError
+    = PromptKey Int String
+    | PromptValue Int String
+    | AddNewInput
+    | AskSave
+    | KeyValuesUpserted (List (Storable NewKeyValue KeyValue))
+    | AskDeleteKeyValue Int
+    | KeyDeleted Int
+    | DeleteNewKeyValue Int
+    | KeyValueServerError
+
+
 
 -- ** update
 
-updateKeyValue : KeyValueMsg -> (Session, Environment) -> (Environment, Cmd KeyValueMsg)
-updateKeyValue msg (session, model) =
+
+updateKeyValue : KeyValueMsg -> ( Session, Environment ) -> ( Environment, Cmd KeyValueMsg )
+updateKeyValue msg ( session, model ) =
     case msg of
         PromptKey idx newKey ->
             let
@@ -398,7 +420,7 @@ updateKeyValue msg (session, model) =
                 newModel =
                     { model | keyValues = newKeyValues }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         PromptValue idx newValue ->
             let
@@ -408,7 +430,7 @@ updateKeyValue msg (session, model) =
                 newModel =
                     { model | keyValues = newKeyValues }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         AddNewInput ->
             let
@@ -418,7 +440,7 @@ updateKeyValue msg (session, model) =
                 newModel =
                     { model | keyValues = newKeyValues }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         DeleteNewKeyValue idx ->
             let
@@ -428,14 +450,14 @@ updateKeyValue msg (session, model) =
                 newModel =
                     { model | keyValues = newKeyValues }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         AskDeleteKeyValue id ->
             let
                 newMsg =
                     Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken session) model.id id (deleteKeyValueResultToMsg id)
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         KeyDeleted id ->
             let
@@ -444,9 +466,8 @@ updateKeyValue msg (session, model) =
 
                 newModel =
                     { model | keyValues = newKeyValues }
-
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         AskSave ->
             let
@@ -456,19 +477,22 @@ updateKeyValue msg (session, model) =
                 newMsg =
                     Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken session) model.id updateKeyValues updateKeyValuesResultToMsg
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         KeyValuesUpserted newKeyValues ->
             let
                 newModel =
                     { model | keyValues = newKeyValues }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         KeyValueServerError ->
             Debug.todo "server error while handling key values"
 
+
+
 -- ** util
+
 
 updateKeyValuesResultToMsg : Result Http.Error (List Client.KeyValue) -> KeyValueMsg
 updateKeyValuesResultToMsg result =
@@ -478,7 +502,7 @@ updateKeyValuesResultToMsg result =
                 keyValues =
                     List.map Client.convertEnvironmentKeyValueFromBackToFront backKeyValues
             in
-                KeyValuesUpserted keyValues
+            KeyValuesUpserted keyValues
 
         Err error ->
             Debug.todo "server error" KeyValueServerError
@@ -493,6 +517,7 @@ deleteKeyValueResultToMsg id result =
         Err error ->
             Debug.todo "server error" KeyValueServerError
 
+
 removeKeyValueWithId : Int -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
 removeKeyValueWithId id keyValues =
     let
@@ -500,7 +525,7 @@ removeKeyValueWithId id keyValues =
         fold storable acc =
             case storable of
                 New new ->
-                    acc ++ [storable]
+                    acc ++ [ storable ]
 
                 Saved saved ->
                     case saved.id == id of
@@ -508,7 +533,7 @@ removeKeyValueWithId id keyValues =
                             acc
 
                         False ->
-                            acc ++ [storable]
+                            acc ++ [ storable ]
 
                 Edited2 saved edited ->
                     case saved.id == id of
@@ -516,10 +541,9 @@ removeKeyValueWithId id keyValues =
                             acc
 
                         False ->
-                            acc ++ [storable]
-
+                            acc ++ [ storable ]
     in
-        List.foldl fold [] keyValues
+    List.foldl fold [] keyValues
 
 
 changeKey : String -> Storable NewKeyValue KeyValue -> Storable NewKeyValue KeyValue
@@ -568,6 +592,7 @@ changeValue newValue storable =
                     Edited2 saved { edited | value = newValue }
 
 
+
 -- ** view
 
 
@@ -584,11 +609,12 @@ envKeyValueView model =
                         ]
                 }
     in
-        column [ spacing 10 ]
-            [ titleView model
-            , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
-            , el [ centerX ] addNewKeyValueView
-            ]
+    column [ spacing 10 ]
+        [ titleView model
+        , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
+        , el [ centerX ] addNewKeyValueView
+        ]
+
 
 titleView : KeyValueModel a -> Element KeyValueMsg
 titleView model =
@@ -599,17 +625,21 @@ titleView model =
         name =
             case isModelDirty of
                 True ->
-                    (editedOrNotEditedValue model.name) ++ "*"
+                    editedOrNotEditedValue model.name ++ "*"
 
                 False ->
                     editedOrNotEditedValue model.name
     in
-        row [ centerX, paddingXY 0 10, spacing 10 ]
-            [ el [] <| iconWithTextAndColor "label" name secondaryColor
-            , case isModelDirty of
-                  True -> mainActionButtonsView
-                  False -> none
-            ]
+    row [ centerX, paddingXY 0 10, spacing 10 ]
+        [ el [] <| iconWithTextAndColor "label" name secondaryColor
+        , case isModelDirty of
+            True ->
+                mainActionButtonsView
+
+            False ->
+                none
+        ]
+
 
 mainActionButtonsView : Element KeyValueMsg
 mainActionButtonsView =
@@ -624,10 +654,11 @@ mainActionButtonsView =
             , paddingXY 10 10
             ]
     in
-        Input.button inputParam
-            { onPress = Just <| AskSave
-            , label = el [ centerY] <| iconWithTextAndColor "save" "Save" primaryColor
-            }
+    Input.button inputParam
+        { onPress = Just <| AskSave
+        , label = el [ centerY ] <| iconWithTextAndColor "save" "Save" primaryColor
+        }
+
 
 viewKeyValue : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
 viewKeyValue idx sKeyValue =
@@ -636,54 +667,52 @@ viewKeyValue idx sKeyValue =
             case sKeyValue of
                 New new ->
                     Input.button []
-                        { onPress = Just <| (DeleteNewKeyValue idx)
+                        { onPress = Just <| DeleteNewKeyValue idx
                         , label = el [] deleteIcon
                         }
 
                 Saved saved ->
                     Input.button []
-                        { onPress = Just <| (AskDeleteKeyValue saved.id)
+                        { onPress = Just <| AskDeleteKeyValue saved.id
                         , label = el [] deleteIcon
                         }
 
                 Edited2 saved _ ->
                     Input.button []
-                        { onPress = Just <| (AskDeleteKeyValue saved.id)
+                        { onPress = Just <| AskDeleteKeyValue saved.id
                         , label = el [] deleteIcon
                         }
-
     in
-        row [ spacing 5 ]
-            [ Input.text []
-                  { onChange = (PromptKey idx)
-                  , text =
-                      case sKeyValue of
-                          New { key } ->
-                              key
+    row [ spacing 5 ]
+        [ Input.text []
+            { onChange = PromptKey idx
+            , text =
+                case sKeyValue of
+                    New { key } ->
+                        key
 
-                          Saved { key } ->
-                              key
+                    Saved { key } ->
+                        key
 
-                          Edited2 _ { key } ->
-                              key
+                    Edited2 _ { key } ->
+                        key
+            , placeholder = Just <| Input.placeholder [] (text "key")
+            , label = Input.labelHidden "Key: "
+            }
+        , Input.text []
+            { onChange = PromptValue idx
+            , text =
+                case sKeyValue of
+                    New { value } ->
+                        value
 
-                  , placeholder = Just <| Input.placeholder [] (text "key")
-                  , label = Input.labelHidden "Key: "
-                  }
-            , Input.text []
-                { onChange = (PromptValue idx)
-                , text =
-                    case sKeyValue of
-                        New { value } ->
-                            value
+                    Saved { value } ->
+                        value
 
-                        Saved { value } ->
-                            value
-
-                        Edited2 _ { value } ->
-                            value
-                , placeholder = Just <| Input.placeholder [] (text "value")
-                , label = Input.labelHidden "Value: "
-                }
-            , deleteView
-            ]
+                    Edited2 _ { value } ->
+                        value
+            , placeholder = Just <| Input.placeholder [] (text "value")
+            , label = Input.labelHidden "Value: "
+            }
+        , deleteView
+        ]

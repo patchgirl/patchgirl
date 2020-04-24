@@ -1,13 +1,14 @@
 module Application.Model exposing (..)
 
-import List.Extra as List
-import Application.Type exposing (..)
-import Page exposing(..)
-import Uuid
-import Browser.Navigation as Navigation
 import Animation
+import Application.Type exposing (..)
+import Browser.Navigation as Navigation
+import List.Extra as List
+import Modal exposing (..)
+import Page exposing (..)
 import Url as Url
-import Modal exposing(..)
+import Uuid
+
 
 
 -- * model
@@ -19,24 +20,32 @@ type alias Model =
     , url : Url.Url
     , session : Session
     , loadingAnimation : Animation.State -- use to fade in the app on init
+
     -- NOTIFICATION
     , notification : Maybe String
     , notificationAnimation : Animation.State
+
     -- MODAL
     , whichModal : Maybe Modal
+
     -- MENU
     , showMainMenuName : Maybe MainMenuName
+
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : RequestCollection
+
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
+
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
     , environments : List Environment
     }
+
+
 
 -- * environment
 
@@ -47,24 +56,29 @@ type alias GetEnvironment a =
         , selectedEnvironmentToRunIndex : Maybe Int
     }
 
+
 getEnvironmentToRun : GetEnvironment a -> Maybe Environment
 getEnvironmentToRun model =
     let
         selectEnvironment : Int -> Maybe Environment
-        selectEnvironment idx = List.getAt idx model.environments
+        selectEnvironment idx =
+            List.getAt idx model.environments
     in
-        Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
+    Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
+
 
 getEnvironmentKeyValuesToRun : GetEnvironment a -> List (Storable NewKeyValue KeyValue)
 getEnvironmentKeyValuesToRun model =
-    (getEnvironmentToRun model)
-        |> Maybe.map (.keyValues)
+    getEnvironmentToRun model
+        |> Maybe.map .keyValues
         |> Maybe.withDefault []
+
 
 getEnvironmentToEdit : Model -> Maybe Environment
 getEnvironmentToEdit model =
     let
         selectEnvironment : Int -> Maybe Environment
-        selectEnvironment id = List.find (\env -> env.id == id) model.environments
+        selectEnvironment id =
+            List.find (\env -> env.id == id) model.environments
     in
-        Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
+    Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId

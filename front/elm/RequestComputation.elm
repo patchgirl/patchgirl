@@ -1,20 +1,23 @@
 module RequestComputation exposing (buildRequestComputationInput)
 
 import Application.Type exposing (..)
-import Regex
-import List.Extra as List
 import Combine
+import List.Extra as List
+import Regex
+
 
 
 -- * model
 
 
 type alias Model a =
-    { a | httpUrl : Editable String
-    , httpMethod : Editable HttpMethod
-    , httpHeaders : Editable (List (String, String))
-    , httpBody : Editable String
+    { a
+        | httpUrl : Editable String
+        , httpMethod : Editable HttpMethod
+        , httpHeaders : Editable (List ( String, String ))
+        , httpBody : Editable String
     }
+
 
 
 -- * build request computation input
@@ -23,7 +26,7 @@ type alias Model a =
 buildRequestComputationInput : List (Storable NewKeyValue KeyValue) -> Model a -> RequestComputationInput
 buildRequestComputationInput envKeyValues builder =
     { scheme =
-          schemeFromUrl (interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl))
+        schemeFromUrl (interpolate envKeyValues (editedOrNotEditedValue builder.httpUrl))
     , method =
         editedOrNotEditedValue builder.httpMethod
     , headers =
@@ -35,6 +38,7 @@ buildRequestComputationInput envKeyValues builder =
     }
 
 
+
 -- * util
 
 
@@ -42,17 +46,21 @@ cleanUrl : String -> String
 cleanUrl url =
     removeSchemeFromUrl (String.trimLeft url)
 
+
 removeSchemeFromUrl : String -> String
 removeSchemeFromUrl url =
     let
         schemeRegex : Regex.Regex
         schemeRegex =
             Maybe.withDefault Regex.never <|
-                Regex.fromStringWith { caseInsensitive = False
-                                     , multiline = False
-                                     } "^https?://"
+                Regex.fromStringWith
+                    { caseInsensitive = False
+                    , multiline = False
+                    }
+                    "^https?://"
     in
-        Regex.replace schemeRegex (\_ -> "") url
+    Regex.replace schemeRegex (\_ -> "") url
+
 
 schemeFromUrl : String -> Scheme
 schemeFromUrl url =
@@ -63,8 +71,9 @@ schemeFromUrl url =
         False ->
             Http
 
-interpolateHeader : List (Storable NewKeyValue KeyValue) -> (String, String) -> (String, String)
-interpolateHeader envKeyValues (headerKey, headerValue) =
+
+interpolateHeader : List (Storable NewKeyValue KeyValue) -> ( String, String ) -> ( String, String )
+interpolateHeader envKeyValues ( headerKey, headerValue ) =
     ( interpolate envKeyValues headerKey
     , interpolate envKeyValues headerValue
     )
@@ -72,74 +81,92 @@ interpolateHeader envKeyValues (headerKey, headerValue) =
 
 interpolate : List (Storable NewKeyValue KeyValue) -> String -> String
 interpolate envKeys str =
-  let
-    build : TemplatedString -> String
-    build templatedString =
-      case templatedString of
-        Sentence c -> c
-        Key k ->
-          case List.find (\sEnvKey ->
-                              case sEnvKey of
-                                  New { key } ->
-                                      key == k
+    let
+        build : TemplatedString -> String
+        build templatedString =
+            case templatedString of
+                Sentence c ->
+                    c
 
-                                  Saved { key } ->
-                                      key == k
+                Key k ->
+                    case
+                        List.find
+                            (\sEnvKey ->
+                                case sEnvKey of
+                                    New { key } ->
+                                        key == k
 
-                                  Edited2 _ { key } ->
-                                      key == k
-                         ) envKeys of
-            Just sEnvKey ->
-                case sEnvKey of
-                    New { value } ->
-                        value
+                                    Saved { key } ->
+                                        key == k
 
-                    Saved { value } ->
-                        value
+                                    Edited2 _ { key } ->
+                                        key == k
+                            )
+                            envKeys
+                    of
+                        Just sEnvKey ->
+                            case sEnvKey of
+                                New { value } ->
+                                    value
 
-                    Edited2 _ { value } ->
-                        value
-            Nothing ->
-                "{{" ++ k ++ "}}"
-  in
+                                Saved { value } ->
+                                    value
+
+                                Edited2 _ { value } ->
+                                    value
+
+                        Nothing ->
+                            "{{" ++ k ++ "}}"
+    in
     case toRaw str of
-      Ok templatedStrings -> List.map build templatedStrings |> List.foldr (++) ""
-      Err errors -> Debug.log errors str
+        Ok templatedStrings ->
+            List.map build templatedStrings |> List.foldr (++) ""
+
+        Err errors ->
+            Debug.log errors str
+
 
 
 -- * parser
-
-
 {-
- parse a string "hello {{user}} !" to a list of templated string
- eg: [ Sentence "hello "
-     , Key "user"
-     , Sentence " !"
-     ]
+   parse a string "hello {{user}} !" to a list of templated string
+   eg: [ Sentence "hello "
+       , Key "user"
+       , Sentence " !"
+       ]
 -}
+
+
 toRaw : String -> Result String (List TemplatedString)
 toRaw str =
-  case Combine.parse templatedStringParser str of
-    Ok (_, _, result) ->
-      Ok result
+    case Combine.parse templatedStringParser str of
+        Ok ( _, _, result ) ->
+            Ok result
 
-    Err (_, stream, errors) ->
-      Err (String.join " or " errors)
+        Err ( _, stream, errors ) ->
+            Err (String.join " or " errors)
+
 
 type TemplatedString
     = Sentence String
     | Key String
 
+
 templatedStringParser : Combine.Parser s (List TemplatedString)
-templatedStringParser = Combine.many (Combine.or keyParser anychar)
+templatedStringParser =
+    Combine.many (Combine.or keyParser anychar)
+
 
 anychar : Combine.Parser s TemplatedString
-anychar = Combine.regex ".\n*" |> Combine.map Sentence
+anychar =
+    Combine.regex ".\n*" |> Combine.map Sentence
+
 
 keyParser : Combine.Parser s TemplatedString
 keyParser =
-  let
-    envKey : Combine.Parser s TemplatedString
-    envKey = Combine.regex "([a-zA-Z]|[0-9]|-)+" |> Combine.map Key
-  in
+    let
+        envKey : Combine.Parser s TemplatedString
+        envKey =
+            Combine.regex "([a-zA-Z]|[0-9]|-)+" |> Combine.map Key
+    in
     Combine.between (Combine.string "{{") (Combine.string "}}") envKey

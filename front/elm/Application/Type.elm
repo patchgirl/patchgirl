@@ -1,9 +1,9 @@
 module Application.Type exposing (..)
 
-import Uuid
-import Uuid exposing (Uuid)
-import Dict
 import Animation
+import Dict
+import Uuid exposing (Uuid)
+
 
 
 -- * menu
@@ -16,6 +16,7 @@ type MainMenuName
     | GithubMenu
 
 
+
 -- * session
 
 
@@ -23,35 +24,46 @@ type Session
     = Visitor VisitorSession
     | SignedUser SignedUserSession
 
+
 type alias VisitorSession =
-    { id: Uuid.Uuid
-    , csrfToken: String
-    , signInEmail: String
-    , signInPassword: String
-    , signInErrors: List String
-    , signUpEmail: String
-    , signUpError: Maybe String
-    , signUpMessage: Maybe String
+    { id : Uuid.Uuid
+    , csrfToken : String
+    , signInEmail : String
+    , signInPassword : String
+    , signInErrors : List String
+    , signUpEmail : String
+    , signUpError : Maybe String
+    , signUpMessage : Maybe String
     }
 
+
 type alias SignedUserSession =
-    { id: Uuid.Uuid
-    , csrfToken: String
-    , email: String
+    { id : Uuid.Uuid
+    , csrfToken : String
+    , email : String
     , avatarUrl : String
     }
+
 
 getCsrfToken : Session -> String
 getCsrfToken session =
     case session of
-        Visitor { csrfToken } -> csrfToken
-        SignedUser { csrfToken } -> csrfToken
+        Visitor { csrfToken } ->
+            csrfToken
+
+        SignedUser { csrfToken } ->
+            csrfToken
+
 
 getSessionId : Session -> Uuid.Uuid
 getSessionId session =
     case session of
-        Visitor { id } -> id
-        SignedUser { id } -> id
+        Visitor { id } ->
+            id
+
+        SignedUser { id } ->
+            id
+
 
 
 -- * sign up
@@ -60,6 +72,7 @@ getSessionId session =
 type alias SignUp =
     { email : String
     }
+
 
 
 -- * environment
@@ -73,6 +86,7 @@ type alias Environment =
     }
 
 
+
 -- * key value
 
 
@@ -81,17 +95,21 @@ type alias NewKeyValue =
     , value : String
     }
 
+
 type alias KeyValue =
     { id : Int
     , key : String
     , value : String
     }
 
+
+
 -- * request collection
 
 
-type RequestCollection  =
-    RequestCollection Int (List RequestNode)
+type RequestCollection
+    = RequestCollection Int (List RequestNode)
+
 
 
 -- ** request node
@@ -102,38 +120,42 @@ type RequestNode
     | RequestFile RequestFileRecord
 
 
+
 -- ** folder
 
 
 type alias RequestFolderRecord =
-  { id: Uuid.Uuid
-  , name : Editable String
-  , open : Bool
-  , children : List RequestNode
-  }
+    { id : Uuid.Uuid
+    , name : Editable String
+    , open : Bool
+    , children : List RequestNode
+    }
+
 
 
 -- ** file
 
 
 type alias RequestFileRecord =
-  { id: Uuid.Uuid
-  , name : Editable String
-  , httpUrl : Editable String
-  , httpMethod : Editable HttpMethod
-  , httpHeaders : Editable (List (String, String))
-  , httpBody : Editable String
-  , requestComputationResult : Maybe RequestComputationResult
-  , showResponseView : Bool
-  , runRequestIconAnimation : Animation.State
-  }
+    { id : Uuid.Uuid
+    , name : Editable String
+    , httpUrl : Editable String
+    , httpMethod : Editable HttpMethod
+    , httpHeaders : Editable (List ( String, String ))
+    , httpBody : Editable String
+    , requestComputationResult : Maybe RequestComputationResult
+    , showResponseView : Bool
+    , runRequestIconAnimation : Animation.State
+    }
+
 
 
 -- * scenario collection
 
 
-type ScenarioCollection  =
-    ScenarioCollection Uuid.Uuid (List ScenarioNode)
+type ScenarioCollection
+    = ScenarioCollection Uuid.Uuid (List ScenarioNode)
+
 
 
 -- ** scenario node
@@ -144,15 +166,17 @@ type ScenarioNode
     | ScenarioFile ScenarioFileRecord
 
 
+
 -- ** scenario folder record
 
 
 type alias ScenarioFolderRecord =
     { id : Uuid.Uuid
     , name : Editable String
-    , children : (List ScenarioNode)
+    , children : List ScenarioNode
     , open : Bool
     }
+
 
 
 -- ** scenario file record
@@ -166,6 +190,7 @@ type alias ScenarioFileRecord =
     }
 
 
+
 -- ** scene
 
 
@@ -176,15 +201,16 @@ type alias Scene =
     }
 
 
+
 -- * builder
 
 
 type alias Builder =
-    { id: Uuid.Uuid
+    { id : Uuid.Uuid
     , name : Editable String
     , httpUrl : Editable String
     , httpMethod : Editable HttpMethod
-    , httpHeaders : Editable (List (String, String))
+    , httpHeaders : Editable (List ( String, String ))
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
@@ -192,8 +218,8 @@ type alias Builder =
     }
 
 
--- * request computation
 
+-- * request computation
 -- ** request computation result
 
 
@@ -202,11 +228,12 @@ type RequestComputationResult
     | RequestComputationSucceeded RequestComputationOutput
 
 
+
 -- ** http exception
 
 
-type HttpException  =
-    InvalidUrlException String String
+type HttpException
+    = InvalidUrlException String String
     | TooManyRedirects
     | OverlongHeaders
     | ResponseTimeout
@@ -229,31 +256,77 @@ type HttpException  =
     | InvalidProxySettings
     | UnknownException
 
+
 httpExceptionToMessage : HttpException -> String
 httpExceptionToMessage httpException =
     case httpException of
-        InvalidUrlException url _ -> "Invalid Url:" ++ url
-        TooManyRedirects -> "Too Many Redirects"
-        OverlongHeaders -> "Overlong Headers"
-        ResponseTimeout -> "Response Timeout"
-        ConnectionTimeout -> "Connection Timeout"
-        ConnectionFailure reason -> "Connection Failure: " ++ reason
-        InvalidStatusLine -> "Invalid Status Line"
-        InvalidHeader -> "Invalid Header"
-        InvalidRequestHeader -> "Invalid Request Header"
-        InternalException -> "Internal Exception"
-        ProxyConnectException -> "Proxy Connect Exception"
-        NoResponseDataReceived -> "No Response Data Received"
-        WrongRequestBodyStreamSize -> "Wrong Request Body Stream Size"
-        ResponseBodyTooShort -> "Response Body Too Short"
-        InvalidChunkHeaders -> "Invalid Chunk Headers"
-        IncompleteHeaders -> "Incomplete Headers"
-        InvalidDestinationHost -> "Invalid Destination Host"
-        HttpZlibException -> "Http Zlib Exception"
-        InvalidProxyEnvironmentVariable -> "Invalid Proxy Environment Variable"
-        ConnectionClosed -> "Connection Closed"
-        InvalidProxySettings -> "Invalid Proxy Settings"
-        UnknownException -> "Unknown Exception"
+        InvalidUrlException url _ ->
+            "Invalid Url:" ++ url
+
+        TooManyRedirects ->
+            "Too Many Redirects"
+
+        OverlongHeaders ->
+            "Overlong Headers"
+
+        ResponseTimeout ->
+            "Response Timeout"
+
+        ConnectionTimeout ->
+            "Connection Timeout"
+
+        ConnectionFailure reason ->
+            "Connection Failure: " ++ reason
+
+        InvalidStatusLine ->
+            "Invalid Status Line"
+
+        InvalidHeader ->
+            "Invalid Header"
+
+        InvalidRequestHeader ->
+            "Invalid Request Header"
+
+        InternalException ->
+            "Internal Exception"
+
+        ProxyConnectException ->
+            "Proxy Connect Exception"
+
+        NoResponseDataReceived ->
+            "No Response Data Received"
+
+        WrongRequestBodyStreamSize ->
+            "Wrong Request Body Stream Size"
+
+        ResponseBodyTooShort ->
+            "Response Body Too Short"
+
+        InvalidChunkHeaders ->
+            "Invalid Chunk Headers"
+
+        IncompleteHeaders ->
+            "Incomplete Headers"
+
+        InvalidDestinationHost ->
+            "Invalid Destination Host"
+
+        HttpZlibException ->
+            "Http Zlib Exception"
+
+        InvalidProxyEnvironmentVariable ->
+            "Invalid Proxy Environment Variable"
+
+        ConnectionClosed ->
+            "Connection Closed"
+
+        InvalidProxySettings ->
+            "Invalid Proxy Settings"
+
+        UnknownException ->
+            "Unknown Exception"
+
+
 
 -- ** request computation input
 
@@ -261,10 +334,11 @@ httpExceptionToMessage httpException =
 type alias RequestComputationInput =
     { scheme : Scheme
     , method : HttpMethod
-    , headers : List (String, String)
+    , headers : List ( String, String )
     , url : String
     , body : String
     }
+
 
 
 -- ** request computation output
@@ -278,7 +352,9 @@ type alias RequestComputationOutput =
     }
 
 
+
 -- ** method
+
 
 type HttpMethod
     = HttpGet
@@ -289,28 +365,59 @@ type HttpMethod
     | HttpHead
     | HttpOptions
 
+
 methodToString : HttpMethod -> String
 methodToString method =
-  case method of
-    HttpGet -> "GET"
-    HttpPost -> "POST"
-    HttpPut -> "PUT"
-    HttpDelete -> "DELETE"
-    HttpPatch -> "PATCH"
-    HttpHead -> "HEAD"
-    HttpOptions -> "OPTIONS"
+    case method of
+        HttpGet ->
+            "GET"
+
+        HttpPost ->
+            "POST"
+
+        HttpPut ->
+            "PUT"
+
+        HttpDelete ->
+            "DELETE"
+
+        HttpPatch ->
+            "PATCH"
+
+        HttpHead ->
+            "HEAD"
+
+        HttpOptions ->
+            "OPTIONS"
+
 
 fromString : String -> Maybe HttpMethod
 fromString method =
-  case method of
-    "GET" -> Just HttpGet
-    "POST" -> Just HttpPost
-    "PUT" -> Just HttpPut
-    "DELETE" -> Just HttpDelete
-    "PATCH" -> Just HttpPatch
-    "HEAD" -> Just HttpHead
-    "OPTIONS" -> Just HttpOptions
-    _ -> Nothing
+    case method of
+        "GET" ->
+            Just HttpGet
+
+        "POST" ->
+            Just HttpPost
+
+        "PUT" ->
+            Just HttpPut
+
+        "DELETE" ->
+            Just HttpDelete
+
+        "PATCH" ->
+            Just HttpPatch
+
+        "HEAD" ->
+            Just HttpHead
+
+        "OPTIONS" ->
+            Just HttpOptions
+
+        _ ->
+            Nothing
+
 
 
 -- ** scheme
@@ -321,42 +428,49 @@ type Scheme
     | Https
 
 
+
 -- * scenario computation
-
-
 -- ** scenario computation output
 
 
 type alias ScenarioComputationOutput =
-    { scenarioId: Uuid
-    , scenes: List OutputScene
+    { scenarioId : Uuid
+    , scenes : List OutputScene
     }
+
 
 
 -- ** output scene
 
+
 type alias OutputScene =
-    { sceneId: Uuid
-    , requestFileNodeId: Uuid
-    , requestComputationOutput: SceneComputation
+    { sceneId : Uuid
+    , requestFileNodeId : Uuid
+    , requestComputationOutput : SceneComputation
     }
 
+
+
 -- ** scene computation
+
 
 type SceneComputation
     = SceneRun RequestComputationResult
     | SceneNotRun
 
 
--- * editable
 
+-- * editable
 {-
-  model that don't have a state difference when they are saved or edited
-  typically any model that doesn't have an `id` field
+   model that don't have a state difference when they are saved or edited
+   typically any model that doesn't have an `id` field
 -}
+
+
 type Editable a
     = NotEdited a
     | Edited a a
+
 
 isDirty : Editable a -> Bool
 isDirty editable =
@@ -367,45 +481,54 @@ isDirty editable =
         Edited _ _ ->
             True
 
+
 editedOrNotEditedValue : Editable a -> a
 editedOrNotEditedValue editable =
     case editable of
         NotEdited value ->
             value
+
         Edited _ newValue ->
             newValue
+
 
 notEditedValue : Editable a -> a
 notEditedValue editable =
     case editable of
         NotEdited value ->
             value
+
         Edited value _ ->
             value
+
 
 changeEditedValue : a -> Editable a -> Editable a
 changeEditedValue newValue editable =
     let
-        oldValue = notEditedValue editable
+        oldValue =
+            notEditedValue editable
     in
-        case oldValue == newValue of
-            True ->
-                NotEdited oldValue
+    case oldValue == newValue of
+        True ->
+            NotEdited oldValue
 
-            False ->
-                Edited oldValue newValue
+        False ->
+            Edited oldValue newValue
+
+
 
 -- * storable
-
-
 {-
-  model that have a state difference when they are saved or edited
-  typically any model that has an `id` field
+   model that have a state difference when they are saved or edited
+   typically any model that has an `id` field
 -}
+
+
 type Storable a b
     = New a
     | Saved b
     | Edited2 b b
+
 
 isStorableDirty : Storable a b -> Bool
 isStorableDirty storable =

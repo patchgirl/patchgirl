@@ -4,7 +4,24 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeOperators              #-}
 
-module App where
+module App( mkApp
+          , run
+          , RequestCollectionApi
+          , ScenarioCollectionApi
+          , EnvironmentApi
+          , ScenarioNodeApi
+          , ScenarioFileApi
+          , ScenarioFolderApi
+          , SceneApi
+          , RequestNodeApi
+          , RequestFileApi
+          , RequestFolderApi
+          , RequestComputationApi
+          , ScenarioComputationApi
+          , SessionApi
+          , PSessionApi
+          , AccountApi
+          ) where
 
 
 import           Control.Lens.Getter                   ((^.))

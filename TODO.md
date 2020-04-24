@@ -3,6 +3,8 @@
 ## Back
 
 - use http method/scheme from library
+- migrate to nix
+- update ghc version to 8.8 so I can use https://github.com/ocharles/weeder#readme and remove dead code
 
 ## Front
 

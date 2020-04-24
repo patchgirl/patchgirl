@@ -1,25 +1,24 @@
 module ScenarioBuilderApp.App exposing (..)
 
-import Uuid
-import Modal
-import Modal exposing (Modal(..))
+import Application.Model as Application
+import Application.Type exposing (..)
 import Element exposing (..)
-import Element.Font as Font
 import Element.Background as Background
-import Util exposing (..)
 import Element.Border as Border
 import Element.Events as Events
-import Html.Events as Html
+import Element.Font as Font
 import Html as Html
 import Html.Attributes as Html
+import Html.Events as Html
 import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
-import Application.Model as Application
-
-import Application.Type exposing (..)
-import Page exposing(..)
+import Modal exposing (Modal(..))
+import Page exposing (..)
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import ScenarioBuilderApp.ScenarioTree.App as ScenarioTree
+import Util exposing (..)
+import Uuid
+
 
 
 -- * model
@@ -39,19 +38,21 @@ type alias Model a =
     }
 
 
+
 -- * message
 
 
 type Msg
-  = ScenarioBuilderMsg ScenarioBuilder.Msg
-  | ScenarioTreeMsg ScenarioTree.Msg
-  | EnvSelectionMsg Int
+    = ScenarioBuilderMsg ScenarioBuilder.Msg
+    | ScenarioTreeMsg ScenarioTree.Msg
+    | EnvSelectionMsg Int
+
 
 
 -- * update
 
 
-update : Msg -> Model a -> (Model a, Cmd Msg)
+update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
         EnvSelectionMsg idx ->
@@ -59,13 +60,14 @@ update msg model =
                 newModel =
                     { model | selectedEnvironmentToRunIndex = Just idx }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         ScenarioTreeMsg subMsg ->
             let
-                (newModel, newSubMsg) = ScenarioTree.update subMsg model
+                ( newModel, newSubMsg ) =
+                    ScenarioTree.update subMsg model
             in
-                (newModel, Cmd.map ScenarioTreeMsg newSubMsg)
+            ( newModel, Cmd.map ScenarioTreeMsg newSubMsg )
 
         ScenarioBuilderMsg subMsg ->
             case getBuilder model of
@@ -74,7 +76,7 @@ update msg model =
                         (ScenarioCollection scenarioCollectionId scenarioNodes) =
                             model.scenarioCollection
 
-                        (newBuilder, newSubMsg) =
+                        ( newBuilder, newSubMsg ) =
                             ScenarioBuilder.update subMsg builder
 
                         newBuilderTree =
@@ -90,10 +92,11 @@ update msg model =
                         newMsg =
                             Cmd.map ScenarioBuilderMsg newSubMsg
                     in
-                        (newModel, newMsg)
+                    ( newModel, newMsg )
 
                 _ ->
-                    (model, Cmd.none)
+                    ( model, Cmd.none )
+
 
 
 -- * util
@@ -108,33 +111,38 @@ getSelectedBuilderId model =
         _ ->
             Nothing
 
+
 getBuilder : Model a -> Maybe ScenarioBuilder.Model
 getBuilder model =
     let
-        (ScenarioCollection scenarioCollectionId scenarioNodes) = model.scenarioCollection
+        (ScenarioCollection scenarioCollectionId scenarioNodes) =
+            model.scenarioCollection
+
         mFile : Maybe ScenarioFileRecord
-        mFile = Maybe.andThen (ScenarioTree.findFile scenarioNodes) (getSelectedBuilderId model)
+        mFile =
+            Maybe.andThen (ScenarioTree.findFile scenarioNodes) (getSelectedBuilderId model)
     in
-        case mFile of
-            Just file ->
-                let
-                    keyValuesToRun =
-                        (Application.getEnvironmentKeyValuesToRun model)
+    case mFile of
+        Just file ->
+            let
+                keyValuesToRun =
+                    Application.getEnvironmentKeyValuesToRun model
+            in
+            Just (convertFromFileToBuilder file scenarioCollectionId model.session model.requestCollection keyValuesToRun model.notification model.whichModal)
 
-                in
-                    Just (convertFromFileToBuilder file scenarioCollectionId model.session model.requestCollection keyValuesToRun model.notification model.whichModal)
+        _ ->
+            Nothing
 
-            _ ->
-                Nothing
 
-convertFromFileToBuilder : ScenarioFileRecord
-                         -> Uuid.Uuid
-                         -> Session
-                         -> RequestCollection
-                         -> List (Storable NewKeyValue KeyValue)
-                         -> Maybe String
-                         -> Maybe Modal
-                         -> ScenarioBuilder.Model
+convertFromFileToBuilder :
+    ScenarioFileRecord
+    -> Uuid.Uuid
+    -> Session
+    -> RequestCollection
+    -> List (Storable NewKeyValue KeyValue)
+    -> Maybe String
+    -> Maybe Modal
+    -> ScenarioBuilder.Model
 convertFromFileToBuilder file scenarioCollectionId session requestCollection keyValuesToRun notification whichModal =
     { notification = notification
     , session = session
@@ -148,6 +156,7 @@ convertFromFileToBuilder file scenarioCollectionId session requestCollection key
     , showDetailedSceneView = file.showDetailedSceneView
     }
 
+
 convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord
 convertFromBuilderToFile builder =
     { id = builder.id
@@ -156,36 +165,43 @@ convertFromBuilderToFile builder =
     , showDetailedSceneView = builder.showDetailedSceneView
     }
 
+
 changeFileBuilder : ScenarioBuilder.Model -> ScenarioNode -> ScenarioNode
 changeFileBuilder builder node =
     case node of
         ScenarioFolder f ->
             ScenarioFolder f
+
         ScenarioFile f ->
             ScenarioFile (convertFromBuilderToFile builder)
+
+
 
 -- * view
 
 
 view : Model a -> Element Msg
 view model =
-    wrappedRow [ width fill
-               , paddingXY 10 0
-               , spacing 10
-               ]
-        [ column [ alignTop
-                 , spacing 20
-                 , centerX
-                 , padding 20
-                 , width (fillPortion 1)
-                 , Background.color white
-                 , boxShadow
-                 ]
-              [ el [ ] <| envSelectionView <| List.map .name model.environments
-              , el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
-              ]
+    wrappedRow
+        [ width fill
+        , paddingXY 10 0
+        , spacing 10
+        ]
+        [ column
+            [ alignTop
+            , spacing 20
+            , centerX
+            , padding 20
+            , width (fillPortion 1)
+            , Background.color white
+            , boxShadow
+            ]
+            [ el [] <| envSelectionView <| List.map .name model.environments
+            , el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
+            ]
         , builderView model
         ]
+
 
 envSelectionView : List (Editable String) -> Element Msg
 envSelectionView environmentNames =
@@ -194,12 +210,13 @@ envSelectionView environmentNames =
         entryView idx envName =
             Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
     in
-        html <|
-            Html.div []
-                [ Html.label [] [ Html.text "Env: " ]
-                , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
-                    (List.indexedMap entryView environmentNames)
-                ]
+    html <|
+        Html.div []
+            [ Html.label [] [ Html.text "Env: " ]
+            , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
+                (List.indexedMap entryView environmentNames)
+            ]
+
 
 builderView : Model a -> Element Msg
 builderView model =
@@ -210,4 +227,4 @@ builderView model =
 
         Nothing ->
             el [ width (fillPortion 9), centerX, centerY ]
-                ( el [centerX ] (text "No scenario selected") )
+                (el [ centerX ] (text "No scenario selected"))

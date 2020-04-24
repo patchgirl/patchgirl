@@ -1,8 +1,8 @@
 module RequestBuilderApp.RequestTree.Util exposing (..)
 
-import Uuid
 import Application.Type exposing (..)
 import Util exposing (..)
+import Uuid
 
 
 findNode : List RequestNode -> Uuid.Uuid -> Maybe RequestNode
@@ -27,7 +27,7 @@ findNode requestNodes id =
                         False ->
                             findNode folder.children id
     in
-        List.head <| catMaybes (List.map find requestNodes)
+    List.head <| catMaybes (List.map find requestNodes)
 
 
 findFile : List RequestNode -> Uuid.Uuid -> Maybe RequestFileRecord

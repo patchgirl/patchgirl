@@ -1,33 +1,32 @@
 module Application.App exposing (..)
 
-import Http as Http
-import Api.Generated as Client
+import Animation
 import Api.Converter as Client
-import Element exposing (..)
-import Element.Font as Font
-import Element.Background as Background
-import Util exposing (..)
-import Html as Html
-import Uuid
-
-import Modal
-import Modal exposing (Modal(..))
-import MainNavBar.App as MainNavBar
+import Api.Generated as Client
+import Application.Model exposing (..)
 import Application.Type exposing (..)
-import Url as Url
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Navigation
-import Tuple as Tuple
+import Element exposing (..)
+import Element.Background as Background
+import Element.Font as Font
+import EnvironmentEdition.App as EnvironmentEdition
+import EnvironmentToRunSelection.App as EnvSelection
+import Html as Html
+import Http as Http
+import MainNavBar.App as MainNavBar
+import Modal exposing (Modal(..))
 import Page exposing (..)
-import Url.Parser as Url exposing ((</>))
-import Animation
 import RequestBuilderApp.App as RequestBuilderApp
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
-import EnvironmentEdition.App as EnvironmentEdition
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
-import EnvironmentToRunSelection.App as EnvSelection
-import Application.Model exposing (..)
+import Tuple as Tuple
+import Url as Url
+import Url.Parser as Url exposing ((</>))
+import Util exposing (..)
+import Uuid
+
 
 
 -- * model
@@ -39,6 +38,7 @@ type alias UserData =
     , scenarioCollection : ScenarioCollection
     , environments : List Environment
     }
+
 
 
 -- * message
@@ -54,10 +54,11 @@ type Msg
     | Animate Animation.Msg
 
 
+
 -- * init
 
 
-init : UserData -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
+init : UserData -> Url.Url -> Navigation.Key -> ( Model, Cmd Msg )
 init { session, requestCollection, environments, scenarioCollection } url navigationKey =
     let
         page =
@@ -75,9 +76,10 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
         loadingAnimation =
             Animation.interrupt
                 [ Animation.to
-                      [ Animation.opacity 1
-                      ]
-                ] initialLoadingStyle
+                    [ Animation.opacity 1
+                    ]
+                ]
+                initialLoadingStyle
 
         initialNotificationAnimation =
             Animation.style [ Animation.opacity 0 ]
@@ -85,9 +87,10 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
         notificationAnimation =
             Animation.interrupt
                 [ Animation.to
-                      [ Animation.opacity 1
-                      ]
-                ] initialNotificationAnimation
+                    [ Animation.opacity 1
+                    ]
+                ]
+                initialNotificationAnimation
 
         model =
             { session = session
@@ -108,13 +111,14 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , environments = environments
             }
     in
-        (model, Cmd.none)
+    ( model, Cmd.none )
+
 
 
 -- * update
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UrlChanged url ->
@@ -125,48 +129,50 @@ update msg model =
                 newModel =
                     { model | page = newPage }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Internal url ->
-                    (model, Navigation.pushUrl model.navigationKey <| Url.toString url)
+                    ( model, Navigation.pushUrl model.navigationKey <| Url.toString url )
 
                 External url ->
-                    (model, Navigation.load url)
+                    ( model, Navigation.load url )
 
         BuilderAppMsg subMsg ->
             let
-                (newModel, newMsg) = RequestBuilderApp.update subMsg model
+                ( newModel, newMsg ) =
+                    RequestBuilderApp.update subMsg model
             in
-                (newModel, Cmd.map BuilderAppMsg newMsg)
+            ( newModel, Cmd.map BuilderAppMsg newMsg )
 
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map EnvironmentEditionMsg newSubMsg )
 
         ScenarioMsg subMsg ->
             case ScenarioBuilderApp.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map ScenarioMsg newSubMsg)
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map ScenarioMsg newSubMsg )
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map MainNavBarMsg newSubMsg)
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map MainNavBarMsg newSubMsg )
 
         Animate subMsg ->
             let
                 newModel =
                     { model
                         | loadingAnimation =
-                          Animation.update subMsg model.loadingAnimation
+                            Animation.update subMsg model.loadingAnimation
                         , notificationAnimation =
-                          Animation.update subMsg model.notificationAnimation
+                            Animation.update subMsg model.notificationAnimation
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
+
 
 
 -- * view
@@ -179,17 +185,18 @@ view model =
             List.map htmlAttribute (Animation.render model.loadingAnimation)
 
         bodyAttr =
-            [ Background.color lightGrey ] ++
-            loadingAnimation ++
-            [ inFront (modalView model) ] ++
-            [ inFront (notificationView model) ]
+            [ Background.color lightGrey ]
+                ++ loadingAnimation
+                ++ [ inFront (modalView model) ]
+                ++ [ inFront (notificationView model) ]
 
         body =
             layout bodyAttr (mainView model)
     in
-        { title = "PatchGirl"
-        , body = [body]
-        }
+    { title = "PatchGirl"
+    , body = [ body ]
+    }
+
 
 
 -- ** main view
@@ -201,19 +208,31 @@ mainView model =
         builderView =
             map BuilderAppMsg (RequestBuilderApp.view model)
     in
-        column [ width fill, height fill
-               , centerY
-               , spacing 30
-               ]
+    column
+        [ width fill
+        , height fill
+        , centerY
+        , spacing 30
+        ]
         [ map MainNavBarMsg (MainNavBar.view model)
         , el [ width fill ] <|
             case model.page of
-                HomePage -> builderView
-                NotFoundPage -> el [ centerY, centerX ] (text "not found")
-                ReqPage mId -> builderView
-                EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
-                ScenarioPage _ -> map ScenarioMsg (ScenarioBuilderApp.view model)
+                HomePage ->
+                    builderView
+
+                NotFoundPage ->
+                    el [ centerY, centerX ] (text "not found")
+
+                ReqPage mId ->
+                    builderView
+
+                EnvPage ->
+                    map EnvironmentEditionMsg (EnvironmentEdition.view model)
+
+                ScenarioPage _ ->
+                    map ScenarioMsg (ScenarioBuilderApp.view model)
         ]
+
 
 
 -- ** modal view
@@ -234,9 +253,9 @@ modalView model =
                     case modal of
                         SelectHttpRequestModal withSceneParent ->
                             Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection))
-
     in
-        Modal.view modalConfig
+    Modal.view modalConfig
+
 
 
 -- ** notification view
@@ -250,10 +269,12 @@ notificationView model =
                 animationStyle =
                     List.map htmlAttribute (Animation.render model.notificationAnimation)
             in
-                el ( [ alignRight
-                     , height (px 10)
-                     ] ++ animationStyle
-                   )
+            el
+                ([ alignRight
+                 , height (px 10)
+                 ]
+                    ++ animationStyle
+                )
                 (text message)
 
         Nothing ->
@@ -293,8 +314,9 @@ subscriptions model =
         buildersSubs =
             List.map (Sub.map builderMsg) (List.map RequestBuilder.subscriptions requestFiles)
     in
-        Sub.batch
-            ( [ Animation.subscription Animate [ model.loadingAnimation ]
-              , Animation.subscription Animate [ model.notificationAnimation ]
-              ] ++ buildersSubs
-            )
+    Sub.batch
+        ([ Animation.subscription Animate [ model.loadingAnimation ]
+         , Animation.subscription Animate [ model.notificationAnimation ]
+         ]
+            ++ buildersSubs
+        )

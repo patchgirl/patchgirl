@@ -1,31 +1,28 @@
 module RequestBuilderApp.App exposing (..)
 
-import Uuid
-
-import RequestBuilderApp.RequestTree.App as RequestTree
-import RequestBuilderApp.RequestBuilder.App as RequestBuilder
-import Api.Generated as Client
 import Api.Converter as Client
-import Http as Http
-import Application.Type exposing (..)
-import EnvironmentToRunSelection.App as EnvSelection
-import List.Extra as List
+import Api.Generated as Client
 import Application.Model as Application
-import RequestBuilderApp.RequestTree.Util as RequestTree
-
+import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
-
-import Html.Events as Html
+import EnvironmentToRunSelection.App as EnvSelection
 import Html as Html
 import Html.Attributes as Html
-import Util exposing (..)
-
-import Json.Decode as Json
+import Html.Events as Html
 import Html.Events.Extra exposing (targetValueIntParse)
+import Http as Http
+import Json.Decode as Json
+import List.Extra as List
 import Page exposing (..)
+import RequestBuilderApp.RequestBuilder.App as RequestBuilder
+import RequestBuilderApp.RequestTree.App as RequestTree
+import RequestBuilderApp.RequestTree.Util as RequestTree
+import Util exposing (..)
+import Uuid
+
 
 
 -- * model
@@ -42,19 +39,21 @@ type alias Model a =
     }
 
 
+
 -- * message
 
 
 type Msg
-  = BuilderMsg RequestBuilder.Msg
-  | TreeMsg RequestTree.Msg
-  | EnvSelectionMsg Int
+    = BuilderMsg RequestBuilder.Msg
+    | TreeMsg RequestTree.Msg
+    | EnvSelectionMsg Int
+
 
 
 -- * update
 
 
-update : Msg -> Model a -> (Model a, Cmd Msg)
+update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
         EnvSelectionMsg idx ->
@@ -62,13 +61,14 @@ update msg model =
                 newModel =
                     { model | selectedEnvironmentToRunIndex = Just idx }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         TreeMsg subMsg ->
             let
-                (newModel, newSubMsg) = RequestTree.update subMsg model
+                ( newModel, newSubMsg ) =
+                    RequestTree.update subMsg model
             in
-                (newModel, Cmd.map TreeMsg newSubMsg)
+            ( newModel, Cmd.map TreeMsg newSubMsg )
 
         BuilderMsg subMsg ->
             case getBuilder model of
@@ -77,7 +77,7 @@ update msg model =
                         (RequestCollection requestCollectionId requestNodes) =
                             model.requestCollection
 
-                        (newBuilder, newSubMsg) =
+                        ( newBuilder, newSubMsg ) =
                             RequestBuilder.update subMsg builder
 
                         newBuilderTree =
@@ -92,10 +92,11 @@ update msg model =
                         newMsg =
                             Cmd.map BuilderMsg newSubMsg
                     in
-                        (newModel, newMsg)
+                    ( newModel, newMsg )
 
                 _ ->
-                    (model, Cmd.none)
+                    ( model, Cmd.none )
+
 
 
 -- * util
@@ -110,24 +111,28 @@ getSelectedBuilderId model =
         _ ->
             Nothing
 
+
 getBuilder : Model a -> Maybe RequestBuilder.Model
 getBuilder model =
     let
-        (RequestCollection requestCollectionId requestNodes) = model.requestCollection
+        (RequestCollection requestCollectionId requestNodes) =
+            model.requestCollection
+
         mFile : Maybe RequestFileRecord
-        mFile = Maybe.andThen (RequestTree.findFile requestNodes) (getSelectedBuilderId model)
+        mFile =
+            Maybe.andThen (RequestTree.findFile requestNodes) (getSelectedBuilderId model)
     in
-        case (getSelectedBuilderId model, mFile) of
-            (Just _, Just file) ->
-                let
-                    keyValuesToRun =
-                        (Application.getEnvironmentKeyValuesToRun model)
+    case ( getSelectedBuilderId model, mFile ) of
+        ( Just _, Just file ) ->
+            let
+                keyValuesToRun =
+                    Application.getEnvironmentKeyValuesToRun model
+            in
+            Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model.notification)
 
-                in
-                    Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model.notification)
+        _ ->
+            Nothing
 
-            _ ->
-                Nothing
 
 convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> RequestBuilder.Model
 convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
@@ -145,6 +150,7 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     , runRequestIconAnimation = file.runRequestIconAnimation
     }
 
+
 convertFromBuilderToFile : RequestBuilder.Model -> RequestFileRecord
 convertFromBuilderToFile builder =
     { id = builder.id
@@ -158,13 +164,16 @@ convertFromBuilderToFile builder =
     , runRequestIconAnimation = builder.runRequestIconAnimation
     }
 
+
 changeFileBuilder : RequestBuilder.Model -> RequestNode -> RequestNode
 changeFileBuilder builder node =
     case node of
         RequestFolder f ->
             RequestFolder f
+
         RequestFile f ->
             RequestFile (convertFromBuilderToFile builder)
+
 
 
 -- * view
@@ -172,23 +181,26 @@ changeFileBuilder builder node =
 
 view : Model a -> Element Msg
 view model =
-    wrappedRow [ width fill
-               , paddingXY 10 0
-               , spacing 10
-               ]
-        [ column [ alignTop
-                 , spacing 20
-                 , centerX
-                 , padding 20
-                 , width (fillPortion 1)
-                 , Background.color white
-                 , boxShadow
-                 ]
-              [ el [ ] <| envSelectionView <| List.map .name model.environments
-              , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
-              ]
+    wrappedRow
+        [ width fill
+        , paddingXY 10 0
+        , spacing 10
+        ]
+        [ column
+            [ alignTop
+            , spacing 20
+            , centerX
+            , padding 20
+            , width (fillPortion 1)
+            , Background.color white
+            , boxShadow
+            ]
+            [ el [] <| envSelectionView <| List.map .name model.environments
+            , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
+            ]
         , builderView model
         ]
+
 
 envSelectionView : List (Editable String) -> Element Msg
 envSelectionView environmentNames =
@@ -197,12 +209,13 @@ envSelectionView environmentNames =
         entryView idx envName =
             Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
     in
-        html <|
-            Html.div []
-                [ Html.label [] [ Html.text "Env: " ]
-                , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
-                    (List.indexedMap entryView environmentNames)
-                ]
+    html <|
+        Html.div []
+            [ Html.label [] [ Html.text "Env: " ]
+            , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
+                (List.indexedMap entryView environmentNames)
+            ]
+
 
 builderView : Model a -> Element Msg
 builderView model =
@@ -213,4 +226,4 @@ builderView model =
 
         Nothing ->
             el [ width (fillPortion 9), centerX, centerY ]
-                ( el [centerX ] (text "No request selected") )
+                (el [ centerX ] (text "No request selected"))
