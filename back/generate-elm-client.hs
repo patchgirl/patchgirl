@@ -143,6 +143,7 @@ deriveElmDef deriveElmDefOption ''InputScenario
 deriveElmDef deriveElmDefOption ''InputScene
 deriveElmDef deriveElmDefOption ''OutputScenario
 deriveElmDef deriveElmDefOption ''OutputScene
+deriveElmDef deriveElmDefOption ''SceneComputation
 
 
 -- * imports
@@ -235,6 +236,7 @@ main =
       , DefineElm (Proxy :: Proxy InputScene)
       , DefineElm (Proxy :: Proxy OutputScenario)
       , DefineElm (Proxy :: Proxy OutputScene)
+      , DefineElm (Proxy :: Proxy SceneComputation)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
