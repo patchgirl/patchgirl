@@ -245,3 +245,30 @@ convertSchemeFromFrontToBack scheme =
     case scheme of
         Front.Http -> Back.Http
         Front.Https -> Back.Https
+
+
+-- * scenario computation
+
+
+convertScenarioComputationOutputFromBackToFront : Back.ScenarioComputationOutput -> Front.ScenarioComputationOutput
+convertScenarioComputationOutputFromBackToFront backScenarioComputationOutput =
+    let
+        convertOutputSceneFromBackToFront : Back.OutputScene -> Front.OutputScene
+        convertOutputSceneFromBackToFront backOutputScene =
+            { sceneId = backOutputScene.outputSceneId
+            , requestFileNodeId = backOutputScene.outputSceneRequestFileNodeId
+            , requestComputationOutput = convertSceneComputationFromBackToFront backOutputScene.outputSceneRequestComputationOutput
+            }
+
+        convertSceneComputationFromBackToFront : Back.SceneComputation -> Front.SceneComputation
+        convertSceneComputationFromBackToFront backSceneComputation =
+            case backSceneComputation of
+                Back.SceneRun requestComputationResult ->
+                    Front.SceneRun (convertRequestComputationResultFromBackToFront requestComputationResult)
+                Back.SceneNotRun ->
+                    Front.SceneNotRun
+
+    in
+        { scenarioId = backScenarioComputationOutput.outputScenarioId
+        , scenes = List.map convertOutputSceneFromBackToFront backScenarioComputationOutput.outputScenarioScenes
+        }

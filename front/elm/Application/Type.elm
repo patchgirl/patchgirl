@@ -1,6 +1,7 @@
 module Application.Type exposing (..)
 
 import Uuid
+import Uuid exposing (Uuid)
 import Dict
 import Animation
 
@@ -189,7 +190,7 @@ type alias Builder =
     }
 
 
--- * http
+-- * request computation
 
 -- ** request computation result
 
@@ -316,6 +317,33 @@ fromString method =
 type Scheme
     = Http
     | Https
+
+
+-- * scenario computation
+
+
+-- ** scenario computation output
+
+
+type alias ScenarioComputationOutput =
+    { scenarioId: Uuid
+    , scenes: List OutputScene
+    }
+
+
+-- ** output scene
+
+type alias OutputScene =
+    { sceneId: Uuid
+    , requestFileNodeId: Uuid
+    , requestComputationOutput: SceneComputation
+    }
+
+-- ** scene computation
+
+type SceneComputation
+    = SceneRun RequestComputationResult
+    | SceneNotRun
 
 
 -- * editable

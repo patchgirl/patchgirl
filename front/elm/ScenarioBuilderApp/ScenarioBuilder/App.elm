@@ -14,6 +14,7 @@ import Uuid exposing (Uuid)
 import Modal exposing (Modal(..))
 import Modal
 import Api.Generated as Client
+import Api.Converter as Client
 import RequestBuilderApp.RequestTree.Util as RequestTree
 
 
@@ -47,6 +48,9 @@ type Msg
   | AskDeleteScene Uuid.Uuid
   | DeleteScene Uuid.Uuid
   | ServerError
+  -- scenario
+  | AskRunScenario
+  | ScenarioProcessed ScenarioComputationOutput
 
 
 -- * update
@@ -130,6 +134,34 @@ update msg model =
                 (newModel, Cmd.none)
 
 
+-- ** scenario
+
+
+        AskRunScenario ->
+            let
+                sceneToInputScene : Scene -> Client.InputScene
+                sceneToInputScene scene =
+                    { inputSceneId = scene.id
+                    , inputSceneRequestFileNodeId = scene.requestFileNodeId
+                    , inputSceneRequestComputationInput = Debug.todo "" -- RequestComputationInput
+                    }
+
+                payload =
+                       { inputScenarioId = model.id
+                       , inputScenarioScenes = List.map sceneToInputScene model.scenes
+                       }
+
+                newMsg =
+                    Client.postApiScenarioComputation "" (getCsrfToken model.session) payload runScenarioResultToMsg
+            in
+                (model, newMsg)
+
+
+
+        ScenarioProcessed _ ->
+            (model, Cmd.none)
+
+
 -- ** other
 
 
@@ -152,6 +184,15 @@ mkDefaultScene  id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
     }
+
+runScenarioResultToMsg : Result Http.Error Client.ScenarioComputationOutput -> Msg
+runScenarioResultToMsg result =
+    case result of
+        Ok scenarioComputationOutput ->
+            ScenarioProcessed (Client.convertScenarioComputationOutputFromBackToFront scenarioComputationOutput)
+
+        Err error ->
+            Debug.todo "server error" ServerError
 
 deleteSceneResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
 deleteSceneResultToMsg sceneId result =
@@ -177,12 +218,31 @@ createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
 
 view : Model -> Element Msg
 view model =
-    case model.scenes of
-        [] ->
-            addNewSceneView
+    let
+        scenesView =
+            case model.scenes of
+                [] ->
+                    addNewSceneView
 
-        scenes ->
-            column [ centerX, spacing 10 ] (List.map (sceneView model) scenes)
+                scenes ->
+                    column [ centerX, spacing 10 ] (List.map (sceneView model) scenes)
+
+        scenarioSettingView =
+            column [ width fill, centerX ]
+                [ Input.button [ centerX ]
+                      { onPress = Just AskRunScenario
+                      , label =
+                          row [ centerX, centerY ]
+                              [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
+                              ]
+                      }
+                ]
+
+    in
+        wrappedRow [ width fill, centerX ]
+            [ el [ width (fillPortion 8) ] scenesView
+            , el [ width (fillPortion 2) ] scenarioSettingView
+            ]
 
 
 -- ** add new scene view
