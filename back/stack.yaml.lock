@@ -67,9 +67,16 @@ packages:
       sha256: 876e5a679244143e2a7e74357427c7522a8d61f68a4cc3ae265fe4960b75a2e2
   original:
     hackage: strings-1.1
+- completed:
+    hackage: servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
+    pantry-tree:
+      size: 479
+      sha256: 491bd345773bf319bc6e703d781f9f139f7869a2d915c45f576cff3bcaf54ae3
+  original:
+    hackage: servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
 snapshots:
 - completed:
-    size: 523884
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/4.yaml
-    sha256: 16f24be248b42c9e16d59db84378836b1e7c239448a041cae46d32daffa45a8b
-  original: lts-14.4
+    size: 524996
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/27.yaml
+    sha256: 7ea31a280c56bf36ff591a7397cc384d0dff622e7f9e4225b47d8980f019a0f0
+  original: lts-14.27

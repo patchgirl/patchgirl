@@ -1,4 +1,4 @@
-resolver: lts-14.4
+resolver: lts-14.27
 packages:
   - '.'
 
@@ -12,6 +12,7 @@ extra-deps:
   - prometheus-metrics-ghc-1.0.0
   - wai-middleware-prometheus-1.0.0
   - strings-1.1
+  - servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
 
 nix:
   enable: true
