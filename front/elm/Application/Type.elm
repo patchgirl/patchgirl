@@ -171,6 +171,7 @@ type alias ScenarioFileRecord =
 type alias Scene =
     { id : Uuid.Uuid
     , requestFileNodeId : Uuid.Uuid
+    , computationOutput : Maybe SceneComputation
     }
 
 

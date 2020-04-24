@@ -93,6 +93,7 @@ convertSceneFromBackToFront : Back.Scene -> Front.Scene
 convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId } =
     { id = sceneId
     , requestFileNodeId = sceneRequestFileNodeId
+    , computationOutput = Nothing
     }
 
 

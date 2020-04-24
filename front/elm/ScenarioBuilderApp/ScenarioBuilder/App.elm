@@ -3,6 +3,7 @@ module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Random
+import List.Extra as List
 import Element.Border as Border
 import Element.Font as Font
 import Element.Events as Events
@@ -169,10 +170,24 @@ update msg model =
             in
                 (model, newMsg)
 
+        ScenarioProcessed scenarioComputationOutput ->
+            let
+                mergeSceneComputationOutputResult : Scene -> Scene
+                mergeSceneComputationOutputResult scene =
+                    let
+                        sceneComputation =
+                            List.find (\s -> s.sceneId == scene.id) scenarioComputationOutput.scenes
+                                |> Maybe.map .requestComputationOutput
+                    in
+                        { scene | computationOutput = sceneComputation }
 
+                newScenes =
+                    List.map mergeSceneComputationOutputResult model.scenes
 
-        ScenarioProcessed _ ->
-            (model, Cmd.none)
+                newModel =
+                    { model | scenes = newScenes }
+            in
+                (newModel, Cmd.none)
 
 
 -- ** other
@@ -196,6 +211,7 @@ mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> Scene
 mkDefaultScene  id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
+    , computationOutput = Nothing
     }
 
 runScenarioResultToMsg : Result Http.Error Client.ScenarioComputationOutput -> Msg
@@ -278,13 +294,20 @@ addNewSceneView =
 
 
 sceneView : Model -> Scene -> Element Msg
-sceneView model { id, requestFileNodeId } =
+sceneView model { id, requestFileNodeId, computationOutput } =
     let
         (RequestCollection _ requestNodes) =
             model.requestCollection
 
         mRequestFileRecord =
             RequestTree.findFile requestNodes requestFileNodeId
+
+        sceneComputationColor =
+            case computationOutput of
+                Nothing -> Border.color white
+                Just SceneNotRun -> Border.color primaryColor
+                Just (SceneRun _) -> Border.color secondaryColor
+
     in
         case mRequestFileRecord of
             Just { name } ->
@@ -292,7 +315,7 @@ sceneView model { id, requestFileNodeId } =
                     [ el [ Border.solid
                     , Border.width 1
                     , Border.rounded 5
-                    , Border.color white
+                    , sceneComputationColor
                     , Background.color white
                     , padding 20
                     , boxShadow
