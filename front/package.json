@@ -12,6 +12,7 @@
     "elm-test": "^0.19.1-revision2"
   },
   "devDependencies": {
+    "chokidar-cli": "^2.1.0",
     "elm-review": "^2.0.0"
   },
   "scripts": {
