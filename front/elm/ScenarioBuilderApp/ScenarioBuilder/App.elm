@@ -6,8 +6,6 @@ import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Events as Events
-import Element.Font as Font
 import Element.Input as Input
 import Http
 import List.Extra as List
@@ -210,7 +208,7 @@ mkDefaultScene id requestFileNodeId =
 
 runScenarioResultToMsg : Result Http.Error Client.ScenarioComputationOutput -> Msg
 runScenarioResultToMsg result =
-    case Debug.log "test" result of
+    case result of
         Ok scenarioComputationOutput ->
             ScenarioProcessed (Client.convertScenarioComputationOutputFromBackToFront scenarioComputationOutput)
 

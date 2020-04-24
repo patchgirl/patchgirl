@@ -5,7 +5,6 @@ import Api.Generated as Back
 import Application.Type as Front exposing (..)
 import Dict
 import Tuple
-import Uuid
 
 
 

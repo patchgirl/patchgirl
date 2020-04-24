@@ -66,15 +66,6 @@ getSessionId session =
 
 
 
--- * sign up
-
-
-type alias SignUp =
-    { email : String
-    }
-
-
-
 -- * environment
 
 

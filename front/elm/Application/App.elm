@@ -1,19 +1,13 @@
 module Application.App exposing (..)
 
 import Animation
-import Api.Converter as Client
-import Api.Generated as Client
 import Application.Model exposing (..)
 import Application.Type exposing (..)
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Navigation
 import Element exposing (..)
 import Element.Background as Background
-import Element.Font as Font
 import EnvironmentEdition.App as EnvironmentEdition
-import EnvironmentToRunSelection.App as EnvSelection
-import Html as Html
-import Http as Http
 import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
 import Page exposing (..)
@@ -21,11 +15,9 @@ import RequestBuilderApp.App as RequestBuilderApp
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
-import Tuple as Tuple
 import Url as Url
-import Url.Parser as Url exposing ((</>))
+import Url.Parser as Url
 import Util exposing (..)
-import Uuid
 
 
 
@@ -187,8 +179,9 @@ view model =
         bodyAttr =
             [ Background.color lightGrey ]
                 ++ loadingAnimation
-                ++ [ inFront (modalView model) ]
-                ++ [ inFront (notificationView model) ]
+                ++ [ inFront (modalView model)
+                   , inFront (notificationView model)
+                   ]
 
         body =
             layout bodyAttr (mainView model)
@@ -245,14 +238,13 @@ modalView model =
             ScenarioMsg (ScenarioBuilderApp.ScenarioBuilderMsg msg)
 
         modalConfig =
-            case model.whichModal of
-                Nothing ->
-                    Nothing
+            let
+                scenarioModal =
+                    \(SelectHttpRequestModal withSceneParent) ->
+                        Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection))
+            in
+            Maybe.andThen scenarioModal model.whichModal
 
-                Just modal ->
-                    case modal of
-                        SelectHttpRequestModal withSceneParent ->
-                            Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection))
     in
     Modal.view modalConfig
 

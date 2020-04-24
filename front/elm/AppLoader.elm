@@ -9,14 +9,10 @@ import Browser
 import Browser.Navigation as Navigation
 import Element exposing (..)
 import Element.Background as Background
-import Element.Font as Font
-import Html
-import Html.Attributes as Html
 import Http
 import Json.Encode as E
-import Time
 import Url as Url
-import Url.Parser as Url exposing ((</>), (<?>))
+import Url.Parser as Url
 import Url.Parser.Query as Query
 import Util exposing (..)
 

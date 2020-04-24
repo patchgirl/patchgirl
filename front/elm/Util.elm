@@ -3,9 +3,7 @@ module Util exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Events as Events
 import Element.Font as Font
-import Element.Input as Input
 import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
@@ -99,7 +97,7 @@ borderOrange =
 colorToString : Color -> String
 colorToString color =
     let
-        { red, green, blue, alpha } =
+        { red, green, blue } =
             toRgb color
 
         rgbFloatToString : Float -> String
@@ -293,7 +291,7 @@ onEnterWithInput tagger =
     in
     htmlAttribute <|
         Html.on "keydown" <|
-            Json.map2 (\key value -> tagger value) decodeEnter Html.targetValue
+            Json.map2 (\_ value -> tagger value) decodeEnter Html.targetValue
 
 
 

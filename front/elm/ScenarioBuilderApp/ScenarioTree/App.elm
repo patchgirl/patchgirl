@@ -3,9 +3,6 @@ module ScenarioBuilderApp.ScenarioTree.App exposing (..)
 import Api.Generated as Client
 import Application.Type exposing (..)
 import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Events as Events
 import Element.Input as Input
 import Http
 import Page exposing (..)

@@ -2,11 +2,6 @@ module EnvironmentToRunSelection.App exposing (..)
 
 import Application.Type as Type
 import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Events as Events
-import Element.Font as Font
-import Element.Input as Input
 import EnvironmentToRunSelection.Message exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)

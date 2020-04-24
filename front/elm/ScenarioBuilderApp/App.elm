@@ -4,9 +4,6 @@ import Application.Model as Application
 import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
-import Element.Border as Border
-import Element.Events as Events
-import Element.Font as Font
 import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
