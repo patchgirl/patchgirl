@@ -570,6 +570,7 @@ mkDefaultFile id =
     ScenarioFile { id = id
                  , name = NotEdited defaultFileName
                  , scenes = []
+                 , showDetailedSceneView = Nothing
                  }
 
 defaultFolderName : String

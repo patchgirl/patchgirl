@@ -29,10 +29,11 @@ type alias Model =
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
     , requestCollection : RequestCollection
-    , scenarioCollectionId : Uuid.Uuid
+    , scenarioCollectionId : Uuid
     , scenes : List Scene
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
+    , showDetailedSceneView : Maybe Uuid
     }
 
 
@@ -312,26 +313,29 @@ sceneView model { id, requestFileNodeId, computationOutput } =
         case mRequestFileRecord of
             Just { name } ->
                 column [ centerX, spacing 10 ]
-                    [ el [ Border.solid
-                    , Border.width 1
-                    , Border.rounded 5
-                    , sceneComputationColor
-                    , Background.color white
-                    , padding 20
-                    , boxShadow
-                    , centerX
-                    ] <| row [ spacing 20, centerX ]
-                            [ el [] (text (notEditedValue name))
-                            , Input.button []
-                                { onPress = Just (AskDeleteScene id)
-                                , label = el [ alignRight ] clearIcon
-                                }
-                            ]
+                    [ Input.button
+                          [ Border.solid
+                          , Border.width 1
+                          , Border.rounded 5
+                          , sceneComputationColor
+                          , Background.color white
+                          , padding 20
+                          , boxShadow
+                          , centerX
+                          ] { onPress = Just (AskDeleteScene id)
+                            , label =
+                                row [ spacing 20, centerX ]
+                                    [ el [] (text (notEditedValue name))
+                                    , Input.button []
+                                        { onPress = Just (AskDeleteScene id)
+                                        , label = el [ alignRight ] clearIcon
+                                        }
+                                    ]
+                            }
                     , arrowView id
                     ]
 
             _ -> none
-
 
 
 -- ** arrow view
@@ -343,6 +347,15 @@ arrowView id =
         { onPress = Just (ShowHttpRequestSelectionModal (Just id))
         , label = arrowDownwardIcon
         }
+
+
+
+-- ** detailed scene view
+
+
+detailedSceneView : Model -> Scene -> Element Msg
+detailedSceneView model scene =
+    none
 
 
 -- * modal

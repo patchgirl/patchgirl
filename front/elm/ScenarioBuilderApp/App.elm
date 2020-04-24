@@ -145,6 +145,7 @@ convertFromFileToBuilder file scenarioCollectionId session requestCollection key
     , scenes = file.scenes
     , keyValues = keyValuesToRun
     , name = file.name
+    , showDetailedSceneView = file.showDetailedSceneView
     }
 
 convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord
@@ -152,6 +153,7 @@ convertFromBuilderToFile builder =
     { id = builder.id
     , name = builder.name
     , scenes = builder.scenes
+    , showDetailedSceneView = builder.showDetailedSceneView
     }
 
 changeFileBuilder : ScenarioBuilder.Model -> ScenarioNode -> ScenarioNode

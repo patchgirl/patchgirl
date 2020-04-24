@@ -162,6 +162,7 @@ type alias ScenarioFileRecord =
     { id : Uuid.Uuid
     , name : Editable String
     , scenes : List Scene
+    , showDetailedSceneView : Maybe Uuid
     }
 
 
