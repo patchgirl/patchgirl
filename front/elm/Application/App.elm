@@ -198,8 +198,8 @@ view model =
 mainView : Model -> Element Msg
 mainView model =
     let
-        builderView =
-            map BuilderAppMsg (RequestBuilderApp.view model)
+        builderView mScenarioId =
+            map BuilderAppMsg (RequestBuilderApp.view model mScenarioId)
     in
     column
         [ width fill
@@ -211,13 +211,13 @@ mainView model =
         , el [ width fill ] <|
             case model.page of
                 HomePage ->
-                    builderView
+                    builderView Nothing
 
                 NotFoundPage ->
                     el [ centerY, centerX ] (text "not found")
 
-                ReqPage _ ->
-                    builderView
+                ReqPage _ mFromScenarioId ->
+                    builderView mFromScenarioId
 
                 EnvPage ->
                     map EnvironmentEditionMsg (EnvironmentEdition.view model)

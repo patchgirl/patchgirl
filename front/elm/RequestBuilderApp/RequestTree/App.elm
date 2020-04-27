@@ -642,7 +642,7 @@ nodeView mDisplayedRequestNodeMenuIndex requestCollection =
 fileReadView : String -> Uuid.Uuid -> Element Msg
 fileReadView name id =
     link []
-        { url = href (ReqPage (Just id))
+        { url = href (ReqPage (Just id) Nothing)
         , label = el [] <| iconWithTextAndColor "label" name secondaryColor
         }
 

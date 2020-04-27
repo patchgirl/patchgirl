@@ -15,7 +15,7 @@ import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import RequestBuilderApp.RequestTree.App as RequestTree
 import RequestBuilderApp.RequestTree.Util as RequestTree
 import Util exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 
 
 
@@ -26,7 +26,7 @@ type alias Model a =
     { a
         | notification : Maybe String
         , requestCollection : RequestCollection
-        , displayedRequestNodeMenuId : Maybe Uuid.Uuid
+        , displayedRequestNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
@@ -96,10 +96,10 @@ update msg model =
 -- * util
 
 
-getSelectedBuilderId : Model a -> Maybe Uuid.Uuid
+getSelectedBuilderId : Model a -> Maybe Uuid
 getSelectedBuilderId model =
     case model.page of
-        ReqPage (Just id) ->
+        ReqPage (Just id) _ ->
             Just id
 
         _ ->
@@ -173,8 +173,8 @@ changeFileBuilder builder node =
 -- * view
 
 
-view : Model a -> Element Msg
-view model =
+view : Model a -> Maybe Uuid -> Element Msg
+view model fromScenarioId =
     wrappedRow
         [ width fill
         , paddingXY 10 0
@@ -192,7 +192,7 @@ view model =
             [ el [] <| envSelectionView <| List.map .name model.environments
             , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
             ]
-        , builderView model
+        , builderView model fromScenarioId
         ]
 
 
@@ -211,12 +211,16 @@ envSelectionView environmentNames =
             ]
 
 
-builderView : Model a -> Element Msg
-builderView model =
+builderView : Model a -> Maybe Uuid -> Element Msg
+builderView model fromScenarioId =
     case getBuilder model of
         Just builder ->
-            el [ width (fillPortion 9), width fill, height fill, alignTop ]
-                (map BuilderMsg (RequestBuilder.view builder))
+            el [ width (fillPortion 9)
+               , width fill
+               , height fill
+               , alignTop
+               ]
+                (map BuilderMsg (RequestBuilder.view builder fromScenarioId))
 
         Nothing ->
             el [ width (fillPortion 9), centerX, centerY ]

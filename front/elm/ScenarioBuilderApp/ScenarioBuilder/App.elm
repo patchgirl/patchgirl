@@ -17,6 +17,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import RequestComputation
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
+import Page exposing(..)
 
 
 -- * model
@@ -297,7 +298,6 @@ view model =
                     }
                 ]
 
-
         sceneAndFileRecordDetailToShow : Maybe (Scene, RequestFileRecord)
         sceneAndFileRecordDetailToShow =
             let
@@ -325,7 +325,7 @@ view model =
                 ]
 
         Just (scene, requestFileRecord) ->
-            wrappedRow [ explain Debug.todo, height fill, width fill ]
+            wrappedRow [ height fill, width fill ]
                 [ el [ width (fillPortion 4), height fill ] scenesView
                 , el [ width (fillPortion 1), height fill ] scenarioSettingView
                 , el [ width (fillPortion 5), height fill ] (detailedSceneView model scene requestFileRecord)
@@ -363,30 +363,30 @@ sceneView model { id, requestFileNodeId, computationOutput } =
         mRequestFileRecord =
             RequestTree.findFile requestNodes requestFileNodeId
 
-        sceneComputationColor =
+        sceneComputationAttrs =
             case computationOutput of
                 Nothing ->
-                    Border.color white
+                    [ Border.color white ]
 
                 Just SceneNotRun ->
-                    Border.color primaryColor
+                    [ borderError, backgroundError ]
 
                 Just (SceneRun _) ->
-                    Border.color secondaryColor
+                    [ borderSuccess, backgroundSuccess ]
     in
     case mRequestFileRecord of
         Just { name } ->
             column [ centerX, spacing 10 ]
                 [ Input.button
-                    [ Border.solid
-                    , Border.width 1
-                    , Border.rounded 5
-                    , sceneComputationColor
-                    , Background.color white
-                    , padding 20
-                    , boxShadow
-                    , centerX
-                    ]
+                    ( [ Border.solid
+                      , Border.width 1
+                      , Border.rounded 5
+                      , Background.color white
+                      , padding 20
+                      , boxShadow
+                      , centerX
+                      ] ++ sceneComputationAttrs
+                    )
                     { onPress = Just (ShowDetailedView id)
                     , label =
                         row [ spacing 20, centerX ]
@@ -410,11 +410,18 @@ sceneView model { id, requestFileNodeId, computationOutput } =
 
 arrowView : Uuid.Uuid -> Element Msg
 arrowView id =
-    Input.button [ centerX ]
-        { onPress = Just (ShowHttpRequestSelectionModal (Just id))
-        , label = arrowDownwardIcon
-        }
-
+    let
+        addSceneBtn =
+            Input.button [ centerX ]
+            { onPress = Just (ShowHttpRequestSelectionModal (Just id))
+            , label = row [] [ addIcon
+                             , text " add request"
+                             ]
+            }
+    in
+    el [ centerX
+       , onRight addSceneBtn
+       ] arrowDownwardIcon
 
 
 -- ** detailed scene view
@@ -434,7 +441,11 @@ detailedSceneView model scene requestFileRecord =
             ++ url
 
         inputSceneDetailView =
-            [ el [] (text <| editedOrNotEditedValue requestFileRecord.name)
+            [ link []
+                  { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
+                  , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
+                            secondaryColor
+                  }
             , el [] (text methodAndUrl)
             ]
 

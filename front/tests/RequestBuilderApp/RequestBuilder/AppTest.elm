@@ -1,11 +1,11 @@
-module BuilderApp.Builder.AppTest exposing (..)
+module RequestBuilderApp.RequestBuilder.AppTest exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
-import BuilderApp.Builder.App exposing (..)
+import RequestBuilderApp.RequestBuilder.App exposing (..)
 import Application.Type exposing(..)
-
+import RequestComputation exposing(..)
 
 suite : Test
 suite =

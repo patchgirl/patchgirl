@@ -209,7 +209,6 @@ labelAttrs =
     , paddingXY 10 10
     ]
 
-
 labelSuccess : String -> Element a
 labelSuccess labelText =
     let
@@ -245,6 +244,37 @@ labelError labelText =
     in
     el (attributes ++ labelAttrs) (text labelText)
 
+
+-- * border
+
+
+borderSuccess : Attribute a
+borderSuccess =
+    Border.color borderGreen
+
+borderWarning : Attribute a
+borderWarning =
+    Border.color borderOrange
+
+borderError : Attribute a
+borderError =
+    Border.color borderRed
+
+
+-- * background
+
+
+backgroundSuccess : Attribute a
+backgroundSuccess =
+    Background.color backgroundGreen
+
+backgroundWarning : Attribute a
+backgroundWarning =
+    Background.color backgroundOrange
+
+backgroundError : Attribute a
+backgroundError =
+    Background.color backgroundRed
 
 
 -- * onEnter

@@ -1,4 +1,8 @@
-module RequestComputation exposing (buildRequestComputationInput)
+module RequestComputation
+    exposing ( buildRequestComputationInput
+             , interpolate
+             , removeSchemeFromUrl
+             )
 
 import Application.Type exposing (..)
 import Combine

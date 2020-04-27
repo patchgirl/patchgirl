@@ -11,7 +11,7 @@ import Uuid
 
 type Page
     = HomePage
-    | ReqPage (Maybe Uuid.Uuid)
+    | ReqPage (Maybe Uuid.Uuid) (Maybe Uuid.Uuid)
     | EnvPage
     | ScenarioPage (Maybe Uuid.Uuid)
     | NotFoundPage
@@ -30,13 +30,13 @@ urlParser : Url.Parser (Page -> a) a
 urlParser =
     Url.oneOf
         [ Url.map HomePage Url.top
-        , Url.map (\id -> ReqPage (Just id)) (Url.s "req" </> uuidParser)
-        , Url.map (ReqPage Nothing) (Url.s "req")
+        , Url.map (\reqId scenarioId -> ReqPage (Just reqId) (Just scenarioId)) (Url.s "req" </> uuidParser </> uuidParser)
+        , Url.map (\id -> ReqPage (Just id) Nothing) (Url.s "req" </> uuidParser)
+        , Url.map (ReqPage Nothing Nothing) (Url.s "req")
         , Url.map EnvPage (Url.s "env")
         , Url.map (\id -> ScenarioPage (Just id)) (Url.s "scenario" </> uuidParser)
         , Url.map (ScenarioPage Nothing) (Url.s "scenario")
         ]
-
 
 
 -- * href
@@ -50,10 +50,13 @@ href page =
                 HomePage ->
                     []
 
-                ReqPage (Just uuid) ->
+                ReqPage (Just reqId) (Just scenarioId) ->
+                    [ "req", Uuid.toString reqId, Uuid.toString scenarioId ]
+
+                ReqPage (Just uuid) Nothing ->
                     [ "req", Uuid.toString uuid ]
 
-                ReqPage Nothing ->
+                ReqPage Nothing _ ->
                     [ "req" ]
 
                 EnvPage ->

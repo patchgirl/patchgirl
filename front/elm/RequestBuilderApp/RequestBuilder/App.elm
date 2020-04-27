@@ -20,8 +20,9 @@ import List.Extra as List
 import PrivateAddress exposing (..)
 import RequestComputation exposing (..)
 import Util exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
+import Page exposing(..)
 
 
 -- * model
@@ -29,7 +30,7 @@ import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 
 type alias Model =
     { notification : Maybe String
-    , id : Uuid.Uuid
+    , id : Uuid
     , requestCollectionId : Int
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
@@ -429,8 +430,8 @@ expectStringDetailed msg =
 -- * view
 
 
-view : Model -> Element Msg
-view model =
+view : Model -> Maybe Uuid -> Element Msg
+view model mFromScenarioId =
     let
         builderView =
             column [ width fill, spacing 10 ]
@@ -452,7 +453,8 @@ view model =
                 , boxShadow
                 , padding 20
                 ]
-                [ titleView model
+                [ goBackToScenarioView mFromScenarioId
+                , titleView model
                 , el [ width fill ] builderView
                 ]
 
@@ -465,7 +467,8 @@ view model =
                     , boxShadow
                     , padding 20
                     ]
-                    [ titleView model
+                    [ goBackToScenarioView mFromScenarioId
+                    , titleView model
                     , el [ alignTop ] builderView
                     ]
                 , el
@@ -477,6 +480,25 @@ view model =
                     ]
                     (responseView model)
                 ]
+
+
+-- ** go back to scenario view
+
+
+goBackToScenarioView : Maybe Uuid -> Element Msg
+goBackToScenarioView mScenarioId =
+    case mScenarioId of
+        Nothing ->
+            none
+
+        Just scenarioId ->
+            link []
+                { url = href (ScenarioPage (Just scenarioId))
+                , label = el [] <| iconWithTextAndColor "label" "go back to scenario" secondaryColor
+                }
+
+
+
 
 
 

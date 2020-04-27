@@ -55,7 +55,7 @@ update msg model =
         OpenReqPage ->
             let
                 newModel =
-                    { model | page = ReqPage Nothing }
+                    { model | page = ReqPage Nothing Nothing }
             in
             ( newModel, Cmd.none )
 
@@ -311,7 +311,7 @@ centerView model =
         currentDisplayedBuilderId : Maybe Uuid.Uuid
         currentDisplayedBuilderId =
             case model.page of
-                ReqPage mId ->
+                ReqPage mId _ ->
                     mId
 
                 _ ->
@@ -322,12 +322,12 @@ centerView model =
             (mainLinkAttribute
                 ++ mainLinkAttributeWhenActive OpenReqPage
                     (model.page
-                        == ReqPage currentDisplayedBuilderId
+                        == ReqPage currentDisplayedBuilderId Nothing
                         || model.page
                         == HomePage
                     )
             )
-            { url = href (ReqPage Nothing)
+            { url = href (ReqPage Nothing Nothing)
             , label = el [] (text "Request")
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (model.page == EnvPage))

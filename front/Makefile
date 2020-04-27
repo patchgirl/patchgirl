@@ -6,8 +6,11 @@ client: ../back/generate-elm-client.hs ../back/src/App.hs
 app:
 	clear; echo "building front/app"; elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js
 
+watch-test:
+	clear; npx elm-test --watch
+
 watch:
-	clear; npx chokidar 'elm/*.elm' -c 'clear; elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js' --initial
+	clear; npx chokidar 'elm/**/*.elm' -c 'clear; elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js'
 
 debug:
 	clear; echo "building front/app";  elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js --debug
