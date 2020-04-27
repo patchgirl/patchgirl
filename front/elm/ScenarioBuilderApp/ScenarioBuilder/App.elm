@@ -441,12 +441,14 @@ detailedSceneView model scene requestFileRecord =
             ++ url
 
         inputSceneDetailView =
-            [ link []
-                  { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
-                  , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
-                            secondaryColor
-                  }
-            , el [] (text methodAndUrl)
+            [ column [ spacing 10 ]
+                [ link []
+                      { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
+                      , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
+                                secondaryColor
+                      }
+                , el [ centerX ] (text methodAndUrl)
+                ]
             ]
 
         outputSceneDetailView : SceneComputation -> List (Element Msg)
@@ -469,21 +471,24 @@ detailedSceneView model scene requestFileRecord =
                         }
 
                     ]
-
-
     in
     column [ width fill
            , height fill
            , centerX
            , alignTop
-           , spacing 20
+           , spacing 40
+           , padding 20
+           , boxShadow
+           , Background.color white
            ] <|
         case scene.computationOutput of
             Nothing ->
                 inputSceneDetailView
 
             Just sceneComputation ->
-                inputSceneDetailView ++ (outputSceneDetailView sceneComputation)
+                inputSceneDetailView
+                ++ [ hr [] "response" ]
+                ++ (outputSceneDetailView sceneComputation)
 
 
 -- ** util

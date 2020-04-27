@@ -245,6 +245,32 @@ labelError labelText =
     el (attributes ++ labelAttrs) (text labelText)
 
 
+-- * horizontal separator (hr)
+
+
+hr : List (Attribute a) -> String -> Element a
+hr attrs label =
+    let
+        attributes =
+            attrs ++ [ width fill
+                     , height fill
+                     , centerX
+                     , Border.color black
+                     , Border.widthEach { top = 1, left = 0, right = 0, bottom = 0 }
+                     , Border.solid
+                     , inFront <| el [ height fill
+                                     , paddingXY 20 0
+                                     , centerX
+                                     , moveUp 12
+                                     ]
+                         <| el [ Background.color white
+                               , paddingXY 20 0
+                               ] (text label)
+                     ]
+    in
+    el attributes none
+
+
 -- * border
 
 
