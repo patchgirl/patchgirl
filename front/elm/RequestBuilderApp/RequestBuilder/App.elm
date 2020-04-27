@@ -4,7 +4,7 @@ import Animation
 import Api.Converter as Client
 import Api.Generated as Client
 import Application.Type exposing (..)
-import Dict as Dict
+import Dict
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -21,7 +21,7 @@ import PrivateAddress exposing (..)
 import RequestComputation exposing (..)
 import Util exposing (..)
 import Uuid
-
+import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 
 
 -- * model
@@ -549,44 +549,6 @@ mainActionButtonsView model =
 responseView : Model -> Element Msg
 responseView model =
     let
-        bodyResponseText : String -> Dict.Dict String String -> String
-        bodyResponseText body responseHeaders =
-            case Dict.get "content-type" responseHeaders of
-                Just contentType ->
-                    case String.contains "application/json" contentType of
-                        True ->
-                            Result.withDefault body (Json.prettyString { indent = 4, columns = 4 } body)
-
-                        False ->
-                            body
-
-                _ ->
-                    body
-
-        statusResponseView : RequestComputationOutput -> Element Msg
-        statusResponseView requestComputationOutput =
-            let
-                statusText =
-                    String.fromInt requestComputationOutput.statusCode
-
-                statusLabel =
-                    if requestComputationOutput.statusCode >= 200 && requestComputationOutput.statusCode < 300 then
-                        labelSuccess statusText
-
-                    else if requestComputationOutput.statusCode >= 400 && requestComputationOutput.statusCode < 500 then
-                        labelWarning statusText
-
-                    else if requestComputationOutput.statusCode >= 500 then
-                        labelError statusText
-
-                    else
-                        labelWarning statusText
-            in
-            column [ spacing 5 ]
-                [ text "status: "
-                , statusLabel
-                ]
-
         headersResponseView : RequestComputationOutput -> Element Msg
         headersResponseView requestComputationOutput =
             let
@@ -635,7 +597,7 @@ responseView model =
                 ]
 
         Just (RequestComputationFailed httpException) ->
-            el errorAttributes (text (httpExceptionToMessage httpException))
+            el errorAttributes (text (httpExceptionToString httpException))
 
 
 

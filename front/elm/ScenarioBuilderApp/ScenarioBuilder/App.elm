@@ -16,6 +16,7 @@ import RequestComputation exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import RequestComputation
+import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 
 
 -- * model
@@ -57,6 +58,8 @@ type
       -- detailed view
     | ShowDetailedView Uuid
     | HideDetailedView
+      -- other
+    | DoNothing
 
 
 -- * update
@@ -215,6 +218,8 @@ update msg model =
         ServerError ->
             ( model, Cmd.none )
 
+        DoNothing ->
+            ( model, Cmd.none )
 
 
 -- * util
@@ -427,20 +432,63 @@ detailedSceneView model scene requestFileRecord =
             ++ (schemeToString scheme)
             ++ "://"
             ++ url
+
+        inputSceneDetailView =
+            [ el [] (text <| editedOrNotEditedValue requestFileRecord.name)
+            , el [] (text methodAndUrl)
+            ]
+
+        outputSceneDetailView : SceneComputation -> List (Element Msg)
+        outputSceneDetailView sceneComputation =
+            case sceneComputation of
+                SceneNotRun ->
+                    [ none ]
+
+                SceneRun (RequestComputationFailed httpException) ->
+                    [ text <| "This request failed because of: " ++ httpExceptionToString httpException ]
+
+                SceneRun (RequestComputationSucceeded requestComputationOutput) ->
+                    [ statusResponseView requestComputationOutput
+                    , Input.multiline []
+                        { onChange = always DoNothing
+                        , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
+                        , placeholder = Nothing
+                        , label = labelInputView "body: "
+                        , spellcheck = False
+                        }
+
+                    ]
+
+
     in
     column [ width fill
            , height fill
            , centerX
            , alignTop
            , spacing 20
-           ]
-        [ el [] (text <| editedOrNotEditedValue requestFileRecord.name)
-        , el [] <|
-            text methodAndUrl
-        , text "output"
-        , text "body / headers"
-        ]
+           ] <|
+        case scene.computationOutput of
+            Nothing ->
+                inputSceneDetailView
 
+            Just sceneComputation ->
+                inputSceneDetailView ++ (outputSceneDetailView sceneComputation)
+
+
+-- ** util
+
+
+labelInputView : String -> Input.Label Msg
+labelInputView labelText =
+    let
+        size =
+            width
+                (fill
+                    |> maximum 100
+                    |> minimum 100
+                )
+    in
+    Input.labelAbove [ centerY, size ] <| text labelText
 
 
 -- * modal

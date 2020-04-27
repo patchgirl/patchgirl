@@ -248,8 +248,8 @@ type HttpException
     | UnknownException
 
 
-httpExceptionToMessage : HttpException -> String
-httpExceptionToMessage httpException =
+httpExceptionToString : HttpException -> String
+httpExceptionToString httpException =
     case httpException of
         InvalidUrlException url _ ->
             "Invalid Url:" ++ url

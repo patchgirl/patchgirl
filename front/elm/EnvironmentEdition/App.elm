@@ -194,7 +194,7 @@ update msg model =
                         ( ( newEnvironment, newSubMsg ), Just id ) ->
                             let
                                 newEnvironments =
-                                    List.updateIf (\env -> env.id == id) (\_ -> newEnvironment) model.environments
+                                    List.updateIf (\env -> env.id == id) (always newEnvironment) model.environments
 
                                 newModel =
                                     { model | environments = newEnvironments }

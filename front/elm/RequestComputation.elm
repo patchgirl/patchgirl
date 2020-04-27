@@ -59,7 +59,7 @@ removeSchemeFromUrl url =
                     }
                     "^https?://"
     in
-    Regex.replace schemeRegex (\_ -> "") url
+    Regex.replace schemeRegex (always "") url
 
 
 schemeFromUrl : String -> Scheme
