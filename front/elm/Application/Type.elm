@@ -26,7 +26,7 @@ type Session
 
 
 type alias VisitorSession =
-    { id : Uuid.Uuid
+    { id : Uuid
     , csrfToken : String
     , signInEmail : String
     , signInPassword : String
@@ -38,7 +38,7 @@ type alias VisitorSession =
 
 
 type alias SignedUserSession =
-    { id : Uuid.Uuid
+    { id : Uuid
     , csrfToken : String
     , email : String
     , avatarUrl : String
@@ -55,7 +55,7 @@ getCsrfToken session =
             csrfToken
 
 
-getSessionId : Session -> Uuid.Uuid
+getSessionId : Session -> Uuid
 getSessionId session =
     case session of
         Visitor { id } ->
@@ -116,7 +116,7 @@ type RequestNode
 
 
 type alias RequestFolderRecord =
-    { id : Uuid.Uuid
+    { id : Uuid
     , name : Editable String
     , open : Bool
     , children : List RequestNode
@@ -128,7 +128,7 @@ type alias RequestFolderRecord =
 
 
 type alias RequestFileRecord =
-    { id : Uuid.Uuid
+    { id : Uuid
     , name : Editable String
     , httpUrl : Editable String
     , httpMethod : Editable HttpMethod
@@ -145,7 +145,7 @@ type alias RequestFileRecord =
 
 
 type ScenarioCollection
-    = ScenarioCollection Uuid.Uuid (List ScenarioNode)
+    = ScenarioCollection Uuid (List ScenarioNode)
 
 
 
@@ -162,7 +162,7 @@ type ScenarioNode
 
 
 type alias ScenarioFolderRecord =
-    { id : Uuid.Uuid
+    { id : Uuid
     , name : Editable String
     , children : List ScenarioNode
     , open : Bool
@@ -174,7 +174,7 @@ type alias ScenarioFolderRecord =
 
 
 type alias ScenarioFileRecord =
-    { id : Uuid.Uuid
+    { id : Uuid
     , name : Editable String
     , scenes : List Scene
     , showDetailedSceneView : Maybe Uuid
@@ -186,8 +186,8 @@ type alias ScenarioFileRecord =
 
 
 type alias Scene =
-    { id : Uuid.Uuid
-    , requestFileNodeId : Uuid.Uuid
+    { id : Uuid
+    , requestFileNodeId : Uuid
     , computationOutput : Maybe SceneComputation
     }
 
@@ -197,7 +197,7 @@ type alias Scene =
 
 
 type alias Builder =
-    { id : Uuid.Uuid
+    { id : Uuid
     , name : Editable String
     , httpUrl : Editable String
     , httpMethod : Editable HttpMethod
@@ -418,6 +418,11 @@ type Scheme
     = Http
     | Https
 
+schemeToString : Scheme -> String
+schemeToString scheme =
+    case scheme of
+        Http -> "http"
+        Https -> "https"
 
 
 -- * scenario computation

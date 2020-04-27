@@ -219,7 +219,7 @@ builderView : Model a -> Element Msg
 builderView model =
     case getBuilder model of
         Just builder ->
-            el [ width (fillPortion 9), centerX, centerY, alignTop ]
+            el [ width (fillPortion 9), centerX, alignTop ]
                 (map ScenarioBuilderMsg (ScenarioBuilder.view builder))
 
         Nothing ->

@@ -15,7 +15,7 @@ import RequestBuilderApp.RequestTree.Util as RequestTree
 import RequestComputation exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
-
+import RequestComputation
 
 
 -- * model
@@ -43,18 +43,20 @@ type
     Msg
     -- create scene
     = ShowHttpRequestSelectionModal (Maybe Uuid)
-    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid.Uuid
-    | SelectRequestFile (Maybe Uuid) Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid
+    | SelectRequestFile (Maybe Uuid) Uuid Uuid
     | AskCreateScene (Maybe Uuid) Uuid Uuid
     | CloseModal
       -- delete scene
-    | AskDeleteScene Uuid.Uuid
-    | DeleteScene Uuid.Uuid
+    | AskDeleteScene Uuid
+    | DeleteScene Uuid
     | ServerError
       -- scenario
     | AskRunScenario
     | ScenarioProcessed ScenarioComputationOutput
-
+      -- detailed view
+    | ShowDetailedView Uuid
+    | HideDetailedView
 
 
 -- * update
@@ -63,7 +65,11 @@ type
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        -- ** create scene
+
+
+-- ** create scene
+
+
         ShowHttpRequestSelectionModal sceneParentId ->
             let
                 newModel =
@@ -130,22 +136,17 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** scenario
+
+-- ** scenario
+
+
         AskRunScenario ->
             let
-                findFileRecord : Uuid -> Maybe RequestFileRecord
-                findFileRecord id =
-                    let
-                        (RequestCollection _ requestNodes) =
-                            model.requestCollection
-                    in
-                    RequestTree.findFile requestNodes id
-
                 sceneToInputScene : Scene -> Client.InputScene
                 sceneToInputScene scene =
                     let
                         requestComputationInput =
-                            Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord scene.requestFileNodeId)
+                            Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord model scene.requestFileNodeId)
                     in
                     { inputSceneId = scene.id
                     , inputSceneRequestFileNodeId = scene.requestFileNodeId
@@ -182,7 +183,28 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** other
+
+-- ** detailed view
+
+
+        ShowDetailedView id ->
+            let
+                newModel =
+                    { model | showDetailedSceneView = Just id }
+            in
+            (newModel, Cmd.none)
+
+        HideDetailedView ->
+            let
+                newModel =
+                    { model | showDetailedSceneView = Nothing }
+            in
+            (newModel, Cmd.none)
+
+
+-- ** other
+
+
         CloseModal ->
             let
                 newModel =
@@ -236,6 +258,14 @@ createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
             Debug.todo "server error" ServerError
 
 
+findFileRecord : Model -> Uuid -> Maybe RequestFileRecord
+findFileRecord model id =
+    let
+        (RequestCollection _ requestNodes) =
+            model.requestCollection
+    in
+    RequestTree.findFile requestNodes id
+
 
 -- * view
 
@@ -261,11 +291,40 @@ view model =
                             ]
                     }
                 ]
+
+
+        sceneAndFileRecordDetailToShow : Maybe (Scene, RequestFileRecord)
+        sceneAndFileRecordDetailToShow =
+            let
+                mScene =
+                    Maybe.andThen (\sceneToShowId ->
+                                   List.find (\scene -> scene.id == sceneToShowId) model.scenes) model.showDetailedSceneView
+
+                mFileRecord =
+                    Maybe.andThen (\scene -> findFileRecord model scene.requestFileNodeId) mScene
+
+            in
+            case (mScene, mFileRecord) of
+                (Just scene, Just fileRecord) ->
+                    Just (scene, fileRecord)
+
+                _ ->
+                    Nothing
+
     in
-    wrappedRow [ width fill, centerX ]
-        [ el [ width (fillPortion 8) ] scenesView
-        , el [ width (fillPortion 2) ] scenarioSettingView
-        ]
+    case sceneAndFileRecordDetailToShow of
+        Nothing ->
+            wrappedRow [ width fill, centerX ]
+                [ el [ width (fillPortion 8) ] scenesView
+                , el [ width (fillPortion 2) ] scenarioSettingView
+                ]
+
+        Just (scene, requestFileRecord) ->
+            wrappedRow [ explain Debug.todo, height fill, width fill ]
+                [ el [ width (fillPortion 4), height fill ] scenesView
+                , el [ width (fillPortion 1), height fill ] scenarioSettingView
+                , el [ width (fillPortion 5), height fill ] (detailedSceneView model scene requestFileRecord)
+                ]
 
 
 
@@ -323,7 +382,7 @@ sceneView model { id, requestFileNodeId, computationOutput } =
                     , boxShadow
                     , centerX
                     ]
-                    { onPress = Just (AskDeleteScene id)
+                    { onPress = Just (ShowDetailedView id)
                     , label =
                         row [ spacing 20, centerX ]
                             [ el [] (text (notEditedValue name))
@@ -356,9 +415,31 @@ arrowView id =
 -- ** detailed scene view
 
 
-detailedSceneView : Model -> Scene -> Element Msg
-detailedSceneView model scene =
-    none
+detailedSceneView : Model -> Scene -> RequestFileRecord -> Element Msg
+detailedSceneView model scene requestFileRecord =
+    let
+        { scheme, method, headers, url, body } =
+            buildRequestComputationInput model.keyValues requestFileRecord
+
+        methodAndUrl =
+            (methodToString method)
+            ++ " "
+            ++ (schemeToString scheme)
+            ++ "://"
+            ++ url
+    in
+    column [ width fill
+           , height fill
+           , centerX
+           , alignTop
+           , spacing 20
+           ]
+        [ el [] (text <| editedOrNotEditedValue requestFileRecord.name)
+        , el [] <|
+            text methodAndUrl
+        , text "output"
+        , text "body / headers"
+        ]
 
 
 
