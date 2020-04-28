@@ -225,5 +225,12 @@ builderView model fromScenarioId =
                 (map BuilderMsg (RequestBuilder.view builder fromScenarioId))
 
         Nothing ->
-            el [ width (fillPortion 9), centerX, centerY ]
-                (el [ centerX ] (text "No request selected"))
+            el [ width (fillPortion 9)
+               , centerX, centerY, alignTop
+               ]
+                <| el ( [ centerX
+                        , alignTop
+                        , padding 20
+                        , spacing 10
+                        ] ++ boxAttrs
+                      ) (text "No request selected")

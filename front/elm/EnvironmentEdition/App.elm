@@ -301,20 +301,18 @@ view model =
             , alignTop
             , spacing 10
             , padding 10
-            , Background.color white
             , boxShadow
             ]
             [ column [ spacing 10 ] envListView
             , el [ centerX ] addEnvButtonView
             ]
         , el
-            [ centerX
-            , alignTop
-            , padding 20
-            , spacing 10
-            , Background.color white
-            , boxShadow
-            ]
+            ( [ centerX
+              , alignTop
+              , padding 20
+              , spacing 10
+              ] ++ boxAttrs
+            )
             keyValuesEditionView
         ]
 

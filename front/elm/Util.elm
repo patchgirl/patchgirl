@@ -14,16 +14,6 @@ import Json.Decode as Json
 -- * color
 
 
-boxShadow : Attr a b
-boxShadow =
-    Border.shadow
-        { offset = ( 0, 1 )
-        , size = 0
-        , blur = 1
-        , color = rgba255 10 22 70 0.1
-        }
-
-
 white : Color
 white =
     rgb255 255 255 255
@@ -216,6 +206,7 @@ primaryButtonAttrs =
     ]
 
 
+
 -- ** selective button
 
 
@@ -319,6 +310,27 @@ hr attrs label =
                      ]
     in
     el attributes none
+
+
+-- * box
+
+
+boxAttrs : List (Attribute a)
+boxAttrs =
+    Background.color white :: [boxShadow]
+
+
+-- ** box shadow
+
+
+boxShadow : Attr a b
+boxShadow =
+    Border.shadow
+        { offset = ( 0, 1 )
+        , size = 0
+        , blur = 1
+        , color = rgba255 10 22 70 0.1
+        }
 
 
 -- * border

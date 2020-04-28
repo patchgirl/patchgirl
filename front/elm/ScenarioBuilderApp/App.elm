@@ -225,5 +225,12 @@ builderView model =
                 (map ScenarioBuilderMsg (ScenarioBuilder.view builder))
 
         Nothing ->
-            el [ width (fillPortion 9), centerX, centerY ]
-                (el [ centerX ] (text "No scenario selected"))
+            el [ width (fillPortion 9)
+               , centerX, centerY, alignTop
+               ]
+                <| el ( [ centerX
+                        , alignTop
+                        , padding 20
+                        , spacing 10
+                        ] ++ boxAttrs
+                      ) (text "No scenario selected")
