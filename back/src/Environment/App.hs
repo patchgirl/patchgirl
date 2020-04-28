@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveAnyClass         #-}
-{-# LANGUAGE DeriveGeneric          #-}
 {-# LANGUAGE DuplicateRecordFields  #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
@@ -11,88 +9,34 @@ module Environment.App where
 -- * import
 
 
-import           Control.Lens                     hiding (element)
-import           Control.Lens                     (makeLenses)
+import           Control.Lens                     ((&))
+import           Control.Lens.Getter              ((^.))
+import           Control.Lens.Setter              ((%~))
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
-import           Data.Aeson                       (FromJSON, ToJSON (..),
-                                                   defaultOptions,
-                                                   fieldLabelModifier,
-                                                   genericToJSON, parseJSON)
-import           Data.Aeson.Types                 (genericParseJSON)
 import           Data.Foldable                    (foldl')
 import           Data.HashMap.Strict              as HashMap (HashMap, elems,
                                                               empty, insertWith)
 import           Data.List                        (find)
 import           Data.UUID                        (UUID)
-import           Database.PostgreSQL.Simple       (Connection, FromRow,
-                                                   Only (..), execute, query)
+import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
-import           GHC.Generics
+import           Environment.Model
 import           PatchGirl
 import           Prelude                          hiding (id)
 import           Servant                          (err404, throwError)
 import           Servant.Server                   (ServerError)
 
 
--- * get environments
+-- * environment
 
 
-data PGEnvironmentWithKeyValue =
-  PGEnvironmentWithKeyValue { _pgEnvironmentWithKeyValueEnvironmentId   :: Int
-                            , _pgEnvironmentWithKeyValueEnvironmentName :: String
-                            , _pgEnvironmentWithKeyValueKeyValueId      :: Int
-                            , _pgEnvironmentWithKeyValueKey             :: String
-                            , _pgEnvironmentWithKeyValueValue           :: String
-                            } deriving (Generic, FromRow)
-
-data PGEnvironmentWithoutKeyValue =
-  PGEnvironmentWithoutKeyValue { _pgEnvironmentWithoutKeyValueEnvironmentId   :: Int
-                               , _pgEnvironmentWithoutKeyValueEnvironmentName :: String
-                               } deriving (Generic, FromRow)
-
-
-$(makeLenses ''PGEnvironmentWithKeyValue)
-$(makeLenses ''PGEnvironmentWithoutKeyValue)
-
-data KeyValue =
-  KeyValue { _keyValueId    :: Int
-           , _keyValueKey   :: String
-           , _keyValueValue :: String
-           } deriving (Eq, Show, Generic, FromRow)
-
-instance FromJSON KeyValue where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance ToJSON KeyValue where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-$(makeLenses ''KeyValue)
-
-data Environment
-  = Environment { _environmentId        :: Int
-                , _environmentName      :: String
-                , _environmentKeyValues :: [KeyValue]
-                } deriving (Eq, Show, Generic)
-
-instance FromJSON Environment where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance ToJSON Environment where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-$(makeLenses ''Environment)
-
-selectEnvironments :: UUID -> Connection -> IO [Environment]
+selectEnvironments :: UUID -> PG.Connection -> IO [Environment]
 selectEnvironments accountId connection = do
-  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- query connection selectEnvironmentQueryWithKeyValues (Only accountId)
-  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- query connection selectEnvironmentQueryWithoutKeyValues (Only accountId)
+  pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- PG.query connection selectEnvironmentQueryWithKeyValues (PG.Only accountId)
+  pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- PG.query connection selectEnvironmentQueryWithoutKeyValues (PG.Only accountId)
 
   let
     environmentsWithKeyValues =
@@ -158,10 +102,10 @@ selectEnvironments accountId connection = do
           AND account_id = ?;
           |]
 
+
 getEnvironmentsHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
-     , MonadError ServerError m
      )
   => UUID
   -> m [Environment]
@@ -173,23 +117,9 @@ getEnvironmentsHandler accountId = do
 -- * create environment
 
 
-newtype NewEnvironment
-  = NewEnvironment { _newEnvironmentName :: String
-                   } deriving (Eq, Show, Generic)
-
-instance FromJSON NewEnvironment where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance ToJSON NewEnvironment where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-$(makeLenses ''NewEnvironment)
-
-insertEnvironment :: NewEnvironment -> Connection -> IO Int
+insertEnvironment :: NewEnvironment -> PG.Connection -> IO Int
 insertEnvironment NewEnvironment { _newEnvironmentName } connection = do
-  [Only id] <- query connection insertEnvironmentQuery (Only _newEnvironmentName)
+  [PG.Only id] <- PG.query connection insertEnvironmentQuery (PG.Only _newEnvironmentName)
   return id
   where
     insertEnvironmentQuery =
@@ -201,9 +131,9 @@ insertEnvironment NewEnvironment { _newEnvironmentName } connection = do
           RETURNING id
           |]
 
-bindEnvironmentToAccount :: UUID -> Int -> Connection -> IO ()
+bindEnvironmentToAccount :: UUID -> Int -> PG.Connection -> IO ()
 bindEnvironmentToAccount accountId environmentId connection = do
-  _ <- execute connection bindEnvironmentToAccountQuery (accountId, environmentId)
+  _ <- PG.execute connection bindEnvironmentToAccountQuery (accountId, environmentId)
   return ()
   where
     bindEnvironmentToAccountQuery =
@@ -218,13 +148,10 @@ bindEnvironmentToAccount accountId environmentId connection = do
           |]
 
 createEnvironmentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
-     , MonadError ServerError m
      )
-  => UUID
-  -> NewEnvironment
-  -> m Int
+  => UUID -> NewEnvironment -> m Int
 createEnvironmentHandler accountId newEnvironment = do
   connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
@@ -235,29 +162,12 @@ createEnvironmentHandler accountId newEnvironment = do
 -- * update environment
 
 
-newtype UpdateEnvironment
-  = UpdateEnvironment { _name :: String }
-  deriving (Eq, Show, Generic)
-
-instance ToJSON UpdateEnvironment where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-$(makeLenses ''UpdateEnvironment)
-
-instance FromJSON UpdateEnvironment where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
 updateEnvironmentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID
-  -> Int
-  -> UpdateEnvironment
-  -> m ()
+  => UUID -> Int -> UpdateEnvironment -> m ()
 updateEnvironmentHandler accountId environmentId updateEnvironment = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments accountId connection
@@ -266,9 +176,9 @@ updateEnvironmentHandler accountId environmentId updateEnvironment = do
     True ->
       liftIO $ updateEnvironmentDB environmentId updateEnvironment connection
 
-updateEnvironmentDB :: Int -> UpdateEnvironment -> Connection -> IO ()
-updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
-  _ <- execute connection updateEnvironmentQuery (_name, environmentId)
+updateEnvironmentDB :: Int -> UpdateEnvironment -> PG.Connection -> IO ()
+updateEnvironmentDB environmentId UpdateEnvironment { _updateEnvironmentName } connection = do
+  _ <- PG.execute connection updateEnvironmentQuery (_updateEnvironmentName, environmentId)
   return ()
   where
     updateEnvironmentQuery =
@@ -283,7 +193,7 @@ updateEnvironmentDB environmentId UpdateEnvironment { _name } connection = do
 
 
 deleteEnvironmentHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -298,9 +208,9 @@ deleteEnvironmentHandler accountId environmentId = do
     True ->
       liftIO $ deleteEnvironmentDB environmentId connection
 
-deleteEnvironmentDB :: Int -> Connection -> IO ()
+deleteEnvironmentDB :: Int -> PG.Connection -> IO ()
 deleteEnvironmentDB environmentId connection = do
-  _ <- execute connection deleteEnvironmentQuery $ Only environmentId
+  _ <- PG.execute connection deleteEnvironmentQuery $ PG.Only environmentId
   return ()
   where
     deleteEnvironmentQuery =
@@ -314,7 +224,7 @@ deleteEnvironmentDB environmentId connection = do
 
 
 deleteKeyValueHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )
@@ -334,9 +244,9 @@ deleteKeyValueHandler accountId environmentId' keyValueId' = do
       liftIO $ deleteKeyValueDB (keyValue ^. keyValueId) connection
     Nothing -> throwError err404
 
-deleteKeyValueDB :: Int -> Connection -> IO ()
+deleteKeyValueDB :: Int -> PG.Connection -> IO ()
 deleteKeyValueDB keyValueId connection = do
-  _ <- execute connection deleteKeyValueQuery $ Only keyValueId
+  _ <- PG.execute connection deleteKeyValueQuery $ PG.Only keyValueId
   return ()
   where
     deleteKeyValueQuery =
@@ -349,33 +259,11 @@ deleteKeyValueDB keyValueId connection = do
 -- * upsert key values
 
 
--- ** model
 
 
-data NewKeyValue
-  = NewKeyValue { _newKeyValueKey   :: String
-                , _newKeyValueValue :: String
-                }
-  deriving (Eq, Show, Generic)
-
-instance FromJSON NewKeyValue where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance ToJSON NewKeyValue where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
-$(makeLenses ''NewKeyValue)
-
-
--- ** handler
-
-
-deleteKeyValuesDB :: Int -> Connection -> IO ()
+deleteKeyValuesDB :: Int -> PG.Connection -> IO ()
 deleteKeyValuesDB environmentId' connection = do
-  _ <- execute connection deleteKeyValuesQuery (Only environmentId')
+  _ <- PG.execute connection deleteKeyValuesQuery (PG.Only environmentId')
   return ()
   where
     deleteKeyValuesQuery =
@@ -384,9 +272,9 @@ deleteKeyValuesDB environmentId' connection = do
           WHERE environment_id = ?
           |]
 
-insertManyKeyValuesDB :: Int -> NewKeyValue -> Connection -> IO KeyValue
+insertManyKeyValuesDB :: Int -> NewKeyValue -> PG.Connection -> IO KeyValue
 insertManyKeyValuesDB environmentId NewKeyValue {..} connection = do
-  [keyValue] <- query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue)
+  [keyValue] <- PG.query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue)
   return keyValue
   where
     insertKeyValueQuery =
@@ -398,7 +286,7 @@ insertManyKeyValuesDB environmentId NewKeyValue {..} connection = do
 
 
 updateKeyValuesHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
      , MonadError ServerError m
      )

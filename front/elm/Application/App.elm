@@ -1,67 +1,60 @@
 module Application.App exposing (..)
 
-import Http as Http
-import Api.Generated as Client
-import Api.Converter as Client
-import Element exposing (..)
-import Element.Font as Font
-import Element.Background as Background
-import ViewUtil exposing (..)
-import Html as Html
-import Uuid
-
-import MainNavBar.App as MainNavBar
+import Animation
+import Application.Model exposing (..)
 import Application.Type exposing (..)
-import Url as Url
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Navigation
-import Tuple as Tuple
-import Page exposing (..)
-import Url.Parser as Url exposing ((</>))
-import Animation
-import BuilderApp.App as BuilderApp
-import BuilderApp.Builder.App as Builder
+import Element exposing (..)
+import Element.Background as Background
 import EnvironmentEdition.App as EnvironmentEdition
-import EnvironmentToRunSelection.App as EnvSelection
-import BuilderApp.BuilderTree.App as BuilderTree
-import Application.Model exposing (..)
+import MainNavBar.App as MainNavBar
+import Modal exposing (Modal(..))
+import Page exposing (..)
+import RequestBuilderApp.App as RequestBuilderApp
+import RequestBuilderApp.RequestBuilder.App as RequestBuilder
+import ScenarioBuilderApp.App as ScenarioBuilderApp
+import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
+import Url as Url
+import Url.Parser as Url
+import Util exposing (..)
 
 
--- ** model
+
+-- * model
 
 
 type alias UserData =
     { session : Session
     , requestCollection : RequestCollection
+    , scenarioCollection : ScenarioCollection
     , environments : List Environment
     }
 
 
--- ** message
+
+-- * message
 
 
 type Msg
     = LinkClicked UrlRequest
     | UrlChanged Url.Url
-    | ServerError Http.Error
-    | BuilderTreeMsg BuilderTree.Msg
-    | BuilderAppMsg BuilderApp.Msg
+    | BuilderAppMsg RequestBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
+    | ScenarioMsg ScenarioBuilderApp.Msg
     | MainNavBarMsg MainNavBar.Msg
     | Animate Animation.Msg
 
 
--- ** init
+
+-- * init
 
 
-init : UserData -> Url.Url -> Navigation.Key -> (Model, Cmd Msg)
-init { session, requestCollection, environments } url navigationKey =
+init : UserData -> Url.Url -> Navigation.Key -> ( Model, Cmd Msg )
+init { session, requestCollection, environments, scenarioCollection } url navigationKey =
     let
         page =
             urlToPage url
-
-        displayedRequestNodeMenuId =
-            Nothing
 
         selectedEnvironmentToEditId =
             Just 0
@@ -72,42 +65,54 @@ init { session, requestCollection, environments } url navigationKey =
         initialLoadingStyle =
             Animation.style [ Animation.opacity 0 ]
 
-        loadingStyle =
+        loadingAnimation =
             Animation.interrupt
                 [ Animation.to
-                      [ Animation.opacity 1
-                      ]
-                ] initialLoadingStyle
+                    [ Animation.opacity 1
+                    ]
+                ]
+                initialLoadingStyle
+
+        initialNotificationAnimation =
+            Animation.style [ Animation.opacity 0 ]
+
+        notificationAnimation =
+            Animation.interrupt
+                [ Animation.to
+                    [ Animation.opacity 1
+                    ]
+                ]
+                initialNotificationAnimation
 
         model =
             { session = session
             , page = page
             , url = url
             , navigationKey = navigationKey
-            , loadingStyle = loadingStyle
+            , loadingAnimation = loadingAnimation
+            , notification = Nothing
+            , notificationAnimation = notificationAnimation
+            , whichModal = Nothing
             , showMainMenuName = Nothing
-            , initializePassword1 = ""
-            , initializePassword2 = ""
-            , initializePasswordState = InitialPasswordState
-            , displayedRequestNodeMenuId = displayedRequestNodeMenuId
             , requestCollection = requestCollection
+            , displayedRequestNodeMenuId = Nothing
+            , scenarioCollection = scenarioCollection
+            , displayedScenarioNodeMenuId = Nothing
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , environments = environments
             }
     in
-        (model, Cmd.none)
+    ( model, Cmd.none )
 
 
--- ** update
+
+-- * update
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ServerError error ->
-            Debug.todo "server error" error
-
         UrlChanged url ->
             let
                 newPage =
@@ -116,92 +121,160 @@ update msg model =
                 newModel =
                     { model | page = newPage }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Internal url ->
-                    (model, Navigation.pushUrl model.navigationKey <| Url.toString url)
+                    ( model, Navigation.pushUrl model.navigationKey <| Url.toString url )
 
                 External url ->
-                    (model, Navigation.load url)
-
-        BuilderTreeMsg subMsg ->
-            let
-                (newModel, newSubMsg) = BuilderTree.update subMsg model
-            in
-                (newModel, Cmd.map BuilderTreeMsg newSubMsg)
+                    ( model, Navigation.load url )
 
         BuilderAppMsg subMsg ->
             let
-                (newModel, newMsg) = BuilderApp.update subMsg model
+                ( newModel, newMsg ) =
+                    RequestBuilderApp.update subMsg model
             in
-                (newModel, Cmd.map BuilderAppMsg newMsg)
+            ( newModel, Cmd.map BuilderAppMsg newMsg )
 
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map EnvironmentEditionMsg newSubMsg)
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map EnvironmentEditionMsg newSubMsg )
+
+        ScenarioMsg subMsg ->
+            case ScenarioBuilderApp.update subMsg model of
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map ScenarioMsg newSubMsg )
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
-                (newModel, newSubMsg) ->
-                    (newModel, Cmd.map MainNavBarMsg newSubMsg)
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map MainNavBarMsg newSubMsg )
 
         Animate subMsg ->
             let
-                newLoadingStyle =
-                    Animation.update subMsg model.loadingStyle
-
                 newModel =
                     { model
-                        | loadingStyle = newLoadingStyle
+                        | loadingAnimation =
+                            Animation.update subMsg model.loadingAnimation
+                        , notificationAnimation =
+                            Animation.update subMsg model.notificationAnimation
                     }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
 
--- ** view
+
+-- * view
 
 
 view : Model -> Browser.Document Msg
 view model =
     let
-        loadingStyle =
-            List.map htmlAttribute (Animation.render model.loadingStyle)
+        loadingAnimation =
+            List.map htmlAttribute (Animation.render model.loadingAnimation)
 
         bodyAttr =
-            [ Background.color lightGrey ] ++ loadingStyle
+            (Background.color lightGrey)
+                :: loadingAnimation
+                ++ [ inFront (modalView model)
+                   , inFront (notificationView model)
+                   ]
 
         body =
             layout bodyAttr (mainView model)
     in
-        { title = "PatchGirl"
-        , body = [body]
-        }
+    { title = "PatchGirl"
+    , body = [ body ]
+    }
+
+
+
+-- ** main view
 
 
 mainView : Model -> Element Msg
 mainView model =
     let
-        builderView =
-            map BuilderAppMsg (BuilderApp.view model)
+        builderView mScenarioId =
+            map BuilderAppMsg (RequestBuilderApp.view model mScenarioId)
     in
-        column [ width fill, height fill
-               , centerY
-               , spacing 30
-               ]
+    column
+        [ width fill
+        , height fill
+        , centerY
+        , spacing 30
+        ]
         [ map MainNavBarMsg (MainNavBar.view model)
         , el [ width fill ] <|
             case model.page of
-                HomePage -> builderView
-                NotFoundPage -> el [ centerY, centerX ] (text "not found")
-                ReqPage mId -> builderView
-                EnvPage -> map EnvironmentEditionMsg (EnvironmentEdition.view model)
+                HomePage ->
+                    builderView Nothing
+
+                NotFoundPage ->
+                    el [ centerY, centerX ] (text "not found")
+
+                ReqPage _ mFromScenarioId ->
+                    builderView mFromScenarioId
+
+                EnvPage ->
+                    map EnvironmentEditionMsg (EnvironmentEdition.view model)
+
+                ScenarioPage _ ->
+                    map ScenarioMsg (ScenarioBuilderApp.view model)
         ]
 
 
--- ** subscriptions
+
+-- ** modal view
+
+
+modalView : Model -> Element Msg
+modalView model =
+    let
+        scenarioBuilderMsg msg =
+            ScenarioMsg (ScenarioBuilderApp.ScenarioBuilderMsg msg)
+
+        modalConfig =
+            let
+                scenarioModal =
+                    \(SelectHttpRequestModal withSceneParent) ->
+                        Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection))
+            in
+            Maybe.andThen scenarioModal model.whichModal
+
+    in
+    Modal.view modalConfig
+
+
+
+-- ** notification view
+
+
+notificationView : Model -> Element Msg
+notificationView model =
+    case model.notification of
+        Just message ->
+            let
+                animationStyle =
+                    List.map htmlAttribute (Animation.render model.notificationAnimation)
+            in
+            el
+                ([ alignRight
+                 , height (px 10)
+                 ]
+                    ++ animationStyle
+                )
+                (text message)
+
+        Nothing ->
+            none
+
+
+
+-- * subscriptions
 
 
 subscriptions : Model -> Sub Msg
@@ -210,7 +283,7 @@ subscriptions model =
         (RequestCollection _ requestNodes) =
             model.requestCollection
 
-        getRequestFiles : List RequestNode -> List File
+        getRequestFiles : List RequestNode -> List RequestFileRecord
         getRequestFiles nodes =
             case nodes of
                 [] ->
@@ -228,12 +301,14 @@ subscriptions model =
             getRequestFiles requestNodes
 
         builderMsg msg =
-            BuilderAppMsg (BuilderApp.BuilderMsg msg)
+            BuilderAppMsg (RequestBuilderApp.BuilderMsg msg)
 
         buildersSubs =
-            List.map (Sub.map builderMsg) (List.map Builder.subscriptions requestFiles)
+            List.map (Sub.map builderMsg) (List.map RequestBuilder.subscriptions requestFiles)
     in
-        Sub.batch
-            ( [ Animation.subscription Animate [ model.loadingStyle ]
-              ] ++ buildersSubs
-            )
+    Sub.batch
+        ([ Animation.subscription Animate [ model.loadingAnimation ]
+         , Animation.subscription Animate [ model.notificationAnimation ]
+         ]
+            ++ buildersSubs
+        )

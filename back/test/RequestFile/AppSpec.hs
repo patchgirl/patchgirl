@@ -2,10 +2,7 @@
 {-# LANGUAGE DuplicateRecordFields     #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
-{-# LANGUAGE MultiParamTypeClasses     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE OverloadedStrings         #-}
-{-# LANGUAGE ScopedTypeVariables       #-}
 {-# LANGUAGE TypeOperators             #-}
 
 module RequestFile.AppSpec where
@@ -21,13 +18,11 @@ import qualified Servant.Auth.Server     as Auth
 import           Servant.Client          (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
+import           DBUtil
 import           Helper.App
 import           Http
-import           RequestCollection.DB
 import           RequestCollection.Model
-import           RequestNode.DB
 import           RequestNode.Model
 
 
@@ -40,7 +35,7 @@ updateRequestFileHandler :: Auth.Token -> Int -> UUID -> UpdateRequestFile -> Cl
 createRequestFileHandler
   :<|> createRootRequestFileHandler
   :<|> updateRequestFileHandler =
-  client (Proxy :: Proxy (PRequestFileApi '[Auth.JWT]))
+  client (Proxy :: Proxy (RequestFileApi '[Auth.JWT]))
 
 
 -- * spec
@@ -48,7 +43,7 @@ createRequestFileHandler
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultEnv) $ do
 
 
 -- ** create request file
@@ -56,33 +51,25 @@ spec =
 
     describe "create a request file" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
           try clientEnv (createRequestFileHandler token 1 newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when request node parent doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId _ <- insertSampleRequestCollection accountId connection
-          token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let fileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
-          token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFile UUID.nil fileId
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let folderId = Maybe.fromJust (getFirstFolder requestNodes) ^. requestNodeId
           let newRequestFile = mkNewRequestFile UUID.nil folderId
@@ -101,16 +88,12 @@ spec =
 
     describe "create a root request file" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let newRootRequestFile = mkNewRootRequestFile UUID.nil
           try clientEnv (createRootRequestFileHandler token 1 newRootRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           requestCollectionId <- insertFakeRequestCollection accountId connection
           let newRootRequestFile = mkNewRootRequestFile UUID.nil
           _ <- try clientEnv (createRootRequestFileHandler token requestCollectionId newRootRequestFile)
@@ -129,16 +112,12 @@ spec =
 
     describe "update a request file" $ do
       it "returns 404 when request file doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let updateRequestFile = mkUpdateRequestFile
           try clientEnv (updateRequestFileHandler token 1 UUID.nil updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "update the request file" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let RequestFile {..} = Maybe.fromJust $ getFirstFile requestNodes
           _ <- try clientEnv (updateRequestFileHandler token requestCollectionId _requestNodeId mkUpdateRequestFile)

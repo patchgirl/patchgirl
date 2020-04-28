@@ -6,7 +6,6 @@
 
 module Account.App where
 
-import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Control.Monad.Trans              (liftIO)
@@ -14,16 +13,14 @@ import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
 import           PatchGirl
-import           Servant.Server                   (ServerError)
 
 
 -- * reset visitor account
 
 
 resetVisitorAccountHandler
-  :: ( MonadReader Config m
+  :: ( MonadReader Env m
      , MonadIO m
-     , MonadError ServerError m
      )
   => m ()
 resetVisitorAccountHandler = do
@@ -70,13 +67,11 @@ resetVisitorSql connection = do
           INSERT INTO account (
             id,
             github_id,
-            email,
-            password
+            email
           ) values (
             '00000000-0000-1000-a000-000000000000',
             0,
-            'visitor@patchgirl.io',
-            crypt('123', gen_salt('bf', 8))
+            'visitor@patchgirl.io'
           );
 
 

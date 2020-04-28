@@ -19,13 +19,6 @@ packages:
   original:
     hackage: servant-elm-0.7.1
 - completed:
-    hackage: hailgun-0.4.2@sha256:335ddbae24ece64df4b5af6b8fbfccdae3d9d6b638ab3906d9d1dc03b0b8b02e,3619
-    pantry-tree:
-      size: 1188
-      sha256: 56186a655421000b3f27550b49390e3852fbba72b55a683c534106f8bd6984a1
-  original:
-    hackage: hailgun-0.4.2
-- completed:
     hackage: http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
     pantry-tree:
       size: 2457

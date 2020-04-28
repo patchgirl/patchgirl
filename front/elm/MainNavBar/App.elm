@@ -1,22 +1,22 @@
 module MainNavBar.App exposing (..)
 
+import Api.Converter as Client
+import Api.Generated as Client
+import Application.Type exposing (..)
+import Browser.Navigation as Navigation
 import Element exposing (..)
 import Element.Background as Background
-import Browser.Navigation as Navigation
 import Element.Border as Border
 import Element.Events as Events
-import Element.Input as Input
 import Element.Font as Font
-import Uuid
-import ViewUtil exposing (..)
-
+import Element.Input as Input
 import Html as Html
 import Html.Attributes as Html
-import Application.Type exposing (..)
-import Api.Generated as Client
-import Api.Converter as Client
 import Http as Http
-import Page exposing(..)
+import Page exposing (..)
+import Util exposing (..)
+import Uuid exposing (Uuid)
+
 
 
 -- * model
@@ -24,10 +24,11 @@ import Page exposing(..)
 
 type alias Model a =
     { a
-      | session : Session
-      , page : Page
-      , showMainMenuName : Maybe MainMenuName
+        | session : Session
+        , page : Page
+        , showMainMenuName : Maybe MainMenuName
     }
+
 
 
 -- * message
@@ -36,6 +37,7 @@ type alias Model a =
 type Msg
     = OpenReqPage
     | OpenEnvPage
+    | OpenScenarioPage
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
@@ -43,56 +45,65 @@ type Msg
     | HideMainMenuName
 
 
+
 -- * update
 
 
-update : Msg -> Model a -> (Model a, Cmd Msg)
+update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
         OpenReqPage ->
             let
                 newModel =
-                    { model | page = ReqPage Nothing }
+                    { model | page = ReqPage Nothing Nothing }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         OpenEnvPage ->
             let
                 newModel =
                     { model | page = EnvPage }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
+
+        OpenScenarioPage ->
+            let
+                newModel =
+                    { model | page = ScenarioPage Nothing }
+            in
+            ( newModel, Cmd.none )
 
         AskSignOut ->
             let
                 newCmd =
                     Client.deleteApiSessionSignout "" deleteSessionSignOutResultToMsg
             in
-                (model, newCmd)
+            ( model, newCmd )
 
         SignOutFailed ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
 
         SignOutSucceed _ ->
             let
                 newMsg =
                     Navigation.load "https://patchgirl.io/"
             in
-                (model, newMsg)
+            ( model, newMsg )
 
         HideMainMenuName ->
             let
                 newModel =
                     { model | showMainMenuName = Nothing }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         ShowMainMenuName mainMenuName ->
             let
                 newModel =
                     { model | showMainMenuName = Just mainMenuName }
             in
-                (newModel, Cmd.none)
+            ( newModel, Cmd.none )
+
 
 
 -- * util
@@ -103,9 +114,10 @@ deleteSessionSignOutResultToMsg result =
     case result of
         Ok session ->
             let
-                newSession = Client.convertSessionFromBackToFront session
+                newSession =
+                    Client.convertSessionFromBackToFront session
             in
-                SignOutSucceed newSession
+            SignOutSucceed newSession
 
         Err error ->
             SignOutFailed
@@ -123,6 +135,8 @@ view model =
         , el [ centerY, height fill, alignRight ] (rightView model)
         ]
 
+
+
 -- ** left view
 
 
@@ -131,21 +145,24 @@ leftView =
     let
         linkContent =
             html <|
-                Html.span [ Html.style "color" (colorToString secondaryColor)
-                          , Html.style "font-size" "30px"
-                          ]
+                Html.span
+                    [ Html.style "color" (colorToString secondaryColor)
+                    , Html.style "font-size" "30px"
+                    ]
                     [ Html.i
-                          [ Html.class "material-icons"
-                          , Html.style "font-size" "30px"
-                          , Html.style "vertical-align" "bottom"
-                          ]
-                          [ Html.text "call_split" ]
+                        [ Html.class "material-icons"
+                        , Html.style "font-size" "30px"
+                        , Html.style "vertical-align" "bottom"
+                        ]
+                        [ Html.text "call_split" ]
                     , Html.text "PatchGirl"
                     ]
     in
-        link [] { url = href HomePage
-                , label = linkContent
-                }
+    link []
+        { url = href HomePage
+        , label = linkContent
+        }
+
 
 
 -- ** right view
@@ -160,6 +177,7 @@ rightView model =
         SignedUser signedUserSession ->
             signedUserRightView model signedUserSession
 
+
 signedUserRightView : Model a -> SignedUserSession -> Element Msg
 signedUserRightView model signedUserSession =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
@@ -167,6 +185,7 @@ signedUserRightView model signedUserSession =
         , blogView model
         , githubLinkView model
         ]
+
 
 signOutView : Model a -> SignedUserSession -> Element Msg
 signOutView model { avatarUrl } =
@@ -177,38 +196,43 @@ signOutView model { avatarUrl } =
                 , description = "avatar url"
                 }
     in
-        Input.button ( [ Events.onMouseEnter (ShowMainMenuName SignOutMenu)
-                       , Events.onMouseLeave HideMainMenuName
-                       ] ++ mainLinkAttribute
-                     )
-            { onPress = Just AskSignOut
-            , label =
-                case model.showMainMenuName of
-                    Just SignOutMenu ->
-                        el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign out")) ]
-                            avatar
-
-                    _ ->
+    Input.button
+        ([ Events.onMouseEnter (ShowMainMenuName SignOutMenu)
+         , Events.onMouseLeave HideMainMenuName
+         ]
+            ++ mainLinkAttribute
+        )
+        { onPress = Just AskSignOut
+        , label =
+            case model.showMainMenuName of
+                Just SignOutMenu ->
+                    el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign out")) ]
                         avatar
-            }
+
+                _ ->
+                    avatar
+        }
+
 
 blogView : Model a -> Element Msg
 blogView model =
-    link ( [ paddingXY 20 0 ]
-           ++ mainLinkAttribute
-           ++ [ Events.onMouseEnter (ShowMainMenuName BlogMenu), Events.onMouseLeave HideMainMenuName ]
-         )
-    { url = "https://blog.patchgirl.io"
-    , label =
-        el [] <|
-            case model.showMainMenuName of
-                Just BlogMenu ->
-                    el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Blog")) ]
-                        <| iconWithTextAndColor "menu_book" "" primaryColor
+    link
+        ([ paddingXY 20 0 ]
+            ++ mainLinkAttribute
+            ++ [ Events.onMouseEnter (ShowMainMenuName BlogMenu), Events.onMouseLeave HideMainMenuName ]
+        )
+        { url = "https://blog.patchgirl.io"
+        , label =
+            el [] <|
+                case model.showMainMenuName of
+                    Just BlogMenu ->
+                        el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Blog")) ] <|
+                            iconWithTextAndColor "menu_book" "" primaryColor
 
-                _ ->
-                    iconWithTextAndColor "menu_book" "" secondaryColor
-    }
+                    _ ->
+                        iconWithTextAndColor "menu_book" "" secondaryColor
+        }
+
 
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
@@ -218,26 +242,31 @@ visitorRightView model =
         , githubLinkView model
         ]
 
+
 signInView : Model a -> Element Msg
 signInView model =
     let
         {- todo this url should be dynamic depending on the env -}
-        githubOauthLink = "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
+        githubOauthLink =
+            "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
     in
-        link ( [ Events.onMouseEnter (ShowMainMenuName SignInMenu)
-               , Events.onMouseLeave HideMainMenuName
-               ] ++ mainLinkAttribute
-             )
+    link
+        ([ Events.onMouseEnter (ShowMainMenuName SignInMenu)
+         , Events.onMouseLeave HideMainMenuName
+         ]
+            ++ mainLinkAttribute
+        )
         { url = githubOauthLink
         , label =
             case model.showMainMenuName of
                 Just SignInMenu ->
-                    el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ]
-                        <| iconWithTextAndColor "vpn_key" "" primaryColor
+                    el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ] <|
+                        iconWithTextAndColor "vpn_key" "" primaryColor
 
                 _ ->
                     el [ centerX ] (iconWithTextAndColor "vpn_key" "" secondaryColor)
         }
+
 
 githubLinkView : Model a -> Element Msg
 githubLinkView model =
@@ -254,21 +283,23 @@ githubLinkView model =
                 , description = "github logo"
                 }
     in
-        link ( [ Events.onMouseEnter (ShowMainMenuName GithubMenu)
-               , Events.onMouseLeave HideMainMenuName
-               ] ++ mainLinkAttribute
-             )
+    link
+        ([ Events.onMouseEnter (ShowMainMenuName GithubMenu)
+         , Events.onMouseLeave HideMainMenuName
+         ]
+            ++ mainLinkAttribute
+        )
         { url = "https://github.com/patchgirl/patchgirl"
         , label =
             case model.showMainMenuName of
                 Just GithubMenu ->
-                    el [ below (el [ alignRight, moveDown 20, Font.size 18 ] (text "View on Github")) ]
-                        <| githubLogoInactive
+                    el [ below (el [ alignRight, moveDown 20, Font.size 18 ] (text "View on Github")) ] <|
+                        githubLogoInactive
 
                 _ ->
                     githubLogoActive
-
         }
+
 
 
 -- ** center view
@@ -280,22 +311,28 @@ centerView model =
         currentDisplayedBuilderId : Maybe Uuid.Uuid
         currentDisplayedBuilderId =
             case model.page of
-                ReqPage mId ->
+                ReqPage mId _ ->
                     mId
 
                 _ ->
                     Nothing
     in
-        row [ centerX, centerY, paddingXY 10 0, height fill ]
-            [ link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenReqPage (ReqPage currentDisplayedBuilderId)))
-                  { url = "#req"
-                  , label = el [] (text "Req")
-                  }
-            , link (mainLinkAttribute ++ (mainLinkAttributeWhenActive model OpenEnvPage EnvPage))
-                { url = "#env"
-                , label = el [] (text "Env")
-                }
-            ]
+    row [ centerX, centerY, paddingXY 10 0, height fill ]
+        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
+            { url = href (ScenarioPage Nothing)
+            , label = el [] (text "Scenario")
+            }
+        , link
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
+            { url = href (ReqPage Nothing Nothing)
+            , label = el [] (text "Request")
+            }
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
+            { url = href EnvPage
+            , label = el [] (text "Environment")
+            }
+        ]
+
 
 
 -- ** attribute
@@ -307,18 +344,54 @@ mainLinkAttribute =
     , height fill
     , centerY
     , paddingXY 15 0
-    , mouseOver [ Background.color secondaryColor
-                , Font.color primaryColor
-                ]
+    , mouseOver
+        [ Background.color secondaryColor
+        , Font.color primaryColor
+        ]
     , Font.color secondaryColor
     ]
 
-mainLinkAttributeWhenActive : Model a -> Msg -> Page -> List (Attribute Msg)
-mainLinkAttributeWhenActive model event page =
-    [ Events.onClick event ] ++
-        case model.page == page of
-            True -> [ Background.color secondaryColor
+
+mainLinkAttributeWhenActive : Msg -> Bool -> List (Attribute Msg)
+mainLinkAttributeWhenActive event active =
+    [ Events.onClick event ]
+        ++ (case active of
+                True ->
+                    [ Background.color secondaryColor
                     , Font.color primaryColor
                     ]
-            False ->
-                []
+
+                False ->
+                    []
+           )
+
+
+-- ** util
+
+
+isScenarioPage : Page -> Bool
+isScenarioPage page =
+    case page of
+        ScenarioPage _ ->
+            True
+
+        _ ->
+            False
+
+isReqPage : Page -> Bool
+isReqPage page =
+    case page of
+        ReqPage _ _ ->
+            True
+
+        _ ->
+            False
+
+isEnvPage : Page -> Bool
+isEnvPage page =
+    case page of
+        EnvPage ->
+            True
+
+        _ ->
+            False

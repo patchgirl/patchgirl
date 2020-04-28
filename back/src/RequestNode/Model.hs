@@ -62,30 +62,39 @@ instance FromField [RequestNode] where
     either (returnError ConversionFailed field) return errorOrRequestNodes
 
 
--- * update request node
+-- * request node type
 
 
-newtype UpdateRequestNode
-  = UpdateRequestNode { _updateRequestNodeName :: String
-                      }
+data RequestNodeType
+  = RequestFileType
+  | RequestFolderType
   deriving (Eq, Show, Generic)
 
-instance ToJSON UpdateRequestNode where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON UpdateRequestNode where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-$(makeLenses ''UpdateRequestNode)
-
-instance ToField UpdateRequestNode where
-  toField UpdateRequestNode {..} =
-    toField (show _updateRequestNodeName)
-
+instance FromJSON RequestNodeType where
+  parseJSON = genericParseJSON defaultOptions
+    { constructorTagModifier = \s ->
+        let suffixToRemove = "Type" :: String
+        in take (length s - length suffixToRemove) s
+    }
 
 -- * request node from pg
+
+
+-- ** pg header
+
+
+data PGHeader = PGHeader { headerKey   :: String
+                         , headerValue :: String
+                         } deriving (Eq, Show)
+
+instance FromJSON PGHeader where
+  parseJSON = withObject "PGHeader" $ \o -> do
+    headerKey <- o .: "header_key"
+    headerValue <- o .: "header_value"
+    return PGHeader{..}
+
+
+-- ** request node from pg
 
 
 newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
@@ -131,47 +140,45 @@ fromPgRequestNodeToRequestNode :: RequestNodeFromPG -> RequestNode
 fromPgRequestNodeToRequestNode (RequestNodeFromPG requestNode) = requestNode
 
 
--- * pg header
+-- * update request node
 
 
-data PGHeader = PGHeader { headerKey   :: String
-                         , headerValue :: String
-                         } deriving (Eq, Show)
-
-instance FromJSON PGHeader where
-  parseJSON = withObject "PGHeader" $ \o -> do
-    headerKey <- o .: "header_key"
-    headerValue <- o .: "header_value"
-    return PGHeader{..}
-
-
--- * request node type
-
-
-data RequestNodeType
-  = RequestFileType
-  | RequestFolderType
+newtype UpdateRequestNode
+  = UpdateRequestNode { _updateRequestNodeName :: String
+                      }
   deriving (Eq, Show, Generic)
 
-instance FromJSON RequestNodeType where
-  parseJSON = genericParseJSON defaultOptions
-    { constructorTagModifier = \s ->
-        let suffixToRemove = "Type" :: String
-        in take (length s - length suffixToRemove) s
-    }
+instance ToJSON UpdateRequestNode where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON UpdateRequestNode where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+$(makeLenses ''UpdateRequestNode)
+
+instance ToField UpdateRequestNode where
+  toField UpdateRequestNode {..} =
+    toField (show _updateRequestNodeName)
 
 
--- * parent node id
+-- * new root request file
 
 
-{-
-  a request node (file or folder) can either be regular (meaning it has a folder as a parent)
-  or root (meaning it is at the top of a tree hierarchy so it doesn't have a parent)
--}
-data ParentNodeId
-  = RequestCollectionId Int
-  | RequestNodeId UUID
-  deriving (Eq, Show, Generic, FromJSON, ToJSON)
+newtype NewRootRequestFile =
+  NewRootRequestFile { _newRootRequestFileId           :: UUID
+                     } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''NewRootRequestFile)
+
+instance ToJSON NewRootRequestFile where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRootRequestFile where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
 -- * new request file
@@ -193,7 +200,45 @@ instance FromJSON NewRequestFile where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
+-- * new root request folder
+
+
+newtype NewRootRequestFolder =
+  NewRootRequestFolder { _newRootRequestFolderId           :: UUID
+                       } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''NewRootRequestFolder)
+
+instance ToJSON NewRootRequestFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRootRequestFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * new request folder
+
+
+data NewRequestFolder =
+  NewRequestFolder { _newRequestFolderId           :: UUID
+                   , _newRequestFolderParentNodeId :: UUID
+                   , _newRequestFolderName         :: String
+                   } deriving (Eq, Show, Generic)
+
+$(makeLenses ''NewRequestFolder)
+
+instance ToJSON NewRequestFolder where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON NewRequestFolder where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 -- * update request file
+
 
 newtype HttpHeader = HttpHeader (String, String) deriving (Eq, Show, Generic, Read)
 
@@ -235,57 +280,15 @@ instance FromJSON UpdateRequestFile where
 
 $(makeLenses ''UpdateRequestFile)
 
--- * new root request file
+
+-- * parent node id
 
 
-newtype NewRootRequestFile =
-  NewRootRequestFile { _newRootRequestFileId           :: UUID
-                     } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootRequestFile)
-
-instance ToJSON NewRootRequestFile where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON NewRootRequestFile where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
--- * new root request folder
-
-
-newtype NewRootRequestFolder =
-  NewRootRequestFolder { _newRootRequestFolderId           :: UUID
-                       } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootRequestFolder)
-
-instance ToJSON NewRootRequestFolder where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON NewRootRequestFolder where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
--- * new request folder
-
-
-data NewRequestFolder =
-  NewRequestFolder { _newRequestFolderId           :: UUID
-                   , _newRequestFolderParentNodeId :: UUID
-                   , _newRequestFolderName         :: String
-                   } deriving (Eq, Show, Generic)
-
-$(makeLenses ''NewRequestFolder)
-
-instance ToJSON NewRequestFolder where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON NewRequestFolder where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+{-
+  a request node (file or folder) can either be regular (meaning it has a folder as a parent)
+  or root (meaning it is at the top of a tree hierarchy so it doesn't have a parent)
+-}
+data ParentNodeId
+  = RequestCollectionId Int
+  | RequestNodeId UUID
+  deriving (Eq, Show, Generic, FromJSON, ToJSON)

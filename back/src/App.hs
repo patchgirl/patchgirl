@@ -1,22 +1,42 @@
+{-# LANGUAGE ConstraintKinds            #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeOperators              #-}
 
-module App where
+module App( mkApp
+          , run
+          , RequestCollectionApi
+          , ScenarioCollectionApi
+          , EnvironmentApi
+          , ScenarioNodeApi
+          , ScenarioFileApi
+          , ScenarioFolderApi
+          , SceneApi
+          , RequestNodeApi
+          , RequestFileApi
+          , RequestFolderApi
+          , RequestComputationApi
+          , ScenarioComputationApi
+          , SessionApi
+          , PSessionApi
+          , AccountApi
+          , RestApi
+          ) where
 
 
+import           Control.Lens.Getter                   ((^.))
 import qualified Control.Monad.Except                  as Except
 import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
 import           Data.UUID
-import qualified GHC.Generics                          as Generics
 import qualified GHC.Natural                           as Natural
+import qualified Network.HTTP.Client.TLS               as Tls
 import qualified Network.Wai.Handler.Warp              as Warp
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
 import qualified Prometheus
 import qualified Prometheus.Metric.GHC                 as Prometheus
+import qualified Say
 import           Servant                               hiding (BadPassword,
                                                         NoSuchUser)
 import           Servant.API.ContentTypes              (NoContent)
@@ -37,15 +57,23 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
                                                         throwAll)
 
 import           Account.App
-import           Config
+import           Env
 import           Environment.App
+import           Environment.Model
 import           Github.App
 import           Health.App
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestComputation.App
+import           RequestComputation.Model
 import           RequestNode.App
 import           RequestNode.Model
+import           ScenarioCollection.App
+import           ScenarioCollection.Model
+import           ScenarioComputation.App
+import           ScenarioComputation.Model
+import           ScenarioNode.App
+import           ScenarioNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
 import           Session.App
 import           Session.Model
@@ -74,12 +102,18 @@ combinedApiServer cookieSettings jwtSettings =
 
 
 type RestApi auths =
-  PRequestCollectionApi auths :<|>
-  PEnvironmentApi auths :<|>
-  PRequestNodeApi auths :<|>
-  PRequestFileApi auths :<|>
-  PRequestFolderApi auths :<|>
-  PRequestComputationApi auths :<|>
+  RequestCollectionApi auths :<|>
+  ScenarioCollectionApi auths :<|>
+  EnvironmentApi auths :<|>
+  ScenarioNodeApi auths :<|>
+  ScenarioFileApi auths :<|>
+  ScenarioFolderApi auths :<|>
+  SceneApi auths :<|>
+  RequestNodeApi auths :<|>
+  RequestFileApi auths :<|>
+  RequestFolderApi auths :<|>
+  RequestComputationApi auths :<|>
+  ScenarioComputationApi auths :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
@@ -88,11 +122,17 @@ type RestApi auths =
 restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
    requestCollectionApiServer
+  :<|> scenarioCollectionApiServer
   :<|> environmentApiServer
+  :<|> scenarioNodeApiServer
+  :<|> scenarioFileApiServer
+  :<|> scenarioFolderApiServer
+  :<|> sceneApiServer
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
   :<|> requestFolderApiServer
   :<|> requestComputationApiServer
+  :<|> scenarioComputationApiServer
   :<|> sessionApiServer cookieSettings jwtSettings
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
@@ -102,38 +142,41 @@ restApiServer cookieSettings jwtSettings =
 -- ** request collection
 
 
-type PRequestCollectionApi auths =
-  Flat (Auth auths CookieSession :> RequestCollectionApi)
-
-type RequestCollectionApi =
-    "api" :> "requestCollection" :> Get '[JSON] RequestCollection
+type RequestCollectionApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Get '[JSON] RequestCollection)
 
 requestCollectionApiServer :: (AuthResult CookieSession -> AppM RequestCollection)
 requestCollectionApiServer =
   authorizeWithAccountId getRequestCollectionHandler
 
 
+-- ** scenario collection
+
+
+type ScenarioCollectionApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Get '[JSON] ScenarioCollection)
+
+scenarioCollectionApiServer :: (AuthResult CookieSession -> AppM ScenarioCollection)
+scenarioCollectionApiServer =
+  authorizeWithAccountId getScenarioCollectionHandler
+
+
 -- ** environment
 
 
-type PEnvironmentApi auths =
-  Flat (Auth auths CookieSession :> EnvironmentApi)
-
-type EnvironmentApi =
-  Flat (
-    "api" :> "environment" :> (
-      ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
-      Get '[JSON] [Environment] :<|> -- getEnvironments
-      Capture "environmentId" Int :> (
-        ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
-        Delete '[JSON] () :<|>  -- deleteEnvironment
-        "keyValue" :> (
-          ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
-          Capture "keyValueId" Int :> Delete '[JSON] () -- deleteKeyValues
-        )
+type EnvironmentApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "environment" :> (
+    ReqBody '[JSON] NewEnvironment :> Post '[JSON] Int :<|> -- createEnvironment
+    Get '[JSON] [Environment] :<|> -- getEnvironments
+    Capture "environmentId" Int :> (
+      ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
+      Delete '[JSON] () :<|>  -- deleteEnvironment
+      "keyValue" :> (
+        ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
+        Capture "keyValueId" Int :> Delete '[JSON] () -- deleteKeyValues
       )
     )
-  )
+  ))
 
 environmentApiServer
   :: (AuthResult CookieSession -> NewEnvironment -> AppM Int)
@@ -151,21 +194,101 @@ environmentApiServer =
   :<|> authorizeWithAccountId deleteKeyValueHandler
 
 
+-- ** scenario node
+
+
+type ScenarioNodeApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+    -- rename scenario node
+    ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () :<|>
+    -- delete scenario node
+    Delete '[JSON] ()
+  ))
+
+scenarioNodeApiServer
+  :: (AuthResult CookieSession -> UUID -> UUID -> UpdateScenarioNode -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+scenarioNodeApiServer =
+  authorizeWithAccountId updateScenarioNodeHandler
+  :<|> authorizeWithAccountId deleteScenarioNodeHandler
+
+-- ** scenario file
+
+
+type ScenarioFileApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+    "scenarioFile" :> (
+      -- createScenarioFile
+      ReqBody '[JSON] NewScenarioFile :> Post '[JSON] ()
+    ) :<|>
+      "rootScenarioFile" :> (
+        -- create root scenario file
+        ReqBody '[JSON] NewRootScenarioFile :> Post '[JSON] ()
+      )
+  ))
+
+scenarioFileApiServer
+  :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFile -> AppM ())
+scenarioFileApiServer =
+  authorizeWithAccountId createScenarioFileHandler
+  :<|> authorizeWithAccountId createRootScenarioFileHandler
+
+
+-- ** scenario folder
+
+
+type ScenarioFolderApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+    "scenarioFolder" :> (
+      -- create scenario folder
+      ReqBody '[JSON] NewScenarioFolder :> Post '[JSON] ()
+    ) :<|>
+      "rootScenarioFolder" :> (
+        -- create root scenario folder
+        ReqBody '[JSON] NewRootScenarioFolder :> Post '[JSON] ()
+      )
+    ))
+
+scenarioFolderApiServer
+  :: (AuthResult CookieSession -> UUID -> NewScenarioFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFolder -> AppM ())
+scenarioFolderApiServer =
+  authorizeWithAccountId createScenarioFolderHandler
+  :<|> authorizeWithAccountId createRootScenarioFolderHandler
+
+
+-- ** scene
+
+
+type SceneApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+    "scene" :> (
+      -- create scene
+      ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
+      -- delete scene
+      Capture "sceneId" UUID :> Delete '[JSON] ()
+    )
+  ))
+
+sceneApiServer
+  :: (AuthResult CookieSession -> UUID -> NewScene -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+sceneApiServer =
+  authorizeWithAccountId createSceneHandler
+  :<|> authorizeWithAccountId deleteSceneHandler
+
+
 -- ** request node
 
 
-type PRequestNodeApi auths =
-  Flat (Auth auths CookieSession :> RequestNodeApi)
-
-type RequestNodeApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
-      -- rename request node
-      ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
-      -- delete request node
-      Delete '[JSON] ()
-    )
-  )
+type RequestNodeApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
+    -- rename request node
+    ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
+    -- delete request node
+    Delete '[JSON] ()
+  ))
 
 requestNodeApiServer
   :: (AuthResult CookieSession -> Int -> UUID -> UpdateRequestNode -> AppM ())
@@ -178,24 +301,16 @@ requestNodeApiServer =
 -- ** request file api
 
 
-type PRequestFileApi auths =
-  Flat (Auth auths CookieSession :> RequestFileApi)
-
-
-type RequestFileApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
-      "requestFile" :> (
-          -- createRequestFile
-          ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
-      ) :<|>
-      "rootRequestFile" :> (
-          -- create root request file
-          ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
-      ) :<|>
-      Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
-    )
-  )
+type RequestFileApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
+    "requestFile" :> (
+      -- createRequestFile
+      ReqBody '[JSON] NewRequestFile :> Post '[JSON] ()
+    ) :<|> "rootRequestFile" :> (
+      -- create root request file
+      ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
+    ) :<|> Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
+  ))
 
 requestFileApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFile -> AppM ())
@@ -210,23 +325,16 @@ requestFileApiServer =
 -- ** request folder api
 
 
-type PRequestFolderApi auths =
-  Flat (Auth auths CookieSession :> RequestFolderApi)
-
-
-type RequestFolderApi =
-  Flat (
-    "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
-        "requestFolder" :> (
-        -- create request folder
-        ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
-      ) :<|>
-      "rootRequestFolder" :> (
-        -- create root request folder
-        ReqBody '[JSON] NewRootRequestFolder :> Post '[JSON] ()
-      )
+type RequestFolderApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> (
+    "requestFolder" :> (
+      -- create request folder
+      ReqBody '[JSON] NewRequestFolder :> Post '[JSON] ()
+    ) :<|> "rootRequestFolder" :> (
+      -- create root request folder
+      ReqBody '[JSON] NewRootRequestFolder :> Post '[JSON] ()
     )
-  )
+  ))
 
 requestFolderApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFolder -> AppM ())
@@ -239,19 +347,27 @@ requestFolderApiServer =
 -- ** request computation
 
 
-type PRequestComputationApi auths =
-  Flat (Auth auths CookieSession :> RequestComputationApi)
+type RequestComputationApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "requestComputation" :> (
+    ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
+  ))
 
-type RequestComputationApi =
-  Flat (
-    "api" :> "requestComputation" :> (
-      ReqBody '[JSON] RequestComputationInput :> Post '[JSON] RequestComputationResult
-    )
-  )
-
-requestComputationApiServer :: AuthResult CookieSession -> ServerT RequestComputationApi AppM
+requestComputationApiServer :: AuthResult CookieSession -> RequestComputationInput -> AppM RequestComputationResult
 requestComputationApiServer =
-  authorizeWithAccountId runRequestComputationHandler
+  authorize runRequestComputationHandler
+
+
+-- ** scenario computation
+
+
+type ScenarioComputationApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "scenarioComputation" :> (
+    ReqBody '[JSON] ScenarioComputationInput :> Post '[JSON] ScenarioComputationOutput
+  ))
+
+scenarioComputationApiServer :: AuthResult CookieSession -> ScenarioComputationInput -> AppM ScenarioComputationOutput
+scenarioComputationApiServer =
+  authorize runScenarioComputationHandler
 
 
 -- ** session
@@ -355,8 +471,7 @@ authorizeWithAccountId f = \case
     f (_cookieAccountId cookieSession)
 
 authorize
-  :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
-  => (t -> p) -> AuthResult t -> p
+  :: (ThrowAll a) => a -> AuthResult b -> a
 authorize f = \case
   BadPassword ->
     throwAll err402
@@ -367,8 +482,8 @@ authorize f = \case
   Indefinite ->
     throwAll err405
 
-  Authenticated cookieSession ->
-    f cookieSession
+  Authenticated _ ->
+    f
 
 testApiServer :: ServerT TestApi AppM
 testApiServer =
@@ -385,22 +500,21 @@ assetApiServer =
 
 
 newtype AppM a =
-  AppM { unAppM :: Except.ExceptT ServerError (Reader.ReaderT Config IO) a }
+  AppM { unAppM :: Except.ExceptT ServerError (Reader.ReaderT Env IO) a }
   deriving ( Except.MonadError ServerError
-           , Reader.MonadReader Config
+           , Reader.MonadReader Env
            , Functor
            , Applicative
            , Monad
            , IO.MonadIO
-           , Generics.Generic
            )
 
 appMToHandler
-  :: Config
+  :: Env
   -> AppM a
   -> Handler a
-appMToHandler config r = do
-  eitherErrorOrResult <- IO.liftIO $ flip Reader.runReaderT config . Except.runExceptT . unAppM $ r
+appMToHandler env r = do
+  eitherErrorOrResult <- IO.liftIO $ flip Reader.runReaderT env . Except.runExceptT . unAppM $ r
   case eitherErrorOrResult of
     Left error   -> throwError error
     Right result -> return result
@@ -411,16 +525,16 @@ appMToHandler config r = do
 
 run :: IO ()
 run = do
-  config :: Config <- importConfig
-  print config
+  env :: Env <- createEnv Say.sayString ioRequestRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ port config) =<< promMiddleware <$> mkApp config
+  Warp.run (Natural.naturalToInt $ _envPort env ) =<< promMiddleware <$> mkApp env
 
-mkApp :: Config -> IO Application
-mkApp config = do
-  key <- readKey $ appKeyFilePath config
+mkApp :: Env -> IO Application
+mkApp env = do
+  Tls.setGlobalManager =<< Tls.newTlsManager -- this manager will mainly be used by RequestComputation
+  key <- readKey $ env ^. envAppKeyFilePath
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =
@@ -434,6 +548,6 @@ mkApp config = do
     apiServer =
       combinedApiServer cookieSettings jwtSettings
     server =
-      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler config) apiServer
+      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler env) apiServer
   return $
     serveWithContext combinedApiProxy context server

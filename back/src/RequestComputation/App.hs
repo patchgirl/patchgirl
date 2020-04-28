@@ -1,130 +1,54 @@
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
 
-module RequestComputation.App where
+module RequestComputation.App ( runRequestComputationHandler
+                              , ioRequestRunner
+                              ) where
 
 
-import           Control.Monad.Except        (MonadError)
-import           Control.Monad.IO.Class      (MonadIO)
-import           Control.Monad.Reader        (MonadReader)
-import           Control.Monad.Trans         (liftIO)
-import           Data.Aeson                  (FromJSON, ToJSON (..),
-                                              genericParseJSON, genericToJSON,
-                                              parseJSON)
-import           Data.Aeson.Types            (defaultOptions,
-                                              fieldLabelModifier)
+import qualified Control.Exception           as Exception
+import qualified Control.Monad.IO.Class      as IO
+import qualified Control.Monad.Reader        as Reader
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
-import           Data.UUID                   (UUID)
-import           GHC.Generics                (Generic)
+import           Data.Functor                ((<&>))
 import           Http
 import qualified Network.HTTP.Client.Conduit as Http
-import qualified Network.HTTP.Client.TLS     as Tls
 import qualified Network.HTTP.Simple         as Http
-import qualified Network.HTTP.Types.Header   as Http
+import qualified Network.HTTP.Types          as Http
 import           PatchGirl
-import           Servant.Server              (ServerError)
-
-
--- * model
-
-
--- ** request computation input
-
-
-data RequestComputationInput
-  = RequestComputationInput { _requestComputationInputMethod  :: Method
-                            , _requestComputationInputHeaders :: [(String, String)]
-                            , _requestComputationInputScheme  :: Scheme
-                            , _requestComputationInputUrl     :: String
-                            , _requestComputationInputBody    :: String
-                            }
-  deriving (Eq, Show, Read, Generic)
-
-instance ToJSON RequestComputationInput where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON RequestComputationInput where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-mkHeader :: (String, String) -> Http.Header
-mkHeader (headerName, headerValue) =
-  (CI.mk $ BSU.fromString headerName, BSU.fromString headerValue)
-
-
--- ** request computation result
-
-
-data RequestComputationResult
-    = RequestTimeout
-    | RequestNetworkError
-    | RequestBadUrl
-    | GotRequestComputationOutput RequestComputationOutput
-    deriving (Generic)
-
-instance ToJSON RequestComputationResult where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
--- ** request computation output
-
-
-data RequestComputationOutput
-  = RequestComputationOutput { _requestComputationOutputStatusCode :: Int
-                             , _requestComputationOutputHeaders    :: [(String, String)]
-                             , _requestComputationOutputBody       :: String
-                             }
-  deriving (Eq, Show, Read, Generic)
-
-instance ToJSON RequestComputationOutput where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON RequestComputationOutput where
-  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+import           RequestComputation.Model
 
 
 -- * handler
 
 
 runRequestComputationHandler
-  :: ( MonadReader Config m
-     , MonadIO m
-     , MonadError ServerError m
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
      )
-  => UUID
-  -> RequestComputationInput
-  -> m RequestComputationResult
-runRequestComputationHandler _ requestComputationInput = do
-  response <- runRequest requestComputationInput
-  liftIO $ print response
-  return $ GotRequestComputationOutput $ createRequestComputationOutput response
-
-runRequest
-  :: MonadIO m
   => RequestComputationInput
-  -> m (Http.Response BSU.ByteString)
-runRequest RequestComputationInput { .. } = do
-  let url = schemeToString _requestComputationInputScheme <> "://" <> _requestComputationInputUrl
-  manager <- Tls.newTlsManager
-  liftIO $ Tls.setGlobalManager manager
-  parsedRequest <- liftIO $ Http.parseRequest url
-  let request
-        = Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
-        $ setPortAndSecure
-        $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
-        $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
-        $ Http.setRequestManager manager parsedRequest
-  liftIO $ putStrLn ("\n\nrequest:" :: String)
-  liftIO $ putStrLn $ "\n  body: " <> show _requestComputationInputBody
-  liftIO $ print $ show request
+  -> m RequestComputationResult
+runRequestComputationHandler requestComputationInput = do
+  runner <- Reader.ask <&> _envHttpRequest
+  IO.liftIO $
+    Exception.try (buildRequest requestComputationInput >>= runner) <&> responseToComputationResult
 
-  liftIO $ Http.httpBS request
+
+-- * build request
+
+
+buildRequest :: RequestComputationInput -> IO Http.Request
+buildRequest RequestComputationInput {..} = do
+  let url = schemeToString _requestComputationInputScheme <> "://" <> _requestComputationInputUrl
+  parsedRequest <- IO.liftIO $ Http.parseRequest url
+  return
+    $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
+    $ setPortAndSecure
+    $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
+    $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
+    parsedRequest
   where
     setPortAndSecure :: Http.Request -> Http.Request
     setPortAndSecure =
@@ -136,20 +60,66 @@ runRequest RequestComputationInput { .. } = do
           Http.setRequestSecure True . Http.setRequestPort 443
 
 
-createRequestComputationOutput :: Http.Response BSU.ByteString -> RequestComputationOutput
-createRequestComputationOutput response =
-  RequestComputationOutput
-    { _requestComputationOutputStatusCode = Http.getResponseStatusCode response
-    , _requestComputationOutputHeaders    = parseResponseHeaders response
-    , _requestComputationOutputBody       = BSU.toString $ Http.getResponseBody response
-    }
+-- * run request
 
-parseResponseHeaders :: Http.Response BSU.ByteString -> [(String,String)]
+
+ioRequestRunner :: Http.Request -> IO (HttpResponse BSU.ByteString)
+ioRequestRunner request =
+  Http.httpBS request <&> fromResponseToHttpResponse
+
+
+-- * create request computation output
+
+
+responseToComputationResult :: Either Http.HttpException (HttpResponse BSU.ByteString) -> RequestComputationResult
+responseToComputationResult = \case
+    Right response ->
+      RequestComputationSucceeded $
+        RequestComputationOutput { _requestComputationOutputStatusCode = Http.statusCode $ httpResponseStatus response
+                                 , _requestComputationOutputHeaders    = parseResponseHeaders response
+                                 , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
+                                 }
+
+    Left (Http.InvalidUrlException url reason) ->
+      RequestComputationFailed (InvalidUrlException url reason)
+
+    Left (Http.HttpExceptionRequest _ content) ->
+      RequestComputationFailed matching
+      where
+        matching = case content of
+          Http.TooManyRedirects _ -> TooManyRedirects
+          Http.OverlongHeaders -> OverlongHeaders
+          Http.ResponseTimeout -> ResponseTimeout
+          Http.ConnectionTimeout -> ConnectionTimeout
+          Http.ConnectionFailure f -> ConnectionFailure (show f)
+          Http.InvalidStatusLine _ -> InvalidStatusLine
+          Http.InvalidHeader _-> InvalidHeader
+          Http.InvalidRequestHeader _ -> InvalidRequestHeader
+          Http.InternalException _ -> InternalException
+          Http.ProxyConnectException {} -> ProxyConnectException
+          Http.NoResponseDataReceived -> NoResponseDataReceived
+          Http.WrongRequestBodyStreamSize _ _ -> WrongRequestBodyStreamSize
+          Http.ResponseBodyTooShort _ _ -> ResponseBodyTooShort
+          Http.InvalidChunkHeaders -> InvalidChunkHeaders
+          Http.IncompleteHeaders -> IncompleteHeaders
+          Http.InvalidDestinationHost _ -> InvalidDestinationHost
+          Http.HttpZlibException _ -> HttpZlibException
+          Http.InvalidProxyEnvironmentVariable _ _ -> InvalidProxyEnvironmentVariable
+          Http.ConnectionClosed -> ConnectionClosed
+          Http.InvalidProxySettings _ -> InvalidProxySettings
+          _ -> UnknownException
+
+
+parseResponseHeaders :: HttpResponse BSU.ByteString -> [(String,String)]
 parseResponseHeaders response =
-  map convert (Http.getResponseHeaders response)
+  map convert (httpResponseHeaders response)
   where
     convert :: (Http.HeaderName, BSU.ByteString) -> (String, String)
     convert (headerKey, headerValue) =
       ( BSU.toString $ CI.original headerKey
       , BSU.toString headerValue
       )
+
+mkHeader :: (String, String) -> Http.Header
+mkHeader (headerName, headerValue) =
+  (CI.mk $ BSU.fromString headerName, BSU.fromString headerValue)

@@ -2,10 +2,7 @@
 {-# LANGUAGE DuplicateRecordFields     #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
-{-# LANGUAGE MultiParamTypeClasses     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE OverloadedStrings         #-}
-{-# LANGUAGE ScopedTypeVariables       #-}
 {-# LANGUAGE TypeOperators             #-}
 
 module RequestFolder.AppSpec where
@@ -21,12 +18,10 @@ import qualified Servant.Auth.Server     as Auth
 import           Servant.Client          (ClientM, client)
 import           Test.Hspec
 
-import           Account.DB
 import           App
+import           DBUtil
 import           Helper.App
-import           RequestCollection.DB
 import           RequestCollection.Model
-import           RequestNode.DB
 import           RequestNode.Model
 
 
@@ -36,7 +31,7 @@ import           RequestNode.Model
 createRequestFolder :: Auth.Token -> Int -> NewRequestFolder -> ClientM ()
 createRootRequestFolder :: Auth.Token -> Int -> NewRootRequestFolder -> ClientM ()
 createRequestFolder :<|> createRootRequestFolder =
-  client (Proxy :: Proxy (PRequestFolderApi '[Auth.JWT]))
+  client (Proxy :: Proxy (RequestFolderApi '[Auth.JWT]))
 
 
 -- * spec
@@ -44,7 +39,7 @@ createRequestFolder :<|> createRootRequestFolder =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultConfig) $ do
+  withClient (mkApp defaultEnv) $ do
 
 
 -- ** create request folder
@@ -52,33 +47,25 @@ spec =
 
     describe "create a request folder" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let newRequestFile = mkNewRequestFolder UUID.nil UUID.nil
           try clientEnv (createRequestFolder token 1 newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when request node parent doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId _ <- insertSampleRequestCollection accountId connection
-          token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFolder UUID.nil UUID.nil
           try clientEnv (createRequestFolder token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let fileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
-          token <- signedUserToken accountId
           let newRequestFile = mkNewRequestFolder UUID.nil fileId
           try clientEnv (createRequestFolder token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request folder" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let folderId = Maybe.fromJust (getFirstFolder requestNodes) ^. requestNodeId
           let newRequestFolder = mkNewRequestFolder UUID.nil folderId
@@ -92,16 +79,12 @@ spec =
 
     describe "create a root request folder" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { token } -> do
           let newRootRequestFolder = mkNewRootRequestFolder UUID.nil
           try clientEnv (createRootRequestFolder token 1 newRootRequestFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request folder" $ \clientEnv ->
-        cleanDBAfter $ \connection -> do
-          accountId <- insertFakeAccount defaultNewFakeAccount1 connection
-          token <- signedUserToken accountId
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           requestCollectionId <- insertFakeRequestCollection accountId connection
           let newRootRequestFolder = mkNewRootRequestFolder UUID.nil
           _ <- try clientEnv (createRootRequestFolder token requestCollectionId newRootRequestFolder)

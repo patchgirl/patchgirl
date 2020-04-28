@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 
 module RequestCollection.Sql where
@@ -10,6 +9,9 @@ import           Data.Functor                     ((<&>))
 import           Data.UUID                        (UUID)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
+
+
+-- * select request collection available
 
 
 selectRequestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
@@ -27,6 +29,10 @@ selectRequestCollectionAvailable accountId requestCollectionId connection =
             AND account_id = ?
           );
           |]
+
+
+-- * select request collection id
+
 
 selectRequestCollectionId :: UUID -> Connection -> IO (Maybe Int)
 selectRequestCollectionId accountId connection =

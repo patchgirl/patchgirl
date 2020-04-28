@@ -3,8 +3,6 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE NamedFieldPuns         #-}
-{-# LANGUAGE QuasiQuotes            #-}
-{-# LANGUAGE TemplateHaskell        #-}
 
 module Environment.DB where
 
@@ -13,8 +11,9 @@ import           Data.Maybe                       (listToMaybe)
 import           Data.UUID                        (UUID)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
-import           Environment.App                  (KeyValue)
+import           Environment.Model
 import           GHC.Generics
+
 
 -- * insert fake environment
 

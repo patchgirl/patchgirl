@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9acb1f26ba2a97cb87f60e1061bed9d7de4000f76b37a9b01270777dff65e92a
+-- hash: 2e64104c5ab9dfdc945ebd29cfdf53f0b3d16ff8139f47987dc12ea929f193bf
 
 name:           patchGirl
 version:        0.0.0
@@ -15,24 +15,33 @@ library
       Account.App
       Account.Sql
       App
-      Config
       DB
       ElmOption
+      Env
       Environment.App
+      Environment.Model
       Foo
       Github.App
       Health.App
       Http
-      Mailgun.App
       Model
       PatchGirl
       RequestCollection.App
       RequestCollection.Model
       RequestCollection.Sql
       RequestComputation.App
+      RequestComputation.Model
       RequestNode.App
       RequestNode.Model
       RequestNode.Sql
+      ScenarioCollection.App
+      ScenarioCollection.Model
+      ScenarioCollection.Sql
+      ScenarioComputation.App
+      ScenarioComputation.Model
+      ScenarioNode.App
+      ScenarioNode.Model
+      ScenarioNode.Sql
       Session.App
       Session.Model
       Test
@@ -40,30 +49,32 @@ library
       Paths_patchGirl
   hs-source-dirs:
       src
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
-  ghc-options: -Wall -fno-warn-name-shadowing
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , aeson-qq
     , base
     , bytestring
     , case-insensitive
+    , containers
     , control-monad-free
     , cookie
     , dhall
     , elm-bridge
     , email-validate
-    , hailgun
     , http-client
     , http-client-tls
     , http-conduit
     , http-types
     , jose
     , lens
+    , monad-loops
     , mtl
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
+    , say
     , servant
     , servant-auth
     , servant-auth-client
@@ -72,6 +83,7 @@ library
     , servant-elm
     , servant-flatten
     , servant-server
+    , stm
     , strings
     , text
     , time
@@ -89,31 +101,33 @@ executable patchGirl
   main-is: exe/Main.hs
   other-modules:
       Paths_patchGirl
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
-  ghc-options: -Wall -fno-warn-name-shadowing
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , aeson-qq
     , base
     , bytestring
     , case-insensitive
+    , containers
     , control-monad-free
     , cookie
     , dhall
     , elm-bridge
     , email-validate
-    , hailgun
     , http-client
     , http-client-tls
     , http-conduit
     , http-types
     , jose
     , lens
+    , monad-loops
     , mtl
     , patchGirl
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
+    , say
     , servant
     , servant-auth
     , servant-auth-client
@@ -122,6 +136,7 @@ executable patchGirl
     , servant-elm
     , servant-flatten
     , servant-server
+    , stm
     , strings
     , text
     , time
@@ -140,34 +155,41 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       Account.AppSpec
-      Account.DB
+      DBUtil
       Environment.AppSpec
       Environment.DB
+      FakeHttpRequest
       Helper.App
       RequestCollection.AppSpec
       RequestCollection.DB
+      RequestComputation.AppSpec
       RequestFile.AppSpec
       RequestFolder.AppSpec
       RequestNode.AppSpec
-      RequestNode.DB
+      ScenarioCollection.AppSpec
+      ScenarioComputation.AppSpec
+      ScenarioFile.AppSpec
+      ScenarioFolder.AppSpec
+      ScenarioNode.AppSpec
+      Scene.AppSpec
       Session.AppSpec
       Paths_patchGirl
   hs-source-dirs:
       test
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards
-  ghc-options: -Wall -fno-warn-name-shadowing
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , aeson-qq
     , base
     , bytestring
     , case-insensitive
+    , containers
     , control-monad-free
     , cookie
     , dhall
     , elm-bridge
     , email-validate
-    , hailgun
     , hspec
     , http-client
     , http-client-tls
@@ -175,11 +197,13 @@ test-suite spec
     , http-types
     , jose
     , lens
+    , monad-loops
     , mtl
     , patchGirl
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
+    , say
     , servant
     , servant-auth
     , servant-auth-client
@@ -188,6 +212,7 @@ test-suite spec
     , servant-elm
     , servant-flatten
     , servant-server
+    , stm
     , strings
     , text
     , time

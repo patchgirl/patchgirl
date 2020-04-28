@@ -8,10 +8,23 @@ default-extensions:
   - ScopedTypeVariables
   - TemplateHaskell
   - RecordWildCards
+  - EmptyCase
+  - FlexibleContexts
+  - FlexibleInstances
+  - InstanceSigs
+  - MultiParamTypeClasses
+  - MultiWayIf
+  - TypeApplications # allows you to use visible type application in expressions, eg: show (read @Int "5")
 
 ghc-options:
   - -Wall
   - -fno-warn-name-shadowing
+  - -Wincomplete-patterns
+  - -Wcompat # make code future compatible to adapt to new features
+  - -Wincomplete-record-updates # catch what are essentially partial pattern-matches
+  #- -Wincomplete-uni-patterns
+  - -Wredundant-constraints # help remove unnecessary typeclass constraints on functions
+
 
 tests:
   spec:
@@ -62,7 +75,6 @@ dependencies:
   - cookie
   - bytestring
   - utf8-string
-  - hailgun
   - email-validate
   - dhall
   - http-client
@@ -77,3 +89,7 @@ dependencies:
   - uuid
   - strings
   - control-monad-free
+  - monad-loops
+  - say
+  - stm
+  - containers
