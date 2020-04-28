@@ -324,7 +324,7 @@ centerView model =
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
-            { url = href (lastReqPage model)
+            { url = href (ReqPage Nothing Nothing)
             , label = el [] (text "Request")
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
@@ -368,15 +368,6 @@ mainLinkAttributeWhenActive event active =
 
 -- ** util
 
-
-lastReqPage : Model a -> Page
-lastReqPage model =
-    case model.requestPageLastLocation of
-        Just (ReqPage _ _ as reqPage) ->
-            reqPage
-
-        _ ->
-            ReqPage Nothing Nothing
 
 isScenarioPage : Page -> Bool
 isScenarioPage page =
