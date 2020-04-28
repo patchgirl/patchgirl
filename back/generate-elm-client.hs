@@ -24,7 +24,8 @@ import           Data.Word
 import           Debug.Trace
 import           Elm.Module                as Elm
 import           Elm.TyRep
-import           ElmOption                 (deriveElmDefOption)
+import           ElmOption                 (deriveWithSingleFieldObject,
+                                            deriveWithTaggedObject)
 import           GHC.TypeLits              (ErrorMessage (Text), KnownSymbol,
                                             Symbol, TypeError, symbolVal)
 
@@ -102,48 +103,48 @@ myDefaultElmToString argType =
 -- * elm def
 
 
-deriveElmDef deriveElmDefOption ''RequestCollection
-deriveElmDef deriveElmDefOption ''RequestNode
-deriveElmDef deriveElmDefOption ''Method
-deriveElmDef deriveElmDefOption ''AppHealth
-deriveElmDef deriveElmDefOption ''NoContent
-deriveElmDef deriveElmDefOption ''NewRequestFile
-deriveElmDef deriveElmDefOption ''ParentNodeId
-deriveElmDef deriveElmDefOption ''UpdateRequestNode
-deriveElmDef deriveElmDefOption ''NewEnvironment
-deriveElmDef deriveElmDefOption ''UpdateEnvironment
-deriveElmDef deriveElmDefOption ''Environment
-deriveElmDef deriveElmDefOption ''KeyValue
-deriveElmDef deriveElmDefOption ''NewKeyValue
-deriveElmDef deriveElmDefOption ''CaseInsensitive
-deriveElmDef deriveElmDefOption ''Session
-deriveElmDef deriveElmDefOption ''RequestComputationInput
-deriveElmDef deriveElmDefOption ''RequestComputationOutput
-deriveElmDef deriveElmDefOption ''RequestComputationResult
-deriveElmDef deriveElmDefOption ''Scheme
-deriveElmDef deriveElmDefOption ''NewRequestFolder
-deriveElmDef deriveElmDefOption ''NewRootRequestFile
-deriveElmDef deriveElmDefOption ''NewRootRequestFolder
-deriveElmDef deriveElmDefOption ''UpdateRequestFile
-deriveElmDef deriveElmDefOption ''HttpHeader
-deriveElmDef deriveElmDefOption ''SignInWithGithub
-deriveElmDef deriveElmDefOption ''NewScenarioFile
-deriveElmDef deriveElmDefOption ''UpdateScenarioNode
-deriveElmDef deriveElmDefOption ''NewScenarioFolder
-deriveElmDef deriveElmDefOption ''NewRootScenarioFile
-deriveElmDef deriveElmDefOption ''NewRootScenarioFolder
-deriveElmDef deriveElmDefOption ''ScenarioCollection
-deriveElmDef deriveElmDefOption ''ScenarioNode
-deriveElmDef deriveElmDefOption ''Scene
-deriveElmDef deriveElmDefOption ''NewScene
-deriveElmDef deriveElmDefOption ''HttpException
-deriveElmDef deriveElmDefOption ''ScenarioComputationInput
-deriveElmDef deriveElmDefOption ''ScenarioComputationOutput
-deriveElmDef deriveElmDefOption ''InputScenario
-deriveElmDef deriveElmDefOption ''InputScene
-deriveElmDef deriveElmDefOption ''OutputScenario
-deriveElmDef deriveElmDefOption ''OutputScene
-deriveElmDef deriveElmDefOption ''SceneComputation
+deriveElmDef deriveWithTaggedObject ''RequestCollection
+deriveElmDef deriveWithTaggedObject ''RequestNode
+deriveElmDef deriveWithTaggedObject ''Method
+deriveElmDef deriveWithTaggedObject ''AppHealth
+deriveElmDef deriveWithTaggedObject ''NoContent
+deriveElmDef deriveWithTaggedObject ''NewRequestFile
+deriveElmDef deriveWithTaggedObject ''ParentNodeId
+deriveElmDef deriveWithTaggedObject ''UpdateRequestNode
+deriveElmDef deriveWithTaggedObject ''NewEnvironment
+deriveElmDef deriveWithTaggedObject ''UpdateEnvironment
+deriveElmDef deriveWithTaggedObject ''Environment
+deriveElmDef deriveWithTaggedObject ''KeyValue
+deriveElmDef deriveWithTaggedObject ''NewKeyValue
+deriveElmDef deriveWithTaggedObject ''CaseInsensitive
+deriveElmDef deriveWithTaggedObject ''Session
+deriveElmDef deriveWithTaggedObject ''RequestComputationInput
+deriveElmDef deriveWithTaggedObject ''RequestComputationOutput
+deriveElmDef deriveWithTaggedObject ''RequestComputationResult
+deriveElmDef deriveWithTaggedObject ''Scheme
+deriveElmDef deriveWithTaggedObject ''NewRequestFolder
+deriveElmDef deriveWithTaggedObject ''NewRootRequestFile
+deriveElmDef deriveWithTaggedObject ''NewRootRequestFolder
+deriveElmDef deriveWithTaggedObject ''UpdateRequestFile
+deriveElmDef deriveWithTaggedObject ''HttpHeader
+deriveElmDef deriveWithTaggedObject ''SignInWithGithub
+deriveElmDef deriveWithTaggedObject ''NewScenarioFile
+deriveElmDef deriveWithTaggedObject ''UpdateScenarioNode
+deriveElmDef deriveWithTaggedObject ''NewScenarioFolder
+deriveElmDef deriveWithTaggedObject ''NewRootScenarioFile
+deriveElmDef deriveWithTaggedObject ''NewRootScenarioFolder
+deriveElmDef deriveWithTaggedObject ''ScenarioCollection
+deriveElmDef deriveWithTaggedObject ''ScenarioNode
+deriveElmDef deriveWithTaggedObject ''Scene
+deriveElmDef deriveWithTaggedObject ''NewScene
+deriveElmDef deriveWithSingleFieldObject ''HttpException
+deriveElmDef deriveWithTaggedObject ''ScenarioComputationInput
+deriveElmDef deriveWithTaggedObject ''ScenarioComputationOutput
+deriveElmDef deriveWithTaggedObject ''InputScenario
+deriveElmDef deriveWithTaggedObject ''InputScene
+deriveElmDef deriveWithTaggedObject ''OutputScenario
+deriveElmDef deriveWithTaggedObject ''OutputScene
+deriveElmDef deriveWithTaggedObject ''SceneComputation
 
 
 -- * imports

@@ -21,6 +21,7 @@ module App( mkApp
           , SessionApi
           , PSessionApi
           , AccountApi
+          , RestApi
           ) where
 
 

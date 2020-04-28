@@ -10,7 +10,6 @@ module RequestComputation.Model ( RequestComputationInput(..)
 
 
 import qualified Data.Aeson          as Aeson
-import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
 import           GHC.Generics        (Generic)
 import           Http
 import qualified Network.HTTP.Client as Http
@@ -51,11 +50,11 @@ data RequestComputationInput
 
 instance Aeson.ToJSON RequestComputationInput where
   toJSON =
-    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 instance Aeson.FromJSON RequestComputationInput where
   parseJSON =
-    Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- ** request computation output
@@ -70,10 +69,10 @@ data RequestComputationOutput
 
 instance Aeson.ToJSON RequestComputationOutput where
   toJSON =
-    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 instance Aeson.FromJSON RequestComputationOutput where
-  parseJSON = Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+  parseJSON = Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- ** request computation result
@@ -86,11 +85,12 @@ data RequestComputationResult
 
 instance Aeson.ToJSON RequestComputationResult where
   toJSON =
-    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                             }
 
 instance Aeson.FromJSON RequestComputationResult where
   parseJSON =
-    Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- ** http exception
@@ -123,8 +123,10 @@ data HttpException
 
 instance Aeson.ToJSON HttpException where
   toJSON =
-    Aeson.genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                             , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                             }
 
 instance Aeson.FromJSON HttpException where
   parseJSON =
-    Aeson.genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
