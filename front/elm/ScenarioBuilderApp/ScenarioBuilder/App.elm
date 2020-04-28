@@ -2,6 +2,7 @@ module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 
 import Api.Converter as Client
 import Api.Generated as Client
+import Dict
 import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
@@ -34,6 +35,7 @@ type alias Model =
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
     , showDetailedSceneView : Maybe Uuid
+    , whichResponseView : HttpResponseView
     }
 
 
@@ -59,6 +61,8 @@ type
       -- detailed view
     | ShowDetailedView Uuid
     | HideDetailedView
+    | ShowBodyResponseView
+    | ShowHeaderResponseView
       -- other
     | DoNothing
 
@@ -204,6 +208,20 @@ update msg model =
                     { model | showDetailedSceneView = Nothing }
             in
             (newModel, Cmd.none)
+
+        ShowBodyResponseView ->
+            let
+                newModel =
+                    { model | whichResponseView = BodyResponseView }
+            in
+            ( newModel, Cmd.none )
+
+        ShowHeaderResponseView ->
+            let
+                newModel =
+                    { model | whichResponseView = HeaderResponseView }
+            in
+            ( newModel, Cmd.none )
 
 
 -- ** other
@@ -451,6 +469,27 @@ detailedSceneView model scene requestFileRecord =
                 ]
             ]
 
+        whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
+        whichResponseButtonView tabs =
+            let
+                buttonView (label, isActive, msg) =
+                    Input.button [ centerX, centerY
+                                 , height fill
+                                 ]
+                        { onPress = Just msg
+                        , label =
+                            el ( [ centerY, centerX
+                                 , height fill
+                                 ] ++ (selectiveButtonAttrs isActive)
+                               ) <| el [ centerY ] (text label)
+                        }
+            in
+            row [ width fill, height (px 50)
+                , centerX, centerY
+                , spacing 20
+                , paddingXY 0 0
+                ] <| List.map buttonView tabs
+
         outputSceneDetailView : SceneComputation -> List (Element Msg)
         outputSceneDetailView sceneComputation =
             case sceneComputation of
@@ -462,14 +501,16 @@ detailedSceneView model scene requestFileRecord =
 
                 SceneRun (RequestComputationSucceeded requestComputationOutput) ->
                     [ statusResponseView requestComputationOutput
-                    , Input.multiline []
-                        { onChange = always DoNothing
-                        , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
-                        , placeholder = Nothing
-                        , label = labelInputView "body: "
-                        , spellcheck = False
-                        }
+                    , whichResponseButtonView
+                      [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
+                      , ("Headers", model.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
+                      ]
+                    , case model.whichResponseView of
+                          BodyResponseView ->
+                              bodyResponseView requestComputationOutput (always DoNothing)
 
+                          HeaderResponseView ->
+                              headersResponseView requestComputationOutput (always DoNothing)
                     ]
     in
     column [ width fill

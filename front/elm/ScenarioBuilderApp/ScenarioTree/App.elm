@@ -598,6 +598,7 @@ mkDefaultFile id =
         , name = NotEdited defaultFileName
         , scenes = []
         , showDetailedSceneView = Nothing
+        , whichResponseView = BodyResponseView
         }
 
 

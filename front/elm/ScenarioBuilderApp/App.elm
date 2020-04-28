@@ -151,6 +151,7 @@ convertFromFileToBuilder file scenarioCollectionId session requestCollection key
     , keyValues = keyValuesToRun
     , name = file.name
     , showDetailedSceneView = file.showDetailedSceneView
+    , whichResponseView = file.whichResponseView
     }
 
 
@@ -160,6 +161,7 @@ convertFromBuilderToFile builder =
     , name = builder.name
     , scenes = builder.scenes
     , showDetailedSceneView = builder.showDetailedSceneView
+    , whichResponseView = builder.whichResponseView
     }
 
 

@@ -1,6 +1,7 @@
 module RequestBuilderApp.RequestBuilder.ResponseView
     exposing ( statusResponseView
-             , bodyResponseText
+             , bodyResponseView
+             , headersResponseView
              )
 
 import Application.Type exposing (..)
@@ -15,7 +16,7 @@ import Json.Print as Json
 
 
 
--- * response view
+-- * status
 
 
 statusResponseView : RequestComputationOutput -> Element a
@@ -44,6 +45,55 @@ statusResponseView requestComputationOutput =
 
 -- * body response text
 
+
+bodyResponseView : RequestComputationOutput -> (String -> a) -> Element a
+bodyResponseView requestComputationOutput msg =
+    Input.multiline []
+        { onChange = msg
+        , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
+        , placeholder = Nothing
+        , label = labelInputView "body: "
+        , spellcheck = False
+        }
+
+-- * header response view
+
+
+headersResponseView : RequestComputationOutput -> (String -> a) -> Element a
+headersResponseView requestComputationOutput msg =
+    let
+        headers =
+            Dict.toList requestComputationOutput.headers
+                |> List.map (joinTuple ": ")
+                |> String.join "\n"
+    in
+    Input.multiline []
+        { onChange = msg
+        , text = headers
+        , placeholder = Nothing
+        , label = labelInputView "Headers: "
+        , spellcheck = False
+        }
+
+
+-- * util
+
+
+labelInputView : String -> Input.Label a
+labelInputView labelText =
+    let
+        size =
+            width
+                (fill
+                    |> maximum 100
+                    |> minimum 100
+                )
+    in
+    Input.labelAbove [ centerY, size ] <| text labelText
+
+joinTuple : String -> ( String, String ) -> String
+joinTuple separator ( key, value ) =
+    key ++ separator ++ value
 
 bodyResponseText : String -> Dict.Dict String String -> String
 bodyResponseText body responseHeaders =

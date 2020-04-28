@@ -216,38 +216,35 @@ primaryButtonAttrs =
     ]
 
 
--- ** active
+-- ** selective button
 
 
-{- an active button is a button that can be enabled/disabled
+{- a selective button is a button that can be enabled/disabled
  -}
-activeButtonAttrs : List (Attribute a)
-activeButtonAttrs =
-    [ Background.color secondaryColor
-    , Border.solid
-    , Border.color secondaryColor
-    , Border.width 1
-    , Border.rounded 5
-    , paddingXY 10 10
-    ]
+selectiveButtonAttrs : Bool -> List (Attribute a)
+selectiveButtonAttrs active =
+    case active of
+        True ->
+            [ Background.color secondaryColor
+            , Border.solid
+            , Border.color secondaryColor
+            , Border.width 1
+            , Border.rounded 5
+            , paddingXY 10 10
+            ]
 
-
--- ** inactive
-
-
-inactiveButtonAttrs : List (Attribute a)
-inactiveButtonAttrs =
-    [ Background.color lightGrey
-    , Border.solid
-    , Border.color lightGrey
-    , Border.width 1
-    , Border.rounded 5
-    , paddingXY 10 10
-    , mouseOver
-          [ Background.color secondaryColor
-          , Font.color primaryColor
-          ]
-    ]
+        False ->
+            [ Background.color lightGrey
+            , Border.solid
+            , Border.color lightGrey
+            , Border.width 1
+            , Border.rounded 5
+            , paddingXY 10 10
+            , mouseOver
+                  [ Background.color secondaryColor
+                  , Font.color primaryColor
+                  ]
+            ]
 
 
 -- * label

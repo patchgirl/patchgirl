@@ -583,54 +583,14 @@ mainActionButtonsView model =
 responseView : Model -> Element Msg
 responseView model =
     let
-        headersResponseView : RequestComputationOutput -> Element Msg
-        headersResponseView requestComputationOutput =
-            let
-                headers =
-                    Dict.toList requestComputationOutput.headers
-                        |> List.map (joinTuple ": ")
-                        |> String.join "\n"
-            in
-            Input.multiline []
-                { onChange = SetHttpBody
-                , text = headers
-                , placeholder = Nothing
-                , label = labelInputView "Headers: "
-                , spellcheck = False
-                }
-
-        bodyResponseView : RequestComputationOutput -> Element Msg
-        bodyResponseView requestComputationOutput =
-            case requestComputationOutput.body of
-                "" ->
-                    none
-
-                _ ->
-                    Input.multiline []
-                        { onChange = SetHttpBodyResponse
-                        , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
-                        , placeholder = Nothing
-                        , label = labelInputView "body: "
-                        , spellcheck = False
-                        }
-
         errorAttributes =
             [ centerX
             , centerY
             ]
 
-        exclusiveView : List (String, Bool, Msg) -> Element Msg
-        exclusiveView tabs =
+        whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
+        whichResponseButtonView tabs =
             let
-                buttonAttributes : Bool -> List (Attribute a)
-                buttonAttributes isActive =
-                    case isActive of
-                        True ->
-                            activeButtonAttrs
-
-                        False ->
-                            inactiveButtonAttrs
-
                 buttonView (label, isActive, msg) =
                     Input.button [ centerX, centerY
                            , height fill
@@ -639,7 +599,7 @@ responseView model =
                   , label =
                       el ( [ centerY, centerX
                            , height fill
-                           ] ++ (buttonAttributes isActive)
+                           ] ++ (selectiveButtonAttrs isActive)
                          ) <| el [ centerY ] (text label)
                   }
             in
@@ -656,15 +616,16 @@ responseView model =
         Just (RequestComputationSucceeded requestComputationOutput) ->
             column [ spacing 10, width fill ]
                 [ statusResponseView requestComputationOutput
-                , exclusiveView [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
-                                , ("Headers", model.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
-                                ]
+                , whichResponseButtonView
+                      [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
+                      , ("Headers", model.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
+                      ]
                 , case model.whichResponseView of
                       BodyResponseView ->
-                          bodyResponseView requestComputationOutput
+                          bodyResponseView requestComputationOutput SetHttpBodyResponse
 
                       HeaderResponseView ->
-                          headersResponseView requestComputationOutput
+                          headersResponseView requestComputationOutput SetHttpBody
                 ]
 
         Just (RequestComputationFailed httpException) ->

@@ -318,7 +318,11 @@ centerView model =
                     Nothing
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ link
+        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (model.page == ScenarioPage Nothing))
+            { url = href (ScenarioPage Nothing)
+            , label = el [] (text "Scenario")
+            }
+        , link
             (mainLinkAttribute
                 ++ mainLinkAttributeWhenActive OpenReqPage
                     (model.page
@@ -333,10 +337,6 @@ centerView model =
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (model.page == EnvPage))
             { url = href EnvPage
             , label = el [] (text "Environment")
-            }
-        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (model.page == ScenarioPage Nothing))
-            { url = href (ScenarioPage Nothing)
-            , label = el [] (text "Scenario")
             }
         ]
 
