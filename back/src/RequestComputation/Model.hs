@@ -129,4 +129,6 @@ instance Aeson.ToJSON HttpException where
 
 instance Aeson.FromJSON HttpException where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                                , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                                }

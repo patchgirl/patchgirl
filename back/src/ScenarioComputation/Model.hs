@@ -63,11 +63,15 @@ data SceneComputation
 
 instance Aeson.ToJSON SceneComputation where
   toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                             , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                             }
 
 instance Aeson.FromJSON SceneComputation where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                                , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                                }
 
 
 -- * output scene

@@ -144,7 +144,7 @@ deriveElmDef deriveWithTaggedObject ''InputScenario
 deriveElmDef deriveWithTaggedObject ''InputScene
 deriveElmDef deriveWithTaggedObject ''OutputScenario
 deriveElmDef deriveWithTaggedObject ''OutputScene
-deriveElmDef deriveWithTaggedObject ''SceneComputation
+deriveElmDef deriveWithSingleFieldObject ''SceneComputation
 
 
 -- * imports

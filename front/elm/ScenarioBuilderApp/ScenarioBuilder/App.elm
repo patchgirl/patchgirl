@@ -386,11 +386,11 @@ sceneView model { id, requestFileNodeId, computationOutput } =
                 Nothing ->
                     [ Border.color white ]
 
-                Just SceneNotRun ->
-                    [ borderError, backgroundError ]
-
-                Just (SceneRun _) ->
+                Just (SceneRun (RequestComputationSucceeded _)) ->
                     [ borderSuccess, backgroundSuccess ]
+
+                Just _ ->
+                    [ borderError, backgroundError ]
     in
     case mRequestFileRecord of
         Just { name } ->
@@ -494,7 +494,7 @@ detailedSceneView model scene requestFileRecord =
         outputSceneDetailView sceneComputation =
             case sceneComputation of
                 SceneNotRun ->
-                    [ none ]
+                    [ text <| "This request hasn't been run" ]
 
                 SceneRun (RequestComputationFailed httpException) ->
                     [ text <| "This request failed because of: " ++ httpExceptionToString httpException ]
