@@ -15,7 +15,7 @@ import Html.Attributes as Html
 import Http as Http
 import Page exposing (..)
 import Util exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 
 
 
@@ -318,23 +318,16 @@ centerView model =
                     Nothing
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (model.page == ScenarioPage Nothing))
+        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
             { url = href (ScenarioPage Nothing)
             , label = el [] (text "Scenario")
             }
         , link
-            (mainLinkAttribute
-                ++ mainLinkAttributeWhenActive OpenReqPage
-                    (model.page
-                        == ReqPage currentDisplayedBuilderId Nothing
-                        || model.page
-                        == HomePage
-                    )
-            )
-            { url = href (ReqPage Nothing Nothing)
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
+            { url = href (lastReqPage model)
             , label = el [] (text "Request")
             }
-        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (model.page == EnvPage))
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
             { url = href EnvPage
             , label = el [] (text "Environment")
             }
@@ -371,3 +364,43 @@ mainLinkAttributeWhenActive event active =
                 False ->
                     []
            )
+
+
+-- ** util
+
+
+lastReqPage : Model a -> Page
+lastReqPage model =
+    case model.requestPageLastLocation of
+        Just (ReqPage _ _ as reqPage) ->
+            reqPage
+
+        _ ->
+            ReqPage Nothing Nothing
+
+isScenarioPage : Page -> Bool
+isScenarioPage page =
+    case page of
+        ScenarioPage _ ->
+            True
+
+        _ ->
+            False
+
+isReqPage : Page -> Bool
+isReqPage page =
+    case page of
+        ReqPage _ _ ->
+            True
+
+        _ ->
+            False
+
+isEnvPage : Page -> Bool
+isEnvPage page =
+    case page of
+        EnvPage ->
+            True
+
+        _ ->
+            False
