@@ -136,9 +136,17 @@ type alias RequestFileRecord =
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
+    , whichResponseView : HttpResponseView
     , runRequestIconAnimation : Animation.State
     }
 
+
+-- ** which response view
+
+
+type HttpResponseView
+    = BodyResponseView
+    | HeaderResponseView
 
 
 -- * scenario collection
@@ -205,6 +213,7 @@ type alias Builder =
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
+    , whichResponseView : HttpResponseView
     , requestPending : Bool
     }
 

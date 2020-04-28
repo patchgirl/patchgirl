@@ -38,7 +38,7 @@ statusResponseView requestComputationOutput =
                 labelWarning statusText
     in
     row [ spacing 5 ]
-        [ text "status: ", statusLabel
+        [ text "Status: ", statusLabel
         ]
 
 

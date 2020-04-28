@@ -40,6 +40,7 @@ type alias Model =
     , httpBody : Editable String
     , requestComputationResult : Maybe RequestComputationResult
     , showResponseView : Bool
+    , whichResponseView : HttpResponseView
     , runRequestIconAnimation : Animation.State
     }
 
@@ -65,6 +66,8 @@ type Msg
     | AskSave
     | SaveSuccessfully
     | Animate Animation.Msg
+    | ShowBodyResponseView
+    | ShowHeaderResponseView
 
 
 
@@ -262,6 +265,20 @@ update msg model =
                         | runRequestIconAnimation =
                             Animation.update subMsg model.runRequestIconAnimation
                     }
+            in
+            ( newModel, Cmd.none )
+
+        ShowBodyResponseView ->
+            let
+                newModel =
+                    { model | whichResponseView = BodyResponseView }
+            in
+            ( newModel, Cmd.none )
+
+        ShowHeaderResponseView ->
+            let
+                newModel =
+                    { model | whichResponseView = HeaderResponseView }
             in
             ( newModel, Cmd.none )
 
@@ -529,7 +546,6 @@ mainActionButtonsView model =
             , Border.color secondaryColor
             , Border.width 1
             , Border.rounded 5
-            , alignBottom
             , Background.color secondaryColor
             , paddingXY 10 10
             ]
@@ -602,16 +618,53 @@ responseView model =
             [ centerX
             , centerY
             ]
+
+        exclusiveView : List (String, Bool, Msg) -> Element Msg
+        exclusiveView tabs =
+            let
+                buttonAttributes : Bool -> List (Attribute a)
+                buttonAttributes isActive =
+                    case isActive of
+                        True ->
+                            activeButtonAttrs
+
+                        False ->
+                            inactiveButtonAttrs
+
+                buttonView (label, isActive, msg) =
+                    Input.button [ centerX, centerY
+                           , height fill
+                           ]
+                  { onPress = Just msg
+                  , label =
+                      el ( [ centerY, centerX
+                           , height fill
+                           ] ++ (buttonAttributes isActive)
+                         ) <| el [ centerY ] (text label)
+                  }
+            in
+            row [ width fill, height (px 50)
+                , centerX, centerY
+                , spacing 20
+                , paddingXY 0 0
+                ] <| List.map buttonView tabs
     in
     case model.requestComputationResult of
         Nothing ->
             none
 
         Just (RequestComputationSucceeded requestComputationOutput) ->
-            column [ spacing 10 ]
+            column [ spacing 10, width fill ]
                 [ statusResponseView requestComputationOutput
-                , bodyResponseView requestComputationOutput
-                , headersResponseView requestComputationOutput
+                , exclusiveView [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
+                                , ("Headers", model.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
+                                ]
+                , case model.whichResponseView of
+                      BodyResponseView ->
+                          bodyResponseView requestComputationOutput
+
+                      HeaderResponseView ->
+                          headersResponseView requestComputationOutput
                 ]
 
         Just (RequestComputationFailed httpException) ->

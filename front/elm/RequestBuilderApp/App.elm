@@ -141,6 +141,7 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     , httpBody = file.httpBody
     , requestComputationResult = file.requestComputationResult
     , showResponseView = file.showResponseView
+    , whichResponseView = file.whichResponseView
     , runRequestIconAnimation = file.runRequestIconAnimation
     }
 
@@ -155,6 +156,7 @@ convertFromBuilderToFile builder =
     , httpBody = builder.httpBody
     , requestComputationResult = builder.requestComputationResult
     , showResponseView = builder.showResponseView
+    , whichResponseView = builder.whichResponseView
     , runRequestIconAnimation = builder.runRequestIconAnimation
     }
 

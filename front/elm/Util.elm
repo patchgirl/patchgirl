@@ -196,6 +196,59 @@ arrowDownwardIcon =
     icon "arrow_downward"
 
 
+-- * button
+
+
+-- ** primary
+
+
+primaryButtonAttrs =
+    [ Border.solid
+    , Border.color secondaryColor
+    , Border.width 1
+    , Border.rounded 5
+    , Background.color secondaryColor
+    , paddingXY 10 10
+    , mouseOver
+          [ Background.color primaryColor
+          , Font.color secondaryColor
+          ]
+    ]
+
+
+-- ** active
+
+
+{- an active button is a button that can be enabled/disabled
+ -}
+activeButtonAttrs : List (Attribute a)
+activeButtonAttrs =
+    [ Background.color secondaryColor
+    , Border.solid
+    , Border.color secondaryColor
+    , Border.width 1
+    , Border.rounded 5
+    , paddingXY 10 10
+    ]
+
+
+-- ** inactive
+
+
+inactiveButtonAttrs : List (Attribute a)
+inactiveButtonAttrs =
+    [ Background.color lightGrey
+    , Border.solid
+    , Border.color lightGrey
+    , Border.width 1
+    , Border.rounded 5
+    , paddingXY 10 10
+    , mouseOver
+          [ Background.color secondaryColor
+          , Font.color primaryColor
+          ]
+    ]
+
 
 -- * label
 

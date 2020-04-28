@@ -567,6 +567,7 @@ mkDefaultFile id =
         , httpHeaders = NotEdited []
         , httpBody = NotEdited ""
         , showResponseView = False
+        , whichResponseView = BodyResponseView
         , requestComputationResult = Nothing
         , runRequestIconAnimation = Animation.style []
         }
