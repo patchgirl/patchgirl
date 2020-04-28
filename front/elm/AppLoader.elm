@@ -169,6 +169,11 @@ startMainApp model =
                                 ]
                                 model.loaderStyle
 
+                        newLoaderStyle =
+                            Animation.interrupt
+                                [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                                ] model.loaderStyle
+
                         newModel =
                             { model
                                 | appState = DataLoaded
