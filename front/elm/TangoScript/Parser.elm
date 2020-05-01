@@ -3,7 +3,7 @@ module TangoScript.Parser exposing (..)
 import Parser as P exposing((|.), (|=), Step, Parser)
 import Parser.Expression as P exposing (OperatorTable)
 import Set exposing (Set)
-
+import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 
 -- * reserved keywords
 
@@ -13,6 +13,9 @@ reserved =
     Set.fromList
         [ "assertEqual"
         , "var"
+        , "get"
+        , "set"
+        , "httpResponseBodyAsString"
         , "true"
         , "false"
         ]
@@ -24,6 +27,7 @@ reserved =
 type Proc
     = AssertEqual Expr Expr
     | Let String Expr
+    | Set String Expr
 
 procParser : Parser Proc
 procParser =
@@ -32,6 +36,7 @@ procParser =
         |= P.oneOf
            [ assertEqualParser
            , letParser
+           , setParser
            ]
         |. P.spaces
 
@@ -70,40 +75,103 @@ assertEqualParser =
         |. P.symbol ")"
 
 
+-- ** set
+
+
+setParser : Parser Proc
+setParser =
+    P.succeed Set
+        |. P.keyword "set"
+        |. P.spaces
+        |. P.symbol "("
+        |. P.spaces
+        |= doubleQuoteString
+        |. P.spaces
+        |. P.symbol ","
+        |. P.spaces
+        |= exprParser
+        |. P.spaces
+        |. P.symbol ")"
+
+
 -- * expr
 
 
 type Expr
     = LBool Bool
     | LInt Int
+    | LString String
     | Var String
+    | Get String
+    | Eq Expr Expr
+    | Add Expr Expr
+    | HttpResponseBodyAsString
 
 
 exprParser : Parser Expr
 exprParser =
-    let
-        lIntParser =
-            P.succeed LInt
-                |= P.int
-
-        lBoolParser =
-            P.succeed LBool
-                |= P.oneOf [ P.map (always True) (P.keyword "true")
-                           , P.map (always False) (P.keyword "false")
-                           ]
-    in
     P.succeed identity
         |. P.spaces
         |= P.oneOf
-           [ lBoolParser
+           [ binOpParser
+           , lBoolParser
            , lIntParser
+           , lStringParser
            , varParser
+           , getParser
+           , httpResponseBodyAsStringParser
            ]
         |. P.spaces
 
+lIntParser : Parser Expr
+lIntParser =
+    P.succeed LInt
+        |= P.int
+
+lBoolParser : Parser Expr
+lBoolParser =
+    P.succeed LBool
+        |= P.oneOf [ P.map (always True) (P.keyword "true")
+                   , P.map (always False) (P.keyword "false")
+                   ]
+lStringParser : Parser Expr
+lStringParser =
+    P.succeed LString
+        |= doubleQuoteString
+
+varParser : Parser Expr
+varParser =
+    P.map Var variableNameParser
+
+httpResponseBodyAsStringParser : Parser Expr
+httpResponseBodyAsStringParser =
+    P.succeed HttpResponseBodyAsString
+        |. P.keyword "httpResponseBodyAsString"
+
+getParser : Parser Expr
+getParser =
+    P.succeed Get
+        |. P.keyword "get"
+        |. P.spaces
+        |. P.symbol "("
+        |. P.spaces
+        |= doubleQuoteString
+        |. P.spaces
+        |. P.symbol ")"
+
+
+-- ** variable
+
+
+variableNameParser : Parser String
+variableNameParser =
+    P.variable
+        { start = Char.isLower
+        , inner = \c -> Char.isAlphaNum c || c == '_'
+        , reserved = reserved
+        }
 
 -- * parser
-
 
 type alias TangoAst = List Proc
 
@@ -126,90 +194,30 @@ tangoParser =
     P.succeed identity
         |= P.loop [] lineHelper
 
--- ** expr
-
-{-
-parser : Parser (List Expr)
-parser =
-    let
-        lineHelper : List Expr -> Parser (Step (List Expr) (List Expr))
-        lineHelper revStmts =
-            P.oneOf
-                [ P.succeed (\stmt -> P.Loop (stmt :: revStmts))
-                    |= exprParser
-                    |. P.spaces
-                    |. P.symbol ";"
-                    |. P.spaces
-                , P.succeed ()
-                    |> P.map (\_ -> P.Done (List.reverse revStmts))
-                ]
-
-    in
-    P.succeed identity
-        |= P.loop [] lineHelper
-
-
-mExprParser : Parser (Maybe Expr)
-mExprParser =
-    let
-        noExprParser : Parser (Maybe Expr)
-        noExprParser =
-            P.succeed Nothing
-                |. P.spaces
-                |. P.end
-    in
-    P.oneOf
-        [ noExprParser
-        , P.map Just exprParser
-        ]
-
-exprParser : Parser Expr
-exprParser =
-    P.succeed identity
-        |. P.spaces
-        |= P.oneOf
-           [ binOpParser
-           , assertEqualParser
-           , letParser
-           , varParser
-           , litParser
-           ]
-        |. P.spaces
--}
-
--- ** variable
-
-
-variableNameParser : Parser String
-variableNameParser =
-    P.variable
-        { start = Char.isLower
-        , inner = \c -> Char.isAlphaNum c || c == '_'
-        , reserved = reserved
-        }
-
-varParser : Parser Expr
-varParser =
-    P.map Var variableNameParser
 
 
 -- ** bin operator
 
-{-
+
 binOpParser : Parser Expr
 binOpParser =
     let
         operators : List (List (P.Operator Expr))
         operators =
-            [ [ P.infixOperator (\a b -> BinOp Add a b) (P.symbol "+") P.AssocLeft
+            [ [ P.infixOperator (\a b -> Eq a b) (P.symbol "==") P.AssocLeft
+              , P.infixOperator (\a b -> Add a b) (P.symbol "+") P.AssocLeft
               ]
             ]
 
         operandParser : Parser Expr
         operandParser =
             P.oneOf
-                [ varParser
-                , litParser
+                [ lBoolParser
+                , lIntParser
+                , lStringParser
+                , varParser
+                , getParser
+                , httpResponseBodyAsStringParser
                 ]
     in
         P.buildExpressionParser operators <|
@@ -218,4 +226,3 @@ binOpParser =
                     |. P.spaces
                     |= P.lazy (\_ -> operandParser)
                     |. P.spaces
--}
