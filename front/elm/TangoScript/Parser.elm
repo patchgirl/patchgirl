@@ -5,6 +5,7 @@ import Parser.Expression as P exposing (OperatorTable)
 import Set exposing (Set)
 import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 
+
 -- * reserved keywords
 
 
@@ -226,3 +227,56 @@ binOpParser =
                     |. P.spaces
                     |= P.lazy (\_ -> operandParser)
                     |. P.spaces
+
+
+-- * show
+
+
+astAsString : TangoAst -> String
+astAsString ast =
+    List.map showProc ast |> String.concat
+
+showProc : Proc -> String
+showProc proc =
+    case proc of
+        AssertEqual expr1 expr2 ->
+            "(== " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
+
+        Let str expr ->
+            "(Let " ++ str ++ " " ++ showExpr expr ++ ")"
+
+        Set str expr ->
+            "(Set " ++ str ++ " " ++ showExpr expr ++ ")"
+
+showExpr : Expr -> String
+showExpr expr =
+    case expr of
+        LBool x ->
+            let
+                boolAsString =
+                    case x of
+                        True -> "true"
+                        False -> "false"
+            in
+            "(LBool " ++ boolAsString ++ ")"
+
+        LInt x ->
+            "(LInt " ++ String.fromInt(x) ++ ")"
+
+        LString x ->
+            "(LString " ++ x ++ ")"
+
+        Var x ->
+            "(Var " ++ x ++ ")"
+
+        Get x ->
+            "(Get " ++ x ++ ")"
+
+        Eq expr1 expr2 ->
+            "(Eq " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
+
+        Add expr1 expr2 ->
+            "(Add " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
+
+        HttpResponseBodyAsString ->
+            "(HttpResponseBodyAsString)"

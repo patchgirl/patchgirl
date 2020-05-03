@@ -229,6 +229,17 @@ tangoTests =
                     , AssertEqual (Var "a") (Var "b")
                     ]
       }
+    , { message = "parse more complex statements with strings"
+      , input = """
+                 var a = "1";
+                 var b = "2";
+                 assertEqual(a, b);
+                """
+      , expect = Ok [ Let "a" (LString "1")
+                    , Let "b" (LString "2")
+                    , AssertEqual (Var "a") (Var "b")
+                    ]
+      }
     ]
 
 

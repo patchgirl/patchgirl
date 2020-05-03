@@ -14,6 +14,7 @@ import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import ScenarioBuilderApp.App as ScenarioBuilderApp
+import TangoScriptApp.App as TangoScriptApp
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import Url as Url
 import Url.Parser as Url
@@ -42,6 +43,7 @@ type Msg
     | BuilderAppMsg RequestBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
+    | TangoScriptMsg TangoScriptApp.Msg
     | MainNavBarMsg MainNavBar.Msg
     | Animate Animation.Msg
 
@@ -98,6 +100,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , displayedRequestNodeMenuId = Nothing
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
+            , script = ""
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , environments = environments
@@ -147,6 +150,11 @@ update msg model =
             case ScenarioBuilderApp.update subMsg model of
                 ( newModel, newSubMsg ) ->
                     ( newModel, Cmd.map ScenarioMsg newSubMsg )
+
+        TangoScriptMsg subMsg ->
+            case TangoScriptApp.update subMsg model of
+                ( newModel, newSubMsg ) ->
+                    ( newModel, Cmd.map TangoScriptMsg newSubMsg )
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
@@ -224,6 +232,9 @@ mainView model =
 
                 ScenarioPage _ ->
                     map ScenarioMsg (ScenarioBuilderApp.view model)
+
+                TangoScriptPage ->
+                    map TangoScriptMsg (TangoScriptApp.view model)
         ]
 
 

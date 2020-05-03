@@ -15,6 +15,7 @@ type Page
     | EnvPage
     | ScenarioPage (Maybe Uuid.Uuid)
     | NotFoundPage
+    | TangoScriptPage
 
 
 
@@ -36,6 +37,7 @@ urlParser =
         , Url.map EnvPage (Url.s "env")
         , Url.map (\id -> ScenarioPage (Just id)) (Url.s "scenario" </> uuidParser)
         , Url.map (ScenarioPage Nothing) (Url.s "scenario")
+        , Url.map (TangoScriptPage) (Url.s "tangoscript")
         ]
 
 
@@ -67,6 +69,9 @@ href page =
 
                 ScenarioPage Nothing ->
                     [ "scenario" ]
+
+                TangoScriptPage ->
+                    [ "tangoscript" ]
 
                 NotFoundPage ->
                     [ "notFound" ]

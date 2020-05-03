@@ -31,6 +31,7 @@ stringHelp revChunks =
     , chompWhile isUninteresting
         |> getChompedString
         |> map (\chunk -> Loop (chunk :: revChunks))
+    , problem("orphan quoted string")
     ]
 
 

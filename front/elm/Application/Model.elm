@@ -39,6 +39,9 @@ type alias Model =
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
 
+    -- TANGOSCRIPT APP
+    , script : String
+
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
