@@ -53,13 +53,14 @@ view model =
             P.run tangoParser model.script
     in
     column [ width fill, padding 10, spacing 10, centerX ]
-        [ Input.text []
+        [ Input.multiline []
             { onChange = EditScript
             , text = model.script
             , placeholder = Just <| Input.placeholder [] (text "test some tangoScript!")
             , label = Input.labelHidden "TangoScript: "
+            , spellcheck = False
             }
-        , Input.text []
+        , Input.multiline []
             { onChange = always DoNothing
             , text =
                 case astResult of
@@ -68,5 +69,6 @@ view model =
 
             , placeholder = Just <| Input.placeholder [] (text "test some tangoScript!")
             , label = Input.labelHidden "TangoScript: "
+            , spellcheck = False
             }
         ]

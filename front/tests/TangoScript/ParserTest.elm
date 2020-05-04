@@ -3,6 +3,7 @@ module TangoScript.ParserTest exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
 import TangoScript.Parser exposing(..)
+import TangoScript.DoubleQuoteString exposing(..)
 import Parser as P
 
 
@@ -94,6 +95,10 @@ varTests =
       , input = "foo-bar"
       , expect = Ok <| Var "foo"
       }
+    , { message = "parse var starting with `e` letter"
+      , input = "!etest"
+      , expect = Ok <| Var "etest"
+      }
     ]
 
 
@@ -113,7 +118,7 @@ getTests =
     ]
 
 
--- ** get
+-- ** http response as string
 
 
 responseAsStringTests : List (ParserTest (List P.DeadEnd) Expr)
@@ -121,6 +126,24 @@ responseAsStringTests =
     [ { message = "parse simple `responseAsString`"
       , input = "httpResponseBodyAsString"
       , expect = Ok <| HttpResponseBodyAsString
+      }
+    ]
+
+
+-- ** double quote string
+
+
+doubleQTests : List (ParserTest (List P.DeadEnd) String)
+doubleQTests =
+    [ { message = "unfinished double quoted string"
+      , input = """"a """
+      , expect = Err []
+      }
+    , { message = "unfinished double quoted string 2"
+      , input = """
+                 set("
+                """
+      , expect = Err []
       }
     ]
 
@@ -258,6 +281,7 @@ suite =
             , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
             , describe "Eq" <| List.map checkExprParser eqTests
             , describe "Add" <| List.map checkExprParser addTests
+            , describe "DQString" <| List.map checkDStringParser doubleQTests
             ]
         , describe "ProcParser"
             [ describe "Let" <| List.map checkProcParser letTests
@@ -283,6 +307,17 @@ checkExprParser { message, input, expect } =
     test message <|
         \_ ->
             case P.run exprParser input of
+                Ok _ as ok ->
+                    Expect.equal ok expect
+
+                Err err ->
+                    Expect.equal (Err []) expect
+
+checkDStringParser : ParserTest (List P.DeadEnd) String -> Test
+checkDStringParser { message, input, expect } =
+    test message <|
+        \_ ->
+            case P.run doubleQuoteString input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 
