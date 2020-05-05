@@ -9,30 +9,43 @@ doubleQuoteString : Parser String
 doubleQuoteString =
   succeed identity
     |. token "\""
-    |= loop [] stringHelp
+    |= loop (0, []) stringHelp
 
+stringHelp : (Int, List String) -> Parser (Step (Int, List String) String)
+stringHelp (offset, revChunks) =
+    let
+        stringP : Parser (Step (List String) String)
+        stringP =
+            oneOf [ succeed (\chunk -> Loop (chunk :: revChunks))
+                      |. token "\\"
+                      |= oneOf
+                        [ map (\_ -> "\n") (token "n")
+                        , map (\_ -> "\t") (token "t")
+                        , map (\_ -> "\r") (token "r")
+                        , succeed String.fromChar
+                            |. token "u{"
+                            |= unicode
+                            |. token "}"
+                        ]
+                  , token "\""
+                      |> map (\_ -> Done (String.join "" (List.reverse revChunks)))
+                  , chompWhile isUninteresting
+                      |> getChompedString
+                      |> map (\chunk -> Loop (chunk :: revChunks))
+                  ]
 
-stringHelp : List String -> Parser (Step (List String) String)
-stringHelp revChunks =
-  oneOf
-    [ succeed (\chunk -> Loop (chunk :: revChunks))
-        |. token "\\"
-        |= oneOf
-            [ map (\_ -> "\n") (token "n")
-            , map (\_ -> "\t") (token "t")
-            , map (\_ -> "\r") (token "r")
-            , succeed String.fromChar
-                |. token "u{"
-                |= unicode
-                |. token "}"
-            ]
-    , token "\""
-        |> map (\_ -> Done (String.join "" (List.reverse revChunks)))
-    , chompWhile isUninteresting
-        |> getChompedString
-        |> map (\chunk -> Loop (chunk :: revChunks))
-    , problem("orphan quoted string")
-    ]
+    in
+        succeed (\s o -> (o, s))
+            |= stringP
+            |= getOffset
+            |> andThen (\(newOffset, step) ->
+                            case step of
+                                Done state -> succeed (Done state)
+                                Loop state ->
+                                    case newOffset == offset of
+                                        True -> problem "orphan double quoted string"
+                                        False -> succeed (Loop (newOffset, state))
+                       )
 
 
 isUninteresting : Char -> Bool

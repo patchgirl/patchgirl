@@ -114,20 +114,19 @@ exprParser =
     P.succeed identity
         |. P.spaces
         |= P.oneOf
-           [ binOpParser
-           , lBoolParser
+           [ lBoolParser
            , lIntParser
+           , httpResponseBodyAsStringParser
+           , getParser
            , lStringParser
            , varParser
-           , getParser
-           , httpResponseBodyAsStringParser
+--           , binOpParser
            ]
         |. P.spaces
 
 lIntParser : Parser Expr
 lIntParser =
-    P.succeed LInt
-        |= P.int
+    P.int |> P.map LInt
 
 lBoolParser : Parser Expr
 lBoolParser =
@@ -135,16 +134,14 @@ lBoolParser =
         |= P.oneOf [ P.map (always True) (P.keyword "true")
                    , P.map (always False) (P.keyword "false")
                    ]
+
 lStringParser : Parser Expr
 lStringParser =
-    P.succeed LString
-        |= doubleQuoteString
-
+    doubleQuoteString |> P.map LString
 
 httpResponseBodyAsStringParser : Parser Expr
 httpResponseBodyAsStringParser =
-    P.succeed HttpResponseBodyAsString
-        |. P.keyword "httpResponseBodyAsString"
+    P.keyword "httpResponseBodyAsString" |> P.map (always HttpResponseBodyAsString)
 
 getParser : Parser Expr
 getParser =
@@ -167,6 +164,14 @@ varParser =
 
 variableNameParser : Parser String
 variableNameParser =
+    let
+        charsHelp : List Char -> Parser (Step (List Char) String)
+        charsHelp revLetters =
+            P.oneOf
+                [ letterParser |> P.map (\letter -> P.Loop (letter :: revLetters))
+                , P.succeed () |> P.map (\_ -> P.Done (String.fromList <| List.reverse revLetters))
+                ]
+    in
     downcasedLetterParser
         |> P.andThen (\letter -> (P.loop [letter] charsHelp))
         |> P.andThen (\variable ->
@@ -174,13 +179,6 @@ variableNameParser =
                               True -> P.problem "reserved word"
                               False -> P.succeed variable
                      )
-
-charsHelp : List Char -> Parser (Step (List Char) String)
-charsHelp revLetters =
-  P.oneOf
-    [ letterParser |> P.map (\letter -> P.Loop (letter :: revLetters))
-    , P.succeed () |> P.map (\_ -> P.Done (String.fromList <| List.reverse revLetters))
-    ]
 
 downcasedLetterParser : Parser Char
 downcasedLetterParser =

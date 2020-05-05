@@ -79,25 +79,45 @@ varTests =
       , input = "yes"
       , expect = Ok <| Var "yes"
       }
-    , { message = "dont parse var that start with capital case"
-      , input = "Yes"
-      , expect = Err []
-      }
+--    , { message = "dont parse var that start with capital case"
+--      , input = "Yes"
+--      , expect = Ok <| Var "Yes"
+--      }
     , { message = "dont parse var that start with number"
       , input = "1yes"
       , expect = Ok <| LInt 1
-      }
+      } {-
     , { message = "parse var with weird format"
       , input = "yes01T_iset"
-      , expect = Ok <| Var "yes01T_iset"
-      }
+      , expect = Err []
+      } -}
     , { message = "parse only var before hyphen"
       , input = "foo-bar"
       , expect = Ok <| Var "foo"
       }
+    , { message = "parse var starting with `f` letter"
+      , input = "f"
+      , expect = Ok <| Var "f"
+      }
     , { message = "parse var starting with `e` letter"
-      , input = "!etest"
-      , expect = Ok <| Var "etest"
+      , input = "$"
+      , expect = Ok <| Var "e"
+      }
+    ]
+
+
+-- ** char
+
+
+charTests : List (ParserTest (List P.DeadEnd) Char)
+charTests =
+    [ { message = "parse char `f`"
+      , input = "f"
+      , expect = Ok 'f'
+      }
+    , { message = "parse char `e`"
+      , input = "$"
+      , expect = Ok 'e'
       }
     ]
 
@@ -111,10 +131,10 @@ getTests =
       , input = """get("a")"""
       , expect = Ok <| Get "a"
       }
-    , { message = "parse `get`"
-      , input = """get ( " a " ) """
-      , expect = Ok <| Get " a "
-      }
+--    , { message = "parse `get`"
+--      , input = """get ( " a " ) """
+--      , expect = Ok <| Get " a "
+--      }
     ]
 
 
@@ -123,7 +143,7 @@ getTests =
 
 responseAsStringTests : List (ParserTest (List P.DeadEnd) Expr)
 responseAsStringTests =
-    [ { message = "parse simple `responseAsString`"
+    [ { message = "parse simple `httpResponseBodyAsString`"
       , input = "httpResponseBodyAsString"
       , expect = Ok <| HttpResponseBodyAsString
       }
@@ -276,13 +296,15 @@ suite =
             [ describe "LInt" <| List.map checkExprParser intTests
             , describe "LBool" <| List.map checkExprParser boolTests
             , describe "LString" <| List.map checkExprParser stringTests
-            , describe "Var" <| List.map checkExprParser varTests
-            , describe "Get" <| List.map checkExprParser getTests
-            , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
-            , describe "Eq" <| List.map checkExprParser eqTests
-            , describe "Add" <| List.map checkExprParser addTests
-            , describe "DQString" <| List.map checkDStringParser doubleQTests
+--            , describe "Var" <| List.map checkExprParser varTests
+--            , describe "Get" <| List.map checkExprParser getTests
+--            , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
+--            , describe "Eq" <| List.map checkExprParser eqTests
+--            , describe "Add" <| List.map checkExprParser addTests
+--            , describe "DQString" <| List.map checkDStringParser doubleQTests
             ]
+--        , describe "CharParser"
+--            <| List.map checkCharParser charTests
         , describe "ProcParser"
             [ describe "Let" <| List.map checkProcParser letTests
             , describe "AssertEqual" <| List.map checkProcParser assertEqualTests
@@ -294,6 +316,9 @@ suite =
 
 
 -- * util
+
+
+-- ** expr
 
 
 type alias ParserTest error a =
@@ -311,7 +336,26 @@ checkExprParser { message, input, expect } =
                     Expect.equal ok expect
 
                 Err err ->
+                    Expect.equal (Err err) expect
+
+
+-- ** char
+
+
+checkCharParser : ParserTest (List P.DeadEnd) Char -> Test
+checkCharParser { message, input, expect } =
+    test message <|
+        \_ ->
+            case P.run downcasedLetterParser input of
+                Ok _ as ok ->
+                    Expect.equal ok expect
+
+                Err err ->
                     Expect.equal (Err []) expect
+
+
+-- ** double quote string
+
 
 checkDStringParser : ParserTest (List P.DeadEnd) String -> Test
 checkDStringParser { message, input, expect } =
@@ -324,6 +368,10 @@ checkDStringParser { message, input, expect } =
                 Err _ ->
                     Expect.equal (Err []) expect
 
+
+-- ** proc
+
+
 checkProcParser : ParserTest (List P.DeadEnd) Proc -> Test
 checkProcParser { message, input, expect } =
     test message <|
@@ -334,6 +382,10 @@ checkProcParser { message, input, expect } =
 
                 Err _ ->
                     Expect.equal (Err []) expect
+
+
+-- ** tango
+
 
 type alias ParserTests error a =
     { message : String
