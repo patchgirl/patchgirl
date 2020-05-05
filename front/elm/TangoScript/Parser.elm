@@ -114,13 +114,13 @@ exprParser =
     P.succeed identity
         |. P.spaces
         |= P.oneOf
-           [ lBoolParser
+           [ varParser
+           , lBoolParser
            , lIntParser
            , httpResponseBodyAsStringParser
            , getParser
            , lStringParser
-           , varParser
---           , binOpParser
+           , binOpParser
            ]
         |. P.spaces
 
@@ -164,112 +164,11 @@ varParser =
 
 variableNameParser : Parser String
 variableNameParser =
-    let
-        charsHelp : List Char -> Parser (Step (List Char) String)
-        charsHelp revLetters =
-            P.oneOf
-                [ letterParser |> P.map (\letter -> P.Loop (letter :: revLetters))
-                , P.succeed () |> P.map (\_ -> P.Done (String.fromList <| List.reverse revLetters))
-                ]
-    in
-    downcasedLetterParser
-        |> P.andThen (\letter -> (P.loop [letter] charsHelp))
-        |> P.andThen (\variable ->
-                          case Set.member variable reserved of
-                              True -> P.problem "reserved word"
-                              False -> P.succeed variable
-                     )
-
-downcasedLetterParser : Parser Char
-downcasedLetterParser =
-    P.oneOf
-        [ P.map (always 'a') (P.symbol "a")
-        , P.map (always 'b') (P.symbol "b")
-        , P.map (always 'c') (P.symbol "c")
-        , P.map (always 'd') (P.symbol "d")
-        , P.map (always 'e') (P.symbol "e")
-        , P.map (always 'f') (P.symbol "f")
-        , P.map (always 'g') (P.symbol "g")
-        , P.map (always 'g') (P.symbol "g")
-        , P.map (always 'h') (P.symbol "h")
-        , P.map (always 'i') (P.symbol "i")
-        , P.map (always 'j') (P.symbol "j")
-        , P.map (always 'k') (P.symbol "k")
-        , P.map (always 'l') (P.symbol "l")
-        , P.map (always 'm') (P.symbol "m")
-        , P.map (always 'n') (P.symbol "n")
-        , P.map (always 'o') (P.symbol "o")
-        , P.map (always 'p') (P.symbol "p")
-        , P.map (always 'q') (P.symbol "q")
-        , P.map (always 'r') (P.symbol "r")
-        , P.map (always 's') (P.symbol "s")
-        , P.map (always 't') (P.symbol "t")
-        , P.map (always 'u') (P.symbol "u")
-        , P.map (always 'v') (P.symbol "v")
-        , P.map (always 'w') (P.symbol "w")
-        , P.map (always 'x') (P.symbol "x")
-        , P.map (always 'y') (P.symbol "y")
-        , P.map (always 'z') (P.symbol "z")
-        ]
-
-letterParser : Parser Char
-letterParser =
-    P.oneOf
-        [ P.map (always 'A') (P.symbol "A")
-        , P.map (always 'B') (P.symbol "B")
-        , P.map (always 'C') (P.symbol "C")
-        , P.map (always 'D') (P.symbol "D")
-        , P.map (always 'E') (P.symbol "E")
-        , P.map (always 'F') (P.symbol "F")
-        , P.map (always 'G') (P.symbol "G")
-        , P.map (always 'G') (P.symbol "G")
-        , P.map (always 'H') (P.symbol "H")
-        , P.map (always 'I') (P.symbol "I")
-        , P.map (always 'J') (P.symbol "J")
-        , P.map (always 'K') (P.symbol "K")
-        , P.map (always 'L') (P.symbol "L")
-        , P.map (always 'M') (P.symbol "M")
-        , P.map (always 'N') (P.symbol "N")
-        , P.map (always 'O') (P.symbol "O")
-        , P.map (always 'P') (P.symbol "P")
-        , P.map (always 'Q') (P.symbol "Q")
-        , P.map (always 'R') (P.symbol "R")
-        , P.map (always 'S') (P.symbol "S")
-        , P.map (always 'T') (P.symbol "T")
-        , P.map (always 'U') (P.symbol "U")
-        , P.map (always 'V') (P.symbol "V")
-        , P.map (always 'W') (P.symbol "W")
-        , P.map (always 'X') (P.symbol "X")
-        , P.map (always 'Y') (P.symbol "Y")
-        , P.map (always 'Z') (P.symbol "Z")
-        , P.map (always 'a') (P.symbol "a")
-        , P.map (always 'b') (P.symbol "b")
-        , P.map (always 'c') (P.symbol "c")
-        , P.map (always 'd') (P.symbol "d")
-        , P.map (always 'e') (P.symbol "e")
-        , P.map (always 'f') (P.symbol "f")
-        , P.map (always 'g') (P.symbol "g")
-        , P.map (always 'g') (P.symbol "g")
-        , P.map (always 'h') (P.symbol "h")
-        , P.map (always 'i') (P.symbol "i")
-        , P.map (always 'j') (P.symbol "j")
-        , P.map (always 'k') (P.symbol "k")
-        , P.map (always 'l') (P.symbol "l")
-        , P.map (always 'm') (P.symbol "m")
-        , P.map (always 'n') (P.symbol "n")
-        , P.map (always 'o') (P.symbol "o")
-        , P.map (always 'p') (P.symbol "p")
-        , P.map (always 'q') (P.symbol "q")
-        , P.map (always 'r') (P.symbol "r")
-        , P.map (always 's') (P.symbol "s")
-        , P.map (always 't') (P.symbol "t")
-        , P.map (always 'u') (P.symbol "u")
-        , P.map (always 'v') (P.symbol "v")
-        , P.map (always 'w') (P.symbol "w")
-        , P.map (always 'x') (P.symbol "x")
-        , P.map (always 'y') (P.symbol "y")
-        , P.map (always 'z') (P.symbol "z")
-        ]
+  P.variable
+    { start = Char.isLower
+    , inner = \c -> Char.isAlphaNum c || c == '_'
+    , reserved = reserved
+    }
 
 
 -- * parser
@@ -280,17 +179,24 @@ type alias TangoAst = List Proc
 tangoParser : Parser TangoAst
 tangoParser =
     let
+        onlySpaces : P.Parser ()
+        onlySpaces =
+            P.chompWhile (\c -> c == ' ')
+
         lineHelper : List Proc -> Parser (Step TangoAst TangoAst)
         lineHelper revStmts =
-            P.oneOf
-                [ P.succeed (\stmt -> P.Loop (stmt :: revStmts))
-                    |= procParser
-                    |. P.spaces
-                    |. P.symbol ";"
-                    |. P.spaces
-                , P.succeed ()
-                    |> P.map (\_ -> P.Done (List.reverse revStmts))
-                ]
+            P.succeed identity
+                |. P.spaces
+                |= P.oneOf
+                   [ P.succeed (\stmt -> P.Loop (stmt :: revStmts))
+                       |= procParser
+                       |. P.spaces
+                       |. P.symbol ";"
+                       |. onlySpaces
+                       |. P.oneOf [ P.symbol "\n", P.end ]
+                   , P.succeed ()
+                       |> P.map (\_ -> P.Done (List.reverse revStmts))
+                   ]
 
     in
     P.succeed identity

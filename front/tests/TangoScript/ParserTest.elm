@@ -79,29 +79,17 @@ varTests =
       , input = "yes"
       , expect = Ok <| Var "yes"
       }
---    , { message = "dont parse var that start with capital case"
---      , input = "Yes"
---      , expect = Ok <| Var "Yes"
---      }
-    , { message = "dont parse var that start with number"
-      , input = "1yes"
-      , expect = Ok <| LInt 1
-      } {-
+    , { message = "dont parse var that start with capital case"
+      , input = "Yes"
+      , expect = Err []
+      }
     , { message = "parse var with weird format"
       , input = "yes01T_iset"
-      , expect = Err []
-      } -}
+      , expect = Ok <| Var "yes01T_iset"
+      }
     , { message = "parse only var before hyphen"
       , input = "foo-bar"
       , expect = Ok <| Var "foo"
-      }
-    , { message = "parse var starting with `f` letter"
-      , input = "f"
-      , expect = Ok <| Var "f"
-      }
-    , { message = "parse var starting with `e` letter"
-      , input = "$"
-      , expect = Ok <| Var "e"
       }
     ]
 
@@ -116,7 +104,7 @@ charTests =
       , expect = Ok 'f'
       }
     , { message = "parse char `e`"
-      , input = "$"
+      , input = "e"
       , expect = Ok 'e'
       }
     ]
@@ -255,7 +243,7 @@ tangoTests =
       }
     , { message = "dont parse statement that doesnt end with semi-colon"
       , input = "assertEqual(1,1)"
-      , expect = Err [{ col = 17, problem = P.ExpectingSymbol ";", row = 1 }]
+      , expect = Err []
       }
     , { message = "dont parse expression"
       , input = "1;"
@@ -283,6 +271,26 @@ tangoTests =
                     , AssertEqual (Var "a") (Var "b")
                     ]
       }
+    , { message = "parse statements with random newlines"
+      , input = """
+
+
+                 var a = "1";
+
+                 assertEqual(a, b);
+
+
+                """
+      , expect = Ok [ Let "a" (LString "1")
+                    , AssertEqual (Var "a") (Var "b")
+                    ]
+      }
+    , { message = "don't parse statements on same line"
+      , input = """
+                 var a = "1";assertEqual(a, b);
+                """
+      , expect = Err [ ]
+      }
     ]
 
 
@@ -296,15 +304,13 @@ suite =
             [ describe "LInt" <| List.map checkExprParser intTests
             , describe "LBool" <| List.map checkExprParser boolTests
             , describe "LString" <| List.map checkExprParser stringTests
---            , describe "Var" <| List.map checkExprParser varTests
---            , describe "Get" <| List.map checkExprParser getTests
---            , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
+            , describe "Var" <| List.map checkExprParser varTests
+            , describe "Get" <| List.map checkExprParser getTests
+            , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
 --            , describe "Eq" <| List.map checkExprParser eqTests
 --            , describe "Add" <| List.map checkExprParser addTests
---            , describe "DQString" <| List.map checkDStringParser doubleQTests
+            , describe "DQString" <| List.map checkDStringParser doubleQTests
             ]
---        , describe "CharParser"
---            <| List.map checkCharParser charTests
         , describe "ProcParser"
             [ describe "Let" <| List.map checkProcParser letTests
             , describe "AssertEqual" <| List.map checkProcParser assertEqualTests
@@ -335,22 +341,7 @@ checkExprParser { message, input, expect } =
                 Ok _ as ok ->
                     Expect.equal ok expect
 
-                Err err ->
-                    Expect.equal (Err err) expect
-
-
--- ** char
-
-
-checkCharParser : ParserTest (List P.DeadEnd) Char -> Test
-checkCharParser { message, input, expect } =
-    test message <|
-        \_ ->
-            case P.run downcasedLetterParser input of
-                Ok _ as ok ->
-                    Expect.equal ok expect
-
-                Err err ->
+                Err _ ->
                     Expect.equal (Err []) expect
 
 
@@ -397,8 +388,9 @@ checkTangoAstParser : ParserTests (List P.DeadEnd) TangoAst -> Test
 checkTangoAstParser { message, input, expect } =
     test message <|
         \_ ->
-            let
-                a : Result (List P.DeadEnd) TangoAst
-                a = P.run tangoParser input
-            in
-            Expect.equal (P.run tangoParser input) expect
+            case P.run tangoParser input of
+                Ok _ as ok ->
+                    Expect.equal ok expect
+
+                Err _ ->
+                    Expect.equal (Err []) expect
