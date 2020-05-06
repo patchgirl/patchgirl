@@ -13,7 +13,6 @@ import qualified Data.Map.Strict           as Map
 
 import           PatchGirl
 import           RequestComputation.App
-import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           TangoScript
 
@@ -112,7 +111,7 @@ runProc (globalEnvironment, localEnvironment) = \case
   Let var expr ->
     case runExpr globalEnvironment localEnvironment expr of
       Just newExpr ->
-        let newLocalEnvironment = Map.insert var expr localEnvironment
+        let newLocalEnvironment = Map.insert var newExpr localEnvironment
         in Right (globalEnvironment, newLocalEnvironment)
 
       _ ->
@@ -121,7 +120,7 @@ runProc (globalEnvironment, localEnvironment) = \case
   Set var expr ->
     case runExpr globalEnvironment localEnvironment expr of
       Just newExpr ->
-        let newGlobalEnvironment = Map.insert var expr globalEnvironment
+        let newGlobalEnvironment = Map.insert var newExpr globalEnvironment
         in Right (newGlobalEnvironment, localEnvironment)
 
       _ ->

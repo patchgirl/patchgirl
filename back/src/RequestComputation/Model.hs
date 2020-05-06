@@ -2,7 +2,7 @@
 
 module RequestComputation.Model ( RequestComputationInput(..)
                                 , RequestComputationOutput(..)
-                                , RequestComputationResult(..)
+                                , RequestComputationResult
                                 , HttpResponse(..)
                                 , fromResponseToHttpResponse
                                 , HttpException(..)
