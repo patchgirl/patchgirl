@@ -38,29 +38,9 @@ buildOutputScenario InputScenario{..} =
                    }
   where
     buildScenes :: (Reader.MonadReader Env m, IO.MonadIO m) => [OutputScene] -> InputScene -> m [OutputScene]
-    buildScenes acc inputScene =
-      case (lastSceneWasSuccessful acc, _inputSceneRequestComputationInput inputScene) of
-        (False, _) ->
-          return $ acc ++ [ buildOutputScene inputScene SceneNotRun ]
-
-        (_, Nothing) ->
-          return $ acc ++ [ buildOutputScene inputScene SceneNotRun ]
-
-        (True, Just requestComputationInput) ->
-          let
-            prescriptResult = runPrescript _inputScenarioGlobalEnv inputScene
-            in
-            case prescriptResult of
-              Left _ ->
-                return $ acc ++ [ buildOutputScene inputScene PrescriptFailed ]
-
-              Right prescriptOutput -> do
-                requestComputationResult <- runRequestComputationHandler requestComputationInput
-                case requestComputationResult of
-                  Left httpException ->
-                    return $ acc ++ [ buildOutputScene inputScene (RequestFailed httpException) ]
-                  Right requestComputationOutput ->
-                    return $ acc ++ [ buildOutputScene inputScene (SceneSucceeded requestComputationOutput) ]
+    buildScenes acc inputScene = do
+      scene <- buildScene (lastSceneWasSuccessful acc) _inputScenarioGlobalEnv inputScene
+      return $ acc ++ [ scene ]
 
     lastSceneWasSuccessful :: [OutputScene] -> Bool
     lastSceneWasSuccessful = \case
@@ -76,11 +56,8 @@ buildOutputScenario InputScenario{..} =
 
 buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> InputScene -> m OutputScene
 buildScene lastSceneWasSuccessful globalEnvironment inputScene =
-  case Just lastSceneWasSuccessful >>= const (_inputSceneRequestComputationInput inputScene) of
-    Nothing ->
-      return $ buildOutputScene inputScene SceneNotRun
-
-    Just requestComputationInput ->
+  case (_inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r)) of
+    Just (True, requestComputationInput) ->
       let
         prescriptResult = runPrescript globalEnvironment inputScene
         in
@@ -88,14 +65,15 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
           Left _ ->
             return $ buildOutputScene inputScene PrescriptFailed
 
-          Right prescriptOutput -> do
+          Right _ -> do
             requestComputationResult <- runRequestComputationHandler requestComputationInput
-            case requestComputationResult of
-              Left httpException ->
-                return $ buildOutputScene inputScene (RequestFailed httpException)
-              Right requestComputationOutput ->
-                return $ buildOutputScene inputScene (SceneSucceeded requestComputationOutput)
+            return . buildOutputScene inputScene $
+              case requestComputationResult of
+                Left httpException -> RequestFailed httpException
+                Right requestComputationOutput -> SceneSucceeded requestComputationOutput
 
+    _ ->
+      return $ buildOutputScene inputScene SceneNotRun
 
 -- ** pre script
 
