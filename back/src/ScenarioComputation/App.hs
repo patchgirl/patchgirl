@@ -41,7 +41,7 @@ buildScenarioOutput ScenarioInput{..} =
       -> m (ScenarioEnvironment, [SceneOutput])
     buildScenes (globalEnvironment, scenes) inputScene = do
       (scene, newGlobalEnvironment) <- buildScene (lastSceneWasSuccessful scenes) globalEnvironment inputScene
-      return $ (newGlobalEnvironment, scenes ++ [ scene ])
+      return (newGlobalEnvironment, scenes ++ [ scene ])
 
     lastSceneWasSuccessful :: [SceneOutput] -> Bool
     lastSceneWasSuccessful = \case
@@ -57,31 +57,31 @@ buildScenarioOutput ScenarioInput{..} =
 
 buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
 buildScene lastSceneWasSuccessful globalEnvironment inputScene =
-  case (_inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r)) of
+  case _inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r) of
     Just (True, requestComputationInput) ->
       case runPrescript globalEnvironment (Map.fromList []) inputScene of
         Left prescriptException ->
-          return $ ( buildSceneOutput inputScene (PrescriptFailed prescriptException)
-                   , globalEnvironment
-                   )
+          return ( buildSceneOutput inputScene (PrescriptFailed prescriptException)
+                 , globalEnvironment
+                 )
 
         Right newGlobalEnvironment -> do
           requestComputationResult <- runRequestComputationHandler requestComputationInput
           case requestComputationResult of
             Left httpException ->
-              return $ ( buildSceneOutput inputScene (RequestFailed httpException)
-                       , globalEnvironment
-                       )
+              return ( buildSceneOutput inputScene (RequestFailed httpException)
+                     , globalEnvironment
+                     )
 
             Right requestComputationOutput ->
-              return $ ( buildSceneOutput inputScene (SceneSucceeded requestComputationOutput)
-                       , newGlobalEnvironment
-                       )
+              return ( buildSceneOutput inputScene (SceneSucceeded requestComputationOutput)
+                     , newGlobalEnvironment
+                     )
 
     _ ->
-      return $ ( buildSceneOutput inputScene SceneNotRun
-               , globalEnvironment
-               )
+      return ( buildSceneOutput inputScene SceneNotRun
+             , globalEnvironment
+             )
 
 
 -- ** pre script
@@ -104,7 +104,7 @@ runProc
   -> Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
 runProc (globalEnvironment, localEnvironment) = \case
   AssertEqual expr1' expr2' ->
-    let mEqual = mapM (runExpr globalEnvironment localEnvironment) (expr1', expr2') <&> \(e1, e2) -> e1 == e2
+    let mEqual = mapM (runExpr globalEnvironment localEnvironment) (expr1', expr2') <&> uncurry (==)
     in case mEqual of
       Just True -> Right (globalEnvironment, localEnvironment)
       _         -> Left (AssertEqualFailed expr1' expr2')

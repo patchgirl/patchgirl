@@ -104,7 +104,7 @@ instance Aeson.FromJSON SceneOutput where
 -- * scenario output
 
 
-data ScenarioOutput
+newtype ScenarioOutput
   = ScenarioOutput [SceneOutput]
   deriving (Eq, Show, Generic)
 
