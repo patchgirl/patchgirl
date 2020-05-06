@@ -362,10 +362,10 @@ requestComputationApiServer =
 
 type ScenarioComputationApi auths =
   Flat (Auth auths CookieSession :> "api" :> "scenarioComputation" :> (
-    ReqBody '[JSON] ScenarioComputationInput :> Post '[JSON] ScenarioComputationOutput
+    ReqBody '[JSON] ScenarioInput :> Post '[JSON] ScenarioOutput
   ))
 
-scenarioComputationApiServer :: AuthResult CookieSession -> ScenarioComputationInput -> AppM ScenarioComputationOutput
+scenarioComputationApiServer :: AuthResult CookieSession -> ScenarioInput -> AppM ScenarioOutput
 scenarioComputationApiServer =
   authorize runScenarioComputationHandler
 

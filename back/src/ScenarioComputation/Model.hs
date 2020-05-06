@@ -1,11 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module ScenarioComputation.Model  ( ScenarioComputationOutput(..)
-                                  , ScenarioComputationInput(..)
-                                  , InputScene(..)
-                                  , InputScenario(..)
-                                  , OutputScene(..)
-                                  , OutputScenario(..)
+module ScenarioComputation.Model  ( SceneInput(..)
+                                  , ScenarioInput(..)
+                                  , SceneOutput(..)
+                                  , ScenarioOutput(..)
                                   , SceneComputation(..)
                                   , ScenarioEnvironment
                                   , PrescriptOutput(..)
@@ -21,22 +19,22 @@ import           RequestComputation.Model
 import           TangoScript
 
 
--- * input scene
+-- * scene input
 
 
-data InputScene
-  = InputScene { _inputSceneId                      :: UUID
+data SceneInput
+  = SceneInput { _inputSceneId                      :: UUID
                , _inputSceneRequestFileNodeId       :: UUID
                , _inputScenePreScript               :: TangoAst
                , _inputSceneRequestComputationInput :: Maybe RequestComputationInput
                }
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON InputScene where
+instance Aeson.ToJSON SceneInput where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON InputScene where
+instance Aeson.FromJSON SceneInput where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
@@ -44,18 +42,18 @@ instance Aeson.FromJSON InputScene where
 -- * scenario input
 
 
-data InputScenario
-  = InputScenario { _inputScenarioId        :: UUID
-                  , _inputScenarioScenes    :: [InputScene]
+data ScenarioInput
+  = ScenarioInput { _inputScenarioId        :: UUID
+                  , _inputScenarioScenes    :: [SceneInput]
                   , _inputScenarioGlobalEnv :: ScenarioEnvironment
                   }
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON InputScenario where
+instance Aeson.ToJSON ScenarioInput where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON InputScenario where
+instance Aeson.FromJSON ScenarioInput where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
@@ -87,18 +85,18 @@ instance Aeson.FromJSON SceneComputation where
 -- * output scene
 
 
-data OutputScene
-  = OutputScene { _outputSceneId                :: UUID
+data SceneOutput
+  = SceneOutput { _outputSceneId                :: UUID
                 , _outputSceneRequestFileNodeId :: UUID
                 , _outputSceneComputation       :: SceneComputation
                 }
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON OutputScene where
+instance Aeson.ToJSON SceneOutput where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON OutputScene where
+instance Aeson.FromJSON SceneOutput where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
@@ -106,51 +104,18 @@ instance Aeson.FromJSON OutputScene where
 -- * scenario output
 
 
-data OutputScenario
-  = OutputScenario { _outputScenarioId     :: UUID
-                   , _outputScenarioScenes :: [OutputScene]
-                   }
+data ScenarioOutput
+  = ScenarioOutput [SceneOutput]
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON OutputScenario where
+instance Aeson.ToJSON ScenarioOutput where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON OutputScenario where
+instance Aeson.FromJSON ScenarioOutput where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-
--- * scenario computation input
-
-
-newtype ScenarioComputationInput
-  = ScenarioComputationInput InputScenario
-  deriving (Eq, Show, Generic)
-
-instance Aeson.ToJSON ScenarioComputationInput where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON ScenarioComputationInput where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-
--- * scenario computation output
-
-
-newtype ScenarioComputationOutput
-  = ScenarioComputationOutput OutputScenario
-  deriving (Eq, Show, Generic)
-
-instance Aeson.ToJSON ScenarioComputationOutput where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON ScenarioComputationOutput where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 -- * scenario environment
 
@@ -158,7 +123,7 @@ instance Aeson.FromJSON ScenarioComputationOutput where
 type ScenarioEnvironment = Map String Expr
 
 
--- * prescript
+-- * prescript output
 
 
 data PrescriptOutput

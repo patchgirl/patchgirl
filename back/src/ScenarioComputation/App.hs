@@ -25,24 +25,22 @@ runScenarioComputationHandler
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      )
-  => ScenarioComputationInput
-  -> m ScenarioComputationOutput
-runScenarioComputationHandler (ScenarioComputationInput inputScenario) =
-  buildOutputScenario inputScenario <&> ScenarioComputationOutput
+  => ScenarioInput
+  -> m ScenarioOutput
+runScenarioComputationHandler inputScenario =
+  buildScenarioOutput inputScenario
 
-buildOutputScenario :: (Reader.MonadReader Env m, IO.MonadIO m) => InputScenario -> m OutputScenario
-buildOutputScenario InputScenario{..} =
+buildScenarioOutput :: (Reader.MonadReader Env m, IO.MonadIO m) => ScenarioInput -> m ScenarioOutput
+buildScenarioOutput ScenarioInput{..} =
   Monad.foldM buildScenes [] _inputScenarioScenes <&> \outputScenes ->
-    OutputScenario { _outputScenarioId     = _inputScenarioId
-                   , _outputScenarioScenes = outputScenes
-                   }
+    ScenarioOutput outputScenes
   where
-    buildScenes :: (Reader.MonadReader Env m, IO.MonadIO m) => [OutputScene] -> InputScene -> m [OutputScene]
+    buildScenes :: (Reader.MonadReader Env m, IO.MonadIO m) => [SceneOutput] -> SceneInput -> m [SceneOutput]
     buildScenes acc inputScene = do
       scene <- buildScene (lastSceneWasSuccessful acc) _inputScenarioGlobalEnv inputScene
       return $ acc ++ [ scene ]
 
-    lastSceneWasSuccessful :: [OutputScene] -> Bool
+    lastSceneWasSuccessful :: [SceneOutput] -> Bool
     lastSceneWasSuccessful = \case
       [] -> True
       [x] -> case _outputSceneComputation x of
@@ -54,7 +52,7 @@ buildOutputScenario InputScenario{..} =
 -- ** build scene
 
 
-buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> InputScene -> m OutputScene
+buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m SceneOutput
 buildScene lastSceneWasSuccessful globalEnvironment inputScene =
   case (_inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r)) of
     Just (True, requestComputationInput) ->
@@ -63,23 +61,24 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
         in
         case prescriptResult of
           Left _ ->
-            return $ buildOutputScene inputScene PrescriptFailed
+            return $ buildSceneOutput inputScene PrescriptFailed
 
           Right _ -> do
             requestComputationResult <- runRequestComputationHandler requestComputationInput
-            return . buildOutputScene inputScene $
+            return . buildSceneOutput inputScene $
               case requestComputationResult of
                 Left httpException -> RequestFailed httpException
                 Right requestComputationOutput -> SceneSucceeded requestComputationOutput
 
     _ ->
-      return $ buildOutputScene inputScene SceneNotRun
+      return $ buildSceneOutput inputScene SceneNotRun
+
 
 -- ** pre script
 
 
-runPrescript :: ScenarioEnvironment -> InputScene -> Either () PrescriptOutput
-runPrescript globalEnvironment InputScene{..} =
+runPrescript :: ScenarioEnvironment -> SceneInput -> Either () PrescriptOutput
+runPrescript globalEnvironment SceneInput{..} =
   foldl f init _inputScenePreScript
   where
     init :: Either () PrescriptOutput
@@ -112,9 +111,9 @@ runProc globalEnvironment localEnvironment = \case
 
 -- ** scene
 
-buildOutputScene :: InputScene -> SceneComputation -> OutputScene
-buildOutputScene InputScene{..} sceneComputation =
-  OutputScene { _outputSceneId = _inputSceneId
+buildSceneOutput :: SceneInput -> SceneComputation -> SceneOutput
+buildSceneOutput SceneInput{..} sceneComputation =
+  SceneOutput { _outputSceneId = _inputSceneId
               , _outputSceneRequestFileNodeId = _inputSceneRequestFileNodeId
               , _outputSceneComputation = sceneComputation
               }

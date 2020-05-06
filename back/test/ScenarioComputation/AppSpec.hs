@@ -29,7 +29,7 @@ import           Test.Hspec
 -- * client
 
 
-runScenarioComputation :: Auth.Token -> ScenarioComputationInput -> ClientM ScenarioComputationOutput
+runScenarioComputation :: Auth.Token -> ScenarioInput -> ClientM ScenarioOutput
 runScenarioComputation =
   client (Proxy :: Proxy (ScenarioComputationApi '[JWT]))
 
@@ -47,13 +47,11 @@ spec = do
   describe "empty scenario" $ do
 
     let (input, output) =
-          ( ScenarioComputationInput InputScenario { _inputScenarioId = UUID.nil
-                                                   , _inputScenarioScenes = []
-                                                   , _inputScenarioGlobalEnv = Map.fromList []
-                                                   }
-          , ScenarioComputationOutput OutputScenario { _outputScenarioId = UUID.nil
-                                                     , _outputScenarioScenes = []
-                                                     }
+          ( ScenarioInput { _inputScenarioId = UUID.nil
+                          , _inputScenarioScenes = []
+                          , _inputScenarioGlobalEnv = Map.fromList []
+                          }
+          , ScenarioOutput []
           )
 
     withClient (mkApp defaultEnv) $
@@ -71,21 +69,18 @@ spec = do
           ]
 
     let (input, output) =
-          ( ScenarioComputationInput InputScenario
+          ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildInputScene Http.Get "foo.com" ]
+            , _inputScenarioScenes = [ buildSceneInput Http.Get "foo.com" ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
-          , ScenarioComputationOutput OutputScenario
-            { _outputScenarioId = UUID.nil
-            , _outputScenarioScenes =
-              [ buildOutputScene $ SceneSucceeded $ RequestComputationOutput
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
                 { _requestComputationOutputStatusCode = 200
                 , _requestComputationOutputHeaders    = []
                 , _requestComputationOutputBody       = ""
                 }
-              ]
-            }
+            ]
           )
 
     withClient (withHttpMock2 mock) $
@@ -104,24 +99,21 @@ spec = do
           ]
 
     let (input, output) =
-          ( ScenarioComputationInput InputScenario
+          ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildInputScene Http.Get "foo.com"
-                                     , buildInputScene Http.Post "foo.com"
+            , _inputScenarioScenes = [ buildSceneInput Http.Get "foo.com"
+                                     , buildSceneInput Http.Post "foo.com"
                                      ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
-          , ScenarioComputationOutput OutputScenario
-            { _outputScenarioId = UUID.nil
-            , _outputScenarioScenes =
-              [ buildOutputScene $ SceneSucceeded $ RequestComputationOutput
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
                 { _requestComputationOutputStatusCode = 200
                 , _requestComputationOutputHeaders    = []
                 , _requestComputationOutputBody       = ""
                 }
-              , buildOutputScene $ RequestFailed $ InvalidUrlException "" ""
-              ]
-            }
+            , buildSceneOutput $ RequestFailed $ InvalidUrlException "" ""
+            ]
           )
 
     withClient (withHttpMock2 mock) $
@@ -140,20 +132,17 @@ spec = do
           ]
 
     let (input, output) =
-          ( ScenarioComputationInput InputScenario
+          ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildInputScene Http.Get "foo.com"
-                                     , buildInputScene Http.Post "foo.com"
+            , _inputScenarioScenes = [ buildSceneInput Http.Get "foo.com"
+                                     , buildSceneInput Http.Post "foo.com"
                                      ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
-          , ScenarioComputationOutput OutputScenario
-            { _outputScenarioId = UUID.nil
-            , _outputScenarioScenes =
-              [ buildOutputScene $ RequestFailed $ InvalidUrlException "" ""
-              , buildOutputScene SceneNotRun
-              ]
-            }
+          , ScenarioOutput
+            [ buildSceneOutput $ RequestFailed $ InvalidUrlException "" ""
+            , buildSceneOutput SceneNotRun
+            ]
           )
 
     withClient (withHttpMock2 mock) $
@@ -168,9 +157,9 @@ spec = do
 -- ** build input scene
 
 
-buildInputScene :: Http.Method -> String -> InputScene
-buildInputScene method url =
-  InputScene { _inputSceneId = UUID.nil
+buildSceneInput :: Http.Method -> String -> SceneInput
+buildSceneInput method url =
+  SceneInput { _inputSceneId = UUID.nil
              , _inputSceneRequestFileNodeId = UUID.nil
              , _inputScenePreScript = []
              , _inputSceneRequestComputationInput = Just requestComputationInput
@@ -188,9 +177,9 @@ buildInputScene method url =
 -- ** build output scene
 
 
-buildOutputScene :: SceneComputation -> OutputScene
-buildOutputScene sceneComputation =
-  OutputScene { _outputSceneId = UUID.nil
+buildSceneOutput :: SceneComputation -> SceneOutput
+buildSceneOutput sceneComputation =
+  SceneOutput { _outputSceneId = UUID.nil
               , _outputSceneRequestFileNodeId = UUID.nil
               , _outputSceneComputation = sceneComputation
               }
