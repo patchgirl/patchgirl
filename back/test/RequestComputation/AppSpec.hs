@@ -55,19 +55,19 @@ spec = do
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` RequestComputationFailed (InvalidUrlException "" "")
+          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` Left (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
       it "returns too many redirects" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` RequestComputationFailed TooManyRedirects
+          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` Left TooManyRedirects
 
   describe "connection timeout" $
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` RequestComputationFailed ConnectionTimeout
+          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` Left ConnectionTimeout
 
 
   where
@@ -94,8 +94,8 @@ spec = do
                                 , _requestComputationInputUrl = "foo.com"
                                 , _requestComputationInputBody = ""
                                 }
-      , RequestComputationSucceeded (RequestComputationOutput { _requestComputationOutputStatusCode = 200
-                                                              , _requestComputationOutputHeaders    = []
-                                                              , _requestComputationOutputBody       = ""
-                                                              })
+      , Right (RequestComputationOutput { _requestComputationOutputStatusCode = 200
+                                        , _requestComputationOutputHeaders    = []
+                                        , _requestComputationOutputBody       = ""
+                                        })
       )

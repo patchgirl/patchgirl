@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2e64104c5ab9dfdc945ebd29cfdf53f0b3d16ff8139f47987dc12ea929f193bf
+-- hash: 2bc0616bfb4ba969d13bac32ade41f6b2c566dbfa3cccf481f29cc685dd57c5d
 
 name:           patchGirl
 version:        0.0.0
@@ -44,6 +44,7 @@ library
       ScenarioNode.Sql
       Session.App
       Session.Model
+      TangoScript
       Test
   other-modules:
       Paths_patchGirl

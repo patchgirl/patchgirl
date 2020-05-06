@@ -9,6 +9,7 @@ module ScenarioComputation.AppSpec where
 
 import           App
 import qualified Data.ByteString.UTF8      as BSU
+import qualified Data.Map.Strict           as Map
 import qualified Data.UUID                 as UUID
 import           FakeHttpRequest
 import           Helper.App
@@ -48,6 +49,7 @@ spec = do
     let (input, output) =
           ( ScenarioComputationInput InputScenario { _inputScenarioId = UUID.nil
                                                    , _inputScenarioScenes = []
+                                                   , _inputScenarioGlobalEnv = Map.fromList []
                                                    }
           , ScenarioComputationOutput OutputScenario { _outputScenarioId = UUID.nil
                                                      , _outputScenarioScenes = []
@@ -72,11 +74,12 @@ spec = do
           ( ScenarioComputationInput InputScenario
             { _inputScenarioId = UUID.nil
             , _inputScenarioScenes = [ buildInputScene Http.Get "foo.com" ]
+            , _inputScenarioGlobalEnv = Map.fromList []
             }
           , ScenarioComputationOutput OutputScenario
             { _outputScenarioId = UUID.nil
             , _outputScenarioScenes =
-              [ buildOutputScene $ SceneRun $ RequestComputationSucceeded $ RequestComputationOutput
+              [ buildOutputScene $ SceneSucceeded $ RequestComputationOutput
                 { _requestComputationOutputStatusCode = 200
                 , _requestComputationOutputHeaders    = []
                 , _requestComputationOutputBody       = ""
@@ -106,16 +109,17 @@ spec = do
             , _inputScenarioScenes = [ buildInputScene Http.Get "foo.com"
                                      , buildInputScene Http.Post "foo.com"
                                      ]
+            , _inputScenarioGlobalEnv = Map.fromList []
             }
           , ScenarioComputationOutput OutputScenario
             { _outputScenarioId = UUID.nil
             , _outputScenarioScenes =
-              [ buildOutputScene $ SceneRun $ RequestComputationSucceeded $ RequestComputationOutput
+              [ buildOutputScene $ SceneSucceeded $ RequestComputationOutput
                 { _requestComputationOutputStatusCode = 200
                 , _requestComputationOutputHeaders    = []
                 , _requestComputationOutputBody       = ""
                 }
-              , buildOutputScene $ SceneRun $ RequestComputationFailed (InvalidUrlException "" "")
+              , buildOutputScene $ RequestFailed $ InvalidUrlException "" ""
               ]
             }
           )
@@ -141,11 +145,12 @@ spec = do
             , _inputScenarioScenes = [ buildInputScene Http.Get "foo.com"
                                      , buildInputScene Http.Post "foo.com"
                                      ]
+            , _inputScenarioGlobalEnv = Map.fromList []
             }
           , ScenarioComputationOutput OutputScenario
             { _outputScenarioId = UUID.nil
             , _outputScenarioScenes =
-              [ buildOutputScene $ SceneRun $ RequestComputationFailed (InvalidUrlException "" "")
+              [ buildOutputScene $ RequestFailed $ InvalidUrlException "" ""
               , buildOutputScene SceneNotRun
               ]
             }
@@ -167,6 +172,7 @@ buildInputScene :: Http.Method -> String -> InputScene
 buildInputScene method url =
   InputScene { _inputSceneId = UUID.nil
              , _inputSceneRequestFileNodeId = UUID.nil
+             , _inputScenePreScript = []
              , _inputSceneRequestComputationInput = Just requestComputationInput
              }
   where
@@ -183,10 +189,10 @@ buildInputScene method url =
 
 
 buildOutputScene :: SceneComputation -> OutputScene
-buildOutputScene requestComputationResult =
+buildOutputScene sceneComputation =
   OutputScene { _outputSceneId = UUID.nil
               , _outputSceneRequestFileNodeId = UUID.nil
-              , _outputSceneRequestComputationOutput = requestComputationResult
+              , _outputSceneComputation = sceneComputation
               }
 
 

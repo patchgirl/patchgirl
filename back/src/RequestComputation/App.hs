@@ -71,20 +71,20 @@ ioRequestRunner request =
 -- * create request computation output
 
 
-responseToComputationResult :: Either Http.HttpException (HttpResponse BSU.ByteString) -> RequestComputationResult
+responseToComputationResult :: Either Http.HttpException (HttpResponse BSU.ByteString) -> Either HttpException RequestComputationOutput
 responseToComputationResult = \case
     Right response ->
-      RequestComputationSucceeded $
+      Right $
         RequestComputationOutput { _requestComputationOutputStatusCode = Http.statusCode $ httpResponseStatus response
                                  , _requestComputationOutputHeaders    = parseResponseHeaders response
                                  , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
                                  }
 
     Left (Http.InvalidUrlException url reason) ->
-      RequestComputationFailed (InvalidUrlException url reason)
+      Left (InvalidUrlException url reason)
 
     Left (Http.HttpExceptionRequest _ content) ->
-      RequestComputationFailed matching
+      Left matching
       where
         matching = case content of
           Http.TooManyRedirects _ -> TooManyRedirects

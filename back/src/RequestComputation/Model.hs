@@ -17,10 +17,8 @@ import qualified Network.HTTP.Simple as Http
 import qualified Network.HTTP.Types  as Http
 
 
--- * model
 
-
--- ** http response
+-- * http response
 
 
 data HttpResponse body = HttpResponse { httpResponseStatus  :: Http.Status
@@ -36,7 +34,7 @@ fromResponseToHttpResponse response =
                }
 
 
--- ** request computation input
+-- * request computation input
 
 
 data RequestComputationInput
@@ -57,7 +55,7 @@ instance Aeson.FromJSON RequestComputationInput where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- ** request computation output
+-- * request computation output
 
 
 data RequestComputationOutput
@@ -75,25 +73,14 @@ instance Aeson.FromJSON RequestComputationOutput where
   parseJSON = Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- ** request computation result
+-- * request computation result
 
 
-data RequestComputationResult
-    = RequestComputationFailed HttpException
-    | RequestComputationSucceeded RequestComputationOutput
-    deriving (Eq, Show, Generic)
-
-instance Aeson.ToJSON RequestComputationResult where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
-                                             }
-
-instance Aeson.FromJSON RequestComputationResult where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+type RequestComputationResult
+  = Either HttpException RequestComputationOutput
 
 
--- ** http exception
+-- * http exception
 
 
 data HttpException
