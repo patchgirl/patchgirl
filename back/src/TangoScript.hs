@@ -2,7 +2,7 @@
 
 module TangoScript ( TangoAst
                    , Proc(..)
-                   , Expr
+                   , Expr(..)
                    ) where
 
 import qualified Data.Aeson   as Aeson

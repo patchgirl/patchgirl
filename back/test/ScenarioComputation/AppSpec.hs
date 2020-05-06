@@ -23,8 +23,8 @@ import           Servant
 import qualified Servant.Auth.Client       as Auth
 import           Servant.Auth.Server       (JWT)
 import           Servant.Client
+import           TangoScript
 import           Test.Hspec
-
 
 -- * client
 
@@ -151,17 +151,96 @@ spec = do
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
+-- ** prescript fails: cannot `assertEqual`
+
+
+  describe "prescript fails: cannot `assertEqual`" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "b") ] ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PrescriptFailed $ AssertEqualFailed (LString "a") (LString "b")
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "fails" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
+-- ** prescript fails: trying to access unknown local variable
+
+
+  describe "prescript fails: trying to access unknown local variable" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Let "myVar" (Get "unknownVariable") ] ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PrescriptFailed $ UnknownVariable $ Get "unknownVariable"
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "fails" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
+-- ** prescript succeeded: assertEqual
+
+
+  describe "prescript succeeded: assertEqual" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "a") ] ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "fails" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
 -- * util
 
 
 -- ** build input scene
 
 
-buildSceneInput :: Http.Method -> String -> SceneInput
-buildSceneInput method url =
+buildSceneInputWithScript :: Http.Method -> String -> TangoAst -> SceneInput
+buildSceneInputWithScript method url tangoAst =
   SceneInput { _inputSceneId = UUID.nil
              , _inputSceneRequestFileNodeId = UUID.nil
-             , _inputScenePreScript = []
+             , _inputScenePreScript = tangoAst
              , _inputSceneRequestComputationInput = Just requestComputationInput
              }
   where
@@ -172,6 +251,10 @@ buildSceneInput method url =
                               , _requestComputationInputUrl = url
                               , _requestComputationInputBody = ""
                               }
+
+buildSceneInput :: Http.Method -> String -> SceneInput
+buildSceneInput method url =
+  buildSceneInputWithScript method url []
 
 
 -- ** build output scene

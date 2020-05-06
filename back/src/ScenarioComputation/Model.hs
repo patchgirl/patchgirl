@@ -6,7 +6,7 @@ module ScenarioComputation.Model  ( SceneInput(..)
                                   , ScenarioOutput(..)
                                   , SceneComputation(..)
                                   , ScenarioEnvironment
-                                  , PrescriptOutput(..)
+                                  , PrescriptException(..)
                                   ) where
 
 
@@ -63,7 +63,7 @@ instance Aeson.FromJSON ScenarioInput where
 
 data SceneComputation
   = SceneNotRun
-  | PrescriptFailed
+  | PrescriptFailed PrescriptException
   | RequestFailed HttpException
   | PostscriptFailed RequestComputationOutput
   | SceneSucceeded RequestComputationOutput
@@ -123,19 +123,18 @@ instance Aeson.FromJSON ScenarioOutput where
 type ScenarioEnvironment = Map String Expr
 
 
--- * prescript output
+-- * PrescriptException
 
 
-data PrescriptOutput
-  = PrescriptOutput { _outputPrescriptNewGlobalEnvironment :: ScenarioEnvironment
-                    , _outputPrescriptNewLocalEnvironment :: ScenarioEnvironment
-                    }
+data PrescriptException
+  = UnknownVariable Expr
+  | AssertEqualFailed Expr Expr
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON PrescriptOutput where
+instance Aeson.ToJSON PrescriptException where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON PrescriptOutput where
+instance Aeson.FromJSON PrescriptException where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }

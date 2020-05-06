@@ -32,13 +32,16 @@ runScenarioComputationHandler inputScenario =
 
 buildScenarioOutput :: (Reader.MonadReader Env m, IO.MonadIO m) => ScenarioInput -> m ScenarioOutput
 buildScenarioOutput ScenarioInput{..} =
-  Monad.foldM buildScenes [] _inputScenarioScenes <&> \outputScenes ->
-    ScenarioOutput outputScenes
+  Monad.foldM buildScenes (_inputScenarioGlobalEnv, []) _inputScenarioScenes <&> ScenarioOutput . snd
   where
-    buildScenes :: (Reader.MonadReader Env m, IO.MonadIO m) => [SceneOutput] -> SceneInput -> m [SceneOutput]
-    buildScenes acc inputScene = do
-      scene <- buildScene (lastSceneWasSuccessful acc) _inputScenarioGlobalEnv inputScene
-      return $ acc ++ [ scene ]
+    buildScenes
+      :: (Reader.MonadReader Env m, IO.MonadIO m)
+      => (ScenarioEnvironment, [SceneOutput])
+      -> SceneInput
+      -> m (ScenarioEnvironment, [SceneOutput])
+    buildScenes (globalEnvironment, scenes) inputScene = do
+      (scene, newGlobalEnvironment) <- buildScene (lastSceneWasSuccessful scenes) globalEnvironment inputScene
+      return $ (newGlobalEnvironment, scenes ++ [ scene ])
 
     lastSceneWasSuccessful :: [SceneOutput] -> Bool
     lastSceneWasSuccessful = \case
@@ -52,61 +55,83 @@ buildScenarioOutput ScenarioInput{..} =
 -- ** build scene
 
 
-buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m SceneOutput
+buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
 buildScene lastSceneWasSuccessful globalEnvironment inputScene =
   case (_inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r)) of
     Just (True, requestComputationInput) ->
-      let
-        prescriptResult = runPrescript globalEnvironment inputScene
-        in
-        case prescriptResult of
-          Left _ ->
-            return $ buildSceneOutput inputScene PrescriptFailed
+      case runPrescript globalEnvironment (Map.fromList []) inputScene of
+        Left prescriptException ->
+          return $ ( buildSceneOutput inputScene (PrescriptFailed prescriptException)
+                   , globalEnvironment
+                   )
 
-          Right _ -> do
-            requestComputationResult <- runRequestComputationHandler requestComputationInput
-            return . buildSceneOutput inputScene $
-              case requestComputationResult of
-                Left httpException -> RequestFailed httpException
-                Right requestComputationOutput -> SceneSucceeded requestComputationOutput
+        Right newGlobalEnvironment -> do
+          requestComputationResult <- runRequestComputationHandler requestComputationInput
+          case requestComputationResult of
+            Left httpException ->
+              return $ ( buildSceneOutput inputScene (RequestFailed httpException)
+                       , globalEnvironment
+                       )
+
+            Right requestComputationOutput ->
+              return $ ( buildSceneOutput inputScene (SceneSucceeded requestComputationOutput)
+                       , newGlobalEnvironment
+                       )
 
     _ ->
-      return $ buildSceneOutput inputScene SceneNotRun
+      return $ ( buildSceneOutput inputScene SceneNotRun
+               , globalEnvironment
+               )
 
 
 -- ** pre script
 
 
-runPrescript :: ScenarioEnvironment -> SceneInput -> Either () PrescriptOutput
-runPrescript globalEnvironment SceneInput{..} =
-  foldl f init _inputScenePreScript
+runPrescript :: ScenarioEnvironment -> ScenarioEnvironment -> SceneInput -> Either PrescriptException ScenarioEnvironment
+runPrescript globalEnvironment localEnvironment SceneInput{..} =
+  foldl f (Right (globalEnvironment, localEnvironment)) _inputScenePreScript <&> fst
   where
-    init :: Either () PrescriptOutput
-    init =
-      Right PrescriptOutput { _outputPrescriptNewGlobalEnvironment = globalEnvironment
-                            , _outputPrescriptNewLocalEnvironment = Map.fromList []
-                            }
-
-    f :: Either () PrescriptOutput -> Proc -> Either () PrescriptOutput
+    f
+      :: Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
+      -> Proc
+      -> Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
     f acc proc =
-      acc >>= \PrescriptOutput{..} -> runProc _outputPrescriptNewGlobalEnvironment _outputPrescriptNewLocalEnvironment proc
+      acc >>= \env -> runProc env proc
 
-runProc :: ScenarioEnvironment -> ScenarioEnvironment -> Proc -> Either () PrescriptOutput
-runProc globalEnvironment localEnvironment = \case
-  AssertEqual expr1 expr2 ->
-    Left ()
+runProc
+  :: (ScenarioEnvironment, ScenarioEnvironment)
+  -> Proc
+  -> Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
+runProc (globalEnvironment, localEnvironment) = \case
+  AssertEqual expr1' expr2' ->
+    let mEqual = mapM (runExpr globalEnvironment localEnvironment) (expr1', expr2') <&> \(e1, e2) -> e1 == e2
+    in case mEqual of
+      Just True -> Right (globalEnvironment, localEnvironment)
+      _         -> Left (AssertEqualFailed expr1' expr2')
 
   Let var expr ->
-    let
-      _outputPrescriptNewGlobalEnvironment = globalEnvironment
-      _outputPrescriptNewLocalEnvironment = Map.insert var expr localEnvironment
-      in Right PrescriptOutput{..}
+    case runExpr globalEnvironment localEnvironment expr of
+      Just newExpr ->
+        let newLocalEnvironment = Map.insert var expr localEnvironment
+        in Right (globalEnvironment, newLocalEnvironment)
+
+      _ ->
+        Left (UnknownVariable expr)
 
   Set var expr ->
-    let
-      _outputPrescriptNewGlobalEnvironment = Map.insert var expr globalEnvironment
-      _outputPrescriptNewLocalEnvironment = localEnvironment
-      in Right PrescriptOutput{..}
+    case runExpr globalEnvironment localEnvironment expr of
+      Just newExpr ->
+        let newGlobalEnvironment = Map.insert var expr globalEnvironment
+        in Right (newGlobalEnvironment, localEnvironment)
+
+      _ ->
+        Left (UnknownVariable expr)
+
+runExpr :: ScenarioEnvironment -> ScenarioEnvironment -> Expr -> Maybe Expr
+runExpr globalEnvironment localEnvironment = \case
+  Var var -> Map.lookup var localEnvironment
+  Get var -> Map.lookup var globalEnvironment
+  expr -> Just expr
 
 
 -- ** scene
