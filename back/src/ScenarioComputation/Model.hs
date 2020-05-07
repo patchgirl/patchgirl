@@ -11,8 +11,8 @@ module ScenarioComputation.Model  ( SceneInput(..)
 
 
 import qualified Data.Aeson               as Aeson
-import           Data.Map.Strict          (Map)
 import           Data.UUID                (UUID)
+import           Environment.Model
 import           GHC.Generics             (Generic)
 import           RequestComputation.Model
 import           TangoScript
@@ -115,12 +115,6 @@ instance Aeson.ToJSON ScenarioOutput where
 instance Aeson.FromJSON ScenarioOutput where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-
--- * scenario environment
-
-
-type ScenarioEnvironment = Map String Expr
 
 
 -- * script exception

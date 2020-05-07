@@ -7,26 +7,33 @@
 
 module RequestComputation.AppSpec where
 
-import           App
 import qualified Data.ByteString.UTF8     as BSU
-import           FakeHttpRequest
-import           Helper.App
-import qualified Http
+import           Data.Map.Strict          (Map)
+import qualified Data.Map.Strict          as Map
 import qualified Network.HTTP.Client      as HTTP
 import qualified Network.HTTP.Types       as HTTP
-
-import           RequestComputation.Model
 import           Servant
 import qualified Servant.Auth.Client      as Auth
 import           Servant.Auth.Server      (JWT)
 import           Servant.Client
 import           Test.Hspec
 
+import           App
+import           Environment.Model
+import           FakeHttpRequest
+import           Helper.App
+import qualified Http
+import           RequestComputation.Model
+import           TangoScript
+
 
 -- * client
 
 
-runRequestComputation :: Auth.Token -> RequestComputationInput -> ClientM RequestComputationResult
+runRequestComputation
+  :: Auth.Token
+  -> (RequestComputationInput, ScenarioEnvironment)
+  -> ClientM RequestComputationResult
 runRequestComputation =
   client (Proxy :: Proxy (RequestComputationApi '[JWT]))
 
@@ -45,7 +52,7 @@ spec = do
     withClient (withHttpMock [ requestWithResponse1 ]) $
       it "returns ok200" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token input1) `shouldReturn` output1
+          try clientEnv (runRequestComputation token (input1, scenarioEnvironment)) `shouldReturn` output1
 
 
 -- ** computation failed
@@ -55,19 +62,19 @@ spec = do
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` Left (InvalidUrlException "" "")
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, scenarioEnvironment)) `shouldReturn` Left (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
       it "returns too many redirects" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` Left TooManyRedirects
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, scenarioEnvironment)) `shouldReturn` Left TooManyRedirects
 
   describe "connection timeout" $
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token defaultRequestComputationInput) `shouldReturn` Left ConnectionTimeout
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, scenarioEnvironment)) `shouldReturn` Left ConnectionTimeout
 
 
   where
@@ -99,3 +106,10 @@ spec = do
                                         , _requestComputationOutputBody       = ""
                                         })
       )
+
+
+-- ** scenario environment
+
+
+scenarioEnvironment :: Map String Expr
+scenarioEnvironment = Map.fromList []

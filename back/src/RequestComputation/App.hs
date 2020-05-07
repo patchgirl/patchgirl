@@ -13,13 +13,13 @@ import qualified Control.Monad.Reader        as Reader
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
 import           Data.Functor                ((<&>))
+import           Environment.Model
 import           Http
 import qualified Network.HTTP.Client.Conduit as Http
 import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types          as Http
 import           PatchGirl
 import           RequestComputation.Model
-
 
 -- * handler
 
@@ -28,9 +28,9 @@ runRequestComputationHandler
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      )
-  => RequestComputationInput
+  => (RequestComputationInput, ScenarioEnvironment)
   -> m RequestComputationResult
-runRequestComputationHandler requestComputationInput = do
+runRequestComputationHandler (requestComputationInput, _) = do
   runner <- Reader.ask <&> _envHttpRequest
   IO.liftIO $
     Exception.try (buildRequest requestComputationInput >>= runner) <&> responseToComputationResult
