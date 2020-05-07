@@ -201,10 +201,10 @@ spec = do
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
--- ** prescript succeeded: assertEqual
+-- ** prescript succeed: assertEqual
 
 
-  describe "prescript succeeded: assertEqual" $ do
+  describe "prescript succeed: assertEqual" $ do
     let mock =
           [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
@@ -230,10 +230,10 @@ spec = do
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
--- ** prescript succeeded: set global variable for next scene prescript
+-- ** prescript succeed: set global variable for next scene prescript
 
 
-  describe "prescript succeeded: set global variable for next scene prescript" $ do
+  describe "prescript succeed: set global variable for next scene prescript" $ do
     let mock =
           [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
@@ -261,15 +261,15 @@ spec = do
           )
 
     withClient (withHttpMock2 mock) $
-      it "prescript succeeded: set global variable for next scene prescript" $ \clientEnv ->
+      it "succeed" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
--- ** postscript: assert equal http body response
+-- ** postscript succeed: assert equal http body response
 
 
-  describe "postscript: assert equal http body response" $ do
+  describe "postscript succeed: assert equal http body response" $ do
     let mock =
           [ (buildRequest "GET http://foo.com", Right $ buildResponse { httpResponseBody = "foo" } )
           ]
@@ -291,12 +291,12 @@ spec = do
           )
 
     withClient (withHttpMock2 mock) $
-      it "postscript: assert equal http body response" $ \clientEnv ->
+      it "succeed" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
--- ** postscript: fail assert equal http body response
+-- ** postscript fails: assert equal http body response
 
 
   describe "postscript: fail assert equal http body response" $ do
@@ -317,7 +317,79 @@ spec = do
           )
 
     withClient (withHttpMock2 mock) $
-      it "postscript: assert equal http body response" $ \clientEnv ->
+      it "fails" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
+-- ** postscript succeed: set global variable for next scene postscript
+
+
+  describe "postscript succeed: set global variable for next scene postscript" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [] [ Set "a" (LInt 1) ]
+                                     , buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual (Get "a") (LInt 1) ]
+                                     ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            , buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "succeed" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
+-- ** pre/postscript succeed: set global variable from prescript to next scene postscript
+
+
+  describe "pre/postscript succeed: set global variable from prescript to next scene postscript" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Set "a" (LInt 1) ] []
+                                     , buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual (Get "a") (LInt 1) ]
+                                     ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            , buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "succeed" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 

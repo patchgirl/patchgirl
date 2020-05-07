@@ -10,7 +10,6 @@ import qualified Control.Monad.IO.Class    as IO
 import qualified Control.Monad.Reader      as Reader
 import           Data.Functor              ((<&>))
 import qualified Data.Map.Strict           as Map
-import           Debug.Trace
 
 import           PatchGirl
 import           RequestComputation.App
@@ -138,7 +137,7 @@ runPostscriptProc
 runPostscriptProc requestComputationOutput (globalEnvironment, localEnvironment) = \case
   AssertEqual expr1 expr2 ->
     let
-      ex1 = trace "test" $ runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr1
+      ex1 = runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr1
       ex2 = runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr2
     in
       case (ex1, ex2) of
