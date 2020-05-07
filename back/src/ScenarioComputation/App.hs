@@ -102,11 +102,22 @@ runProc
   -> Proc
   -> Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
 runProc (globalEnvironment, localEnvironment) = \case
-  AssertEqual expr1' expr2' ->
-    let mEqual = mapM (runExpr globalEnvironment localEnvironment) (expr1', expr2') <&> uncurry (==)
-    in case mEqual of
-      Just True -> Right (globalEnvironment, localEnvironment)
-      _         -> Left (AssertEqualFailed expr1' expr2')
+  AssertEqual expr1 expr2 ->
+    let
+      ex1 = runExpr globalEnvironment localEnvironment expr1
+      ex2 = runExpr globalEnvironment localEnvironment expr2
+    in
+      case (ex1, ex2) of
+        (Just a, Just b) ->
+          case a == b of
+            True  -> Right (globalEnvironment, localEnvironment)
+            False -> Left (AssertEqualFailed a b)
+
+        (Nothing, _) ->
+          Left (UnknownVariable expr1)
+
+        (_, Nothing) ->
+          Left (UnknownVariable expr2)
 
   Let var expr ->
     case runExpr globalEnvironment localEnvironment expr of

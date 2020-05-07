@@ -230,6 +230,42 @@ spec = do
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
+-- ** prescript set global variable for next scene succeed
+
+
+  describe "set global var in prescript and reuse it in another scene" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Set "a" (LInt 1) ]
+                                     , buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (Get "a") (LInt 1) ]
+                                     ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            , buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = ""
+                }
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "set global var in prescript and reuse it in another scene" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
 -- * util
 
 
