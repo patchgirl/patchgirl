@@ -6,7 +6,7 @@ module ScenarioComputation.Model  ( SceneInput(..)
                                   , ScenarioOutput(..)
                                   , SceneComputation(..)
                                   , ScenarioEnvironment
-                                  , PrescriptException(..)
+                                  , ScriptException(..)
                                   ) where
 
 
@@ -24,7 +24,8 @@ import           TangoScript
 data SceneInput
   = SceneInput { _inputSceneId                      :: UUID
                , _inputSceneRequestFileNodeId       :: UUID
-               , _inputScenePreScript               :: TangoAst
+               , _inputScenePrescript               :: TangoAst
+               , _inputScenePostscript              :: TangoAst
                , _inputSceneRequestComputationInput :: Maybe RequestComputationInput
                }
   deriving (Eq, Show, Generic)
@@ -62,9 +63,9 @@ instance Aeson.FromJSON ScenarioInput where
 
 data SceneComputation
   = SceneNotRun
-  | PrescriptFailed PrescriptException
+  | PrescriptFailed ScriptException
   | RequestFailed HttpException
-  | PostscriptFailed RequestComputationOutput
+  | PostscriptFailed ScriptException
   | SceneSucceeded RequestComputationOutput
   deriving (Eq, Show, Generic)
 
@@ -122,18 +123,18 @@ instance Aeson.FromJSON ScenarioOutput where
 type ScenarioEnvironment = Map String Expr
 
 
--- * PrescriptException
+-- * script exception
 
 
-data PrescriptException
+data ScriptException
   = UnknownVariable Expr
   | AssertEqualFailed Expr Expr
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON PrescriptException where
+instance Aeson.ToJSON ScriptException where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON PrescriptException where
+instance Aeson.FromJSON ScriptException where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }

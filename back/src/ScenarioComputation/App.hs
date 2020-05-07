@@ -10,9 +10,11 @@ import qualified Control.Monad.IO.Class    as IO
 import qualified Control.Monad.Reader      as Reader
 import           Data.Functor              ((<&>))
 import qualified Data.Map.Strict           as Map
+import           Debug.Trace
 
 import           PatchGirl
 import           RequestComputation.App
+import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           TangoScript
 
@@ -59,12 +61,12 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
   case _inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r) of
     Just (True, requestComputationInput) ->
       case runPrescript globalEnvironment (Map.fromList []) inputScene of
-        Left prescriptException ->
-          return ( buildSceneOutput inputScene (PrescriptFailed prescriptException)
+        Left scriptException ->
+          return ( buildSceneOutput inputScene (PrescriptFailed scriptException)
                  , globalEnvironment
                  )
 
-        Right newGlobalEnvironment -> do
+        Right globalEnvironmentAfterPrescript -> do
           requestComputationResult <- runRequestComputationHandler requestComputationInput
           case requestComputationResult of
             Left httpException ->
@@ -73,9 +75,16 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
                      )
 
             Right requestComputationOutput ->
-              return ( buildSceneOutput inputScene (SceneSucceeded requestComputationOutput)
-                     , newGlobalEnvironment
-                     )
+              case runPostscript globalEnvironmentAfterPrescript (Map.fromList []) inputScene requestComputationOutput of
+                Left scriptException ->
+                  return ( buildSceneOutput inputScene (PostscriptFailed scriptException)
+                         , globalEnvironmentAfterPrescript
+                         )
+
+                Right globalEnvironmentAfterPostscript ->
+                  return ( buildSceneOutput inputScene (SceneSucceeded requestComputationOutput)
+                         , globalEnvironmentAfterPostscript
+                         )
 
     _ ->
       return ( buildSceneOutput inputScene SceneNotRun
@@ -86,26 +95,51 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
 -- ** pre script
 
 
-runPrescript :: ScenarioEnvironment -> ScenarioEnvironment -> SceneInput -> Either PrescriptException ScenarioEnvironment
+runPrescript :: ScenarioEnvironment -> ScenarioEnvironment -> SceneInput -> Either ScriptException ScenarioEnvironment
 runPrescript globalEnvironment localEnvironment SceneInput{..} =
-  foldl f (Right (globalEnvironment, localEnvironment)) _inputScenePreScript <&> fst
+  foldl f (Right (globalEnvironment, localEnvironment)) _inputScenePrescript <&> fst
   where
     f
-      :: Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
+      :: Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
       -> Proc
-      -> Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
+      -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
     f acc proc =
-      acc >>= \env -> runProc env proc
+      acc >>= \env -> runPrescriptProc env proc
 
-runProc
-  :: (ScenarioEnvironment, ScenarioEnvironment)
+
+-- ** run post script
+
+
+runPostscript
+  :: ScenarioEnvironment
+  -> ScenarioEnvironment
+  -> SceneInput
+  -> RequestComputationOutput
+  -> Either ScriptException ScenarioEnvironment
+runPostscript globalEnvironment localEnvironment SceneInput{..} requestComputationOutput =
+  foldl f (Right (globalEnvironment, localEnvironment)) _inputScenePostscript <&> fst
+  where
+    f
+      :: Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+      -> Proc
+      -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+    f acc proc =
+      acc >>= \env -> runPostscriptProc requestComputationOutput env proc
+
+
+-- ** run postscript proc
+
+
+runPostscriptProc
+  :: RequestComputationOutput
+  -> (ScenarioEnvironment, ScenarioEnvironment)
   -> Proc
-  -> Either PrescriptException (ScenarioEnvironment, ScenarioEnvironment)
-runProc (globalEnvironment, localEnvironment) = \case
+  -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+runPostscriptProc requestComputationOutput (globalEnvironment, localEnvironment) = \case
   AssertEqual expr1 expr2 ->
     let
-      ex1 = runExpr globalEnvironment localEnvironment expr1
-      ex2 = runExpr globalEnvironment localEnvironment expr2
+      ex1 = trace "test" $ runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr1
+      ex2 = runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr2
     in
       case (ex1, ex2) of
         (Just a, Just b) ->
@@ -120,7 +154,7 @@ runProc (globalEnvironment, localEnvironment) = \case
           Left (UnknownVariable expr2)
 
   Let var expr ->
-    case runExpr globalEnvironment localEnvironment expr of
+    case runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr of
       Just newExpr ->
         let newLocalEnvironment = Map.insert var newExpr localEnvironment
         in Right (globalEnvironment, newLocalEnvironment)
@@ -129,7 +163,7 @@ runProc (globalEnvironment, localEnvironment) = \case
         Left (UnknownVariable expr)
 
   Set var expr ->
-    case runExpr globalEnvironment localEnvironment expr of
+    case runPostscriptExpr requestComputationOutput globalEnvironment localEnvironment expr of
       Just newExpr ->
         let newGlobalEnvironment = Map.insert var newExpr globalEnvironment
         in Right (newGlobalEnvironment, localEnvironment)
@@ -137,14 +171,80 @@ runProc (globalEnvironment, localEnvironment) = \case
       _ ->
         Left (UnknownVariable expr)
 
-runExpr :: ScenarioEnvironment -> ScenarioEnvironment -> Expr -> Maybe Expr
-runExpr globalEnvironment localEnvironment = \case
+
+-- ** run prescript proc
+
+
+runPrescriptProc
+  :: (ScenarioEnvironment, ScenarioEnvironment)
+  -> Proc
+  -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+runPrescriptProc (globalEnvironment, localEnvironment) = \case
+  AssertEqual expr1 expr2 ->
+    let
+      ex1 = runPrescriptExpr globalEnvironment localEnvironment expr1
+      ex2 = runPrescriptExpr globalEnvironment localEnvironment expr2
+    in
+      case (ex1, ex2) of
+        (Just a, Just b) ->
+          case a == b of
+            True  -> Right (globalEnvironment, localEnvironment)
+            False -> Left (AssertEqualFailed a b)
+
+        (Nothing, _) ->
+          Left (UnknownVariable expr1)
+
+        (_, Nothing) ->
+          Left (UnknownVariable expr2)
+
+  Let var expr ->
+    case runPrescriptExpr globalEnvironment localEnvironment expr of
+      Just newExpr ->
+        let newLocalEnvironment = Map.insert var newExpr localEnvironment
+        in Right (globalEnvironment, newLocalEnvironment)
+
+      _ ->
+        Left (UnknownVariable expr)
+
+  Set var expr ->
+    case runPrescriptExpr globalEnvironment localEnvironment expr of
+      Just newExpr ->
+        let newGlobalEnvironment = Map.insert var newExpr globalEnvironment
+        in Right (newGlobalEnvironment, localEnvironment)
+
+      _ ->
+        Left (UnknownVariable expr)
+
+
+-- ** run postscript expr
+
+
+runPostscriptExpr
+  :: RequestComputationOutput
+  -> ScenarioEnvironment
+  -> ScenarioEnvironment
+  -> Expr
+  -> Maybe Expr
+runPostscriptExpr RequestComputationOutput{..} globalEnvironment localEnvironment = \case
   Var var -> Map.lookup var localEnvironment
   Get var -> Map.lookup var globalEnvironment
+  HttpResponseBodyAsString -> Just (LString _requestComputationOutputBody)
+  expr -> Just expr
+
+
+-- ** run prescript expr
+
+
+runPrescriptExpr :: ScenarioEnvironment -> ScenarioEnvironment -> Expr -> Maybe Expr
+runPrescriptExpr globalEnvironment localEnvironment = \case
+  Var var -> Map.lookup var localEnvironment
+  Get var -> Map.lookup var globalEnvironment
+  HttpResponseBodyAsString -> Nothing
   expr -> Just expr
 
 
 -- ** scene
+
 
 buildSceneOutput :: SceneInput -> SceneComputation -> SceneOutput
 buildSceneOutput SceneInput{..} sceneComputation =

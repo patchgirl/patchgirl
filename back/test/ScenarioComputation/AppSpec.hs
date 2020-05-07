@@ -65,7 +65,7 @@ spec = do
 
   describe "scenario with one valid scene" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
 
     let (input, output) =
@@ -94,7 +94,7 @@ spec = do
 
   describe "scenario with last scene invalid" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
           , (buildRequest "POST http://foo.com", Left $ HTTP.InvalidUrlException "" "")
           ]
 
@@ -128,7 +128,7 @@ spec = do
   describe "scenario with first scene invalid" $ do
     let mock =
           [ (buildRequest "GET http://foo.com", Left $ HTTP.InvalidUrlException "" "")
-          , (buildRequest "POST http://foo.com", Right $ buildResponse 200 )
+          , (buildRequest "POST http://foo.com", Right buildResponse)
           ]
 
     let (input, output) =
@@ -156,13 +156,13 @@ spec = do
 
   describe "prescript fails: cannot `assertEqual`" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
 
     let (input, output) =
           ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "b") ] ]
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "b") ] [] ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -181,13 +181,13 @@ spec = do
 
   describe "prescript fails: trying to access unknown local variable" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
 
     let (input, output) =
           ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Let "myVar" (Get "unknownVariable") ] ]
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Let "myVar" (Get "unknownVariable") ] [] ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -206,13 +206,13 @@ spec = do
 
   describe "prescript succeeded: assertEqual" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
 
     let (input, output) =
           ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "a") ] ]
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "a") ] [] ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -230,19 +230,19 @@ spec = do
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
 
--- ** prescript set global variable for next scene succeed
+-- ** prescript succeeded: set global variable for next scene prescript
 
 
-  describe "set global var in prescript and reuse it in another scene" $ do
+  describe "prescript succeeded: set global variable for next scene prescript" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse 200)
+          [ (buildRequest "GET http://foo.com", Right buildResponse)
           ]
 
     let (input, output) =
           ( ScenarioInput
             { _inputScenarioId = UUID.nil
-            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Set "a" (LInt 1) ]
-                                     , buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (Get "a") (LInt 1) ]
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Set "a" (LInt 1) ] []
+                                     , buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (Get "a") (LInt 1) ] []
                                      ]
             , _inputScenarioGlobalEnv = Map.fromList []
             }
@@ -261,7 +261,63 @@ spec = do
           )
 
     withClient (withHttpMock2 mock) $
-      it "set global var in prescript and reuse it in another scene" $ \clientEnv ->
+      it "prescript succeeded: set global variable for next scene prescript" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
+-- ** postscript: assert equal http body response
+
+
+  describe "postscript: assert equal http body response" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right $ buildResponse { httpResponseBody = "foo" } )
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
+                                     ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
+                { _requestComputationOutputStatusCode = 200
+                , _requestComputationOutputHeaders    = []
+                , _requestComputationOutputBody       = "foo"
+                }
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "postscript: assert equal http body response" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } ->
+          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+
+
+-- ** postscript: fail assert equal http body response
+
+
+  describe "postscript: fail assert equal http body response" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right $ buildResponse { httpResponseBody = "foo" } )
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _inputScenarioId = UUID.nil
+            , _inputScenarioScenes = [ buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
+                                     ]
+            , _inputScenarioGlobalEnv = Map.fromList []
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PostscriptFailed $ AssertEqualFailed (LString "foo") (LString "bar")
+            ]
+          )
+
+    withClient (withHttpMock2 mock) $
+      it "postscript: assert equal http body response" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
           try clientEnv (runScenarioComputation token input) `shouldReturn` output
 
@@ -272,11 +328,12 @@ spec = do
 -- ** build input scene
 
 
-buildSceneInputWithScript :: Http.Method -> String -> TangoAst -> SceneInput
-buildSceneInputWithScript method url tangoAst =
+buildSceneInputWithScript :: Http.Method -> String -> TangoAst -> TangoAst -> SceneInput
+buildSceneInputWithScript method url prescript postscript =
   SceneInput { _inputSceneId = UUID.nil
              , _inputSceneRequestFileNodeId = UUID.nil
-             , _inputScenePreScript = tangoAst
+             , _inputScenePrescript = prescript
+             , _inputScenePostscript = postscript
              , _inputSceneRequestComputationInput = Just requestComputationInput
              }
   where
@@ -290,7 +347,7 @@ buildSceneInputWithScript method url tangoAst =
 
 buildSceneInput :: Http.Method -> String -> SceneInput
 buildSceneInput method url =
-  buildSceneInputWithScript method url []
+  buildSceneInputWithScript method url [] []
 
 
 -- ** build output scene
@@ -307,9 +364,9 @@ buildSceneOutput sceneComputation =
 -- ** build response
 
 
-buildResponse :: Int -> HttpResponse BSU.ByteString
-buildResponse statusCode =
-  HttpResponse { httpResponseStatus = HTTP.Status { statusCode = statusCode
+buildResponse :: HttpResponse BSU.ByteString
+buildResponse =
+  HttpResponse { httpResponseStatus = HTTP.Status { statusCode = 200
                                                   , statusMessage = BSU.fromString "ok"
                                                   }
                , httpResponseHeaders = []
