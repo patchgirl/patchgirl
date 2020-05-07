@@ -38,7 +38,7 @@ data Expr
   | LInt Int
   | LString String
   | Var String
-  | Get String
+  | Fetch String
   | Eq Expr Expr
   | Add Expr Expr
   | HttpResponseBodyAsString

@@ -55,6 +55,7 @@ import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
 import           Servant.Foreign           hiding (Static)
 import           Session.Model
+import           TangoScript
 
 
 -- * util
@@ -137,21 +138,24 @@ deriveElmDef deriveWithTaggedObject ''ScenarioCollection
 deriveElmDef deriveWithTaggedObject ''ScenarioNode
 deriveElmDef deriveWithTaggedObject ''Scene
 deriveElmDef deriveWithTaggedObject ''NewScene
+deriveElmDef deriveWithTaggedObject ''ScriptException
 deriveElmDef deriveWithSingleFieldObject ''HttpException
-deriveElmDef deriveWithTaggedObject ''ScenarioComputationInput
-deriveElmDef deriveWithTaggedObject ''ScenarioComputationOutput
-deriveElmDef deriveWithTaggedObject ''InputScenario
-deriveElmDef deriveWithTaggedObject ''InputScene
-deriveElmDef deriveWithTaggedObject ''OutputScenario
-deriveElmDef deriveWithTaggedObject ''OutputScene
 deriveElmDef deriveWithSingleFieldObject ''SceneComputation
+deriveElmDef deriveWithSingleFieldObject ''Proc
+deriveElmDef deriveWithSingleFieldObject ''Expr
+deriveElmDef deriveWithSingleFieldObject ''ScenarioInput
+deriveElmDef deriveWithSingleFieldObject ''ScenarioOutput
+deriveElmDef deriveWithSingleFieldObject ''SceneOutput
+deriveElmDef deriveWithSingleFieldObject ''SceneInput
+deriveElmDef deriveWithSingleFieldObject ''TangoAst
+deriveElmDef deriveWithSingleFieldObject ''ScenarioEnvironment
 
 
--- * imports
+-- * custom code
 
 
-myElmImports :: T.Text
-myElmImports = T.unlines
+customCode :: T.Text
+customCode = T.unlines
   [ "import Json.Decode"
   , "import Json.Encode exposing (Value)"
   , "-- The following module comes from bartavelle/json-helpers"
@@ -170,6 +174,21 @@ myElmImports = T.unlines
   , ""
   , "jsonEncUUID : UUID -> Value"
   , "jsonEncUUID = Uuid.encode"
+  , ""
+  , "type alias Either a b = Result a b"
+  , ""
+  , "jsonDecEither : Json.Decode.Decoder a -> Json.Decode.Decoder b -> Json.Decode.Decoder (Either a b)"
+  , "jsonDecEither decoder1 decoder2 ="
+  , "  Json.Decode.oneOf [ decoder1 |> Json.Decode.map Err"
+  , "                    , decoder2 |> Json.Decode.map Ok"
+  , "                    ]"
+  , ""
+  , "jsonEncEither : (a -> Value) -> (b -> Value) -> Either a b -> Value"
+  , "jsonEncEither encoder1 encoder2 either ="
+  , "  case either of"
+  , "    Err err -> encoder1 err"
+  , "    Ok ok -> encoder2 ok"
+  , ""
   ]
 
 
@@ -231,15 +250,18 @@ main =
       , DefineElm (Proxy :: Proxy Scene)
       , DefineElm (Proxy :: Proxy NewScene)
       , DefineElm (Proxy :: Proxy HttpException)
-      , DefineElm (Proxy :: Proxy ScenarioComputationInput)
-      , DefineElm (Proxy :: Proxy ScenarioComputationOutput)
-      , DefineElm (Proxy :: Proxy InputScenario)
-      , DefineElm (Proxy :: Proxy InputScene)
-      , DefineElm (Proxy :: Proxy OutputScenario)
-      , DefineElm (Proxy :: Proxy OutputScene)
       , DefineElm (Proxy :: Proxy SceneComputation)
+      , DefineElm (Proxy :: Proxy ScriptException)
+      , DefineElm (Proxy :: Proxy Proc)
+      , DefineElm (Proxy :: Proxy Expr)
+      , DefineElm (Proxy :: Proxy ScenarioInput)
+      , DefineElm (Proxy :: Proxy ScenarioOutput)
+      , DefineElm (Proxy :: Proxy SceneOutput)
+      , DefineElm (Proxy :: Proxy SceneInput)
+      , DefineElm (Proxy :: Proxy TangoAst)
+      , DefineElm (Proxy :: Proxy ScenarioEnvironment)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
   in
-    generateElmModuleWith options namespace myElmImports targetFolder elmDefinitions proxyApi
+    generateElmModuleWith options namespace customCode targetFolder elmDefinitions proxyApi

@@ -226,7 +226,7 @@ runPostscriptExpr
   -> Maybe Expr
 runPostscriptExpr RequestComputationOutput{..} globalEnvironment localEnvironment = \case
   Var var -> Map.lookup var localEnvironment
-  Get var -> Map.lookup var globalEnvironment
+  Fetch var -> Map.lookup var globalEnvironment
   HttpResponseBodyAsString -> Just (LString _requestComputationOutputBody)
   expr -> Just expr
 
@@ -237,7 +237,7 @@ runPostscriptExpr RequestComputationOutput{..} globalEnvironment localEnvironmen
 runPrescriptExpr :: ScenarioEnvironment -> ScenarioEnvironment -> Expr -> Maybe Expr
 runPrescriptExpr globalEnvironment localEnvironment = \case
   Var var -> Map.lookup var localEnvironment
-  Get var -> Map.lookup var globalEnvironment
+  Fetch var -> Map.lookup var globalEnvironment
   HttpResponseBodyAsString -> Nothing
   expr -> Just expr
 
