@@ -4,6 +4,7 @@ import Parser as P exposing((|.), (|=), Step, Parser)
 import Parser.Expression as P exposing (OperatorTable)
 import Set exposing (Set)
 import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
+import Application.Type exposing(..)
 
 
 -- * reserved keywords
@@ -24,11 +25,6 @@ reserved =
 
 -- * proc
 
-
-type Proc
-    = AssertEqual Expr Expr
-    | Let String Expr
-    | Set String Expr
 
 procParser : Parser Proc
 procParser =
@@ -98,17 +94,6 @@ setParser =
 -- * expr
 
 
-type Expr
-    = LBool Bool
-    | LInt Int
-    | LString String
-    | Var String
-    | Get String
-    | Eq Expr Expr
-    | Add Expr Expr
-    | HttpResponseBodyAsString
-
-
 exprParser : Parser Expr
 exprParser =
     P.succeed identity
@@ -145,7 +130,7 @@ httpResponseBodyAsStringParser =
 
 getParser : Parser Expr
 getParser =
-    P.succeed Get
+    P.succeed Fetch
         |. P.keyword "get"
         |. P.spaces
         |. P.symbol "("
@@ -173,8 +158,6 @@ variableNameParser =
 
 -- * parser
 
-
-type alias TangoAst = List Proc
 
 tangoParser : Parser TangoAst
 tangoParser =
@@ -276,8 +259,8 @@ showExpr expr =
         Var x ->
             "(Var " ++ x ++ ")"
 
-        Get x ->
-            "(Get " ++ x ++ ")"
+        Fetch x ->
+            "(Fetch " ++ x ++ ")"
 
         Eq expr1 expr2 ->
             "(Eq " ++ showExpr expr1 ++ showExpr expr2 ++ ")"

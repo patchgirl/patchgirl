@@ -5,7 +5,6 @@ import Dict
 import Uuid exposing (Uuid)
 
 
-
 -- * menu
 
 
@@ -197,7 +196,7 @@ type alias ScenarioFileRecord =
 type alias Scene =
     { id : Uuid
     , requestFileNodeId : Uuid
-    , computationOutput : Maybe SceneComputation
+    , sceneComputation : Maybe SceneComputation
     }
 
 
@@ -224,10 +223,7 @@ type alias Builder =
 -- ** request computation result
 
 
-type RequestComputationResult
-    = RequestComputationFailed HttpException
-    | RequestComputationSucceeded RequestComputationOutput
-
+type alias RequestComputationResult = Result HttpException RequestComputationOutput
 
 
 -- ** http exception
@@ -436,23 +432,19 @@ schemeToString scheme =
 
 
 -- * scenario computation
--- ** scenario computation output
+-- ** scenario output
 
 
-type alias ScenarioComputationOutput =
-    { scenarioId : Uuid
-    , scenes : List OutputScene
-    }
+type alias ScenarioOutput = List SceneOutput
 
 
+-- ** scene output
 
--- ** output scene
 
-
-type alias OutputScene =
+type alias SceneOutput =
     { sceneId : Uuid
     , requestFileNodeId : Uuid
-    , requestComputationOutput : SceneComputation
+    , sceneComputation : SceneComputation
     }
 
 
@@ -461,9 +453,25 @@ type alias OutputScene =
 
 
 type SceneComputation
-    = SceneRun RequestComputationResult
-    | SceneNotRun
+  = SceneNotRun
+  | PrescriptFailed ScriptException
+  | RequestFailed HttpException
+  | PostscriptFailed ScriptException
+  | SceneSucceeded RequestComputationOutput
 
+
+type ScriptException
+  = UnknownVariable Expr
+  | AssertEqualFailed Expr Expr
+
+scriptExceptionToString : ScriptException -> String
+scriptExceptionToString scriptException =
+    case scriptException of
+        UnknownVariable expr ->
+            "UnknownVariable " ++ exprToString expr
+
+        AssertEqualFailed e1 e2 ->
+            "AssertEqualFailed " ++ (exprToString e1) ++ " " ++ (exprToString e2)
 
 
 -- * editable
@@ -547,3 +555,40 @@ isStorableDirty storable =
 
         Saved _ ->
             False
+
+
+-- * tangoscript
+
+
+type alias TangoAst = List Proc
+
+type Proc
+    = AssertEqual Expr Expr
+    | Let String Expr
+    | Set String Expr
+
+type Expr
+    = LBool Bool
+    | LInt Int
+    | LString String
+    | Var String
+    | Fetch String
+    | Eq Expr Expr
+    | Add Expr Expr
+    | HttpResponseBodyAsString
+
+
+exprToString : Expr -> String
+exprToString expr =
+    case expr of
+        LBool x ->
+            case x of
+                True -> "LBool true"
+                False -> "LBool false"
+        LInt x -> "LInt " ++ String.fromInt(x)
+        LString x -> "LString " ++ x
+        Var x -> "Var " ++ x
+        Fetch x -> "Fetch " ++ x
+        Eq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
+        Add e1 e2 -> "Add " ++ (exprToString e1) ++ " " ++ (exprToString e2)
+        HttpResponseBodyAsString -> "HttpResponseBodyAsString"

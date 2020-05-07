@@ -102,7 +102,7 @@ convertSceneFromBackToFront : Back.Scene -> Front.Scene
 convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId } =
     { id = sceneId
     , requestFileNodeId = sceneRequestFileNodeId
-    , computationOutput = Nothing
+    , sceneComputation = Nothing
     }
 
 
@@ -180,91 +180,104 @@ convertSessionFromBackToFront backSession =
 
 
 
--- * request computation
+-- * request computation result
 
 
 convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
 convertRequestComputationResultFromBackToFront backRequestComputationResult =
     case backRequestComputationResult of
-        Back.RequestComputationSucceeded { requestComputationOutputStatusCode, requestComputationOutputHeaders, requestComputationOutputBody } ->
-            Front.RequestComputationSucceeded
-                { statusCode = requestComputationOutputStatusCode
-                , statusText = ""
-                , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) requestComputationOutputHeaders
-                , body = requestComputationOutputBody
-                }
+        Ok requestComputationOutput ->
+            Ok (convertRequestComputationOutputFromBackToFront requestComputationOutput)
 
-        Back.RequestComputationFailed httpException ->
-            let
-                frontException =
-                    case httpException of
-                        Back.InvalidUrlException a b ->
-                            Front.InvalidUrlException a b
+        Err httpException ->
+            Err (convertHttpExceptionFromBackToFront httpException)
 
-                        Back.TooManyRedirects ->
-                            Front.TooManyRedirects
 
-                        Back.OverlongHeaders ->
-                            Front.OverlongHeaders
+-- ** request computation output
 
-                        Back.ResponseTimeout ->
-                            Front.ResponseTimeout
 
-                        Back.ConnectionTimeout ->
-                            Front.ConnectionTimeout
+convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
+convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
+    { statusCode = backRequestComputationOutput.requestComputationOutputStatusCode
+    , statusText = ""
+    , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) backRequestComputationOutput.requestComputationOutputHeaders
+    , body = backRequestComputationOutput.requestComputationOutputBody
+    }
 
-                        Back.ConnectionFailure a ->
-                            Front.ConnectionFailure a
+-- ** http exception
 
-                        Back.InvalidStatusLine ->
-                            Front.InvalidStatusLine
 
-                        Back.InvalidHeader ->
-                            Front.InvalidHeader
+convertHttpExceptionFromBackToFront : Back.HttpException -> Front.HttpException
+convertHttpExceptionFromBackToFront backHttpException =
+    case backHttpException of
+        Back.InvalidUrlException a b ->
+            Front.InvalidUrlException a b
 
-                        Back.InvalidRequestHeader ->
-                            Front.InvalidRequestHeader
+        Back.TooManyRedirects ->
+            Front.TooManyRedirects
 
-                        Back.InternalException ->
-                            Front.InternalException
+        Back.OverlongHeaders ->
+            Front.OverlongHeaders
 
-                        Back.ProxyConnectException ->
-                            Front.ProxyConnectException
+        Back.ResponseTimeout ->
+            Front.ResponseTimeout
 
-                        Back.NoResponseDataReceived ->
-                            Front.NoResponseDataReceived
+        Back.ConnectionTimeout ->
+            Front.ConnectionTimeout
 
-                        Back.WrongRequestBodyStreamSize ->
-                            Front.WrongRequestBodyStreamSize
+        Back.ConnectionFailure a ->
+            Front.ConnectionFailure a
 
-                        Back.ResponseBodyTooShort ->
-                            Front.ResponseBodyTooShort
+        Back.InvalidStatusLine ->
+            Front.InvalidStatusLine
 
-                        Back.InvalidChunkHeaders ->
-                            Front.InvalidChunkHeaders
+        Back.InvalidHeader ->
+            Front.InvalidHeader
 
-                        Back.IncompleteHeaders ->
-                            Front.IncompleteHeaders
+        Back.InvalidRequestHeader ->
+            Front.InvalidRequestHeader
 
-                        Back.InvalidDestinationHost ->
-                            Front.InvalidDestinationHost
+        Back.InternalException ->
+            Front.InternalException
 
-                        Back.HttpZlibException ->
-                            Front.HttpZlibException
+        Back.ProxyConnectException ->
+            Front.ProxyConnectException
 
-                        Back.InvalidProxyEnvironmentVariable ->
-                            Front.InvalidProxyEnvironmentVariable
+        Back.NoResponseDataReceived ->
+            Front.NoResponseDataReceived
 
-                        Back.ConnectionClosed ->
-                            Front.ConnectionClosed
+        Back.WrongRequestBodyStreamSize ->
+            Front.WrongRequestBodyStreamSize
 
-                        Back.InvalidProxySettings ->
-                            Front.InvalidProxySettings
+        Back.ResponseBodyTooShort ->
+            Front.ResponseBodyTooShort
 
-                        Back.UnknownException ->
-                            Front.UnknownException
-            in
-            RequestComputationFailed frontException
+        Back.InvalidChunkHeaders ->
+            Front.InvalidChunkHeaders
+
+        Back.IncompleteHeaders ->
+            Front.IncompleteHeaders
+
+        Back.InvalidDestinationHost ->
+            Front.InvalidDestinationHost
+
+        Back.HttpZlibException ->
+            Front.HttpZlibException
+
+        Back.InvalidProxyEnvironmentVariable ->
+            Front.InvalidProxyEnvironmentVariable
+
+        Back.ConnectionClosed ->
+            Front.ConnectionClosed
+
+        Back.InvalidProxySettings ->
+            Front.InvalidProxySettings
+
+        Back.UnknownException ->
+            Front.UnknownException
+
+
+-- ** request computation input
 
 
 convertRequestComputationInputFromFrontToBack : Front.RequestComputationInput -> Back.RequestComputationInput
@@ -275,6 +288,9 @@ convertRequestComputationInputFromFrontToBack frontRequestInput =
     , requestComputationInputUrl = frontRequestInput.url
     , requestComputationInputBody = frontRequestInput.body
     }
+
+
+-- ** http method
 
 
 convertMethodFromBackToFront : Back.Method -> Front.HttpMethod
@@ -327,6 +343,9 @@ convertMethodFromFrontToBack method =
             Back.Options
 
 
+-- ** http scheme
+
+
 convertSchemeFromFrontToBack : Front.Scheme -> Back.Scheme
 convertSchemeFromFrontToBack scheme =
     case scheme of
@@ -337,29 +356,66 @@ convertSchemeFromFrontToBack scheme =
             Back.Https
 
 
+-- * scenario output
 
--- * scenario computation
 
-
-convertScenarioComputationOutputFromBackToFront : Back.ScenarioComputationOutput -> Front.ScenarioComputationOutput
-convertScenarioComputationOutputFromBackToFront backScenarioComputationOutput =
+convertScenarioOutputFromBackToFront : Back.ScenarioOutput -> Front.ScenarioOutput
+convertScenarioOutputFromBackToFront scenesOutput =
     let
-        convertOutputSceneFromBackToFront : Back.OutputScene -> Front.OutputScene
-        convertOutputSceneFromBackToFront backOutputScene =
-            { sceneId = backOutputScene.outputSceneId
-            , requestFileNodeId = backOutputScene.outputSceneRequestFileNodeId
-            , requestComputationOutput = convertSceneComputationFromBackToFront backOutputScene.outputSceneRequestComputationOutput
+        convertSceneOutputFromBackToFront : Back.SceneOutput -> Front.SceneOutput
+        convertSceneOutputFromBackToFront backSceneOutput =
+            { sceneId = backSceneOutput.outputSceneId
+            , requestFileNodeId = backSceneOutput.outputSceneRequestFileNodeId
+            , sceneComputation =
+                 convertSceneComputationFromBackToFront backSceneOutput.outputSceneComputation
             }
 
         convertSceneComputationFromBackToFront : Back.SceneComputation -> Front.SceneComputation
         convertSceneComputationFromBackToFront backSceneComputation =
             case backSceneComputation of
-                Back.SceneRun requestComputationResult ->
-                    Front.SceneRun (convertRequestComputationResultFromBackToFront requestComputationResult)
+               Back.SceneNotRun ->
+                   Front.SceneNotRun
 
-                Back.SceneNotRun ->
-                    Front.SceneNotRun
+               Back.PrescriptFailed scriptException ->
+                   Front.PrescriptFailed (convertScriptExceptionFromBackToFront scriptException)
+
+               Back.RequestFailed httpException ->
+                   Front.RequestFailed (convertHttpExceptionFromBackToFront httpException)
+
+               Back.PostscriptFailed scriptException ->
+                   Front.PostscriptFailed (convertScriptExceptionFromBackToFront scriptException)
+
+               Back.SceneSucceeded requestComputationOutput ->
+                   Front.SceneSucceeded (convertRequestComputationOutputFromBackToFront requestComputationOutput)
+
     in
-    { scenarioId = backScenarioComputationOutput.outputScenarioId
-    , scenes = List.map convertOutputSceneFromBackToFront backScenarioComputationOutput.outputScenarioScenes
-    }
+    List.map convertSceneOutputFromBackToFront scenesOutput
+
+
+-- * script exception
+
+
+convertScriptExceptionFromBackToFront : Back.ScriptException -> Front.ScriptException
+convertScriptExceptionFromBackToFront backScriptException =
+    case backScriptException of
+        Back.UnknownVariable expr ->
+            Front.UnknownVariable (convertExpressionFromBackToFront expr)
+
+        Back.AssertEqualFailed expr1 expr2 ->
+            Front.AssertEqualFailed (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
+
+
+-- * ex
+
+
+convertExpressionFromBackToFront : Back.Expr -> Front.Expr
+convertExpressionFromBackToFront backEx =
+    case backEx of
+        Back.LBool x -> Front.LBool x
+        Back.LInt x -> Front.LInt x
+        Back.LString x -> Front.LString x
+        Back.Var x -> Front.Var x
+        Back.Fetch x -> Front.Fetch x
+        Back.Eq a b -> Front.Eq (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
+        Back.Add a b -> Front.Add (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
+        Back.HttpResponseBodyAsString -> Front.HttpResponseBodyAsString

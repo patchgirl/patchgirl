@@ -2,6 +2,8 @@ module TangoScript.Checker exposing (showError, check, AstError)
 
 import TangoScript.Parser exposing(..)
 import Util exposing(..)
+import Application.Type exposing(..)
+
 
 type AstError
     = IncompatibleType Expr Expr
@@ -53,7 +55,7 @@ typeof expr =
         LInt _ -> "LInt"
         LString _ -> "LString"
         Var _ -> "*"
-        Get _ -> "*"
+        Fetch _ -> "*"
         Eq _ _ -> "*"
         Add _ _ -> "*"
         HttpResponseBodyAsString -> "LString"

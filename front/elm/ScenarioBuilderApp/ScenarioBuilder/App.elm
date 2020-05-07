@@ -57,7 +57,7 @@ type
     | ServerError
       -- scenario
     | AskRunScenario
-    | ScenarioProcessed ScenarioComputationOutput
+    | ScenarioProcessed ScenarioOutput
       -- detailed view
     | ShowDetailedView Uuid
     | HideDetailedView
@@ -150,21 +150,24 @@ update msg model =
 
         AskRunScenario ->
             let
-                sceneToInputScene : Scene -> Client.InputScene
-                sceneToInputScene scene =
+                sceneToSceneInput : Scene -> Client.SceneInput
+                sceneToSceneInput scene =
                     let
                         requestComputationInput =
                             Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord model scene.requestFileNodeId)
                     in
-                    { inputSceneId = scene.id
-                    , inputSceneRequestFileNodeId = scene.requestFileNodeId
-                    , inputSceneRequestComputationInput =
+                    { sceneInputId = scene.id
+                    , sceneInputRequestFileNodeId = scene.requestFileNodeId
+                    , sceneInputRequestComputationInput =
                         Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
+                    , sceneInputPrescript = []
+                    , sceneInputPostscript = []
                     }
 
                 payload =
-                    { inputScenarioId = model.id
-                    , inputScenarioScenes = List.map sceneToInputScene model.scenes
+                    { scenarioInputId = model.id
+                    , scenarioInputScenes = List.map sceneToSceneInput model.scenes
+                    , scenarioInputGlobalEnv = Dict.empty
                     }
 
                 newMsg =
@@ -172,16 +175,16 @@ update msg model =
             in
             ( model, newMsg )
 
-        ScenarioProcessed scenarioComputationOutput ->
+        ScenarioProcessed scenarioOutput ->
             let
                 mergeSceneComputationOutputResult : Scene -> Scene
                 mergeSceneComputationOutputResult scene =
                     let
-                        sceneComputation =
-                            List.find (\s -> s.sceneId == scene.id) scenarioComputationOutput.scenes
-                                |> Maybe.map .requestComputationOutput
+                        newSceneComputation =
+                            List.find (\s -> s.sceneId == scene.id) scenarioOutput
+                                |> Maybe.map .sceneComputation
                     in
-                    { scene | computationOutput = sceneComputation }
+                    { scene | sceneComputation = newSceneComputation }
 
                 newScenes =
                     List.map mergeSceneComputationOutputResult model.scenes
@@ -248,15 +251,15 @@ mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> Scene
 mkDefaultScene id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
-    , computationOutput = Nothing
+    , sceneComputation = Nothing
     }
 
 
-runScenarioResultToMsg : Result Http.Error Client.ScenarioComputationOutput -> Msg
+runScenarioResultToMsg : Result Http.Error Client.ScenarioOutput -> Msg
 runScenarioResultToMsg result =
     case result of
-        Ok scenarioComputationOutput ->
-            ScenarioProcessed (Client.convertScenarioComputationOutputFromBackToFront scenarioComputationOutput)
+        Ok scenarioOutput ->
+            ScenarioProcessed (Client.convertScenarioOutputFromBackToFront scenarioOutput)
 
         Err error ->
             Debug.todo "server error" ServerError
@@ -373,7 +376,7 @@ addNewSceneView =
 
 
 sceneView : Model -> Scene -> Element Msg
-sceneView model { id, requestFileNodeId, computationOutput } =
+sceneView model { id, requestFileNodeId, sceneComputation } =
     let
         (RequestCollection _ requestNodes) =
             model.requestCollection
@@ -382,11 +385,11 @@ sceneView model { id, requestFileNodeId, computationOutput } =
             RequestTree.findFile requestNodes requestFileNodeId
 
         sceneComputationAttrs =
-            case computationOutput of
+            case sceneComputation of
                 Nothing ->
                     [ Border.color white ]
 
-                Just (SceneRun (RequestComputationSucceeded _)) ->
+                Just (SceneSucceeded _) ->
                     [ borderSuccess, backgroundSuccess ]
 
                 Just _ ->
@@ -458,7 +461,7 @@ detailedSceneView model scene requestFileRecord =
             ++ "://"
             ++ url
 
-        inputSceneDetailView =
+        sceneInputDetailView =
             [ column [ spacing 10 ]
                 [ link []
                       { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
@@ -496,10 +499,16 @@ detailedSceneView model scene requestFileRecord =
                 SceneNotRun ->
                     [ text <| "This request hasn't been run" ]
 
-                SceneRun (RequestComputationFailed httpException) ->
+                PrescriptFailed scriptException ->
+                    [ text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException ]
+
+                RequestFailed httpException ->
                     [ text <| "This request failed because of: " ++ httpExceptionToString httpException ]
 
-                SceneRun (RequestComputationSucceeded requestComputationOutput) ->
+                PostscriptFailed scriptException ->
+                    [ text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException ]
+
+                SceneSucceeded requestComputationOutput ->
                     [ statusResponseView requestComputationOutput
                     , whichResponseButtonView
                       [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
@@ -522,12 +531,12 @@ detailedSceneView model scene requestFileRecord =
            , boxShadow
            , Background.color white
            ] <|
-        case scene.computationOutput of
+        case scene.sceneComputation of
             Nothing ->
-                inputSceneDetailView
+                sceneInputDetailView
 
             Just sceneComputation ->
-                inputSceneDetailView
+                sceneInputDetailView
                 ++ [ hr [] "response" ]
                 ++ (outputSceneDetailView sceneComputation)
 

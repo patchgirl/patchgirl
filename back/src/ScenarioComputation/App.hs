@@ -27,12 +27,12 @@ runScenarioComputationHandler
      )
   => ScenarioInput
   -> m ScenarioOutput
-runScenarioComputationHandler inputScenario =
-  buildScenarioOutput inputScenario
+runScenarioComputationHandler scenarioInput =
+  buildScenarioOutput scenarioInput
 
 buildScenarioOutput :: (Reader.MonadReader Env m, IO.MonadIO m) => ScenarioInput -> m ScenarioOutput
 buildScenarioOutput ScenarioInput{..} =
-  Monad.foldM buildScenes (_inputScenarioGlobalEnv, []) _inputScenarioScenes <&> ScenarioOutput . snd
+  Monad.foldM buildScenes (_scenarioInputGlobalEnv, []) _scenarioInputScenes <&> ScenarioOutput . snd
   where
     buildScenes
       :: (Reader.MonadReader Env m, IO.MonadIO m)
@@ -56,12 +56,12 @@ buildScenarioOutput ScenarioInput{..} =
 
 
 buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
-buildScene lastSceneWasSuccessful globalEnvironment inputScene =
-  case _inputSceneRequestComputationInput inputScene <&> \r -> (lastSceneWasSuccessful, r) of
+buildScene lastSceneWasSuccessful globalEnvironment sceneInput =
+  case _sceneInputRequestComputationInput sceneInput <&> \r -> (lastSceneWasSuccessful, r) of
     Just (True, requestComputationInput) ->
-      case runPrescript globalEnvironment (Map.fromList []) inputScene of
+      case runPrescript globalEnvironment (Map.fromList []) sceneInput of
         Left scriptException ->
-          return ( buildSceneOutput inputScene (PrescriptFailed scriptException)
+          return ( buildSceneOutput sceneInput (PrescriptFailed scriptException)
                  , globalEnvironment
                  )
 
@@ -69,24 +69,24 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
           requestComputationResult <- runRequestComputationHandler requestComputationInput
           case requestComputationResult of
             Left httpException ->
-              return ( buildSceneOutput inputScene (RequestFailed httpException)
+              return ( buildSceneOutput sceneInput (RequestFailed httpException)
                      , globalEnvironment
                      )
 
             Right requestComputationOutput ->
-              case runPostscript globalEnvironmentAfterPrescript (Map.fromList []) inputScene requestComputationOutput of
+              case runPostscript globalEnvironmentAfterPrescript (Map.fromList []) sceneInput requestComputationOutput of
                 Left scriptException ->
-                  return ( buildSceneOutput inputScene (PostscriptFailed scriptException)
+                  return ( buildSceneOutput sceneInput (PostscriptFailed scriptException)
                          , globalEnvironmentAfterPrescript
                          )
 
                 Right globalEnvironmentAfterPostscript ->
-                  return ( buildSceneOutput inputScene (SceneSucceeded requestComputationOutput)
+                  return ( buildSceneOutput sceneInput (SceneSucceeded requestComputationOutput)
                          , globalEnvironmentAfterPostscript
                          )
 
     _ ->
-      return ( buildSceneOutput inputScene SceneNotRun
+      return ( buildSceneOutput sceneInput SceneNotRun
              , globalEnvironment
              )
 
@@ -96,7 +96,7 @@ buildScene lastSceneWasSuccessful globalEnvironment inputScene =
 
 runPrescript :: ScenarioEnvironment -> ScenarioEnvironment -> SceneInput -> Either ScriptException ScenarioEnvironment
 runPrescript globalEnvironment localEnvironment SceneInput{..} =
-  foldl f (Right (globalEnvironment, localEnvironment)) _inputScenePrescript <&> fst
+  foldl f (Right (globalEnvironment, localEnvironment)) _sceneInputPrescript <&> fst
   where
     f
       :: Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
@@ -116,7 +116,7 @@ runPostscript
   -> RequestComputationOutput
   -> Either ScriptException ScenarioEnvironment
 runPostscript globalEnvironment localEnvironment SceneInput{..} requestComputationOutput =
-  foldl f (Right (globalEnvironment, localEnvironment)) _inputScenePostscript <&> fst
+  foldl f (Right (globalEnvironment, localEnvironment)) _sceneInputPostscript <&> fst
   where
     f
       :: Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
@@ -247,7 +247,7 @@ runPrescriptExpr globalEnvironment localEnvironment = \case
 
 buildSceneOutput :: SceneInput -> SceneComputation -> SceneOutput
 buildSceneOutput SceneInput{..} sceneComputation =
-  SceneOutput { _outputSceneId = _inputSceneId
-              , _outputSceneRequestFileNodeId = _inputSceneRequestFileNodeId
+  SceneOutput { _outputSceneId = _sceneInputId
+              , _outputSceneRequestFileNodeId = _sceneInputRequestFileNodeId
               , _outputSceneComputation = sceneComputation
               }

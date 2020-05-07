@@ -22,11 +22,11 @@ import           TangoScript
 
 
 data SceneInput
-  = SceneInput { _inputSceneId                      :: UUID
-               , _inputSceneRequestFileNodeId       :: UUID
-               , _inputScenePrescript               :: TangoAst
-               , _inputScenePostscript              :: TangoAst
-               , _inputSceneRequestComputationInput :: Maybe RequestComputationInput
+  = SceneInput { _sceneInputId                      :: UUID
+               , _sceneInputRequestFileNodeId       :: UUID
+               , _sceneInputPrescript               :: TangoAst
+               , _sceneInputPostscript              :: TangoAst
+               , _sceneInputRequestComputationInput :: Maybe RequestComputationInput
                }
   deriving (Eq, Show, Generic)
 
@@ -43,9 +43,9 @@ instance Aeson.FromJSON SceneInput where
 
 
 data ScenarioInput
-  = ScenarioInput { _inputScenarioId        :: UUID
-                  , _inputScenarioScenes    :: [SceneInput]
-                  , _inputScenarioGlobalEnv :: ScenarioEnvironment
+  = ScenarioInput { _scenarioInputId        :: UUID
+                  , _scenarioInputScenes    :: [SceneInput]
+                  , _scenarioInputGlobalEnv :: ScenarioEnvironment
                   }
   deriving (Eq, Show, Generic)
 
@@ -82,7 +82,7 @@ instance Aeson.FromJSON SceneComputation where
                                                 }
 
 
--- * output scene
+-- * scene output
 
 
 data SceneOutput
