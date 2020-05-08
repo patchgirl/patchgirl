@@ -11,20 +11,22 @@ import           App
 import qualified Data.ByteString.UTF8      as BSU
 import qualified Data.Map.Strict           as Map
 import qualified Data.UUID                 as UUID
-import           FakeHttpRequest
-import           Helper.App
-import qualified Http
 import qualified Network.HTTP.Client       as HTTP
 import qualified Network.HTTP.Types        as HTTP
-
-import           RequestComputation.Model
-import           ScenarioComputation.Model
 import           Servant
 import qualified Servant.Auth.Client       as Auth
 import           Servant.Auth.Server       (JWT)
 import           Servant.Client
-import           TangoScript
 import           Test.Hspec
+
+import           FakeHttpRequest
+import           Helper.App
+import qualified Http
+import           Interpolator
+import           RequestComputation.Model
+import           ScenarioComputation.Model
+import           TangoScript
+
 
 -- * client
 

@@ -14,7 +14,6 @@ import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
 import           Data.Functor                ((<&>))
 import qualified Data.List                   as List
-import           Debug.Trace
 import qualified Network.HTTP.Client.Conduit as Http
 import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types          as Http
@@ -71,7 +70,7 @@ buildRequest templatedRequestComputationInput requestEnvironment = do
 
 
 buildRequestComputationInput :: TemplatedRequestComputationInput -> RequestEnvironment -> RequestComputationInput
-buildRequestComputationInput templatedRequestComputationInput@TemplatedRequestComputationInput{..} requestEnvironment =
+buildRequestComputationInput TemplatedRequestComputationInput{..} requestEnvironment =
   RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
                           , _requestComputationInputHeaders =
                             _templatedRequestComputationInputHeaders <&> \(h, v) -> ( toString $ interpolate h

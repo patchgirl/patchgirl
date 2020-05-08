@@ -23,8 +23,8 @@ import           Environment.Model
 import           FakeHttpRequest
 import           Helper.App
 import qualified Http
+import           Interpolator
 import           RequestComputation.Model
-import           TangoScript
 
 
 -- * client

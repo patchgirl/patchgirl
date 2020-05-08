@@ -38,6 +38,7 @@ import           Environment.Model
 import           Github.App
 import           Health.App
 import           Http
+import           Interpolator
 import           Model                     (CaseInsensitive)
 import           RequestCollection.Model
 import           RequestComputation.Model
@@ -56,7 +57,6 @@ import           Servant.Elm
 import           Servant.Foreign           hiding (Static)
 import           Session.Model
 import           TangoScript
-
 
 -- * util
 
@@ -99,6 +99,47 @@ myDefaultElmToString argType =
   case argType of
     ETyCon (ETCon "UUID") -> "Uuid.toString"
     _                     -> defaultElmToString argType
+
+
+-- * custom code
+
+
+customCode :: T.Text
+customCode = T.unlines
+  [ "import Json.Decode"
+  , "import Json.Encode exposing (Value)"
+  , "-- The following module comes from bartavelle/json-helpers"
+  , "import Json.Helpers exposing (..)"
+  , "import Dict exposing (Dict)"
+  , "import Set"
+  , "import Http"
+  , "import String"
+  , "import Url.Builder"
+  , "import Uuid as Uuid"
+  , ""
+  , "type alias UUID = Uuid.Uuid"
+  , ""
+  , "jsonDecUUID : Json.Decode.Decoder UUID"
+  , "jsonDecUUID = Uuid.decoder"
+  , ""
+  , "jsonEncUUID : UUID -> Value"
+  , "jsonEncUUID = Uuid.encode"
+  , ""
+  , "type alias Either a b = Result a b"
+  , ""
+  , "jsonDecEither : Json.Decode.Decoder a -> Json.Decode.Decoder b -> Json.Decode.Decoder (Either a b)"
+  , "jsonDecEither decoder1 decoder2 ="
+  , "  Json.Decode.oneOf [ decoder1 |> Json.Decode.map Err"
+  , "                    , decoder2 |> Json.Decode.map Ok"
+  , "                    ]"
+  , ""
+  , "jsonEncEither : (a -> Value) -> (b -> Value) -> Either a b -> Value"
+  , "jsonEncEither encoder1 encoder2 either ="
+  , "  case either of"
+  , "    Err err -> encoder1 err"
+  , "    Ok ok -> encoder2 ok"
+  , ""
+  ]
 
 
 -- * elm def
@@ -149,47 +190,8 @@ deriveElmDef deriveWithSingleFieldObject ''SceneOutput
 deriveElmDef deriveWithSingleFieldObject ''SceneInput
 deriveElmDef deriveWithSingleFieldObject ''TangoAst
 deriveElmDef deriveWithSingleFieldObject ''ScenarioEnvironment
-
-
--- * custom code
-
-
-customCode :: T.Text
-customCode = T.unlines
-  [ "import Json.Decode"
-  , "import Json.Encode exposing (Value)"
-  , "-- The following module comes from bartavelle/json-helpers"
-  , "import Json.Helpers exposing (..)"
-  , "import Dict exposing (Dict)"
-  , "import Set"
-  , "import Http"
-  , "import String"
-  , "import Url.Builder"
-  , "import Uuid as Uuid"
-  , ""
-  , "type alias UUID = Uuid.Uuid"
-  , ""
-  , "jsonDecUUID : Json.Decode.Decoder UUID"
-  , "jsonDecUUID = Uuid.decoder"
-  , ""
-  , "jsonEncUUID : UUID -> Value"
-  , "jsonEncUUID = Uuid.encode"
-  , ""
-  , "type alias Either a b = Result a b"
-  , ""
-  , "jsonDecEither : Json.Decode.Decoder a -> Json.Decode.Decoder b -> Json.Decode.Decoder (Either a b)"
-  , "jsonDecEither decoder1 decoder2 ="
-  , "  Json.Decode.oneOf [ decoder1 |> Json.Decode.map Err"
-  , "                    , decoder2 |> Json.Decode.map Ok"
-  , "                    ]"
-  , ""
-  , "jsonEncEither : (a -> Value) -> (b -> Value) -> Either a b -> Value"
-  , "jsonEncEither encoder1 encoder2 either ="
-  , "  case either of"
-  , "    Err err -> encoder1 err"
-  , "    Ok ok -> encoder2 ok"
-  , ""
-  ]
+deriveElmDef deriveWithSingleFieldObject ''TemplatedString
+deriveElmDef deriveWithSingleFieldObject ''TemplatedRequestComputationInput
 
 
 -- * main
@@ -260,6 +262,8 @@ main =
       , DefineElm (Proxy :: Proxy SceneInput)
       , DefineElm (Proxy :: Proxy TangoAst)
       , DefineElm (Proxy :: Proxy ScenarioEnvironment)
+      , DefineElm (Proxy :: Proxy TemplatedString)
+      , DefineElm (Proxy :: Proxy TemplatedRequestComputationInput)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))

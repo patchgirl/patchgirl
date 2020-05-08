@@ -7,7 +7,6 @@ module RequestComputation.Model ( RequestComputationInput(..)
                                 , HttpResponse(..)
                                 , fromResponseToHttpResponse
                                 , HttpException(..)
-                                , TemplatedString(..)
                                 ) where
 
 
