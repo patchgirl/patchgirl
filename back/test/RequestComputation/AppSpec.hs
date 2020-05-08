@@ -32,7 +32,7 @@ import           TangoScript
 
 runRequestComputation
   :: Auth.Token
-  -> (RequestComputationInput, RequestEnvironment)
+  -> (TemplatedRequestComputationInput, RequestEnvironment)
   -> ClientM RequestComputationResult
 runRequestComputation =
   client (Proxy :: Proxy (RequestComputationApi '[JWT]))
@@ -95,12 +95,12 @@ spec = do
       )
 
     (input1, output1) =
-      ( RequestComputationInput { _requestComputationInputMethod = Http.Get
-                                , _requestComputationInputHeaders = []
-                                , _requestComputationInputScheme = Http.Http
-                                , _requestComputationInputUrl = "foo.com"
-                                , _requestComputationInputBody = ""
-                                }
+      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Http.Get
+                                         , _templatedRequestComputationInputHeaders = []
+                                         , _templatedRequestComputationInputScheme = Http.Http
+                                         , _templatedRequestComputationInputUrl = [ Sentence "foo.com" ]
+                                         , _templatedRequestComputationInputBody = [ Sentence "" ]
+                                         }
       , Right (RequestComputationOutput { _requestComputationOutputStatusCode = 200
                                         , _requestComputationOutputHeaders    = []
                                         , _requestComputationOutputBody       = ""

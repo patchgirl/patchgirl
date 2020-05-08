@@ -1,11 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module RequestComputation.Model ( RequestComputationInput(..)
+                                , TemplatedRequestComputationInput(..)
                                 , RequestComputationOutput(..)
                                 , RequestComputationResult
                                 , HttpResponse(..)
                                 , fromResponseToHttpResponse
                                 , HttpException(..)
+                                , TemplatedString(..)
                                 ) where
 
 
@@ -16,6 +18,7 @@ import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Simple as Http
 import qualified Network.HTTP.Types  as Http
 
+import           Interpolator
 
 
 -- * http response
@@ -32,6 +35,27 @@ fromResponseToHttpResponse response =
                , httpResponseHeaders = Http.getResponseHeaders response
                , httpResponseBody = Http.getResponseBody response
                }
+
+
+-- * templated request computation input
+
+
+data TemplatedRequestComputationInput
+  = TemplatedRequestComputationInput { _templatedRequestComputationInputMethod  :: Method
+                                     , _templatedRequestComputationInputHeaders :: [( [TemplatedString], [TemplatedString])]
+                                     , _templatedRequestComputationInputScheme  :: Scheme
+                                     , _templatedRequestComputationInputUrl     :: [TemplatedString]
+                                     , _templatedRequestComputationInputBody    :: [TemplatedString]
+                                     }
+  deriving (Eq, Show, Read, Generic, Ord)
+
+instance Aeson.ToJSON TemplatedRequestComputationInput where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON TemplatedRequestComputationInput where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- * request computation input

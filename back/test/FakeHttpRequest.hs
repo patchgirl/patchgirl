@@ -65,14 +65,14 @@ throwException exceptionContent = do
 -- * request computation input util
 
 
-defaultRequestComputationInput :: RequestComputationInput
+defaultRequestComputationInput :: TemplatedRequestComputationInput
 defaultRequestComputationInput =
-  RequestComputationInput { _requestComputationInputMethod = Http.Get
-                          , _requestComputationInputHeaders = []
-                          , _requestComputationInputScheme = Http.Http
-                          , _requestComputationInputUrl = "foo.com"
-                          , _requestComputationInputBody = ""
-                          }
+  TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Http.Get
+                                   , _templatedRequestComputationInputHeaders = []
+                                   , _templatedRequestComputationInputScheme = Http.Http
+                                   , _templatedRequestComputationInputUrl = [ Sentence "foo.com" ]
+                                   , _templatedRequestComputationInputBody = [ Sentence "" ]
+                                   }
 
 
 -- * mock

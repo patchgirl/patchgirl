@@ -71,7 +71,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Http.Get "foo.com" ]
+            , _scenarioInputScenes = [ buildSceneInput Http.Get [Sentence "foo.com"] ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -101,8 +101,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Http.Get "foo.com"
-                                     , buildSceneInput Http.Post "foo.com"
+            , _scenarioInputScenes = [ buildSceneInput Http.Get [Sentence "foo.com"]
+                                     , buildSceneInput Http.Post [Sentence "foo.com"]
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -134,8 +134,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Http.Get "foo.com"
-                                     , buildSceneInput Http.Post "foo.com"
+            , _scenarioInputScenes = [ buildSceneInput Http.Get [Sentence "foo.com"]
+                                     , buildSceneInput Http.Post [Sentence "foo.com"]
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -162,7 +162,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "b") ] [] ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [ AssertEqual (LString "a") (LString "b") ] [] ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -187,7 +187,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Let "myVar" (Fetch "unknownVariable") ] [] ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [ Let "myVar" (Fetch "unknownVariable") ] [] ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -212,7 +212,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (LString "a") (LString "a") ] [] ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [ AssertEqual (LString "a") (LString "a") ] [] ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
           , ScenarioOutput
@@ -241,8 +241,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Set "a" (LInt 1) ] []
-                                     , buildSceneInputWithScript Http.Get "foo.com" [ AssertEqual (Fetch "a") (LInt 1) ] []
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildSceneInputWithScript Http.Get [Sentence "foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -277,7 +277,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -307,7 +307,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -333,8 +333,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [] [ Set "a" (LInt 1) ]
-                                     , buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual (Fetch "a") (LInt 1) ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [] [ Set "a" (LInt 1) ]
+                                     , buildSceneInputWithScript Http.Get [Sentence "foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -369,8 +369,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get "foo.com" [ Set "a" (LInt 1) ] []
-                                     , buildSceneInputWithScript Http.Get "foo.com" [] [ AssertEqual (Fetch "a") (LInt 1) ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Http.Get [Sentence "foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildSceneInputWithScript Http.Get [Sentence "foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputGlobalEnv = Map.fromList []
             }
@@ -400,24 +400,19 @@ spec = do
 -- ** build input scene
 
 
-buildSceneInputWithScript :: Http.Method -> String -> TangoAst -> TangoAst -> SceneInput
+buildSceneInputWithScript :: Http.Method -> [TemplatedString] -> TangoAst -> TangoAst -> SceneInput
 buildSceneInputWithScript method url prescript postscript =
   SceneInput { _sceneInputId = UUID.nil
              , _sceneInputRequestFileNodeId = UUID.nil
              , _sceneInputPrescript = prescript
              , _sceneInputPostscript = postscript
-             , _sceneInputRequestComputationInput = Just requestComputationInput
+             , _sceneInputTemplatedRequestComputationInput =
+               Just $ defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
+                                                     , _templatedRequestComputationInputUrl = url
+                                                     }
              }
-  where
-    requestComputationInput =
-      RequestComputationInput { _requestComputationInputMethod = method
-                              , _requestComputationInputHeaders = []
-                              , _requestComputationInputScheme = Http.Http
-                              , _requestComputationInputUrl = url
-                              , _requestComputationInputBody = ""
-                              }
 
-buildSceneInput :: Http.Method -> String -> SceneInput
+buildSceneInput :: Http.Method -> [TemplatedString] -> SceneInput
 buildSceneInput method url =
   buildSceneInputWithScript method url [] []
 

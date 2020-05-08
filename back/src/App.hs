@@ -349,12 +349,12 @@ requestFolderApiServer =
 
 type RequestComputationApi auths =
   Flat (Auth auths CookieSession :> "api" :> "requestComputation" :> (
-    ReqBody '[JSON] (RequestComputationInput, RequestEnvironment) :> Post '[JSON] RequestComputationResult
+    ReqBody '[JSON] (TemplatedRequestComputationInput, RequestEnvironment) :> Post '[JSON] RequestComputationResult
   ))
 
 requestComputationApiServer
   :: AuthResult CookieSession
-  -> (RequestComputationInput, RequestEnvironment)
+  -> (TemplatedRequestComputationInput, RequestEnvironment)
   -> AppM RequestComputationResult
 requestComputationApiServer =
   authorize runRequestComputationHandler

@@ -27,11 +27,7 @@ runScenarioComputationHandler
      )
   => ScenarioInput
   -> m ScenarioOutput
-runScenarioComputationHandler scenarioInput =
-  buildScenarioOutput scenarioInput
-
-buildScenarioOutput :: (Reader.MonadReader Env m, IO.MonadIO m) => ScenarioInput -> m ScenarioOutput
-buildScenarioOutput ScenarioInput{..} =
+runScenarioComputationHandler ScenarioInput{..} =
   Monad.foldM buildScenes (_scenarioInputGlobalEnv, []) _scenarioInputScenes <&> ScenarioOutput . snd
   where
     buildScenes
@@ -40,7 +36,7 @@ buildScenarioOutput ScenarioInput{..} =
       -> SceneInput
       -> m (ScenarioEnvironment, [SceneOutput])
     buildScenes (globalEnvironment, scenes) inputScene = do
-      (scene, newGlobalEnvironment) <- buildScene (lastSceneWasSuccessful scenes) globalEnvironment inputScene
+      (scene, newGlobalEnvironment) <- runScene (lastSceneWasSuccessful scenes) globalEnvironment inputScene
       return (newGlobalEnvironment, scenes ++ [ scene ])
 
     lastSceneWasSuccessful :: [SceneOutput] -> Bool
@@ -55,10 +51,10 @@ buildScenarioOutput ScenarioInput{..} =
 -- ** build scene
 
 
-buildScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
-buildScene lastSceneWasSuccessful globalEnvironment sceneInput =
-  case _sceneInputRequestComputationInput sceneInput <&> \r -> (lastSceneWasSuccessful, r) of
-    Just (True, requestComputationInput) ->
+runScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
+runScene lastSceneWasSuccessful globalEnvironment sceneInput =
+  case _sceneInputTemplatedRequestComputationInput sceneInput <&> \r -> (lastSceneWasSuccessful, r) of
+    Just (True, templatedRequestComputationInput) ->
       case runPrescript globalEnvironment (Map.fromList []) sceneInput of
         Left scriptException ->
           return ( buildSceneOutput sceneInput (PrescriptFailed scriptException)
@@ -66,8 +62,8 @@ buildScene lastSceneWasSuccessful globalEnvironment sceneInput =
                  )
 
         Right globalEnvironmentAfterPrescript -> do
-          requestComputationResult <- runRequestComputationHandler ( requestComputationInput
-                                                                   , undefined --globalEnvironmentAfterPrescript
+          requestComputationResult <- runRequestComputationHandler ( templatedRequestComputationInput
+                                                                   , Map.fromList [] -- globalEnvironmentAfterPrescript
                                                                    )
           case requestComputationResult of
             Left httpException ->
