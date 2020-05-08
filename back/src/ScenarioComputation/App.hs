@@ -67,7 +67,7 @@ buildScene lastSceneWasSuccessful globalEnvironment sceneInput =
 
         Right globalEnvironmentAfterPrescript -> do
           requestComputationResult <- runRequestComputationHandler ( requestComputationInput
-                                                                   , globalEnvironmentAfterPrescript
+                                                                   , undefined --globalEnvironmentAfterPrescript
                                                                    )
           case requestComputationResult of
             Left httpException ->

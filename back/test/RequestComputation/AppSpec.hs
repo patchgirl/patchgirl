@@ -32,7 +32,7 @@ import           TangoScript
 
 runRequestComputation
   :: Auth.Token
-  -> (RequestComputationInput, ScenarioEnvironment)
+  -> (RequestComputationInput, RequestEnvironment)
   -> ClientM RequestComputationResult
 runRequestComputation =
   client (Proxy :: Proxy (RequestComputationApi '[JWT]))
@@ -52,7 +52,7 @@ spec = do
     withClient (withHttpMock [ requestWithResponse1 ]) $
       it "returns ok200" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (input1, scenarioEnvironment)) `shouldReturn` output1
+          try clientEnv (runRequestComputation token (input1, requestEnvironment)) `shouldReturn` output1
 
 
 -- ** computation failed
@@ -62,19 +62,19 @@ spec = do
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, scenarioEnvironment)) `shouldReturn` Left (InvalidUrlException "" "")
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, requestEnvironment)) `shouldReturn` Left (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
       it "returns too many redirects" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, scenarioEnvironment)) `shouldReturn` Left TooManyRedirects
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, requestEnvironment)) `shouldReturn` Left TooManyRedirects
 
   describe "connection timeout" $
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, scenarioEnvironment)) `shouldReturn` Left ConnectionTimeout
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, requestEnvironment)) `shouldReturn` Left ConnectionTimeout
 
 
   where
@@ -111,5 +111,5 @@ spec = do
 -- ** scenario environment
 
 
-scenarioEnvironment :: Map String Expr
-scenarioEnvironment = Map.fromList []
+requestEnvironment :: Map String String
+requestEnvironment = Map.fromList []

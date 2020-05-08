@@ -28,7 +28,7 @@ runRequestComputationHandler
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      )
-  => (RequestComputationInput, ScenarioEnvironment)
+  => (RequestComputationInput, RequestEnvironment)
   -> m RequestComputationResult
 runRequestComputationHandler (requestComputationInput, _) = do
   runner <- Reader.ask <&> _envHttpRequest

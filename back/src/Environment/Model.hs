@@ -26,6 +26,7 @@ module Environment.Model ( KeyValue(..)
                          , NewEnvironment(..)
                          , newEnvironmentName
                          , ScenarioEnvironment
+                         , RequestEnvironment
                          ) where
 
 import           Control.Lens               (makeLenses)
@@ -160,3 +161,5 @@ $(makeLenses ''NewKeyValue)
 
 
 type ScenarioEnvironment = Map String Expr
+
+type RequestEnvironment = Map String String
