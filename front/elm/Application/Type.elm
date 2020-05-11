@@ -82,16 +82,34 @@ type alias Environment =
 
 type alias NewKeyValue =
     { key : String
-    , value : String
+    , value : StringTemplate
     }
-
 
 type alias KeyValue =
     { id : Int
     , key : String
-    , value : String
+    , value : StringTemplate
     }
 
+
+-- * template
+
+
+type alias StringTemplate = List Template
+
+type Template
+  = Sentence String
+  | Key String
+
+templateAsString : Template -> String
+templateAsString templatedString =
+    case templatedString of
+        Sentence s -> s
+        Key s -> "{{" ++ s ++ "}}"
+
+templatedStringAsString : StringTemplate -> String
+templatedStringAsString templatedStrings =
+    templatedStrings |> List.map templateAsString |> String.join ""
 
 
 -- * request collection
@@ -331,9 +349,9 @@ httpExceptionToString httpException =
 type alias RequestComputationInput =
     { scheme : Scheme
     , method : HttpMethod
-    , headers : List ( String, String )
-    , url : String
-    , body : String
+    , headers : List (StringTemplate, StringTemplate)
+    , url : StringTemplate
+    , body : StringTemplate
     }
 
 

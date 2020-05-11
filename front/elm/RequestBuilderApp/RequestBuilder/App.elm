@@ -70,7 +70,6 @@ type Msg
     | ShowHeaderResponseView
 
 
-
 -- * update
 
 
@@ -344,8 +343,9 @@ parseHeaders headers =
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> Model -> Cmd Msg
 buildRequestToRun envKeyValues builder =
     let
+        request : RequestComputationInput
         request =
-            buildRequestComputationInput envKeyValues builder
+            buildRequestComputationInput builder
 
         mkHeader : ( String, String ) -> Http.Header
         mkHeader ( headerKey, headerValue ) =
@@ -359,28 +359,15 @@ buildRequestToRun envKeyValues builder =
 
                 Https ->
                     "https"
-    in
-    case isPrivateAddress request.url of
-        True ->
-            let
-                cmdRequest =
-                    { method = methodToString request.method
-                    , headers = List.map mkHeader request.headers
-                    , url = schemeToString request.scheme ++ "://" ++ request.url
-                    , body = Http.stringBody "application/json" request.body
-                    , expect = expectStringDetailed LocalComputationDone
-                    , timeout = Nothing
-                    , tracker = Nothing
-                    }
-            in
-            Http.request cmdRequest
 
-        False ->
-            let
-                backRequestComputationInput =
-                    Client.convertRequestComputationInputFromFrontToBack request
-            in
-            Client.postApiRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
+        backRequestComputationInput =
+            ( Debug.todo "" -- Client.convertRequestComputationInputFromFrontToBack request
+            , Debug.todo ""
+            --                    , envKeyValues |> List.map latestValueOfStorable |> Dict.fromList'
+            )
+
+    in
+    Client.postApiRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError
@@ -441,6 +428,12 @@ expectStringDetailed msg =
     Http.expectStringResponse msg convertResponseStringToResult
 
 
+latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, String)
+latestValueOfStorable storable =
+    case storable of
+        New { key, value } -> (key, templatedStringAsString value)
+        Saved { key, value } -> (key, templatedStringAsString value)
+        Edited2 _ { key, value } -> (key, templatedStringAsString value)
 
 -- * view
 

@@ -21,7 +21,6 @@ import           Control.Lens              ((&), (<>~))
 import qualified Data.Aeson                as Aeson
 import qualified Data.Text                 as T
 import           Data.Word
-import           Debug.Trace
 import           Elm.Module                as Elm
 import           Elm.TyRep
 import           ElmOption                 (deriveWithSingleFieldObject,

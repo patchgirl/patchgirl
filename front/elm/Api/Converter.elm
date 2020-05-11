@@ -128,27 +128,35 @@ convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueVal
     Saved
         { id = keyValueId
         , key = keyValueKey
-        , value = keyValueValue
+        , value = Debug.todo ""
         }
 
 
 convertEnvironmentKeyValueFromFrontToBack : Front.Storable Front.NewKeyValue Front.KeyValue -> Back.NewKeyValue
 convertEnvironmentKeyValueFromFrontToBack storable =
+    let
+        templatedStringsToString : StringTemplate -> String
+        templatedStringsToString templatedStrings =
+            templatedStrings
+                |> List.map templateAsString
+                |> String.join ""
+    in
     case storable of
         New { key, value } ->
             { newKeyValueKey = key
-            , newKeyValueValue = value
+            , newKeyValueValue = templatedStringsToString value
             }
 
         Saved { key, value } ->
             { newKeyValueKey = key
-            , newKeyValueValue = value
+            , newKeyValueValue = templatedStringsToString value
             }
 
         Edited2 _ { key, value } ->
             { newKeyValueKey = key
-            , newKeyValueValue = value
+            , newKeyValueValue = templatedStringsToString value
             }
+
 
 
 
@@ -180,7 +188,7 @@ convertSessionFromBackToFront backSession =
 
 
 
--- * request computation result
+-- * request computation
 
 
 convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
@@ -280,13 +288,17 @@ convertHttpExceptionFromBackToFront backHttpException =
 -- ** request computation input
 
 
-convertRequestComputationInputFromFrontToBack : Front.RequestComputationInput -> Back.RequestComputationInput
+convertRequestComputationInputFromFrontToBack : Front.RequestComputationInput -> Back.TemplatedRequestComputationInput
 convertRequestComputationInputFromFrontToBack frontRequestInput =
-    { requestComputationInputMethod = convertMethodFromFrontToBack frontRequestInput.method
-    , requestComputationInputHeaders = frontRequestInput.headers
-    , requestComputationInputScheme = convertSchemeFromFrontToBack frontRequestInput.scheme
-    , requestComputationInputUrl = frontRequestInput.url
-    , requestComputationInputBody = frontRequestInput.body
+    let
+        convertHeader : List (a, b) -> List (List a, List b)
+        convertHeader = Debug.todo ""
+    in
+    { templatedRequestComputationInputMethod = convertMethodFromFrontToBack frontRequestInput.method
+    , templatedRequestComputationInputHeaders = Debug.todo "" -- convertHeader frontRequestInput.headers
+    , templatedRequestComputationInputScheme = convertSchemeFromFrontToBack frontRequestInput.scheme
+    , templatedRequestComputationInputUrl = convertStringTemplateFromFrontToBack frontRequestInput.url
+    , templatedRequestComputationInputBody = convertStringTemplateFromFrontToBack frontRequestInput.body
     }
 
 
@@ -354,6 +366,24 @@ convertSchemeFromFrontToBack scheme =
 
         Front.Https ->
             Back.Https
+
+
+-- * string template
+
+
+convertStringTemplateFromFrontToBack : Front.StringTemplate -> List Back.TemplatedString
+convertStringTemplateFromFrontToBack stringTemplate =
+    let
+        convertTemplateFromFrontToBack : Front.Template -> Back.TemplatedString
+        convertTemplateFromFrontToBack template =
+            case template of
+                Front.Sentence str ->
+                    Back.Sentence str
+
+                Front.Key str ->
+                    Back.Key str
+    in
+    List.map convertTemplateFromFrontToBack stringTemplate
 
 
 -- * scenario output

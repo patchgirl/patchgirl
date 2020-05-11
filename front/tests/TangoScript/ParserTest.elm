@@ -5,6 +5,7 @@ import Test exposing (..)
 import TangoScript.Parser exposing(..)
 import TangoScript.DoubleQuoteString exposing(..)
 import Parser as P
+import Application.Type exposing (..)
 
 
 -- * expr
@@ -117,7 +118,7 @@ getTests : List (ParserTest (List P.DeadEnd) Expr)
 getTests =
     [ { message = "parse simple `get`"
       , input = """get("a")"""
-      , expect = Ok <| Get "a"
+      , expect = Ok <| Fetch "a"
       }
 --    , { message = "parse `get`"
 --      , input = """get ( " a " ) """

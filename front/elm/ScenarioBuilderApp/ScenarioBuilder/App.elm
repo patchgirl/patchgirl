@@ -158,8 +158,9 @@ update msg model =
                     in
                     { sceneInputId = scene.id
                     , sceneInputRequestFileNodeId = scene.requestFileNodeId
-                    , sceneInputRequestComputationInput =
-                        Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
+                    , sceneInputTemplatedRequestComputationInput =
+                        Debug.todo ""
+                        -- Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
                     , sceneInputPrescript = []
                     , sceneInputPostscript = []
                     }

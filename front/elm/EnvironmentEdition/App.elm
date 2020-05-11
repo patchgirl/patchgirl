@@ -10,7 +10,7 @@ import Element.Input as Input
 import Http
 import List.Extra as List
 import Util exposing (..)
-
+import StringTemplate exposing(..)
 
 
 -- * environment edition
@@ -383,7 +383,7 @@ type alias KeyValueModel a =
 
 newDefaultKeyValue : Storable NewKeyValue KeyValue
 newDefaultKeyValue =
-    New { key = "", value = "" }
+    New { key = "", value = [Sentence ""] }
 
 
 
@@ -422,7 +422,7 @@ updateKeyValue msg ( session, model ) =
         PromptValue idx newValue ->
             let
                 newKeyValues =
-                    List.updateAt idx (changeValue newValue) model.keyValues
+                    List.updateAt idx (changeValue (toStringTemplate newValue)) model.keyValues
 
                 newModel =
                     { model | keyValues = newKeyValues }
@@ -566,7 +566,7 @@ changeKey newKey storable =
                     Edited2 saved { edited | key = newKey }
 
 
-changeValue : String -> Storable NewKeyValue KeyValue -> Storable NewKeyValue KeyValue
+changeValue : StringTemplate -> Storable NewKeyValue KeyValue -> Storable NewKeyValue KeyValue
 changeValue newValue storable =
     case storable of
         New new ->
@@ -701,13 +701,13 @@ viewKeyValue idx sKeyValue =
             , text =
                 case sKeyValue of
                     New { value } ->
-                        value
+                        templatedStringAsString value
 
                     Saved { value } ->
-                        value
+                        templatedStringAsString value
 
                     Edited2 _ { value } ->
-                        value
+                        templatedStringAsString value
             , placeholder = Just <| Input.placeholder [] (text "value")
             , label = Input.labelHidden "Value: "
             }
