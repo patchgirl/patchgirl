@@ -65,7 +65,11 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        -- ** toggle builder/menu/folder
+
+
+-- ** toggle builder/menu/folder
+
+
         ToggleMenu id ->
             let
                 newDisplayedScenarioNodeMenuIndex =
@@ -100,7 +104,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** mkdir
+
+-- ** mkdir
+
+
         GenerateRandomUUIDForFolder parentNodeId ->
             let
                 newMsg =
@@ -140,7 +147,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** touch
+
+-- ** touch
+
+
         GenerateRandomUUIDForFile parentNodeId ->
             let
                 newMsg =
@@ -180,7 +190,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** rename
+
+-- ** rename
+
+
         ShowRenameInput id ->
             let
                 (ScenarioCollection scenarioCollectionId scenarioNodes) =
@@ -242,7 +255,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** delete
+
+-- ** delete
+
+
         AskDelete id ->
             let
                 (ScenarioCollection scenarioCollectionId _) =
@@ -269,7 +285,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** root file
+
+-- ** root file
+
+
         GenerateRandomUUIDForRootFile ->
             let
                 newMsg =
@@ -308,7 +327,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** root folder
+
+-- ** root folder
+
+
         GenerateRandomUUIDForRootFolder ->
             let
                 newMsg =
