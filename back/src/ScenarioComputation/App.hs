@@ -53,8 +53,8 @@ runScenarioComputationHandler ScenarioInput{..} =
 
 runScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
 runScene lastSceneWasSuccessful globalEnvironment sceneInput =
-  case _sceneInputTemplatedRequestComputationInput sceneInput <&> \r -> (lastSceneWasSuccessful, r) of
-    Just (True, templatedRequestComputationInput) ->
+  case lastSceneWasSuccessful of
+    True ->
       case runPrescript globalEnvironment (Map.fromList []) sceneInput of
         Left scriptException ->
           return ( buildSceneOutput sceneInput (PrescriptFailed scriptException)
@@ -62,7 +62,7 @@ runScene lastSceneWasSuccessful globalEnvironment sceneInput =
                  )
 
         Right globalEnvironmentAfterPrescript -> do
-          requestComputationResult <- runRequestComputationHandler ( templatedRequestComputationInput
+          requestComputationResult <- runRequestComputationHandler ( _sceneInputTemplatedRequestComputationInput sceneInput
                                                                    , Map.fromList [] -- globalEnvironmentAfterPrescript
                                                                    )
           case requestComputationResult of

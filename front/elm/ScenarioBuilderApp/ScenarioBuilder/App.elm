@@ -19,6 +19,7 @@ import Uuid exposing (Uuid)
 import RequestComputation
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
+import StringTemplate exposing (..)
 
 
 -- * model
@@ -150,24 +151,25 @@ update msg model =
 
         AskRunScenario ->
             let
-                sceneToSceneInput : Scene -> Client.SceneInput
+                sceneToSceneInput : Scene -> Maybe Client.SceneInput
                 sceneToSceneInput scene =
-                    let
-                        requestComputationInput =
-                            Maybe.map (buildRequestComputationInput model.keyValues) (findFileRecord model scene.requestFileNodeId)
-                    in
-                    { sceneInputId = scene.id
-                    , sceneInputRequestFileNodeId = scene.requestFileNodeId
-                    , sceneInputTemplatedRequestComputationInput =
-                        Debug.todo ""
-                        -- Maybe.map Client.convertRequestComputationInputFromFrontToBack requestComputationInput
-                    , sceneInputPrescript = []
-                    , sceneInputPostscript = []
-                    }
+                    findFileRecord model scene.requestFileNodeId
+                        |> Maybe.map buildRequestComputationInput
+                        |> Maybe.map (\requestComputationInput ->
+                                { sceneInputId = scene.id
+                                , sceneInputRequestFileNodeId = scene.requestFileNodeId
+                                , sceneInputTemplatedRequestComputationInput =
+                                    Client.convertRequestComputationInputFromFrontToBack requestComputationInput
+                                , sceneInputPrescript = []
+                                , sceneInputPostscript = []
+                                })
 
                 payload =
                     { scenarioInputId = model.id
-                    , scenarioInputScenes = List.map sceneToSceneInput model.scenes
+                    , scenarioInputScenes =
+                        model.scenes
+                            |> List.map sceneToSceneInput
+                            |> catMaybes
                     , scenarioInputGlobalEnv = Dict.empty
                     }
 
@@ -453,14 +455,14 @@ detailedSceneView : Model -> Scene -> RequestFileRecord -> Element Msg
 detailedSceneView model scene requestFileRecord =
     let
         { scheme, method, headers, url, body } =
-            buildRequestComputationInput model.keyValues requestFileRecord
+            buildRequestComputationInput requestFileRecord
 
         methodAndUrl =
             (methodToString method)
             ++ " "
             ++ (schemeToString scheme)
             ++ "://"
-            ++ url
+            ++ (stringTemplateToString url)
 
         sceneInputDetailView =
             [ column [ spacing 10 ]

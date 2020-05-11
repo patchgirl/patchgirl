@@ -409,9 +409,9 @@ buildSceneInputWithScript method url prescript postscript =
              , _sceneInputPrescript = prescript
              , _sceneInputPostscript = postscript
              , _sceneInputTemplatedRequestComputationInput =
-               Just $ defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
-                                                     , _templatedRequestComputationInputUrl = url
-                                                     }
+               defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
+                                              , _templatedRequestComputationInputUrl = url
+                                              }
              }
 
 buildSceneInput :: Http.Method -> StringTemplate -> SceneInput

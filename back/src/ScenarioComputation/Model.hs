@@ -26,7 +26,7 @@ data SceneInput
                , _sceneInputRequestFileNodeId       :: UUID
                , _sceneInputPrescript               :: TangoAst
                , _sceneInputPostscript              :: TangoAst
-               , _sceneInputTemplatedRequestComputationInput :: Maybe TemplatedRequestComputationInput
+               , _sceneInputTemplatedRequestComputationInput :: TemplatedRequestComputationInput
                }
   deriving (Eq, Show, Generic)
 

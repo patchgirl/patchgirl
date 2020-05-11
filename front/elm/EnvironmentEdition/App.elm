@@ -422,7 +422,7 @@ updateKeyValue msg ( session, model ) =
         PromptValue idx newValue ->
             let
                 newKeyValues =
-                    List.updateAt idx (changeValue (toStringTemplate newValue)) model.keyValues
+                    List.updateAt idx (changeValue (stringToTemplate newValue)) model.keyValues
 
                 newModel =
                     { model | keyValues = newKeyValues }
