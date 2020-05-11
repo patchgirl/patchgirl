@@ -101,7 +101,7 @@ CREATE TABLE scenario_node(
   scenario_node_parent_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
   scene_node_id UUID REFERENCES scene_node(id) ON DELETE CASCADE
   CHECK (
-    (tag = 'ScenarioFile' AND environment_id IS NOT NULL) OR
+    (tag = 'ScenarioFile') OR
     (tag = 'ScenarioFolder' AND environment_id IS NULL AND scene_node_id IS NULL)
   )
 );

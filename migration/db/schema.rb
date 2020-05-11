@@ -476,7 +476,7 @@ CREATE TABLE public.scenario_node (
     name text NOT NULL,
     scenario_node_parent_id uuid,
     scene_node_id uuid,
-    CONSTRAINT scenario_node_check CHECK ((((tag = 'ScenarioFile'::public.scenario_node_type) AND (environment_id IS NOT NULL)) OR ((tag = 'ScenarioFolder'::public.scenario_node_type) AND (environment_id IS NULL) AND (scene_node_id IS NULL))))
+    CONSTRAINT scenario_node_check CHECK (((tag = 'ScenarioFile'::public.scenario_node_type) OR ((tag = 'ScenarioFolder'::public.scenario_node_type) AND (environment_id IS NULL) AND (scene_node_id IS NULL))))
 );
 
 

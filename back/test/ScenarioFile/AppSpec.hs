@@ -110,7 +110,7 @@ spec =
       return $ NewScenarioFile { _newScenarioFileId           = id
                                , _newScenarioFileParentNodeId = parentId
                                , _newScenarioFileName = "new scenario"
-                               , _newScenarioFileEnvironmentId = envId
+                               , _newScenarioFileEnvironmentId = Just envId
                                }
 
     mkNewRootScenarioFile :: UUID -> UUID -> PG.Connection -> IO NewRootScenarioFile
@@ -121,5 +121,5 @@ spec =
       envId <- insertNewFakeEnvironment newEnvironment connection
       return $ NewRootScenarioFile { _newRootScenarioFileId = id
                                    , _newRootScenarioFileName = "new scenario"
-                                   , _newRootScenarioFileEnvironmentId = envId
+                                   , _newRootScenarioFileEnvironmentId = Just envId
                                    }
