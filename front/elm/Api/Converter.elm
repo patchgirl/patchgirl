@@ -5,7 +5,7 @@ import Api.Generated as Back
 import Application.Type as Front exposing (..)
 import Dict
 import Tuple
-
+import StringTemplate exposing(..)
 
 
 -- * request Collection
@@ -128,7 +128,7 @@ convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueVal
     Saved
         { id = keyValueId
         , key = keyValueKey
-        , value = Debug.todo ""
+        , value = stringToTemplate keyValueValue
         }
 
 
@@ -291,11 +291,12 @@ convertHttpExceptionFromBackToFront backHttpException =
 convertRequestComputationInputFromFrontToBack : Front.RequestComputationInput -> Back.TemplatedRequestComputationInput
 convertRequestComputationInputFromFrontToBack frontRequestInput =
     let
-        convertHeader : List (a, b) -> List (List a, List b)
-        convertHeader = Debug.todo ""
+        convertHeader : (a -> b) -> (a, a) -> (b, b)
+        convertHeader f (s1, s2) =
+            (f s1, f s2)
     in
     { templatedRequestComputationInputMethod = convertMethodFromFrontToBack frontRequestInput.method
-    , templatedRequestComputationInputHeaders = Debug.todo "" -- convertHeader frontRequestInput.headers
+    , templatedRequestComputationInputHeaders = List.map (convertHeader convertStringTemplateFromFrontToBack) frontRequestInput.headers
     , templatedRequestComputationInputScheme = convertSchemeFromFrontToBack frontRequestInput.scheme
     , templatedRequestComputationInputUrl = convertStringTemplateFromFrontToBack frontRequestInput.url
     , templatedRequestComputationInputBody = convertStringTemplateFromFrontToBack frontRequestInput.body

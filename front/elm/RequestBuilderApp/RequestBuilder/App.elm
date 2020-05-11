@@ -361,9 +361,8 @@ buildRequestToRun envKeyValues builder =
                     "https"
 
         backRequestComputationInput =
-            ( Debug.todo "" -- Client.convertRequestComputationInputFromFrontToBack request
-            , Debug.todo ""
-            --                    , envKeyValues |> List.map latestValueOfStorable |> Dict.fromList'
+            ( Client.convertRequestComputationInputFromFrontToBack request
+            , envKeyValues |> List.map latestValueOfStorable |> Dict.fromList
             )
 
     in

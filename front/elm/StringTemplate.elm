@@ -1,6 +1,7 @@
 module StringTemplate exposing ( stringTemplateToString
                                , stringToTemplate
                                , stringTemplateParser
+                               , templateToString
                                )
 
 import Application.Type exposing (..)
