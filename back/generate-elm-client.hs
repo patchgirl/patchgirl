@@ -189,7 +189,7 @@ deriveElmDef deriveWithSingleFieldObject ''SceneOutput
 deriveElmDef deriveWithSingleFieldObject ''SceneInput
 deriveElmDef deriveWithSingleFieldObject ''TangoAst
 deriveElmDef deriveWithSingleFieldObject ''ScenarioEnvironment
-deriveElmDef deriveWithSingleFieldObject ''Template
+deriveElmDef deriveWithTaggedObject ''Template
 deriveElmDef deriveWithSingleFieldObject ''TemplatedRequestComputationInput
 
 
