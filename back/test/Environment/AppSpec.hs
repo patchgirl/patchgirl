@@ -12,7 +12,6 @@ import qualified Data.Maybe                 as Maybe
 import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
 import           DBUtil
-import           Environment.DB
 import           Environment.Model
 import           Helper.App
 import qualified Network.HTTP.Types         as HTTP

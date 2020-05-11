@@ -617,6 +617,7 @@ mkDefaultFile : Uuid.Uuid -> ScenarioNode
 mkDefaultFile id =
     ScenarioFile
         { id = id
+        , environmentId = Debug.todo ""
         , name = NotEdited defaultFileName
         , scenes = []
         , showDetailedSceneView = Nothing

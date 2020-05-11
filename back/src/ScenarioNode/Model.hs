@@ -90,9 +90,10 @@ data ScenarioNode
                    , _scenarioNodeName     :: String
                    , _scenarioNodeChildren :: [ScenarioNode]
                    }
-  | ScenarioFile { _scenarioNodeId     :: UUID
-                 , _scenarioNodeName   :: String
-                 , _scenarioNodeScenes :: [Scene]
+  | ScenarioFile { _scenarioNodeId            :: UUID
+                 , _scenarioNodeName          :: String
+                 , _scenarioNodeEnvironmentId :: Int
+                 , _scenarioNodeScenes        :: [Scene]
                  }
   deriving (Eq, Show, Generic)
 
@@ -141,6 +142,7 @@ instance FromJSON ScenarioNodeFromPG where
       ScenarioFileType -> do
         _scenarioNodeId <- o .: "id"
         _scenarioNodeName <- o .: "name"
+        _scenarioNodeEnvironmentId <- o .: "environment_id"
         scenesFromPG <- o .: "scene_nodes" :: Parser [SceneFromPG]
         let _scenarioNodeScenes = map fromSceneFromPGTOScene scenesFromPG
         return $ ScenarioNodeFromPG $ ScenarioFile{..}
@@ -195,8 +197,9 @@ $(makeLenses ''UpdateScenarioNode)
 
 
 data NewRootScenarioFile =
-  NewRootScenarioFile { _newRootScenarioFileId   :: UUID
-                      , _newRootScenarioFileName :: String
+  NewRootScenarioFile { _newRootScenarioFileId            :: UUID
+                      , _newRootScenarioFileName          :: String
+                      , _newRootScenarioFileEnvironmentId :: Int
                       } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootScenarioFile)
@@ -214,9 +217,10 @@ instance FromJSON NewRootScenarioFile where
 
 
 data NewScenarioFile =
-  NewScenarioFile { _newScenarioFileId           :: UUID
-                  , _newScenarioFileName         :: String
-                  , _newScenarioFileParentNodeId :: UUID
+  NewScenarioFile { _newScenarioFileId            :: UUID
+                  , _newScenarioFileName          :: String
+                  , _newScenarioFileParentNodeId  :: UUID
+                  , _newScenarioFileEnvironmentId :: Int
                   } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewScenarioFile)

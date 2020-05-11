@@ -19,6 +19,7 @@ import qualified Database.PostgreSQL.Simple           as PG
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple.Types     as PG
+import           Environment.Model
 import           GHC.Generics
 import           Http
 import           Model
@@ -449,10 +450,11 @@ insertFakeScenarioFolder fakeScenarioFolder connection = do
 
 
 data NewFakeScenarioFile =
-  NewFakeScenarioFile { _newFakeScenarioFileId       :: UUID
-                      , _newFakeScenarioFileParentId :: Maybe UUID
-                      , _newFakeScenarioFileName     :: String
-                      , _newFakeScenarioFileSceneId  :: Maybe UUID
+  NewFakeScenarioFile { _newFakeScenarioFileId            :: UUID
+                      , _newFakeScenarioFileParentId      :: Maybe UUID
+                      , _newFakeScenarioFileName          :: String
+                      , _newFakeScenarioFileSceneId       :: Maybe UUID
+                      , _newFakeScenarioFileEnvironmentId :: Int
                       }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
@@ -469,8 +471,9 @@ insertFakeScenarioFile newFakeScenarioFile connection = do
             scenario_node_parent_id,
             tag,
             name,
-            scene_node_id
-          ) VALUES (?, ?, 'ScenarioFile', ?,?)
+            scene_node_id,
+            environment_id
+          ) VALUES (?, ?, 'ScenarioFile', ?,?,?)
           RETURNING id;
           |]
 
@@ -499,6 +502,10 @@ insertSampleScenarioCollection accountId connection = do
 
 
   requestCollection@(RequestCollection _ requestNodes) <- insertSampleRequestCollection accountId connection
+  let newFakeEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
+                                             , _newFakeEnvironmentName      = "env1"
+                                             }
+  envId <- insertNewFakeEnvironment newFakeEnvironment connection
   let requestFileId = (Maybe.fromJust . getFirstFile) requestNodes ^. requestNodeId
   let newFakeScene =
         NewFakeScene { _newFakeSceneParentId = Nothing
@@ -513,8 +520,8 @@ insertSampleScenarioCollection accountId connection = do
   n1Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n1 id) connection
   n2Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n2 id) connection
   n3Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n3 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 id n3Id (Just scene1Id)) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id Nothing) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 id n3Id (Just scene1Id) envId) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id Nothing envId) connection
   scenarioCollectionId <- insertFakeScenarioCollection accountId connection
   let fakeScenarioCollectionToScenarioNode1 =
         NewFakeScenarioCollectionToScenarioNode { _fakeScenarioCollectionToScenarioNodeScenarioCollectionId = scenarioCollectionId
@@ -561,20 +568,22 @@ insertSampleScenarioCollection accountId connection = do
 -- *** level 3
 
 
-    n5 id parentId sceneId =
+    n5 id parentId sceneId environmentId =
 
 
       NewFakeScenarioFile { _newFakeScenarioFileId = id
                           , _newFakeScenarioFileParentId = Just parentId
                           , _newFakeScenarioFileName = "5"
                           , _newFakeScenarioFileSceneId  = sceneId
+                          , _newFakeScenarioFileEnvironmentId = environmentId
                           }
 
-    n6 id parentId sceneId =
+    n6 id parentId sceneId environmentId =
       NewFakeScenarioFile { _newFakeScenarioFileId = id
                           , _newFakeScenarioFileParentId = Just parentId
                           , _newFakeScenarioFileName = "6"
                           , _newFakeScenarioFileSceneId = sceneId
+                          , _newFakeScenarioFileEnvironmentId = environmentId
                           }
 
 
@@ -704,6 +713,124 @@ selectFakeSceneWithParentId parentId connection =
           SELECT scene_node_parent_id, request_node_id
           FROM scene_node
           WHERE scene_node_parent_id = ?
+          |]
+
+
+-- * environment
+
+
+-- ** insert fake environment
+
+
+data NewFakeEnvironment =
+  NewFakeEnvironment { _newFakeEnvironmentAccountId :: UUID
+                     , _newFakeEnvironmentName      :: String
+                     }
+  deriving (Eq, Show, Read, Generic, PG.ToRow)
+
+insertNewFakeEnvironment :: NewFakeEnvironment -> PG.Connection -> IO Int
+insertNewFakeEnvironment NewFakeEnvironment { _newFakeEnvironmentAccountId, _newFakeEnvironmentName } connection = do
+  [PG.Only fakeEnvironmentId] <- PG.query connection rawQuery (_newFakeEnvironmentName, _newFakeEnvironmentAccountId)
+  return fakeEnvironmentId
+  where
+    rawQuery =
+      [sql|
+          WITH new_env AS (
+            INSERT INTO environment (name)
+            VALUES (?)
+            RETURNING id
+          ), new_account_env AS (
+            INSERT INTO account_environment (account_id, environment_id)
+            VALUES (?, (SELECT id FROM new_env))
+          ) SELECT id FROM new_env;
+          |]
+
+
+-- ** fake environment
+
+
+data FakeEnvironment =
+  FakeEnvironment { _fakeEnvironmentId   :: Int
+                  , _fakeEnvironmentName :: String
+                  }
+  deriving (Eq, Show, Read, Generic, PG.FromRow)
+
+selectFakeEnvironment :: Int -> PG.Connection -> IO (Maybe FakeEnvironment)
+selectFakeEnvironment environmentId connection =
+  PG.query connection rawQuery (PG.Only environmentId) <&> Maybe.listToMaybe
+  where
+    rawQuery =
+      [sql|
+          SELECT id, name
+          FROM environment
+          WHERE id = ?
+          |]
+
+
+-- ** fake account environment
+
+
+data FakeAccountEnvironment =
+  FakeAccountEnvironment { _fakeAccountEnvironmentAccountId     :: UUID
+                         , _fakeAccountEnvironmentEnvironmentId :: Int
+                         }
+  deriving (Eq, Show, Read, Generic, PG.FromRow)
+
+selectFakeAccountEnvironments :: UUID -> PG.Connection -> IO [FakeAccountEnvironment]
+selectFakeAccountEnvironments accountId connection =
+  PG.query connection rawQuery (PG.Only accountId)
+  where
+    rawQuery =
+      [sql|
+          SELECT account_id, environment_id
+          FROM account_environment
+          WHERE account_id = ?
+          |]
+
+
+-- ** insert fake environment key value
+
+
+data NewFakeKeyValue =
+  NewFakeKeyValue { _newFakeKeyValueEnvironmentId :: Int
+                  , _newFakeKeyValueKey           :: String
+                  , _newFakeKeyValueValue         :: String
+                  }
+  deriving (Eq, Show, Read, Generic, PG.ToRow)
+
+insertNewFakeKeyValue :: NewFakeKeyValue -> PG.Connection -> IO KeyValue
+insertNewFakeKeyValue newFakeKeyValue connection = do
+  [keyValue] <- PG.query connection rawQuery newFakeKeyValue
+  return keyValue
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO key_value (environment_id, key, value)
+          VALUES (?, ?, ?)
+          RETURNING id, key, value;
+          |]
+
+
+-- ** select fake key value
+
+
+data FakeKeyValue =
+  FakeKeyValue { _fakeKeyValueId            :: Int
+               , _fakeKeyValueEnvironmentId :: Int
+               , _fakeKeyValueKey           :: String
+               , _fakeKeyValueValue         :: String
+               }
+  deriving (Eq, Show, Read, Generic, PG.FromRow)
+
+selectFakeKeyValues :: Int -> PG.Connection -> IO [KeyValue]
+selectFakeKeyValues environmentId connection =
+  PG.query connection rawQuery (PG.Only environmentId)
+  where
+    rawQuery =
+      [sql|
+          SELECT id, environment_id, key, value
+          FROM key_value
+          WHERE environment_id = ?
           |]
 
 

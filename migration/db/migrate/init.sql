@@ -66,35 +66,6 @@ CREATE TABLE scene_node(
 );
 
 
--- * scenario node
-
-
-CREATE TYPE scenario_node_type AS ENUM ('ScenarioFolder', 'ScenarioFile');
-
-CREATE TABLE scenario_node(
-  id UUID PRIMARY KEY,
-  tag scenario_node_type NOT NULL,
-  name TEXT NOT NULL,
-  scenario_node_parent_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
-  scene_node_id UUID REFERENCES scene_node(id) ON DELETE CASCADE
-);
-
-
--- * scenario collection
-
-
-CREATE TABLE scenario_collection(
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_id UUID REFERENCES account(id) ON DELETE CASCADE
-);
-
-CREATE TABLE scenario_collection_to_scenario_node(
-  scenario_collection_id UUID REFERENCES scenario_collection(id) ON DELETE CASCADE,
-  scenario_node_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
-  PRIMARY KEY (scenario_collection_id, scenario_node_id)
-);
-
-
 -- * environment
 
 
@@ -114,6 +85,40 @@ CREATE TABLE key_value(
     environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
     key TEXT NOT NULL,
     value TEXT NOT NULL
+);
+
+
+-- * scenario node
+
+
+CREATE TYPE scenario_node_type AS ENUM ('ScenarioFolder', 'ScenarioFile');
+
+CREATE TABLE scenario_node(
+  id UUID PRIMARY KEY,
+  tag scenario_node_type NOT NULL,
+  environment_id INTEGER REFERENCES environment(id),
+  name TEXT NOT NULL,
+  scenario_node_parent_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
+  scene_node_id UUID REFERENCES scene_node(id) ON DELETE CASCADE
+  CHECK (
+    (tag = 'ScenarioFile' AND environment_id IS NOT NULL) OR
+    (tag = 'ScenarioFolder' AND environment_id IS NULL AND scene_node_id IS NULL)
+  )
+);
+
+
+-- * scenario collection
+
+
+CREATE TABLE scenario_collection(
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id UUID REFERENCES account(id) ON DELETE CASCADE
+);
+
+CREATE TABLE scenario_collection_to_scenario_node(
+  scenario_collection_id UUID REFERENCES scenario_collection(id) ON DELETE CASCADE,
+  scenario_node_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
+  PRIMARY KEY (scenario_collection_id, scenario_node_id)
 );
 
 
@@ -200,7 +205,8 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_nodes', root_scene_node_as_json(scene_node_id)
+        'scene_nodes', root_scene_node_as_json(scene_node_id),
+        'environment_id', environment_id
       )
     END
   ) INTO result
@@ -227,7 +233,8 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_nodes', root_scene_node_as_json(scene_node_id)
+        'scene_nodes', root_scene_node_as_json(scene_node_id),
+        'environment_id', environment_id
       )
     END
   ) INTO result

@@ -75,6 +75,7 @@ insertRootScenarioFile :: NewRootScenarioFile -> UUID -> PG.Connection -> IO Int
 insertRootScenarioFile NewRootScenarioFile {..} scenarioCollectionId connection =
   PG.execute connection rawQuery ( _newRootScenarioFileId
                                  , _newRootScenarioFileName
+                                 , _newRootScenarioFileEnvironmentId
                                  , scenarioCollectionId
                                  , _newRootScenarioFileId
                                  )
@@ -86,9 +87,10 @@ insertRootScenarioFile NewRootScenarioFile {..} scenarioCollectionId connection 
               id,
               scenario_node_parent_id,
               tag,
-              name
+              name,
+              environment_id
             )
-            VALUES (?, NULL, 'ScenarioFile', ?)
+            VALUES (?, NULL, 'ScenarioFile', ?, ?)
           ) INSERT INTO scenario_collection_to_scenario_node (
               scenario_collection_id,
               scenario_node_id
@@ -105,6 +107,7 @@ insertScenarioFile NewScenarioFile {..} connection =
   PG.execute connection rawQuery ( _newScenarioFileId
                                  , _newScenarioFileParentNodeId
                                  , _newScenarioFileName
+                                 , _newScenarioFileEnvironmentId
                                  )
   where
     rawQuery =
@@ -113,9 +116,10 @@ insertScenarioFile NewScenarioFile {..} connection =
             id,
             scenario_node_parent_id,
             name,
-            tag
+            tag,
+            environment_id
           )
-          VALUES (?, ?, ?, 'ScenarioFile')
+          VALUES (?, ?, ?, 'ScenarioFile', ?)
           |]
 
 

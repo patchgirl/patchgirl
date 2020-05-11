@@ -200,6 +200,7 @@ type alias ScenarioFolderRecord =
 
 type alias ScenarioFileRecord =
     { id : Uuid
+    , environmentId : Int
     , name : Editable String
     , scenes : List Scene
     , showDetailedSceneView : Maybe Uuid

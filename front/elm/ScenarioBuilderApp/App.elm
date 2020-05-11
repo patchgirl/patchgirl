@@ -42,7 +42,6 @@ type alias Model a =
 type Msg
     = ScenarioBuilderMsg ScenarioBuilder.Msg
     | ScenarioTreeMsg ScenarioTree.Msg
-    | EnvSelectionMsg Int
 
 
 
@@ -52,13 +51,6 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        EnvSelectionMsg idx ->
-            let
-                newModel =
-                    { model | selectedEnvironmentToRunIndex = Just idx }
-            in
-            ( newModel, Cmd.none )
-
         ScenarioTreeMsg subMsg ->
             let
                 ( newModel, newSubMsg ) =
@@ -186,7 +178,7 @@ view model =
         , paddingXY 10 0
         , spacing 10
         ]
-        [ column
+        [ el
             [ alignTop
             , spacing 20
             , centerX
@@ -194,28 +186,10 @@ view model =
             , width (fillPortion 1)
             , Background.color white
             , boxShadow
-            ]
-            [ el [] <| envSelectionView <| List.map .name model.environments
-            , el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
-            ]
+            ] <| el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
+
         , builderView model
         ]
-
-
-envSelectionView : List (Editable String) -> Element Msg
-envSelectionView environmentNames =
-    let
-        entryView : Int -> Editable String -> Html.Html Msg
-        entryView idx envName =
-            Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
-    in
-    html <|
-        Html.div []
-            [ Html.label [] [ Html.text "Env: " ]
-            , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
-                (List.indexedMap entryView environmentNames)
-            ]
-
 
 builderView : Model a -> Element Msg
 builderView model =

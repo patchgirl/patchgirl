@@ -4,6 +4,11 @@ import Api.Converter as Client
 import Api.Generated as Client
 import Dict
 import Application.Type exposing (..)
+import Json.Decode as Json
+import Html as Html
+import Html.Attributes as Html
+import Html.Events as Html
+import Html.Events.Extra exposing (targetValueIntParse)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -65,6 +70,7 @@ type
     | ShowBodyResponseView
     | ShowHeaderResponseView
       -- other
+    | SelectEnv Int
     | DoNothing
 
 
@@ -233,6 +239,10 @@ update msg model =
 -- ** other
 
 
+        SelectEnv envId ->
+            ( model, Cmd.none )
+
+
         CloseModal ->
             let
                 newModel =
@@ -311,9 +321,24 @@ view model =
                 scenes ->
                     column [ centerX, spacing 10 ] (List.map (sceneView model) scenes)
 
+        envSelectionView : List (Editable String) -> Element Msg
+        envSelectionView environmentNames =
+            let
+                entryView : Int -> Editable String -> Html.Html Msg
+                entryView idx envName =
+                    Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
+            in
+            html <|
+                Html.div []
+                    [ Html.label [] [ Html.text "Env: " ]
+                    , Html.select [ Html.on "change" (Json.map SelectEnv targetValueIntParse) ]
+                        (List.indexedMap entryView environmentNames)
+                    ]
+
         scenarioSettingView =
-            column [ width fill, centerX ]
-                [ Input.button [ centerX ]
+            column [ width fill, centerX, spacing 20 ]
+                [ envSelectionView []
+                , Input.button [ centerX ]
                     { onPress = Just AskRunScenario
                     , label =
                         row [ centerX, centerY ]
@@ -345,7 +370,7 @@ view model =
         Nothing ->
             wrappedRow [ width fill, centerX ]
                 [ el [ width (fillPortion 8) ] scenesView
-                , el [ width (fillPortion 2) ] scenarioSettingView
+                , el [ width (fillPortion 2), alignTop ] scenarioSettingView
                 ]
 
         Just (scene, requestFileRecord) ->

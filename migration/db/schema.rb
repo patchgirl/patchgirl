@@ -191,7 +191,8 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_nodes', root_scene_node_as_json(scene_node_id)
+        'scene_nodes', root_scene_node_as_json(scene_node_id),
+        'environment_id', environment_id
       )
     END
   ) INTO result
@@ -250,7 +251,8 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'scene_nodes', root_scene_node_as_json(scene_node_id)
+        'scene_nodes', root_scene_node_as_json(scene_node_id),
+        'environment_id', environment_id
       )
     END
   ) INTO result
@@ -470,9 +472,11 @@ CREATE TABLE public.scenario_collection_to_scenario_node (
 CREATE TABLE public.scenario_node (
     id uuid NOT NULL,
     tag public.scenario_node_type NOT NULL,
+    environment_id integer,
     name text NOT NULL,
     scenario_node_parent_id uuid,
-    scene_node_id uuid
+    scene_node_id uuid,
+    CONSTRAINT scenario_node_check CHECK ((((tag = 'ScenarioFile'::public.scenario_node_type) AND (environment_id IS NOT NULL)) OR ((tag = 'ScenarioFolder'::public.scenario_node_type) AND (environment_id IS NULL) AND (scene_node_id IS NULL))))
 );
 
 
@@ -715,6 +719,14 @@ ALTER TABLE ONLY public.scenario_collection_to_scenario_node
 
 ALTER TABLE ONLY public.scenario_collection_to_scenario_node
     ADD CONSTRAINT scenario_collection_to_scenario_node_scenario_node_id_fkey FOREIGN KEY (scenario_node_id) REFERENCES public.scenario_node(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_node scenario_node_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_node
+    ADD CONSTRAINT scenario_node_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id);
 
 
 --
