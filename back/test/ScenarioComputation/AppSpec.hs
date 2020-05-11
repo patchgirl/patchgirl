@@ -402,7 +402,7 @@ spec = do
 -- ** build input scene
 
 
-buildSceneInputWithScript :: Http.Method -> [TemplatedString] -> TangoAst -> TangoAst -> SceneInput
+buildSceneInputWithScript :: Http.Method -> StringTemplate -> TangoAst -> TangoAst -> SceneInput
 buildSceneInputWithScript method url prescript postscript =
   SceneInput { _sceneInputId = UUID.nil
              , _sceneInputRequestFileNodeId = UUID.nil
@@ -414,7 +414,7 @@ buildSceneInputWithScript method url prescript postscript =
                                                      }
              }
 
-buildSceneInput :: Http.Method -> [TemplatedString] -> SceneInput
+buildSceneInput :: Http.Method -> StringTemplate -> SceneInput
 buildSceneInput method url =
   buildSceneInputWithScript method url [] []
 

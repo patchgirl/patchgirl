@@ -41,10 +41,10 @@ fromResponseToHttpResponse response =
 
 data TemplatedRequestComputationInput
   = TemplatedRequestComputationInput { _templatedRequestComputationInputMethod  :: Method
-                                     , _templatedRequestComputationInputHeaders :: [( [TemplatedString], [TemplatedString])]
+                                     , _templatedRequestComputationInputHeaders :: [( [Template], [Template])]
                                      , _templatedRequestComputationInputScheme  :: Scheme
-                                     , _templatedRequestComputationInputUrl     :: [TemplatedString]
-                                     , _templatedRequestComputationInputBody    :: [TemplatedString]
+                                     , _templatedRequestComputationInputUrl     :: [Template]
+                                     , _templatedRequestComputationInputBody    :: [Template]
                                      }
   deriving (Eq, Show, Read, Generic, Ord)
 

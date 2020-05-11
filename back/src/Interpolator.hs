@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Interpolator ( TemplatedString(..)
+module Interpolator ( Template(..)
+                    , StringTemplate
                     , interpolateRequestEnvironment
                     , templatedStringToString
                     ) where
@@ -14,17 +15,18 @@ import           Environment.Model
 
 -- * model
 
+type StringTemplate = [Template]
 
-data TemplatedString
+data Template
   = Sentence String
   | Key String
   deriving(Eq, Show, Read, Generic, Ord)
 
-instance Aeson.ToJSON TemplatedString where
+instance Aeson.ToJSON Template where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON TemplatedString where
+instance Aeson.FromJSON Template where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
@@ -32,7 +34,7 @@ instance Aeson.FromJSON TemplatedString where
 -- * interpolate request environment
 
 
-interpolateRequestEnvironment :: RequestEnvironment -> TemplatedString -> TemplatedString
+interpolateRequestEnvironment :: RequestEnvironment -> Template -> Template
 interpolateRequestEnvironment requestEnvironment = \case
   Key key ->
     case Map.lookup key requestEnvironment of
@@ -44,7 +46,7 @@ interpolateRequestEnvironment requestEnvironment = \case
 -- * util
 
 
-templatedStringToString :: TemplatedString -> String
+templatedStringToString :: Template -> String
 templatedStringToString = \case
   Sentence sentence -> sentence
   Key key -> "{{" ++ key ++ "}}"

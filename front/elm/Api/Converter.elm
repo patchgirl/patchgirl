@@ -371,10 +371,10 @@ convertSchemeFromFrontToBack scheme =
 -- * string template
 
 
-convertStringTemplateFromFrontToBack : Front.StringTemplate -> List Back.TemplatedString
+convertStringTemplateFromFrontToBack : Front.StringTemplate -> List Back.Template
 convertStringTemplateFromFrontToBack stringTemplate =
     let
-        convertTemplateFromFrontToBack : Front.Template -> Back.TemplatedString
+        convertTemplateFromFrontToBack : Front.Template -> Back.Template
         convertTemplateFromFrontToBack template =
             case template of
                 Front.Sentence str ->

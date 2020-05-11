@@ -81,11 +81,11 @@ buildRequestComputationInput TemplatedRequestComputationInput{..} requestEnviron
                           , _requestComputationInputBody = toString $ interpolate _templatedRequestComputationInputBody
                           }
   where
-    interpolate :: [TemplatedString] -> [TemplatedString]
+    interpolate :: StringTemplate -> StringTemplate
     interpolate =
       map (interpolateRequestEnvironment requestEnvironment)
 
-    toString :: [TemplatedString] -> String
+    toString :: StringTemplate -> String
     toString templatedStrings =
       List.intercalate "" $ map templatedStringToString templatedStrings
 
