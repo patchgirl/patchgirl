@@ -44,7 +44,7 @@ instance Aeson.FromJSON SceneInput where
 data ScenarioInput
   = ScenarioInput { _scenarioInputId        :: UUID
                   , _scenarioInputScenes    :: [SceneInput]
-                  , _scenarioInputGlobalEnv :: ScenarioEnvironment
+                  , _scenarioInputGlobalEnv :: ScenarioVars
                   }
   deriving (Eq, Show, Generic)
 

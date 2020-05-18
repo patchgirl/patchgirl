@@ -188,7 +188,7 @@ deriveElmDef deriveWithSingleFieldObject ''ScenarioOutput
 deriveElmDef deriveWithSingleFieldObject ''SceneOutput
 deriveElmDef deriveWithSingleFieldObject ''SceneInput
 deriveElmDef deriveWithSingleFieldObject ''TangoAst
-deriveElmDef deriveWithSingleFieldObject ''ScenarioEnvironment
+deriveElmDef deriveWithSingleFieldObject ''ScenarioVars
 deriveElmDef deriveWithTaggedObject ''Template
 deriveElmDef deriveWithSingleFieldObject ''TemplatedRequestComputationInput
 
@@ -260,7 +260,7 @@ main =
       , DefineElm (Proxy :: Proxy SceneOutput)
       , DefineElm (Proxy :: Proxy SceneInput)
       , DefineElm (Proxy :: Proxy TangoAst)
-      , DefineElm (Proxy :: Proxy ScenarioEnvironment)
+      , DefineElm (Proxy :: Proxy ScenarioVars)
       , DefineElm (Proxy :: Proxy Template)
       , DefineElm (Proxy :: Proxy TemplatedRequestComputationInput)
       ]

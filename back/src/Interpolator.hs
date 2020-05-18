@@ -2,23 +2,23 @@
 
 module Interpolator ( Template(..)
                     , StringTemplate
-                    , interpolateRequestEnvironment
+                    , interpolateEnvironmentVars
+                    , interpolate
                     , templatedStringToString
-                    , RequestEnvironment
+                    , EnvironmentVars
                     ) where
 
-import qualified Data.Aeson        as Aeson
-import           Data.Map.Strict   (Map)
-import qualified Data.Map.Strict   as Map
-import           GHC.Generics      (Generic)
-
-import           Environment.Model
+import qualified Data.Aeson      as Aeson
+import qualified Data.List       as List
+import           Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
+import           GHC.Generics    (Generic)
 
 
 -- * model
 
 
-type RequestEnvironment = Map String StringTemplate
+type EnvironmentVars = Map String StringTemplate
 
 type StringTemplate = [Template]
 
@@ -39,13 +39,19 @@ instance Aeson.FromJSON Template where
 -- * interpolate request environment
 
 
-interpolateRequestEnvironment :: RequestEnvironment -> Template -> Template
-interpolateRequestEnvironment requestEnvironment = \case
+interpolate :: EnvironmentVars -> StringTemplate -> String
+interpolate environmentVars stringTemplate =
+  List.intercalate "" $ map (interpolateEnvironmentVars environmentVars) stringTemplate
+
+interpolateEnvironmentVars :: EnvironmentVars -> Template -> String
+interpolateEnvironmentVars environmentVars = \case
   Key key ->
-    case Map.lookup key requestEnvironment of
-      Just value -> undefined
-      Nothing    -> Key key
-  sentence -> sentence
+    case Map.lookup key environmentVars of
+      Just value ->
+        List.intercalate "" $ map templatedStringToString value
+      Nothing    ->
+        templatedStringToString (Key key)
+  sentence -> templatedStringToString sentence
 
 
 -- * util

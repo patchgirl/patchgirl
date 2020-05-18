@@ -13,7 +13,9 @@ import Util exposing (..)
 import StringTemplate exposing(..)
 
 
--- * environment edition
+-- *  environment edition
+
+
 -- ** model
 
 
@@ -369,7 +371,7 @@ labelInputView labelText =
 
 
 
--- * environment key value edition
+-- *  environment key value edition
 -- ** model
 
 

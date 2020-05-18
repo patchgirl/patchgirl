@@ -362,7 +362,11 @@ buildRequestToRun envKeyValues builder =
 
         backRequestComputationInput =
             ( Client.convertRequestComputationInputFromFrontToBack request
-            , envKeyValues |> List.map latestValueOfStorable |> Dict.fromList
+            , envKeyValues
+                |> List.map latestValueOfStorable
+                |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
+                |> Dict.fromList
+
             )
 
     in
@@ -427,12 +431,12 @@ expectStringDetailed msg =
     Http.expectStringResponse msg convertResponseStringToResult
 
 
-latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, String)
+latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, StringTemplate)
 latestValueOfStorable storable =
     case storable of
-        New { key, value } -> (key, templatedStringAsString value)
-        Saved { key, value } -> (key, templatedStringAsString value)
-        Edited2 _ { key, value } -> (key, templatedStringAsString value)
+        New { key, value } -> (key, value)
+        Saved { key, value } -> (key, value)
+        Edited2 _ { key, value } -> (key, value)
 
 -- * view
 

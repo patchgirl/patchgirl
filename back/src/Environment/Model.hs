@@ -25,7 +25,7 @@ module Environment.Model ( KeyValue(..)
                          , updateEnvironmentName
                          , NewEnvironment(..)
                          , newEnvironmentName
-                         , ScenarioEnvironment
+                         , ScenarioVars
                          ) where
 
 import           Control.Lens               (makeLenses)
@@ -156,7 +156,7 @@ instance ToJSON NewKeyValue where
 $(makeLenses ''NewKeyValue)
 
 
--- * scenario environment
+-- * scenario vars
 
 
-type ScenarioEnvironment = Map String Expr
+type ScenarioVars = Map String Expr

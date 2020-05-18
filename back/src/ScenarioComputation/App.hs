@@ -32,9 +32,9 @@ runScenarioComputationHandler ScenarioInput{..} =
   where
     buildScenes
       :: (Reader.MonadReader Env m, IO.MonadIO m)
-      => (ScenarioEnvironment, [SceneOutput])
+      => (ScenarioVars, [SceneOutput])
       -> SceneInput
-      -> m (ScenarioEnvironment, [SceneOutput])
+      -> m (ScenarioVars, [SceneOutput])
     buildScenes (globalEnvironment, scenes) inputScene = do
       (scene, newGlobalEnvironment) <- runScene (lastSceneWasSuccessful scenes) globalEnvironment inputScene
       return (newGlobalEnvironment, scenes ++ [ scene ])
@@ -51,7 +51,7 @@ runScenarioComputationHandler ScenarioInput{..} =
 -- ** build scene
 
 
-runScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioEnvironment -> SceneInput -> m (SceneOutput, ScenarioEnvironment)
+runScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> ScenarioVars -> SceneInput -> m (SceneOutput, ScenarioVars)
 runScene lastSceneWasSuccessful globalEnvironment sceneInput =
   case lastSceneWasSuccessful of
     True ->
@@ -92,14 +92,14 @@ runScene lastSceneWasSuccessful globalEnvironment sceneInput =
 -- ** pre script
 
 
-runPrescript :: ScenarioEnvironment -> ScenarioEnvironment -> SceneInput -> Either ScriptException ScenarioEnvironment
+runPrescript :: ScenarioVars -> ScenarioVars -> SceneInput -> Either ScriptException ScenarioVars
 runPrescript globalEnvironment localEnvironment SceneInput{..} =
   foldl f (Right (globalEnvironment, localEnvironment)) _sceneInputPrescript <&> fst
   where
     f
-      :: Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+      :: Either ScriptException (ScenarioVars, ScenarioVars)
       -> Proc
-      -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+      -> Either ScriptException (ScenarioVars, ScenarioVars)
     f acc proc =
       acc >>= \env -> runPrescriptProc env proc
 
@@ -108,18 +108,18 @@ runPrescript globalEnvironment localEnvironment SceneInput{..} =
 
 
 runPostscript
-  :: ScenarioEnvironment
-  -> ScenarioEnvironment
+  :: ScenarioVars
+  -> ScenarioVars
   -> SceneInput
   -> RequestComputationOutput
-  -> Either ScriptException ScenarioEnvironment
+  -> Either ScriptException ScenarioVars
 runPostscript globalEnvironment localEnvironment SceneInput{..} requestComputationOutput =
   foldl f (Right (globalEnvironment, localEnvironment)) _sceneInputPostscript <&> fst
   where
     f
-      :: Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+      :: Either ScriptException (ScenarioVars, ScenarioVars)
       -> Proc
-      -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+      -> Either ScriptException (ScenarioVars, ScenarioVars)
     f acc proc =
       acc >>= \env -> runPostscriptProc requestComputationOutput env proc
 
@@ -129,9 +129,9 @@ runPostscript globalEnvironment localEnvironment SceneInput{..} requestComputati
 
 runPostscriptProc
   :: RequestComputationOutput
-  -> (ScenarioEnvironment, ScenarioEnvironment)
+  -> (ScenarioVars, ScenarioVars)
   -> Proc
-  -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+  -> Either ScriptException (ScenarioVars, ScenarioVars)
 runPostscriptProc requestComputationOutput (globalEnvironment, localEnvironment) = \case
   AssertEqual expr1 expr2 ->
     let
@@ -173,9 +173,9 @@ runPostscriptProc requestComputationOutput (globalEnvironment, localEnvironment)
 
 
 runPrescriptProc
-  :: (ScenarioEnvironment, ScenarioEnvironment)
+  :: (ScenarioVars, ScenarioVars)
   -> Proc
-  -> Either ScriptException (ScenarioEnvironment, ScenarioEnvironment)
+  -> Either ScriptException (ScenarioVars, ScenarioVars)
 runPrescriptProc (globalEnvironment, localEnvironment) = \case
   AssertEqual expr1 expr2 ->
     let
@@ -218,8 +218,8 @@ runPrescriptProc (globalEnvironment, localEnvironment) = \case
 
 runPostscriptExpr
   :: RequestComputationOutput
-  -> ScenarioEnvironment
-  -> ScenarioEnvironment
+  -> ScenarioVars
+  -> ScenarioVars
   -> Expr
   -> Maybe Expr
 runPostscriptExpr RequestComputationOutput{..} globalEnvironment localEnvironment = \case
@@ -232,7 +232,7 @@ runPostscriptExpr RequestComputationOutput{..} globalEnvironment localEnvironmen
 -- ** run prescript expr
 
 
-runPrescriptExpr :: ScenarioEnvironment -> ScenarioEnvironment -> Expr -> Maybe Expr
+runPrescriptExpr :: ScenarioVars -> ScenarioVars -> Expr -> Maybe Expr
 runPrescriptExpr globalEnvironment localEnvironment = \case
   Var var -> Map.lookup var localEnvironment
   Fetch var -> Map.lookup var globalEnvironment

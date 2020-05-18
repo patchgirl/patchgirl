@@ -19,7 +19,6 @@ import           Servant.Client
 import           Test.Hspec
 
 import           App
-import           Environment.Model
 import           FakeHttpRequest
 import           Helper.App
 import qualified Http
@@ -32,7 +31,7 @@ import           RequestComputation.Model
 
 runRequestComputation
   :: Auth.Token
-  -> (TemplatedRequestComputationInput, RequestEnvironment)
+  -> (TemplatedRequestComputationInput, EnvironmentVars)
   -> ClientM RequestComputationResult
 runRequestComputation =
   client (Proxy :: Proxy (RequestComputationApi '[JWT]))

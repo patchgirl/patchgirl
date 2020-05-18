@@ -13,12 +13,10 @@ import qualified Control.Monad.Reader        as Reader
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
 import           Data.Functor                ((<&>))
-import qualified Data.List                   as List
 import qualified Network.HTTP.Client.Conduit as Http
 import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types          as Http
 
-import           Environment.Model
 import           Http
 import           Interpolator
 import           PatchGirl
@@ -32,22 +30,22 @@ runRequestComputationHandler
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      )
-  => (TemplatedRequestComputationInput, RequestEnvironment)
+  => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationResult
-runRequestComputationHandler (templatedRequestComputationInput, requestEnvironment) = do
+runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
   runner <- Reader.ask <&> _envHttpRequest
   IO.liftIO $
     Exception.try (
-      buildRequest templatedRequestComputationInput requestEnvironment >>= runner
+      buildRequest templatedRequestComputationInput environmentVars >>= runner
     ) <&> responseToComputationResult
 
 
 -- * build request
 
 
-buildRequest :: TemplatedRequestComputationInput -> RequestEnvironment -> IO Http.Request
-buildRequest templatedRequestComputationInput requestEnvironment = do
-  let RequestComputationInput{..} = buildRequestComputationInput templatedRequestComputationInput requestEnvironment
+buildRequest :: TemplatedRequestComputationInput -> EnvironmentVars -> IO Http.Request
+buildRequest templatedRequestComputationInput environmentVars = do
+  let RequestComputationInput{..} = buildRequestComputationInput templatedRequestComputationInput environmentVars
   let url = schemeToString _requestComputationInputScheme  <> "://" <> _requestComputationInputUrl
   parsedRequest <- IO.liftIO $ Http.parseRequest url
   return
@@ -66,28 +64,20 @@ buildRequest templatedRequestComputationInput requestEnvironment = do
           Http.setRequestSecure True . Http.setRequestPort 443
 
 
--- * interpolate request environment
+-- *  build request computation input
 
 
-buildRequestComputationInput :: TemplatedRequestComputationInput -> RequestEnvironment -> RequestComputationInput
-buildRequestComputationInput TemplatedRequestComputationInput{..} requestEnvironment =
+buildRequestComputationInput :: TemplatedRequestComputationInput -> EnvironmentVars -> RequestComputationInput
+buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVars =
   RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
                           , _requestComputationInputHeaders =
-                            _templatedRequestComputationInputHeaders <&> \(h, v) -> ( toString $ interpolate h
-                                                                                    , toString $ interpolate v
+                            _templatedRequestComputationInputHeaders <&> \(h, v) -> ( interpolate environmentVars h
+                                                                                    , interpolate environmentVars v
                                                                                     )
                           , _requestComputationInputScheme = _templatedRequestComputationInputScheme
-                          , _requestComputationInputUrl = toString $ interpolate _templatedRequestComputationInputUrl
-                          , _requestComputationInputBody = toString $ interpolate _templatedRequestComputationInputBody
+                          , _requestComputationInputUrl = interpolate environmentVars _templatedRequestComputationInputUrl
+                          , _requestComputationInputBody = interpolate environmentVars _templatedRequestComputationInputBody
                           }
-  where
-    interpolate :: StringTemplate -> StringTemplate
-    interpolate =
-      map (interpolateRequestEnvironment requestEnvironment)
-
-    toString :: StringTemplate -> String
-    toString templatedStrings =
-      List.intercalate "" $ map templatedStringToString templatedStrings
 
 
 -- * run request
