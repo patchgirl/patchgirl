@@ -2,9 +2,7 @@
 
 module Interpolator ( Template(..)
                     , StringTemplate
-                    , interpolateEnvironmentVars
                     , interpolate
-                    , templatedStringToString
                     , EnvironmentVars
                     ) where
 
@@ -48,16 +46,16 @@ interpolateEnvironmentVars environmentVars = \case
   Key key ->
     case Map.lookup key environmentVars of
       Just value ->
-        List.intercalate "" $ map templatedStringToString value
+        List.intercalate "" $ map templateToString value
       Nothing    ->
-        templatedStringToString (Key key)
-  sentence -> templatedStringToString sentence
+        templateToString (Key key)
+  sentence -> templateToString sentence
 
 
 -- * util
 
 
-templatedStringToString :: Template -> String
-templatedStringToString = \case
+templateToString :: Template -> String
+templateToString = \case
   Sentence sentence -> sentence
   Key key -> "{{" ++ key ++ "}}"
