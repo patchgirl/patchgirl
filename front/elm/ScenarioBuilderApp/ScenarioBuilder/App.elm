@@ -5,14 +5,11 @@ import Api.Generated as Client
 import Dict
 import Application.Type exposing (..)
 import Json.Decode as Json
-import Html as Html
-import Html.Attributes as Html
-import Html.Events as Html
-import Html.Events.Extra exposing (targetValueIntParse)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
+import Element.Font as Font
 import Http
 import List.Extra as List
 import Modal exposing (Modal(..))
@@ -25,6 +22,7 @@ import RequestComputation
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import StringTemplate exposing (..)
+import Dict exposing (Dict)
 
 
 -- * model
@@ -42,6 +40,8 @@ type alias Model =
     , name : Editable String
     , showDetailedSceneView : Maybe Uuid
     , whichResponseView : HttpResponseView
+    , environments : List Environment
+    , environmentId : Maybe Int
     }
 
 
@@ -70,7 +70,7 @@ type
     | ShowBodyResponseView
     | ShowHeaderResponseView
       -- other
-    | SelectEnv Int
+    | SetEnvironmentId Int
     | DoNothing
 
 
@@ -170,6 +170,16 @@ update msg model =
                                 , sceneInputPostscript = []
                                 })
 
+                environmentKeyValues : Dict String (List Client.Template)
+                environmentKeyValues =
+                    model.environmentId
+                        |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
+                        |> Maybe.map .keyValues
+                        |> Maybe.withDefault []
+                        |> List.map toLatestKeyValue
+                        |> List.map (\{key, value} -> (key, Client.convertStringTemplateFromFrontToBack value))
+                        |> Dict.fromList
+
                 payload =
                     { scenarioInputId = model.id
                     , scenarioInputScenes =
@@ -239,8 +249,12 @@ update msg model =
 -- ** other
 
 
-        SelectEnv envId ->
-            ( model, Cmd.none )
+        SetEnvironmentId envId ->
+            let
+                newModel =
+                    { model | environmentId = Just envId }
+            in
+            ( newModel, Cmd.none )
 
 
         CloseModal ->
@@ -321,30 +335,38 @@ view model =
                 scenes ->
                     column [ centerX, spacing 10 ] (List.map (sceneView model) scenes)
 
-        envSelectionView : List (Editable String) -> Element Msg
-        envSelectionView environmentNames =
+        envSelectionView : Element Msg
+        envSelectionView =
             let
-                entryView : Int -> Editable String -> Html.Html Msg
-                entryView idx envName =
-                    Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
+                option environment =
+                    Input.option environment.id <|
+                        el [ width fill ] (text <| editedOrNotEditedValue environment.name)
             in
-            html <|
-                Html.div []
-                    [ Html.label [] [ Html.text "Env: " ]
-                    , Html.select [ Html.on "change" (Json.map SelectEnv targetValueIntParse) ]
-                        (List.indexedMap entryView environmentNames)
-                    ]
+            Input.radio [ padding 10, spacing 10 ]
+                { onChange = SetEnvironmentId
+                , selected = model.environmentId
+                , label = Input.labelAbove [] <| text "Environment to run with: "
+                , options = List.map option model.environments
+                }
 
+        scenarioSettingView : Element Msg
         scenarioSettingView =
             column [ width fill, centerX, spacing 20 ]
-                [ envSelectionView []
-                , Input.button [ centerX ]
+                [ Input.button [ centerX
+                               , Border.solid
+                               , Border.color secondaryColor
+                               , Border.width 1
+                               , Border.rounded 5
+                               , Background.color secondaryColor
+                               , paddingXY 10 10
+                               ]
                     { onPress = Just AskRunScenario
                     , label =
                         row [ centerX, centerY ]
                             [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
                             ]
                     }
+                , envSelectionView
                 ]
 
         sceneAndFileRecordDetailToShow : Maybe (Scene, RequestFileRecord)
@@ -369,14 +391,14 @@ view model =
     case sceneAndFileRecordDetailToShow of
         Nothing ->
             wrappedRow [ width fill, centerX ]
-                [ el [ width (fillPortion 8) ] scenesView
-                , el [ width (fillPortion 2), alignTop ] scenarioSettingView
+                [ el [ width (fillPortion 2), alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                , el [ width (fillPortion 8) ] scenesView
                 ]
 
         Just (scene, requestFileRecord) ->
-            wrappedRow [ height fill, width fill ]
-                [ el [ width (fillPortion 4), height fill ] scenesView
-                , el [ width (fillPortion 1), height fill ] scenarioSettingView
+            wrappedRow [ height fill, width fill, spacing 20 ]
+                [ el [ width (fillPortion 1), height fill, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                , el [ width (fillPortion 4), height fill ] scenesView
                 , el [ width (fillPortion 5), height fill ] (detailedSceneView model scene requestFileRecord)
                 ]
 

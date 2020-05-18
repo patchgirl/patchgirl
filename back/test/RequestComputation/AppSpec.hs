@@ -111,5 +111,5 @@ spec = do
 -- ** scenario environment
 
 
-requestEnvironment :: Map String String
+requestEnvironment :: Map String StringTemplate
 requestEnvironment = Map.fromList []

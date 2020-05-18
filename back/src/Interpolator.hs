@@ -4,9 +4,11 @@ module Interpolator ( Template(..)
                     , StringTemplate
                     , interpolateRequestEnvironment
                     , templatedStringToString
+                    , RequestEnvironment
                     ) where
 
 import qualified Data.Aeson        as Aeson
+import           Data.Map.Strict   (Map)
 import qualified Data.Map.Strict   as Map
 import           GHC.Generics      (Generic)
 
@@ -14,6 +16,9 @@ import           Environment.Model
 
 
 -- * model
+
+
+type RequestEnvironment = Map String StringTemplate
 
 type StringTemplate = [Template]
 
@@ -38,7 +43,7 @@ interpolateRequestEnvironment :: RequestEnvironment -> Template -> Template
 interpolateRequestEnvironment requestEnvironment = \case
   Key key ->
     case Map.lookup key requestEnvironment of
-      Just value -> Sentence value
+      Just value -> undefined
       Nothing    -> Key key
   sentence -> sentence
 

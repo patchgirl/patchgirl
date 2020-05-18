@@ -75,6 +75,26 @@ type alias Environment =
     , keyValues : List (Storable NewKeyValue KeyValue)
     }
 
+toLatestKeyValue : Storable NewKeyValue KeyValue
+                 -> { key : String
+                    , value : StringTemplate
+                    }
+toLatestKeyValue storable =
+    case storable of
+        New { key, value } ->
+            { key = key
+            , value = value
+            }
+
+        Saved { key, value } ->
+            { key = key
+            , value = value
+            }
+
+        Edited2 _ { key, value } ->
+            { key = key
+            , value = value
+            }
 
 
 -- * key value
@@ -200,7 +220,7 @@ type alias ScenarioFolderRecord =
 
 type alias ScenarioFileRecord =
     { id : Uuid
-    , environmentId : Int
+    , environmentId : Maybe Int
     , name : Editable String
     , scenes : List Scene
     , showDetailedSceneView : Maybe Uuid

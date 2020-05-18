@@ -167,6 +167,7 @@ update msg model =
                     { newScenarioFileId = newId
                     , newScenarioFileName = defaultFileName
                     , newScenarioFileParentNodeId = parentNodeId
+                    , newScenarioFileEnvironmentId = Nothing
                     }
 
                 newMsg =
@@ -304,6 +305,7 @@ update msg model =
                 newRootScenarioFile =
                     { newRootScenarioFileId = newId
                     , newRootScenarioFileName = defaultFileName
+                    , newRootScenarioFileEnvironmentId = Nothing
                     }
 
                 newMsg =

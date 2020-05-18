@@ -117,35 +117,32 @@ getBuilder model =
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
             in
-            Just (convertFromFileToBuilder file scenarioCollectionId model.session model.requestCollection keyValuesToRun model.notification model.whichModal)
+            Just (convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun)
 
         _ ->
             Nothing
 
-
 convertFromFileToBuilder :
     ScenarioFileRecord
+    -> Model a
     -> Uuid.Uuid
-    -> Session
-    -> RequestCollection
     -> List (Storable NewKeyValue KeyValue)
-    -> Maybe String
-    -> Maybe Modal
     -> ScenarioBuilder.Model
-convertFromFileToBuilder file scenarioCollectionId session requestCollection keyValuesToRun notification whichModal =
-    { notification = notification
-    , session = session
-    , whichModal = whichModal
+convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =
+    { notification = model.notification
+    , session = model.session
+    , whichModal = model.whichModal
     , id = file.id
     , scenarioCollectionId = scenarioCollectionId
-    , requestCollection = requestCollection
+    , requestCollection = model.requestCollection
     , scenes = file.scenes
     , keyValues = keyValuesToRun
     , name = file.name
     , showDetailedSceneView = file.showDetailedSceneView
     , whichResponseView = file.whichResponseView
+    , environments = model.environments
+    , environmentId = file.environmentId
     }
-
 
 convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord
 convertFromBuilderToFile builder =
@@ -154,8 +151,8 @@ convertFromBuilderToFile builder =
     , scenes = builder.scenes
     , showDetailedSceneView = builder.showDetailedSceneView
     , whichResponseView = builder.whichResponseView
+    , environmentId = builder.environmentId
     }
-
 
 changeFileBuilder : ScenarioBuilder.Model -> ScenarioNode -> ScenarioNode
 changeFileBuilder builder node =

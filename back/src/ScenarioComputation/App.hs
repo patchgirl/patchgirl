@@ -11,12 +11,12 @@ import qualified Control.Monad.Reader      as Reader
 import           Data.Functor              ((<&>))
 import qualified Data.Map.Strict           as Map
 
+import           Environment.Model
 import           PatchGirl
 import           RequestComputation.App
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           TangoScript
-
 
 -- * run scenario computation handler
 

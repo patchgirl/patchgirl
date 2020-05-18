@@ -5,7 +5,6 @@ module ScenarioComputation.Model  ( SceneInput(..)
                                   , SceneOutput(..)
                                   , ScenarioOutput(..)
                                   , SceneComputation(..)
-                                  , ScenarioEnvironment
                                   , ScriptException(..)
                                   ) where
 

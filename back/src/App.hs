@@ -62,6 +62,7 @@ import           Environment.App
 import           Environment.Model
 import           Github.App
 import           Health.App
+import           Interpolator
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestComputation.App
@@ -78,7 +79,6 @@ import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
 import           Session.App
 import           Session.Model
 import           Test
-
 
 -- * api
 
