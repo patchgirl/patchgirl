@@ -12,6 +12,7 @@ import           Data.Functor    ((<&>))
 import qualified Data.List       as List
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
+import qualified Data.Maybe      as Maybe
 import           GHC.Generics    (Generic)
 
 import           TangoScript
@@ -70,9 +71,7 @@ interpolate environmentVars scenarioGlobalVars scenarioLocalVars stringTemplate 
 interpolateEnvironmentVars :: EnvironmentVars -> Template -> StringTemplate
 interpolateEnvironmentVars environmentVars = \case
   Key key ->
-    case Map.lookup key environmentVars of
-      Just value -> value
-      Nothing    -> [ Key key ]
+    Maybe.fromMaybe [Key key] (Map.lookup key environmentVars)
   sentence -> [ sentence ]
 
 interpolateScenarioVars :: ScenarioVars -> Template -> Template
