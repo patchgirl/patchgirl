@@ -62,8 +62,8 @@ exprToString = \case
   LBool bool -> Just $ show bool
   LInt int -> Just $ show int
   LString string -> Just string
-  Var string -> Nothing
-  Fetch string -> Nothing
-  Eq e1 e2 -> Nothing
-  Add e1 e2 -> Nothing
+  Var _ -> Nothing
+  Fetch _ -> Nothing
+  Eq _ _ -> Nothing
+  Add _ _ -> Nothing
   HttpResponseBodyAsString -> Nothing

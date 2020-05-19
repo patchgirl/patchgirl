@@ -13,7 +13,6 @@ import qualified Data.Aeson               as Aeson
 import           Data.UUID                (UUID)
 import           GHC.Generics             (Generic)
 
-import           Environment.Model
 import           Interpolator
 import           RequestComputation.Model
 import           TangoScript

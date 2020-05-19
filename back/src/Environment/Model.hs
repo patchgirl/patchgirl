@@ -32,7 +32,6 @@ import           Data.Aeson                 (FromJSON, ToJSON (..),
                                              defaultOptions, fieldLabelModifier,
                                              genericToJSON, parseJSON)
 import           Data.Aeson.Types           (genericParseJSON)
-import           Data.Map.Strict            (Map)
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Generics
 

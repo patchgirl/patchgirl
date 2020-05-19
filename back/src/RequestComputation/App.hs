@@ -19,7 +19,6 @@ import qualified Network.HTTP.Client.Conduit as Http
 import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types          as Http
 
-import           Environment.Model
 import           Http
 import           Interpolator
 import           PatchGirl

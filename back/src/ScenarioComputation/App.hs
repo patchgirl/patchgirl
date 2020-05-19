@@ -11,7 +11,6 @@ import qualified Control.Monad.Reader      as Reader
 import           Data.Functor              ((<&>))
 import qualified Data.Map.Strict           as Map
 
-import           Environment.Model
 import           Interpolator
 import           PatchGirl
 import           RequestComputation.App
