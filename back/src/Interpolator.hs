@@ -4,18 +4,33 @@ module Interpolator ( Template(..)
                     , StringTemplate
                     , interpolate
                     , EnvironmentVars
+                    , ScenarioVars
                     ) where
 
 import qualified Data.Aeson      as Aeson
+import           Data.Functor    ((<&>))
 import qualified Data.List       as List
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           GHC.Generics    (Generic)
 
+import           TangoScript
+
 
 -- * model
 
+{--
+scenario variables are variables defined in scripts and can only
+be used in a scenario context.
+They can be modified accross pre or post script scene and only
+live accross a given scenario.
+--}
+type ScenarioVars = Map String Expr
 
+{--
+environment variables are variables defined in the environment
+section. they live accross requests and scenario
+--}
 type EnvironmentVars = Map String StringTemplate
 
 type StringTemplate = [Template]
@@ -36,20 +51,37 @@ instance Aeson.FromJSON Template where
 
 -- * interpolate request environment
 
+interpolate
+  :: EnvironmentVars
+  -> ScenarioVars
+  -> ScenarioVars
+  -> StringTemplate
+  -> String
+interpolate environmentVars scenarioGlobalVars scenarioLocalVars stringTemplate =
+  let
+    interpolated :: [Template]
+    interpolated =
+      stringTemplate >>= interpolateEnvironmentVars environmentVars
+      <&> interpolateScenarioVars scenarioGlobalVars
+      <&> interpolateScenarioVars scenarioLocalVars
+  in
+    List.intercalate "" $ map templateToString interpolated
 
-interpolate :: EnvironmentVars -> StringTemplate -> String
-interpolate environmentVars stringTemplate =
-  List.intercalate "" $ map (interpolateEnvironmentVars environmentVars) stringTemplate
-
-interpolateEnvironmentVars :: EnvironmentVars -> Template -> String
+interpolateEnvironmentVars :: EnvironmentVars -> Template -> StringTemplate
 interpolateEnvironmentVars environmentVars = \case
   Key key ->
     case Map.lookup key environmentVars of
-      Just value ->
-        List.intercalate "" $ map templateToString value
-      Nothing    ->
-        templateToString (Key key)
-  sentence -> templateToString sentence
+      Just value -> value
+      Nothing    -> [ Key key ]
+  sentence -> [ sentence ]
+
+interpolateScenarioVars :: ScenarioVars -> Template -> Template
+interpolateScenarioVars scenarioVars = \case
+  Key key ->
+    case Map.lookup key scenarioVars >>= exprToString of
+      Just str -> Sentence str
+      Nothing  -> Key key
+  sentence -> sentence
 
 
 -- * util

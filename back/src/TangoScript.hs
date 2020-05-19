@@ -3,6 +3,7 @@
 module TangoScript ( TangoAst
                    , Proc(..)
                    , Expr(..)
+                   , exprToString
                    ) where
 
 import qualified Data.Aeson   as Aeson
@@ -51,3 +52,18 @@ instance Aeson.ToJSON Expr where
 instance Aeson.FromJSON Expr where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
+-- * util
+
+
+exprToString :: Expr -> Maybe String
+exprToString = \case
+  LBool bool -> Just $ show bool
+  LInt int -> Just $ show int
+  LString string -> Just string
+  Var string -> Nothing
+  Fetch string -> Nothing
+  Eq e1 e2 -> Nothing
+  Add e1 e2 -> Nothing
+  HttpResponseBodyAsString -> Nothing

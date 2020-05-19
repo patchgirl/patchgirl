@@ -25,7 +25,6 @@ module Environment.Model ( KeyValue(..)
                          , updateEnvironmentName
                          , NewEnvironment(..)
                          , newEnvironmentName
-                         , ScenarioVars
                          ) where
 
 import           Control.Lens               (makeLenses)
@@ -36,7 +35,6 @@ import           Data.Aeson.Types           (genericParseJSON)
 import           Data.Map.Strict            (Map)
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Generics
-import           TangoScript
 
 
 -- * key value
@@ -157,6 +155,3 @@ $(makeLenses ''NewKeyValue)
 
 
 -- * scenario vars
-
-
-type ScenarioVars = Map String Expr

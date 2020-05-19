@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts      #-}
 
 module RequestComputation.App ( runRequestComputationHandler
+                              , runRequestComputationWithScenarioContext
                               , ioRequestRunner
                               ) where
 
@@ -13,10 +14,12 @@ import qualified Control.Monad.Reader        as Reader
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
 import           Data.Functor                ((<&>))
+import qualified Data.Map.Strict             as Map
 import qualified Network.HTTP.Client.Conduit as Http
 import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types          as Http
 
+import           Environment.Model
 import           Http
 import           Interpolator
 import           PatchGirl
@@ -36,16 +39,41 @@ runRequestComputationHandler (templatedRequestComputationInput, environmentVars)
   runner <- Reader.ask <&> _envHttpRequest
   IO.liftIO $
     Exception.try (
-      buildRequest templatedRequestComputationInput environmentVars >>= runner
+      buildRequest templatedRequestComputationInput environmentVars Map.empty Map.empty >>= runner
+    ) <&> responseToComputationResult
+
+
+-- *  run request computation with scenario context
+
+
+runRequestComputationWithScenarioContext
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     )
+  => TemplatedRequestComputationInput
+  -> EnvironmentVars
+  -> ScenarioVars
+  -> ScenarioVars
+  -> m RequestComputationResult
+runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
+  runner <- Reader.ask <&> _envHttpRequest
+  IO.liftIO $
+    Exception.try (
+      buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars >>= runner
     ) <&> responseToComputationResult
 
 
 -- * build request
 
 
-buildRequest :: TemplatedRequestComputationInput -> EnvironmentVars -> IO Http.Request
-buildRequest templatedRequestComputationInput environmentVars = do
-  let RequestComputationInput{..} = buildRequestComputationInput templatedRequestComputationInput environmentVars
+buildRequest
+  :: TemplatedRequestComputationInput
+  -> EnvironmentVars
+  -> ScenarioVars
+  -> ScenarioVars
+  -> IO Http.Request
+buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
+  let RequestComputationInput{..} = buildRequestComputationInput templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars
   let url = schemeToString _requestComputationInputScheme  <> "://" <> _requestComputationInputUrl
   parsedRequest <- IO.liftIO $ Http.parseRequest url
   return
@@ -67,17 +95,22 @@ buildRequest templatedRequestComputationInput environmentVars = do
 -- *  build request computation input
 
 
-buildRequestComputationInput :: TemplatedRequestComputationInput -> EnvironmentVars -> RequestComputationInput
-buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVars =
+buildRequestComputationInput
+  :: TemplatedRequestComputationInput
+  -> EnvironmentVars
+  -> ScenarioVars
+  -> ScenarioVars
+  -> RequestComputationInput
+buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars =
   RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
                           , _requestComputationInputHeaders =
-                            _templatedRequestComputationInputHeaders <&> \(h, v) -> ( interpolate environmentVars h
-                                                                                    , interpolate environmentVars v
-                                                                                    )
+                            _templatedRequestComputationInputHeaders <&> \(h, v) -> (interpolate' h, interpolate' v)
                           , _requestComputationInputScheme = _templatedRequestComputationInputScheme
-                          , _requestComputationInputUrl = interpolate environmentVars _templatedRequestComputationInputUrl
-                          , _requestComputationInputBody = interpolate environmentVars _templatedRequestComputationInputBody
+                          , _requestComputationInputUrl = interpolate' _templatedRequestComputationInputUrl
+                          , _requestComputationInputBody = interpolate' _templatedRequestComputationInputBody
                           }
+  where
+    interpolate' = interpolate environmentVars scenarioGlobalVars scenarioLocalVars
 
 
 -- * run request

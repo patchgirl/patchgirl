@@ -11,8 +11,10 @@ module ScenarioComputation.Model  ( SceneInput(..)
 
 import qualified Data.Aeson               as Aeson
 import           Data.UUID                (UUID)
-import           Environment.Model
 import           GHC.Generics             (Generic)
+
+import           Environment.Model
+import           Interpolator
 import           RequestComputation.Model
 import           TangoScript
 
@@ -42,9 +44,9 @@ instance Aeson.FromJSON SceneInput where
 
 
 data ScenarioInput
-  = ScenarioInput { _scenarioInputId        :: UUID
-                  , _scenarioInputScenes    :: [SceneInput]
-                  , _scenarioInputGlobalEnv :: ScenarioVars
+  = ScenarioInput { _scenarioInputId      :: UUID
+                  , _scenarioInputScenes  :: [SceneInput]
+                  , _scenarioInputEnvVars :: EnvironmentVars
                   }
   deriving (Eq, Show, Generic)
 
