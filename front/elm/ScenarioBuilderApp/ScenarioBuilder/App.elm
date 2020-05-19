@@ -186,7 +186,7 @@ update msg model =
                         model.scenes
                             |> List.map sceneToSceneInput
                             |> catMaybes
-                    , scenarioInputGlobalEnv = Dict.empty
+                    , scenarioInputEnvVars = environmentKeyValues
                     }
 
                 newMsg =

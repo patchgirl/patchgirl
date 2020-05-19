@@ -191,6 +191,8 @@ deriveElmDef deriveWithSingleFieldObject ''TangoAst
 deriveElmDef deriveWithSingleFieldObject ''ScenarioVars
 deriveElmDef deriveWithTaggedObject ''Template
 deriveElmDef deriveWithSingleFieldObject ''TemplatedRequestComputationInput
+deriveElmDef deriveWithTaggedObject ''EnvironmentVars
+deriveElmDef deriveWithTaggedObject ''StringTemplate
 
 
 -- * main
@@ -263,6 +265,8 @@ main =
       , DefineElm (Proxy :: Proxy ScenarioVars)
       , DefineElm (Proxy :: Proxy Template)
       , DefineElm (Proxy :: Proxy TemplatedRequestComputationInput)
+      , DefineElm (Proxy :: Proxy EnvironmentVars)
+      , DefineElm (Proxy :: Proxy StringTemplate)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
