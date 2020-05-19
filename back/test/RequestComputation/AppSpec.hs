@@ -51,7 +51,22 @@ spec = do
     withClient (withHttpMock [ requestWithResponse1 ]) $
       it "returns ok200" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (input1, requestEnvironment)) `shouldReturn` output1
+          try clientEnv (runRequestComputation token (input1, envVars)) `shouldReturn` output1
+
+
+-- ** computation interpolate env vars
+
+
+  describe "computation interpolate env vars" $
+    withClient (withHttpMock [ requestWithResponse2 ]) $
+      it "interpolate env vars" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { token } -> do
+          let envVars = Map.fromList [ ( "host"
+                                       , [ Sentence "foo.com" ]
+                                       )
+                                     ]
+          try clientEnv (runRequestComputation token (input2, envVars))
+          `shouldReturn` output2
 
 
 -- ** computation failed
@@ -61,19 +76,19 @@ spec = do
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, requestEnvironment)) `shouldReturn` Left (InvalidUrlException "" "")
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, envVars)) `shouldReturn` Left (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
       it "returns too many redirects" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, requestEnvironment)) `shouldReturn` Left TooManyRedirects
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, envVars)) `shouldReturn` Left TooManyRedirects
 
   describe "connection timeout" $
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, requestEnvironment)) `shouldReturn` Left ConnectionTimeout
+          try clientEnv (runRequestComputation token (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
 
 
   where
@@ -107,8 +122,36 @@ spec = do
       )
 
 
--- ** scenario environment
+-- ** 200 with interpolation
 
 
-requestEnvironment :: Map String StringTemplate
-requestEnvironment = Map.fromList []
+    requestWithResponse2 =
+      ( defaultRequest
+      , HttpResponse { httpResponseStatus =
+                       HTTP.Status { statusCode = 200
+                                   , statusMessage = BSU.fromString "ok"
+                                   }
+                     , httpResponseHeaders = []
+                     , httpResponseBody = BSU.fromString ""
+                     }
+      )
+
+    (input2, output2) =
+      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Http.Get
+                                         , _templatedRequestComputationInputHeaders = []
+                                         , _templatedRequestComputationInputScheme = Http.Http
+                                         , _templatedRequestComputationInputUrl = [ Key "host" ]
+                                         , _templatedRequestComputationInputBody = [ Sentence "" ]
+                                         }
+      , Right (RequestComputationOutput { _requestComputationOutputStatusCode = 200
+                                        , _requestComputationOutputHeaders    = []
+                                        , _requestComputationOutputBody       = ""
+                                        })
+      )
+
+
+-- ** environment vars
+
+
+envVars :: Map String StringTemplate
+envVars = Map.fromList []
