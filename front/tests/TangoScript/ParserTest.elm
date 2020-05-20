@@ -389,7 +389,7 @@ checkTangoAstParser : ParserTests (List P.DeadEnd) TangoAst -> Test
 checkTangoAstParser { message, input, expect } =
     test message <|
         \_ ->
-            case P.run tangoParser input of
+            case parseTangoscript input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 

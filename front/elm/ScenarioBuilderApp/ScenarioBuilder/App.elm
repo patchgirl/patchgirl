@@ -161,7 +161,7 @@ update msg model =
             let
                 sceneToSceneInput : Scene -> Maybe Client.SceneInput
                 sceneToSceneInput scene =
-                    case scene.prescriptAst of
+                    case (Debug.log "prescript" scene.prescriptAst) of
                         Err _ -> Nothing
 
                         Ok prescript ->
