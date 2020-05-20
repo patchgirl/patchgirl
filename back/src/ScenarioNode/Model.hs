@@ -239,7 +239,7 @@ instance FromJSON NewScenarioFile where
 
 data UpdateScenarioFile =
   UpdateScenarioFile { _updateScenarioFileId            :: UUID
-                     , _updateScenarioFileEnvironmentId :: Int
+                     , _updateScenarioFileEnvironmentId :: Maybe Int
                      } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''UpdateScenarioFile)

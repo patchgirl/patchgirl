@@ -42,7 +42,7 @@ type alias Model =
     , showDetailedSceneView : Maybe Uuid
     , whichResponseView : HttpResponseView
     , environments : List Environment
-    , environmentId : Maybe Int
+    , environmentId : Editable (Maybe Int)
     }
 
 
@@ -62,6 +62,8 @@ type
     | DeleteScene Uuid
     | ServerError
       -- scenario
+    | AskSaveScenario (Maybe Int)
+    | UpdateScenarioFile (Maybe Int)
     | AskRunScenario
     | ScenarioProcessed ScenarioOutput
       -- detailed view
@@ -73,7 +75,7 @@ type
     | SetPrescript Scene String
     | SetPostscript Scene String
       -- other
-    | SetEnvironmentId Int
+    | SetEnvironmentId (Maybe Int)
     | DoNothing
 
 
@@ -158,6 +160,25 @@ update msg model =
 -- ** scenario
 
 
+        AskSaveScenario newEnvironmentId ->
+            let
+                payload =
+                    { updateScenarioFileId = model.id
+                    , updateScenarioFileEnvironmentId = newEnvironmentId
+                    }
+
+                newMsg =
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) model.scenarioCollectionId payload (updateScenarioResultToMsg newEnvironmentId)
+            in
+            (model, newMsg)
+
+        UpdateScenarioFile newEnvironmentId ->
+            let
+                newModel =
+                    { model | environmentId = NotEdited newEnvironmentId }
+            in
+            (newModel, Cmd.none)
+
         AskRunScenario ->
             let
                 sceneToSceneInput : Scene -> Maybe Client.SceneInput
@@ -181,7 +202,7 @@ update msg model =
 
                 environmentKeyValues : Dict String (List Client.Template)
                 environmentKeyValues =
-                    model.environmentId
+                    editedOrNotEditedValue model.environmentId
                         |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
                         |> Maybe.map .keyValues
                         |> Maybe.withDefault []
@@ -306,10 +327,10 @@ update msg model =
 -- ** other
 
 
-        SetEnvironmentId envId ->
+        SetEnvironmentId mEnvId ->
             let
                 newModel =
-                    { model | environmentId = Just envId }
+                    { model | environmentId = changeEditedValue mEnvId model.environmentId }
             in
             ( newModel, Cmd.none )
 
@@ -372,6 +393,14 @@ createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
         Err error ->
             Debug.todo "server error" ServerError
 
+updateScenarioResultToMsg : Maybe Int -> Result Http.Error () -> Msg
+updateScenarioResultToMsg newEnvironmentId result =
+    case result of
+        Ok () ->
+            UpdateScenarioFile newEnvironmentId
+
+        Err error ->
+            Debug.todo "server error" ServerError
 
 findFileRecord : Model -> Uuid -> Maybe RequestFileRecord
 findFileRecord model id =
@@ -399,34 +428,63 @@ view model =
         envSelectionView : Element Msg
         envSelectionView =
             let
+                noEnvironmentOption : Input.Option (Maybe Int) Msg
+                noEnvironmentOption =
+                    Input.option Nothing <|
+                        el [ width fill ] (text "No environment")
+
+                option : Environment -> Input.Option (Maybe Int) Msg
                 option environment =
-                    Input.option environment.id <|
+                    Input.option (Just environment.id) <|
                         el [ width fill ] (text <| editedOrNotEditedValue environment.name)
             in
             Input.radio [ padding 10, spacing 10 ]
                 { onChange = SetEnvironmentId
-                , selected = model.environmentId
+                , selected = Just (editedOrNotEditedValue model.environmentId)
                 , label = Input.labelAbove [] <| text "Environment to run with: "
-                , options = List.map option model.environments
+                , options = noEnvironmentOption :: List.map option model.environments
                 }
+
+        saveScenarioView : Element Msg
+        saveScenarioView =
+            case model.environmentId of
+                NotEdited _ -> none
+                Edited _ environmentId ->
+                    Input.button [ centerX
+                                 , Border.solid
+                                 , Border.color secondaryColor
+                                 , Border.width 1
+                                 , Border.rounded 5
+                                 , Background.color secondaryColor
+                                 , paddingXY 10 10
+                                 ]
+                    { onPress = Just (AskSaveScenario environmentId)
+                    , label =
+                        row [ centerX, centerY ]
+                            [ iconWithTextAndColorAndAttr "send" "Save" primaryColor []
+                            ]
+                    }
 
         scenarioSettingView : Element Msg
         scenarioSettingView =
             column [ width fill, centerX, spacing 20 ]
-                [ Input.button [ centerX
-                               , Border.solid
-                               , Border.color secondaryColor
-                               , Border.width 1
-                               , Border.rounded 5
-                               , Background.color secondaryColor
-                               , paddingXY 10 10
-                               ]
-                    { onPress = Just AskRunScenario
-                    , label =
-                        row [ centerX, centerY ]
-                            [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
-                            ]
-                    }
+                [ row [ spacing 10]
+                      [ Input.button [ centerX
+                                     , Border.solid
+                                     , Border.color secondaryColor
+                                     , Border.width 1
+                                     , Border.rounded 5
+                                     , Background.color secondaryColor
+                                     , paddingXY 10 10
+                                     ]
+                          { onPress = Just AskRunScenario
+                          , label =
+                              row [ centerX, centerY ]
+                                  [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
+                                  ]
+                          }
+                      , saveScenarioView
+                      ]
                 , envSelectionView
                 ]
 

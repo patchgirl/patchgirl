@@ -220,7 +220,7 @@ type alias ScenarioFolderRecord =
 
 type alias ScenarioFileRecord =
     { id : Uuid
-    , environmentId : Maybe Int
+    , environmentId : Editable (Maybe Int)
     , name : Editable String
     , scenes : List Scene
     , showDetailedSceneView : Maybe Uuid
@@ -538,7 +538,6 @@ isDirty editable =
         Edited _ _ ->
             True
 
-
 editedOrNotEditedValue : Editable a -> a
 editedOrNotEditedValue editable =
     case editable of
@@ -548,7 +547,6 @@ editedOrNotEditedValue editable =
         Edited _ newValue ->
             newValue
 
-
 notEditedValue : Editable a -> a
 notEditedValue editable =
     case editable of
@@ -557,7 +555,6 @@ notEditedValue editable =
 
         Edited value _ ->
             value
-
 
 changeEditedValue : a -> Editable a -> Editable a
 changeEditedValue newValue editable =
@@ -571,7 +568,6 @@ changeEditedValue newValue editable =
 
         False ->
             Edited oldValue newValue
-
 
 
 -- * storable

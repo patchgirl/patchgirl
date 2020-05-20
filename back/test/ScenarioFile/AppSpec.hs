@@ -181,7 +181,7 @@ spec =
     mkUpdateScenarioFile :: UUID -> Int -> UpdateScenarioFile
     mkUpdateScenarioFile scenarioFileId envId =
       UpdateScenarioFile { _updateScenarioFileId           = scenarioFileId
-                         , _updateScenarioFileEnvironmentId = envId
+                         , _updateScenarioFileEnvironmentId = Just envId
                          }
 
     mkNewRootScenarioFile :: UUID -> UUID -> PG.Connection -> IO (Int, NewRootScenarioFile)

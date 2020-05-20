@@ -89,7 +89,7 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                         , scenes = List.map convertSceneFromBackToFront file.scenarioNodeScenes
                         , showDetailedSceneView = Nothing
                         , whichResponseView = BodyResponseView
-                        , environmentId = file.scenarioNodeEnvironmentId
+                        , environmentId = NotEdited file.scenarioNodeEnvironmentId
                         }
     in
     List.map convertScenarioNodeFromBackToFront backScenarioNodes
