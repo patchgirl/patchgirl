@@ -123,6 +123,29 @@ insertScenarioFile NewScenarioFile {..} connection =
           |]
 
 
+-- * update scenario file
+
+
+updateScenarioFileDB :: UpdateScenarioFile -> UUID -> PG.Connection -> IO Int.Int64
+updateScenarioFileDB UpdateScenarioFile{..} accountId connection =
+  PG.execute connection updateQuery ( accountId
+                                    , _updateScenarioFileEnvironmentId
+                                    , _updateScenarioFileId
+                                    )
+  where
+    updateQuery =
+      [sql|
+          UPDATE scenario_node
+          SET environment_id = (
+            SELECT environment_id
+            FROM account_environment
+            WHERE account_id = ?
+            AND environment_id = ?
+          )
+          WHERE id = ?
+          |]
+
+
 -- * insert root scenario folder
 
 

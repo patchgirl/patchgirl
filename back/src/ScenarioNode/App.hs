@@ -1,16 +1,18 @@
 
 module ScenarioNode.App where
 
-import           Control.Lens.Operators ((^.))
-import qualified Control.Monad          as Monad
-import qualified Control.Monad.Except   as Except (MonadError)
-import qualified Control.Monad.IO.Class as IO
-import qualified Control.Monad.Loops    as Loops
-import qualified Control.Monad.Reader   as Reader
-import           Data.Functor           ((<&>))
-import qualified Data.List              as List
-import qualified Data.Maybe             as Maybe
+import qualified Control.Exception          as Exception
+import           Control.Lens.Operators     ((^.))
+import qualified Control.Monad              as Monad
+import qualified Control.Monad.Except       as Except (MonadError)
+import qualified Control.Monad.IO.Class     as IO
+import qualified Control.Monad.Loops        as Loops
+import qualified Control.Monad.Reader       as Reader
+import           Data.Functor               ((<&>))
+import qualified Data.List                  as List
+import qualified Data.Maybe                 as Maybe
 import           Data.UUID
+import qualified Database.PostgreSQL.Simple as PG
 import qualified Servant
 
 import           DB
@@ -124,6 +126,41 @@ createScenarioFileHandler accountId scenarioCollectionId newScenarioFile = do
       Servant.throwError Servant.err404
     True ->
       IO.liftIO . Monad.void $ insertScenarioFile newScenarioFile connection
+
+
+-- * update scenario file
+
+
+updateScenarioFileHandler
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> UpdateScenarioFile
+  -> m ()
+updateScenarioFileHandler accountId scenarioCollectionId updateScenarioFile = do
+  connection <- getDBConnection
+  let
+    scenarioCollectionAuthorized :: IO Bool
+    scenarioCollectionAuthorized = IO.liftIO $
+      doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
+
+    scenarioNodeAuthorized :: IO Bool
+    scenarioNodeAuthorized =
+        selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
+        Maybe.maybe False isScenarioFile . findNodeInScenarioNodes (updateScenarioFile ^. updateScenarioFileId)
+
+  authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
+  case authorized of
+    False ->
+      Servant.throwError Servant.err404
+    True -> do
+      eRes <- IO.liftIO $ Exception.try $ updateScenarioFileDB updateScenarioFile accountId connection
+      case eRes of
+        Left PG.SqlError{} -> Servant.throwError Servant.err404
+        Right _            -> return ()
 
 
 -- * create root scenario folder
@@ -267,6 +304,9 @@ isScenarioFolder :: ScenarioNode -> Bool
 isScenarioFolder = \case
   ScenarioFolder {} -> True
   _ -> False
+
+isScenarioFile :: ScenarioNode -> Bool
+isScenarioFile = not . isScenarioFolder
 
 findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
 findNodeInScenarioNodes nodeIdToFind scenarioNodes =

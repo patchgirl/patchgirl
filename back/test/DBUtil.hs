@@ -594,9 +594,10 @@ insertSampleScenarioCollection accountId connection = do
 
 
 data FakeScenarioFile =
-  FakeScenarioFile { _fakeScenarioFileParentId    :: Maybe UUID
-                   , _fakeScenarioFileName        :: String
-                   , _fakeScenarioFileSceneNodeId :: Maybe UUID
+  FakeScenarioFile { _fakeScenarioFileParentId      :: Maybe UUID
+                   , _fakeScenarioFileName          :: String
+                   , _fakeScenarioFileSceneNodeId   :: Maybe UUID
+                   , _fakeScenarioFileEnvironmentId :: Maybe Int
                    }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
@@ -608,7 +609,7 @@ selectFakeScenarioFile id connection = do
   where
     rawQuery =
       [sql|
-          SELECT scenario_node_parent_id, name, scene_node_id
+          SELECT scenario_node_parent_id, name, scene_node_id, environment_id
           FROM scenario_node
           WHERE id = ?
           AND tag = 'ScenarioFile'

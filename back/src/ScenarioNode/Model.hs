@@ -234,6 +234,25 @@ instance FromJSON NewScenarioFile where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
+-- * update scenario file
+
+
+data UpdateScenarioFile =
+  UpdateScenarioFile { _updateScenarioFileId            :: UUID
+                     , _updateScenarioFileEnvironmentId :: Int
+                     } deriving (Eq, Show, Generic, ToRow)
+
+$(makeLenses ''UpdateScenarioFile)
+
+instance ToJSON UpdateScenarioFile where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON UpdateScenarioFile where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
 -- * new root scenario folder
 
 

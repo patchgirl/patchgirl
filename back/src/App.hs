@@ -219,19 +219,22 @@ type ScenarioFileApi auths =
   Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
     "scenarioFile" :> (
       -- createScenarioFile
-      ReqBody '[JSON] NewScenarioFile :> Post '[JSON] ()
-    ) :<|>
-      "rootScenarioFile" :> (
+      ReqBody '[JSON] NewScenarioFile :> Post '[JSON] () :<|>
+      -- updateScenarioFile
+      ReqBody '[JSON] UpdateScenarioFile :> Put '[JSON] ()
+    ) :<|> "rootScenarioFile" :> (
         -- create root scenario file
         ReqBody '[JSON] NewRootScenarioFile :> Post '[JSON] ()
-      )
+    )
   ))
 
 scenarioFileApiServer
   :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UpdateScenarioFile -> AppM ())
   :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFile -> AppM ())
 scenarioFileApiServer =
   authorizeWithAccountId createScenarioFileHandler
+  :<|> authorizeWithAccountId updateScenarioFileHandler
   :<|> authorizeWithAccountId createRootScenarioFileHandler
 
 

@@ -42,7 +42,7 @@ runRequestComputationHandler (templatedRequestComputationInput, environmentVars)
     ) <&> responseToComputationResult
 
 
--- *  run request computation with scenario context
+-- * run request computation with scenario context
 
 
 runRequestComputationWithScenarioContext
@@ -91,7 +91,7 @@ buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars
           Http.setRequestSecure True . Http.setRequestPort 443
 
 
--- *  build request computation input
+-- * build request computation input
 
 
 buildRequestComputationInput

@@ -30,8 +30,10 @@ import           ScenarioNode.Model
 
 
 createScenarioFileHandler :: Auth.Token -> UUID -> NewScenarioFile -> ClientM ()
+updateScenarioFileHandler :: Auth.Token -> UUID -> UpdateScenarioFile -> ClientM ()
 createRootScenarioFileHandler :: Auth.Token -> UUID -> NewRootScenarioFile -> ClientM ()
 createScenarioFileHandler
+  :<|> updateScenarioFileHandler
   :<|> createRootScenarioFileHandler =
   client (Proxy :: Proxy (ScenarioFileApi '[Auth.JWT]))
 
@@ -50,33 +52,93 @@ spec =
     describe "create a scenario file" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, token, accountId } -> do
-          newScenarioFile <- mkNewScenarioFile UUID.nil UUID.nil accountId connection
+          (_, newScenarioFile) <- mkNewScenarioFile UUID.nil UUID.nil accountId connection
           try clientEnv (createScenarioFileHandler token UUID.nil newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node parent doesnt exist" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId _) <- insertSampleScenarioCollection accountId connection
-          newScenarioFile <- mkNewScenarioFile UUID.nil UUID.nil accountId connection
+          (_, newScenarioFile) <- mkNewScenarioFile UUID.nil UUID.nil accountId connection
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node parent exist but isn't a scenario folder" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
-          newScenarioFile <- mkNewScenarioFile UUID.nil fileId accountId connection
+          (_, newScenarioFile) <- mkNewScenarioFile UUID.nil fileId accountId connection
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
-          newScenarioFile <- mkNewScenarioFile UUID.nil folderId accountId connection
+          (environmentId, newScenarioFile) <- mkNewScenarioFile UUID.nil folderId accountId connection
           _ <- try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile UUID.nil connection
           fakeScenarioFile `shouldBe`  FakeScenarioFile { _fakeScenarioFileParentId    = Just folderId
                                                         , _fakeScenarioFileName        = "new scenario"
                                                         , _fakeScenarioFileSceneNodeId = Nothing
+                                                        , _fakeScenarioFileEnvironmentId = Just environmentId
                                                         }
+
+-- ** update scenario file
+
+
+    describe "update a scenario file" $ do
+      it "returns 404 when scenario collection doesnt belong to account2" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
+          (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId2 connection
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let updateScenarioFile = mkUpdateScenarioFile nodeId 1
+          try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
+            `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when scenario file doesnt exist" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, token, accountId } -> do
+          (_, ScenarioCollection scenarioCollectionId _) <- insertSampleScenarioCollection accountId connection
+          let updateScenarioFile = mkUpdateScenarioFile UUID.nil 1
+          try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
+            `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "doesnt update when new environment doesnt exist" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, token, accountId } -> do
+          (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let updateScenarioFile = mkUpdateScenarioFile nodeId 1
+          try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
+          fakeScenarioFile <- selectFakeScenarioFile nodeId connection
+          _fakeScenarioFileEnvironmentId fakeScenarioFile `shouldBe` Nothing
+
+      it "doesnt update when new environment doesnt belong to account" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, token, accountId } -> do
+          (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
+          let newEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId2
+                                                  , _newFakeEnvironmentName      = "env"
+                                                  }
+          envId <- insertNewFakeEnvironment newEnvironment connection
+
+          (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let updateScenarioFile = mkUpdateScenarioFile nodeId envId
+          try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
+          fakeScenarioFile <- selectFakeScenarioFile nodeId connection
+          _fakeScenarioFileEnvironmentId fakeScenarioFile `shouldBe` Nothing
+
+
+      it "update the environment" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, token, accountId } -> do
+          let newEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
+                                                  , _newFakeEnvironmentName      = "env"
+                                                  }
+          envId <- insertNewFakeEnvironment newEnvironment connection
+          (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let updateScenarioFile = mkUpdateScenarioFile nodeId envId
+          try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
+          fakeScenarioFile <- selectFakeScenarioFile nodeId connection
+          _fakeScenarioFileEnvironmentId fakeScenarioFile `shouldBe` Just envId
+
 
 -- ** create root scenario file
 
@@ -84,42 +146,53 @@ spec =
     describe "create a root scenario file" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, token, accountId } -> do
-          newRootScenarioFile <- mkNewRootScenarioFile UUID.nil accountId connection
+          (_, newRootScenarioFile) <- mkNewRootScenarioFile UUID.nil accountId connection
           try clientEnv (createRootScenarioFileHandler token UUID.nil newRootScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           scenarioCollectionId <- insertFakeScenarioCollection accountId connection
-          newRootScenarioFile <- mkNewRootScenarioFile UUID.nil accountId connection
+          (environmentId, newRootScenarioFile) <- mkNewRootScenarioFile UUID.nil accountId connection
           _ <- try clientEnv (createRootScenarioFileHandler token scenarioCollectionId newRootScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile UUID.nil connection
           fakeScenarioFile `shouldBe` FakeScenarioFile { _fakeScenarioFileParentId = Nothing
                                                        , _fakeScenarioFileName = "new scenario"
                                                        , _fakeScenarioFileSceneNodeId = Nothing
+                                                       , _fakeScenarioFileEnvironmentId = Just environmentId
                                                        }
 
 
 
   where
-    mkNewScenarioFile :: UUID -> UUID -> UUID -> PG.Connection -> IO NewScenarioFile
+    mkNewScenarioFile :: UUID -> UUID -> UUID -> PG.Connection -> IO (Int, NewScenarioFile)
     mkNewScenarioFile id parentId accountId connection = do
       let newEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                                               , _newFakeEnvironmentName      = "env"
                                               }
       envId <- insertNewFakeEnvironment newEnvironment connection
-      return $ NewScenarioFile { _newScenarioFileId           = id
+      return ( envId
+             , NewScenarioFile { _newScenarioFileId           = id
                                , _newScenarioFileParentNodeId = parentId
                                , _newScenarioFileName = "new scenario"
                                , _newScenarioFileEnvironmentId = Just envId
                                }
+             )
 
-    mkNewRootScenarioFile :: UUID -> UUID -> PG.Connection -> IO NewRootScenarioFile
+    mkUpdateScenarioFile :: UUID -> Int -> UpdateScenarioFile
+    mkUpdateScenarioFile scenarioFileId envId =
+      UpdateScenarioFile { _updateScenarioFileId           = scenarioFileId
+                         , _updateScenarioFileEnvironmentId = envId
+                         }
+
+    mkNewRootScenarioFile :: UUID -> UUID -> PG.Connection -> IO (Int, NewRootScenarioFile)
     mkNewRootScenarioFile id accountId connection = do
       let newEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                                               , _newFakeEnvironmentName      = "env"
                                               }
       envId <- insertNewFakeEnvironment newEnvironment connection
-      return $ NewRootScenarioFile { _newRootScenarioFileId = id
+      return ( envId
+             , NewRootScenarioFile { _newRootScenarioFileId = id
                                    , _newRootScenarioFileName = "new scenario"
                                    , _newRootScenarioFileEnvironmentId = Just envId
                                    }
+             )
