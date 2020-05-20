@@ -1,10 +1,23 @@
-module TangoScript.Parser exposing (..)
+module TangoScript.Parser exposing ( parseTangoscript
+                                   , tangoParser
+                                   , exprParser
+                                   , procParser
+                                   , astAsString
+                                   )
 
 import Parser as P exposing((|.), (|=), Step, Parser)
 import Parser.Expression as P exposing (OperatorTable)
 import Set exposing (Set)
 import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 import Application.Type exposing(..)
+
+
+-- * parse
+
+
+parseTangoscript : String -> Result (List P.DeadEnd) TangoAst
+parseTangoscript =
+    P.run tangoParser
 
 
 -- * reserved keywords

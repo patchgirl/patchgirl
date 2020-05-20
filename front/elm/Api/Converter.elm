@@ -104,6 +104,8 @@ convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId } =
     { id = sceneId
     , requestFileNodeId = sceneRequestFileNodeId
     , sceneComputation = Nothing
+    , prescriptStr = ""
+    , prescriptAst = Ok []
     }
 
 
@@ -437,7 +439,26 @@ convertScriptExceptionFromBackToFront backScriptException =
             Front.AssertEqualFailed (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
 
 
--- * ex
+-- * tangoscript
+
+
+convertTangoscriptFromFrontToBack : Front.TangoAst -> Back.TangoAst
+convertTangoscriptFromFrontToBack frontTangoAst =
+    List.map convertProcFromFrontToBack frontTangoAst
+
+
+-- ** proc
+
+
+convertProcFromFrontToBack : Front.Proc -> Back.Proc
+convertProcFromFrontToBack frontProc =
+    case frontProc of
+        Front.AssertEqual expr1 expr2 -> Back.AssertEqual (convertExpressionFromFrontToBack expr1) (convertExpressionFromFrontToBack expr2)
+        Front.Let str expr -> Back.Let str (convertExpressionFromFrontToBack expr)
+        Front.Set str expr -> Back.Set str (convertExpressionFromFrontToBack expr)
+
+
+-- ** ex
 
 
 convertExpressionFromBackToFront : Back.Expr -> Front.Expr
@@ -451,3 +472,15 @@ convertExpressionFromBackToFront backEx =
         Back.Eq a b -> Front.Eq (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
         Back.Add a b -> Front.Add (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
         Back.HttpResponseBodyAsString -> Front.HttpResponseBodyAsString
+
+convertExpressionFromFrontToBack : Front.Expr -> Back.Expr
+convertExpressionFromFrontToBack frontExpr =
+    case frontExpr of
+        Front.LBool x -> Back.LBool x
+        Front.LInt x -> Back.LInt x
+        Front.LString x -> Back.LString x
+        Front.Var x -> Back.Var x
+        Front.Fetch x -> Back.Fetch x
+        Front.Eq a b -> Back.Eq (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
+        Front.HttpResponseBodyAsString -> Back.HttpResponseBodyAsString
+        Front.Add a b -> Back.Add (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)

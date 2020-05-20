@@ -18,71 +18,57 @@ white : Color
 white =
     rgb255 255 255 255
 
-
 lightGrey : Color
 lightGrey =
     rgb255 245 248 250
-
 
 black : Color
 black =
     rgb255 0 0 0
 
-
 primaryColor : Color
 primaryColor =
     rgb255 220 118 118
-
 
 secondaryColor : Color
 secondaryColor =
     rgb255 249 227 208
 
-
 fontGreen : Color
 fontGreen =
     rgb255 21 87 36
-
 
 backgroundGreen : Color
 backgroundGreen =
     rgb255 212 237 218
 
-
 borderGreen : Color
 borderGreen =
     rgb255 195 230 203
-
 
 fontRed : Color
 fontRed =
     rgb255 114 28 36
 
-
 backgroundRed : Color
 backgroundRed =
     rgb255 248 215 218
-
 
 borderRed : Color
 borderRed =
     rgb255 245 198 203
 
-
 fontOrange : Color
 fontOrange =
     rgb255 133 100 4
-
 
 backgroundOrange : Color
 backgroundOrange =
     rgb255 255 243 205
 
-
 borderOrange : Color
 borderOrange =
     rgb255 255 238 186
-
 
 colorToString : Color -> String
 colorToString color =
@@ -95,7 +81,6 @@ colorToString color =
             String.fromFloat (rgbFloat * 255)
     in
     "rgb(" ++ rgbFloatToString red ++ "," ++ rgbFloatToString green ++ "," ++ rgbFloatToString blue ++ ")"
-
 
 
 -- * icon
@@ -430,7 +415,15 @@ catMaybes : List (Maybe a) -> List a
 catMaybes =
     List.filterMap identity
 
-
+traverseListMaybe : List (Maybe a) -> Maybe (List a)
+traverseListMaybe list =
+    List.foldl
+        (\maybe mAcc -> case maybe of
+                           Nothing -> Nothing
+                           Just e -> mAcc |> Maybe.map (\acc -> acc ++ [e])
+        )
+        (Just [])
+        list
 
 -- * list
 
@@ -448,3 +441,13 @@ addToListAfterPredicate list predicate newElem =
 
         [] ->
             []
+
+
+-- * result
+
+
+resultIsOk : Result a b -> Bool
+resultIsOk result =
+    case result of
+        Ok _ -> True
+        Err _ -> False

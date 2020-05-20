@@ -2,6 +2,7 @@ module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 
 import Api.Converter as Client
 import Api.Generated as Client
+import TangoScript.Parser exposing (..)
 import Dict
 import Application.Type exposing (..)
 import Json.Decode as Json
@@ -45,7 +46,6 @@ type alias Model =
     }
 
 
-
 -- * message
 
 
@@ -69,6 +69,8 @@ type
     | HideDetailedView
     | ShowBodyResponseView
     | ShowHeaderResponseView
+    -- script
+    | SetPrescript Scene String
       -- other
     | SetEnvironmentId Int
     | DoNothing
@@ -159,16 +161,21 @@ update msg model =
             let
                 sceneToSceneInput : Scene -> Maybe Client.SceneInput
                 sceneToSceneInput scene =
-                    findFileRecord model scene.requestFileNodeId
-                        |> Maybe.map buildRequestComputationInput
-                        |> Maybe.map (\requestComputationInput ->
-                                { sceneInputId = scene.id
-                                , sceneInputRequestFileNodeId = scene.requestFileNodeId
-                                , sceneInputTemplatedRequestComputationInput =
-                                    Client.convertRequestComputationInputFromFrontToBack requestComputationInput
-                                , sceneInputPrescript = []
-                                , sceneInputPostscript = []
-                                })
+                    case scene.prescriptAst of
+                        Err _ -> Nothing
+
+                        Ok prescript ->
+                            findFileRecord model scene.requestFileNodeId
+                                |> Maybe.map buildRequestComputationInput
+                                |> Maybe.map (\requestComputationInput ->
+                                                  { sceneInputId = scene.id
+                                                  , sceneInputRequestFileNodeId = scene.requestFileNodeId
+                                                  , sceneInputTemplatedRequestComputationInput =
+                                                      Client.convertRequestComputationInputFromFrontToBack requestComputationInput
+                                                  , sceneInputPrescript =
+                                                      Client.convertTangoscriptFromFrontToBack prescript
+                                                  , sceneInputPostscript = []
+                                                  })
 
                 environmentKeyValues : Dict String (List Client.Template)
                 environmentKeyValues =
@@ -180,17 +187,29 @@ update msg model =
                         |> List.map (\{key, value} -> (key, Client.convertStringTemplateFromFrontToBack value))
                         |> Dict.fromList
 
-                payload =
-                    { scenarioInputId = model.id
-                    , scenarioInputScenes =
-                        model.scenes
-                            |> List.map sceneToSceneInput
-                            |> catMaybes
-                    , scenarioInputEnvVars = environmentKeyValues
-                    }
+                mScenes : Maybe (List Client.SceneInput)
+                mScenes =
+                    model.scenes
+                        |> List.map sceneToSceneInput
+                        |> traverseListMaybe
+
+                mPayload =
+                    mScenes
+                        |> Maybe.map
+                           (\scenes ->
+                                { scenarioInputId = model.id
+                                , scenarioInputScenes = scenes
+                                , scenarioInputEnvVars = environmentKeyValues
+                                }
+                           )
 
                 newMsg =
-                    Client.postApiScenarioComputation "" (getCsrfToken model.session) payload runScenarioResultToMsg
+                    case mPayload of
+                        Just payload ->
+                            Client.postApiScenarioComputation "" (getCsrfToken model.session) payload runScenarioResultToMsg
+
+                        Nothing ->
+                            Cmd.none
             in
             ( model, newMsg )
 
@@ -246,6 +265,26 @@ update msg model =
             ( newModel, Cmd.none )
 
 
+-- ** script
+
+
+        SetPrescript scene newScriptStr ->
+            let
+                newScene =
+                    { scene
+                        | prescriptStr = newScriptStr
+                        , prescriptAst = parseTangoscript newScriptStr
+                    }
+
+                newScenes =
+                    List.updateIf (\s -> s.id == scene.id) (always newScene) model.scenes
+
+                newModel =
+                    { model | scenes = newScenes }
+            in
+            ( newModel, Cmd.none )
+
+
 -- ** other
 
 
@@ -279,6 +318,8 @@ mkDefaultScene id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
     , sceneComputation = Nothing
+    , prescriptStr = ""
+    , prescriptAst = Ok []
     }
 
 
@@ -512,15 +553,14 @@ detailedSceneView model scene requestFileRecord =
             ++ (stringTemplateToString url)
 
         sceneInputDetailView =
-            [ column [ spacing 10 ]
-                [ link []
-                      { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
-                      , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
-                                secondaryColor
-                      }
-                , el [ centerX ] (text methodAndUrl)
-                ]
-            ]
+            column [ spacing 10 ]
+              [ link []
+                    { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
+                    , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
+                              secondaryColor
+                    }
+              , el [ centerX ] (text methodAndUrl)
+              ]
 
         whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
         whichResponseButtonView tabs =
@@ -543,34 +583,35 @@ detailedSceneView model scene requestFileRecord =
                 , paddingXY 0 0
                 ] <| List.map buttonView tabs
 
-        outputSceneDetailView : SceneComputation -> List (Element Msg)
+        outputSceneDetailView : SceneComputation -> Element Msg
         outputSceneDetailView sceneComputation =
             case sceneComputation of
                 SceneNotRun ->
-                    [ text <| "This request hasn't been run" ]
+                    text <| "This request hasn't been run"
 
                 PrescriptFailed scriptException ->
-                    [ text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException ]
+                    text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
                 RequestFailed httpException ->
-                    [ text <| "This request failed because of: " ++ httpExceptionToString httpException ]
+                    text <| "This request failed because of: " ++ httpExceptionToString httpException
 
                 PostscriptFailed scriptException ->
-                    [ text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException ]
+                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
                 SceneSucceeded requestComputationOutput ->
-                    [ statusResponseView requestComputationOutput
-                    , whichResponseButtonView
-                      [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
-                      , ("Headers", model.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
-                      ]
-                    , case model.whichResponseView of
-                          BodyResponseView ->
-                              bodyResponseView requestComputationOutput (always DoNothing)
+                    column []
+                        [ statusResponseView requestComputationOutput
+                        , whichResponseButtonView
+                              [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
+                              , ("Headers", model.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
+                              ]
+                        , case model.whichResponseView of
+                              BodyResponseView ->
+                                  bodyResponseView requestComputationOutput (always DoNothing)
 
-                          HeaderResponseView ->
-                              headersResponseView requestComputationOutput (always DoNothing)
-                    ]
+                              HeaderResponseView ->
+                                  headersResponseView requestComputationOutput (always DoNothing)
+                        ]
     in
     column [ width fill
            , height fill
@@ -580,15 +621,34 @@ detailedSceneView model scene requestFileRecord =
            , padding 20
            , boxShadow
            , Background.color white
-           ] <|
-        case scene.sceneComputation of
-            Nothing ->
-                sceneInputDetailView
+           ]
+        <| case scene.sceneComputation of
+              Nothing ->
+                  [ sceneInputDetailView
+                  , prescriptView scene
+                  ]
 
-            Just sceneComputation ->
-                sceneInputDetailView
-                ++ [ hr [] "response" ]
-                ++ (outputSceneDetailView sceneComputation)
+              Just sceneComputation ->
+                  [ sceneInputDetailView
+                  , prescriptView scene
+                  , hr [] "response"
+                  , outputSceneDetailView sceneComputation
+                  ]
+
+
+
+-- ** prescript view
+
+
+prescriptView : Scene -> Element Msg
+prescriptView scene =
+    Input.multiline []
+        { onChange = SetPrescript scene
+        , text = scene.prescriptStr
+        , placeholder = Just <| Input.placeholder [] (text "")
+        , label = labelInputView "Prescript: "
+        , spellcheck = False
+        }
 
 
 -- ** util

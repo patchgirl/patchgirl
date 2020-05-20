@@ -3,6 +3,7 @@ module Application.Type exposing (..)
 import Animation
 import Dict
 import Uuid exposing (Uuid)
+import Parser exposing(DeadEnd)
 
 
 -- * menu
@@ -193,7 +194,6 @@ type ScenarioCollection
     = ScenarioCollection Uuid (List ScenarioNode)
 
 
-
 -- ** scenario node
 
 
@@ -236,6 +236,8 @@ type alias Scene =
     { id : Uuid
     , requestFileNodeId : Uuid
     , sceneComputation : Maybe SceneComputation
+    , prescriptStr : String
+    , prescriptAst : Result (List DeadEnd) TangoAst
     }
 
 
