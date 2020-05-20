@@ -106,6 +106,8 @@ convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId } =
     , sceneComputation = Nothing
     , prescriptStr = ""
     , prescriptAst = Ok []
+    , postscriptStr = ""
+    , postscriptAst = Ok []
     }
 
 

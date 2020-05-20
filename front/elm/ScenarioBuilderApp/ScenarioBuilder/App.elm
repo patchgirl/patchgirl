@@ -71,6 +71,7 @@ type
     | ShowHeaderResponseView
     -- script
     | SetPrescript Scene String
+    | SetPostscript Scene String
       -- other
     | SetEnvironmentId Int
     | DoNothing
@@ -161,10 +162,8 @@ update msg model =
             let
                 sceneToSceneInput : Scene -> Maybe Client.SceneInput
                 sceneToSceneInput scene =
-                    case scene.prescriptAst of
-                        Err _ -> Nothing
-
-                        Ok prescript ->
+                    case (scene.prescriptAst, scene.postscriptAst) of
+                        (Ok prescript, Ok postscript) ->
                             findFileRecord model scene.requestFileNodeId
                                 |> Maybe.map buildRequestComputationInput
                                 |> Maybe.map (\requestComputationInput ->
@@ -174,8 +173,11 @@ update msg model =
                                                       Client.convertRequestComputationInputFromFrontToBack requestComputationInput
                                                   , sceneInputPrescript =
                                                       Client.convertTangoscriptFromFrontToBack prescript
-                                                  , sceneInputPostscript = []
+                                                  , sceneInputPostscript =
+                                                      Client.convertTangoscriptFromFrontToBack postscript
                                                   })
+
+                        _ -> Nothing
 
                 environmentKeyValues : Dict String (List Client.Template)
                 environmentKeyValues =
@@ -284,6 +286,22 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
+        SetPostscript scene newScriptStr ->
+            let
+                newScene =
+                    { scene
+                        | postscriptStr = newScriptStr
+                        , postscriptAst = parseTangoscript newScriptStr
+                    }
+
+                newScenes =
+                    List.updateIf (\s -> s.id == scene.id) (always newScene) model.scenes
+
+                newModel =
+                    { model | scenes = newScenes }
+            in
+            ( newModel, Cmd.none )
+
 
 -- ** other
 
@@ -320,6 +338,8 @@ mkDefaultScene id requestFileNodeId =
     , sceneComputation = Nothing
     , prescriptStr = ""
     , prescriptAst = Ok []
+    , postscriptStr = ""
+    , postscriptAst = Ok []
     }
 
 
@@ -626,11 +646,13 @@ detailedSceneView model scene requestFileRecord =
               Nothing ->
                   [ sceneInputDetailView
                   , prescriptView scene
+                  , postscriptView scene
                   ]
 
               Just sceneComputation ->
                   [ sceneInputDetailView
                   , prescriptView scene
+                  , postscriptView scene
                   , hr [] "response"
                   , outputSceneDetailView sceneComputation
                   ]
@@ -647,6 +669,20 @@ prescriptView scene =
         , text = scene.prescriptStr
         , placeholder = Just <| Input.placeholder [] (text "")
         , label = labelInputView "Prescript: "
+        , spellcheck = False
+        }
+
+
+-- ** postscript view
+
+
+postscriptView : Scene -> Element Msg
+postscriptView scene =
+    Input.multiline []
+        { onChange = SetPostscript scene
+        , text = scene.postscriptStr
+        , placeholder = Just <| Input.placeholder [] (text "")
+        , label = labelInputView "Postscript: "
         , spellcheck = False
         }
 

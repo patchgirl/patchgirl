@@ -238,6 +238,8 @@ type alias Scene =
     , sceneComputation : Maybe SceneComputation
     , prescriptStr : String
     , prescriptAst : Result (List DeadEnd) TangoAst
+    , postscriptStr : String
+    , postscriptAst : Result (List DeadEnd) TangoAst
     }
 
 
