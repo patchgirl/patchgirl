@@ -233,8 +233,16 @@ update msg model =
 
                         Nothing ->
                             Cmd.none
+
+                resetScenes =
+                    model.scenes
+                        |> List.map (\scene -> { scene | sceneComputation = Nothing })
+
+                newModel =
+                    { model | scenes = resetScenes }
+
             in
-            ( model, newMsg )
+            ( newModel, newMsg )
 
         ScenarioProcessed scenarioOutput ->
             let
@@ -639,7 +647,7 @@ detailedSceneView model scene requestFileRecord =
                     , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
                               secondaryColor
                     }
-              , el [ centerX ] (text methodAndUrl)
+              , el [ ] (text methodAndUrl)
               ]
 
         whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
