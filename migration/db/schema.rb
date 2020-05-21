@@ -487,7 +487,9 @@ CREATE TABLE public.scenario_node (
 CREATE TABLE public.scene_node (
     id uuid NOT NULL,
     scene_node_parent_id uuid,
-    request_node_id uuid
+    request_node_id uuid,
+    prescript text NOT NULL,
+    postscript text NOT NULL
 );
 
 

@@ -236,9 +236,9 @@ type alias Scene =
     { id : Uuid
     , requestFileNodeId : Uuid
     , sceneComputation : Maybe SceneComputation
-    , prescriptStr : String
+    , prescriptStr : Editable String
     , prescriptAst : Result (List DeadEnd) TangoAst
-    , postscriptStr : String
+    , postscriptStr : Editable String
     , postscriptAst : Result (List DeadEnd) TangoAst
     }
 

@@ -62,7 +62,9 @@ CREATE TABLE request_collection_to_request_node(
 CREATE TABLE scene_node(
   id UUID PRIMARY KEY,
   scene_node_parent_id UUID REFERENCES scene_node(id),
-  request_node_id UUID REFERENCES request_node(id)
+  request_node_id UUID REFERENCES request_node(id),
+  prescript TEXT NOT NULL,
+  postscript TEXT NOT NULL
 );
 
 

@@ -61,6 +61,9 @@ type
     | AskDeleteScene Uuid
     | DeleteScene Uuid
     | ServerError
+      -- update scene
+    | UpdateScene Scene
+    | SceneUpdated Scene
       -- scenario
     | AskSaveScenario (Maybe Int)
     | UpdateScenarioFile (Maybe Int)
@@ -110,6 +113,8 @@ update msg model =
                     { newSceneId = newSceneId
                     , newSceneSceneNodeParentId = sceneParentId
                     , newSceneRequestFileNodeId = requestFileNodeId
+                    , newScenePrescript = ""
+                    , newScenePostscript = ""
                     }
 
                 newMsg =
@@ -138,7 +143,10 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** delete scene
+
+-- ** delete scene
+
+
         AskDeleteScene sceneId ->
             let
                 newMsg =
@@ -150,6 +158,38 @@ update msg model =
             let
                 newScenes =
                     List.filter (not << (\scene -> scene.id == id)) model.scenes
+
+                newModel =
+                    { model | scenes = newScenes }
+            in
+            ( newModel, Cmd.none )
+
+
+-- ** update scene
+
+
+        UpdateScene scene ->
+            let
+                payload =
+                    { updateScenePrescript = editedOrNotEditedValue scene.prescriptStr
+                    , updateScenePostscript = editedOrNotEditedValue scene.postscriptStr
+                    }
+
+                newMsg =
+                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) model.id scene.id payload (updateSceneResultToMsg scene)
+            in
+            ( model, newMsg )
+
+        SceneUpdated updatedScene ->
+            let
+                newScene =
+                    { updatedScene
+                        | prescriptStr = NotEdited <| editedOrNotEditedValue updatedScene.prescriptStr
+                        , postscriptStr = NotEdited <| editedOrNotEditedValue updatedScene.postscriptStr
+                    }
+
+                newScenes =
+                    List.updateIf (\scene -> scene.id == updatedScene.id) (always newScene) model.scenes
 
                 newModel =
                     { model | scenes = newScenes }
@@ -303,7 +343,7 @@ update msg model =
             let
                 newScene =
                     { scene
-                        | prescriptStr = newScriptStr
+                        | prescriptStr = changeEditedValue newScriptStr scene.prescriptStr
                         , prescriptAst = parseTangoscript newScriptStr
                     }
 
@@ -319,7 +359,7 @@ update msg model =
             let
                 newScene =
                     { scene
-                        | postscriptStr = newScriptStr
+                        | postscriptStr = changeEditedValue newScriptStr scene.postscriptStr
                         , postscriptAst = parseTangoscript newScriptStr
                     }
 
@@ -365,9 +405,9 @@ mkDefaultScene id requestFileNodeId =
     { id = id
     , requestFileNodeId = requestFileNodeId
     , sceneComputation = Nothing
-    , prescriptStr = ""
+    , prescriptStr = NotEdited ""
     , prescriptAst = Ok []
-    , postscriptStr = ""
+    , postscriptStr = NotEdited ""
     , postscriptAst = Ok []
     }
 
@@ -397,6 +437,15 @@ createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
     case result of
         Ok () ->
             SelectRequestFile sceneParentId requestFileNodeId newSceneId
+
+        Err error ->
+            Debug.todo "server error" ServerError
+
+updateSceneResultToMsg : Scene -> Result Http.Error () -> Msg
+updateSceneResultToMsg scene result =
+    case result of
+        Ok () ->
+            SceneUpdated scene
 
         Err error ->
             Debug.todo "server error" ServerError
@@ -469,7 +518,7 @@ view model =
                     { onPress = Just (AskSaveScenario environmentId)
                     , label =
                         row [ centerX, centerY ]
-                            [ iconWithTextAndColorAndAttr "send" "Save" primaryColor []
+                            [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
                             ]
                     }
 
@@ -640,13 +689,37 @@ detailedSceneView model scene requestFileRecord =
             ++ "://"
             ++ (stringTemplateToString url)
 
+        saveSceneButton =
+            case isDirty scene.prescriptStr || isDirty scene.postscriptStr of
+                False ->
+                    none
+
+                True ->
+                    Input.button [ centerX
+                                 , Border.solid
+                                 , Border.color secondaryColor
+                                 , Border.width 1
+                                 , Border.rounded 5
+                                 , Background.color secondaryColor
+                                 , paddingXY 10 10
+                                 ]
+                        { onPress = Just (UpdateScene scene)
+                        , label =
+                            row [ centerX, centerY ]
+                                [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
+                                ]
+                        }
+
         sceneInputDetailView =
             column [ spacing 10 ]
-              [ link []
-                    { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
-                    , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
-                              secondaryColor
-                    }
+              [ row [ spacing 10 ]
+                    [ link []
+                          { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
+                          , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
+                                    secondaryColor
+                          }
+                    , saveSceneButton
+                    ]
               , el [ ] (text methodAndUrl)
               ]
 
@@ -734,7 +807,7 @@ prescriptView : Scene -> Element Msg
 prescriptView scene =
     Input.multiline []
         { onChange = SetPrescript scene
-        , text = scene.prescriptStr
+        , text = editedOrNotEditedValue scene.prescriptStr
         , placeholder = Just <| Input.placeholder [] (text "set(\"userId\", 1); // set variable to use in your request")
         , label = labelInputView "Prescript: "
         , spellcheck = False
@@ -748,7 +821,7 @@ postscriptView : Scene -> Element Msg
 postscriptView scene =
     Input.multiline []
         { onChange = SetPostscript scene
-        , text = scene.postscriptStr
+        , text = editedOrNotEditedValue scene.postscriptStr
         , placeholder = Just <| Input.placeholder [] (text "assertEqual(HttpResponseBodyAsString, \"userCreated\"); // test the http response")
         , label = labelInputView "Postscript: "
         , spellcheck = False

@@ -194,6 +194,7 @@ deriveElmDef deriveWithSingleFieldObject ''TemplatedRequestComputationInput
 deriveElmDef deriveWithTaggedObject ''EnvironmentVars
 deriveElmDef deriveWithTaggedObject ''StringTemplate
 deriveElmDef deriveWithTaggedObject ''UpdateScenarioFile
+deriveElmDef deriveWithTaggedObject ''UpdateScene
 
 
 -- * main
@@ -269,6 +270,7 @@ main =
       , DefineElm (Proxy :: Proxy EnvironmentVars)
       , DefineElm (Proxy :: Proxy StringTemplate)
       , DefineElm (Proxy :: Proxy UpdateScenarioFile)
+      , DefineElm (Proxy :: Proxy UpdateScene)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
