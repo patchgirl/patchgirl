@@ -100,13 +100,13 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 
 
 convertSceneFromBackToFront : Back.Scene -> Front.Scene
-convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId } =
+convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId, scenePrescript, scenePostscript } =
     { id = sceneId
     , requestFileNodeId = sceneRequestFileNodeId
     , sceneComputation = Nothing
-    , prescriptStr = NotEdited ""
+    , prescriptStr = NotEdited scenePrescript
     , prescriptAst = Ok []
-    , postscriptStr = NotEdited ""
+    , postscriptStr = NotEdited scenePostscript
     , postscriptAst = Ok []
     }
 
