@@ -509,16 +509,18 @@ view model =
     in
     case sceneAndFileRecordDetailToShow of
         Nothing ->
-            wrappedRow [ width fill, centerX ]
-                [ el [ width (fillPortion 2), alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
-                , el [ width (fillPortion 8) ] scenesView
+            wrappedRow [ height fill, width fill, spacing 20 ]
+                [ el [ alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                , el [] scenesView
                 ]
 
         Just (scene, requestFileRecord) ->
             wrappedRow [ height fill, width fill, spacing 20 ]
-                [ el [ width (fillPortion 1), height fill, Background.color white, boxShadow, padding 20 ] scenarioSettingView
-                , el [ width (fillPortion 4), height fill ] scenesView
-                , el [ width (fillPortion 5), height fill ] (detailedSceneView model scene requestFileRecord)
+                [ el [ width <| fillPortion 1, alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                , row [ width <| fillPortion 9, spacing 20 ]
+                    [ el [ width <| fillPortion 2, height fill ] scenesView
+                    , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model scene requestFileRecord)
+                    ]
                 ]
 
 
@@ -677,7 +679,7 @@ detailedSceneView model scene requestFileRecord =
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
                 SceneSucceeded requestComputationOutput ->
-                    column []
+                    column [ width fill ]
                         [ statusResponseView requestComputationOutput
                         , whichResponseButtonView
                               [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)
@@ -725,7 +727,7 @@ prescriptView scene =
     Input.multiline []
         { onChange = SetPrescript scene
         , text = scene.prescriptStr
-        , placeholder = Just <| Input.placeholder [] (text "")
+        , placeholder = Just <| Input.placeholder [] (text "set(\"userId\", 1); // set variable to use in your request")
         , label = labelInputView "Prescript: "
         , spellcheck = False
         }
@@ -739,7 +741,7 @@ postscriptView scene =
     Input.multiline []
         { onChange = SetPostscript scene
         , text = scene.postscriptStr
-        , placeholder = Just <| Input.placeholder [] (text "")
+        , placeholder = Just <| Input.placeholder [] (text "assertEqual(HttpResponseBodyAsString, \"userCreated\"); // test the http response")
         , label = labelInputView "Postscript: "
         , spellcheck = False
         }

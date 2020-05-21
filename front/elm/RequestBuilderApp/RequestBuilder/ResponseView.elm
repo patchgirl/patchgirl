@@ -67,7 +67,7 @@ headersResponseView requestComputationOutput msg =
                 |> List.map (joinTuple ": ")
                 |> String.join "\n"
     in
-    Input.multiline []
+    Input.multiline [ clipX ]
         { onChange = msg
         , text = headers
         , placeholder = Nothing
