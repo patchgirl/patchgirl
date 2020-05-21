@@ -12,8 +12,7 @@ extra-deps:
   - prometheus-metrics-ghc-1.0.0
   - wai-middleware-prometheus-1.0.0
   - strings-1.1
-  - git: https://github.com/agrafix/elm-bridge
-    commit: b9d47cae3e21a56d5ab93527ced42977ee449fff
+  - elm-bridge-0.6.1
 
 nix:
   enable: true
