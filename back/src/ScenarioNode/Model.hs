@@ -33,6 +33,8 @@ data NewScene
   = NewScene { _newSceneId                :: UUID
              , _newSceneSceneNodeParentId :: Maybe UUID
              , _newSceneRequestFileNodeId :: UUID
+             , _newScenePrescript         :: String
+             , _newScenePostscript        :: String
              }
   deriving (Eq, Show, Generic)
 
@@ -63,6 +65,26 @@ instance ToJSON Scene where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJSON Scene where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- * update scene
+
+
+data UpdateScene
+  = UpdateScene { _updateScenePrescript  :: String
+                , _updateScenePostscript :: String
+                }
+  deriving (Eq, Show, Generic)
+
+$(makeLenses ''UpdateScene)
+
+instance ToJSON UpdateScene where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON UpdateScene where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 

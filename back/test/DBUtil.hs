@@ -510,6 +510,8 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakeScene { _newFakeSceneParentId = Nothing
                      , _newFakeSceneRequestId = requestFileId
+                     , _newFakeScenePrescript = ""
+                     , _newFakeScenePostscript = ""
                      }
   scene1Id <- insertFakeScene newFakeScene connection
 
@@ -663,8 +665,10 @@ selectScenarioNodeExists id connection = do
 
 
 data NewFakeScene =
-  NewFakeScene { _newFakeSceneParentId  :: Maybe UUID
-               , _newFakeSceneRequestId :: UUID
+  NewFakeScene { _newFakeSceneParentId   :: Maybe UUID
+               , _newFakeSceneRequestId  :: UUID
+               , _newFakeScenePrescript  :: String
+               , _newFakeScenePostscript :: String
                }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
@@ -679,8 +683,10 @@ insertFakeScene newFakeScene connection = do
           INSERT INTO scene_node(
             id,
             scene_node_parent_id,
-            request_node_id
-          ) VALUES (gen_random_uuid(), ?, ?)
+            request_node_id,
+            prescript,
+            postscript
+          ) VALUES (gen_random_uuid(), ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -689,8 +695,10 @@ insertFakeScene newFakeScene connection = do
 
 
 data FakeScene =
-  FakeScene { _fakeSceneParentId  :: Maybe UUID
-            , _fakeSceneRequestId :: UUID
+  FakeScene { _fakeSceneParentId   :: Maybe UUID
+            , _fakeSceneRequestId  :: UUID
+            , _fakeScenePrescript  :: String
+            , _fakeScenePostscript :: String
             }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
@@ -700,7 +708,7 @@ selectFakeScene id connection =
   where
     rawQuery =
       [sql|
-          SELECT scene_node_parent_id, request_node_id
+          SELECT scene_node_parent_id, request_node_id, prescript, postscript
           FROM scene_node
           WHERE id = ?
           |]
@@ -711,7 +719,7 @@ selectFakeSceneWithParentId parentId connection =
   where
     rawQuery =
       [sql|
-          SELECT scene_node_parent_id, request_node_id
+          SELECT scene_node_parent_id, request_node_id, prescript, postscript
           FROM scene_node
           WHERE scene_node_parent_id = ?
           |]

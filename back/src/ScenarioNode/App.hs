@@ -297,6 +297,44 @@ deleteSceneHandler accountId scenarioNodeId sceneId' = do
           IO.liftIO . Monad.void $ deleteScene sceneId' connection
 
 
+-- * update scene
+
+
+updateSceneHandler
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => UUID
+  -> UUID
+  -> UUID
+  -> UpdateScene
+  -> m ()
+updateSceneHandler accountId scenarioNodeId sceneId' updateScene = do
+  connection <- getDBConnection
+  IO.liftIO (selectScenarioCollectionId accountId connection) >>= \case
+    Nothing ->
+      Servant.throwError Servant.err404
+
+    Just scenarioCollectionId -> do
+      scenarioNodes <- IO.liftIO $ selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
+      let
+        sceneAuthorized =
+          findNodeInScenarioNodes scenarioNodeId scenarioNodes >>= \case
+            ScenarioFile { _scenarioNodeScenes } ->
+              List.find (\scene -> scene ^. sceneId == sceneId') _scenarioNodeScenes
+            _ ->
+              Nothing
+
+      case sceneAuthorized of
+        Nothing ->
+          Servant.throwError Servant.err404
+        Just _ ->
+          IO.liftIO . Monad.void $ updateSceneDB sceneId' updateScene connection
+
+
+
+
 -- * util
 
 

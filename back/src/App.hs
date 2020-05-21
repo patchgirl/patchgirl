@@ -270,16 +270,20 @@ type SceneApi auths =
       -- create scene
       ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
       -- delete scene
-      Capture "sceneId" UUID :> Delete '[JSON] ()
+      Capture "sceneId" UUID :> Delete '[JSON] () :<|>
+      -- update scene
+      Capture "sceneId" UUID :> ReqBody '[JSON] UpdateScene :> Put '[JSON] ()
     )
   ))
 
 sceneApiServer
   :: (AuthResult CookieSession -> UUID -> NewScene -> AppM ())
   :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> UpdateScene -> AppM ())
 sceneApiServer =
   authorizeWithAccountId createSceneHandler
   :<|> authorizeWithAccountId deleteSceneHandler
+  :<|> authorizeWithAccountId updateSceneHandler
 
 
 -- ** request node
