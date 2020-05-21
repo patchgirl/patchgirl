@@ -12,12 +12,12 @@ packages:
   original:
     hackage: servant-flatten-0.2
 - completed:
-    hackage: servant-elm-0.7.1@sha256:c354d82a2bbf69a7c66020a1a278055650aea678669e9a6db88ba24bf163e4c4,4577
+    hackage: servant-elm-0.7.2@sha256:27e45a456ad56ba59502549a59ce66f7229a17bbce72c413cbf8615ed074d754,4579
     pantry-tree:
       size: 2081
-      sha256: dd72ffa037f1b743cea49b66ba74bfc2ac3d7ab029c721b712bd93b911af866a
+      sha256: 4b10f1da950fea1a0bcaf74a9e68dc0a1c0136e8c09a136b9c3f6c89e09ad21a
   original:
-    hackage: servant-elm-0.7.1
+    hackage: servant-elm-0.7.2
 - completed:
     hackage: http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
     pantry-tree:
@@ -67,6 +67,17 @@ packages:
       sha256: 876e5a679244143e2a7e74357427c7522a8d61f68a4cc3ae265fe4960b75a2e2
   original:
     hackage: strings-1.1
+- completed:
+    name: elm-bridge
+    version: 0.6.0
+    git: https://github.com/agrafix/elm-bridge
+    pantry-tree:
+      size: 1475
+      sha256: aadd2a07cd20eabaa66d0e9630d5e0f8775719afee931aa97af206896abca59b
+    commit: b9d47cae3e21a56d5ab93527ced42977ee449fff
+  original:
+    git: https://github.com/agrafix/elm-bridge
+    commit: b9d47cae3e21a56d5ab93527ced42977ee449fff
 snapshots:
 - completed:
     size: 523884

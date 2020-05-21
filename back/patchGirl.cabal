@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7911a85247d33f13661b3ae3757aadfcf0ba25d568199915a3970b273d7c293b
+-- hash: ba1a065fc716503ce565eb33589e28f96f43eb254f107e76bb637df89fb360a5
 
 name:           patchGirl
 version:        0.0.0
@@ -63,7 +63,6 @@ library
     , control-monad-free
     , cookie
     , dhall
-    , elm-bridge
     , email-validate
     , http-client
     , http-client-tls
@@ -115,7 +114,6 @@ executable patchGirl
     , control-monad-free
     , cookie
     , dhall
-    , elm-bridge
     , email-validate
     , http-client
     , http-client-tls
@@ -190,7 +188,6 @@ test-suite spec
     , control-monad-free
     , cookie
     , dhall
-    , elm-bridge
     , email-validate
     , hspec
     , http-client

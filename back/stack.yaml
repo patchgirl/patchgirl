@@ -4,7 +4,7 @@ packages:
 
 extra-deps:
   - servant-flatten-0.2
-  - servant-elm-0.7.1
+  - servant-elm-0.7.2
   - http-client-0.5.14
   - dhall-1.28.0
   - atomic-write-0.2.0.7
@@ -12,6 +12,8 @@ extra-deps:
   - prometheus-metrics-ghc-1.0.0
   - wai-middleware-prometheus-1.0.0
   - strings-1.1
+  - git: https://github.com/agrafix/elm-bridge
+    commit: b9d47cae3e21a56d5ab93527ced42977ee449fff
 
 nix:
   enable: true
