@@ -258,7 +258,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'request_node_id', request_node_id
+        'request_node_id', request_node_id,
+        'prescript', prescript,
+        'postscript', postscript
       )
     ) || scene_node_as_json(id)
   INTO result
@@ -277,7 +279,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'request_node_id', request_node_id
+        'request_node_id', request_node_id,
+        'prescript', prescript,
+        'postscript', postscript
       )
     ) || scene_node_as_json(node_id)
   INTO result

@@ -55,6 +55,8 @@ instance FromJSON NewScene where
 data Scene
   = Scene { _sceneId                :: UUID
           , _sceneRequestFileNodeId :: UUID
+          , _scenePrescript         :: String
+          , _scenePostscript        :: String
           }
   deriving (Eq, Show, Generic)
 
@@ -98,6 +100,8 @@ instance FromJSON SceneFromPG where
   parseJSON = withObject "SceneFromPG" $ \o -> do
     _sceneId <- o .: "id"
     _sceneRequestFileNodeId <- o .: "request_node_id"
+    _scenePrescript <- o .: "prescript"
+    _scenePostscript <- o .: "postscript"
     return $ SceneFromPG $ Scene{..}
 
 fromSceneFromPGTOScene :: SceneFromPG -> Scene
