@@ -168,7 +168,8 @@ update msg model =
 
                 newModel =
                     { model
-                        | showResponseView = True
+                        | showResponseView = False
+                        , requestComputationResult = Nothing
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
@@ -185,7 +186,8 @@ update msg model =
 
                 newModel =
                     { model
-                        | requestComputationResult = Just remoteComputationResult
+                        | showResponseView = True
+                        , requestComputationResult = Just remoteComputationResult
                         , runRequestIconAnimation = newRunRequestIconAnimation
                     }
             in
