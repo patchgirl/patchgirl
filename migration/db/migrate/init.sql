@@ -290,3 +290,13 @@ BEGIN
   RETURN result || ARRAY[]::jsonb[]; -- always returns empty array if result is NULL;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- * test
+
+
+CREATE TABLE user_test(
+    id SERIAL PRIMARY KEY,
+    firstname TEXT NOT NULL,
+    lastname TEXT NOT NULL
+);

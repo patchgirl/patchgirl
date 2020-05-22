@@ -507,6 +507,37 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: user_test; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_test (
+    id integer NOT NULL,
+    firstname text NOT NULL,
+    lastname text NOT NULL
+);
+
+
+--
+-- Name: user_test_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.user_test_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: user_test_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.user_test_id_seq OWNED BY public.user_test.id;
+
+
+--
 -- Name: environment id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -525,6 +556,13 @@ ALTER TABLE ONLY public.key_value ALTER COLUMN id SET DEFAULT nextval('public.ke
 --
 
 ALTER TABLE ONLY public.request_collection ALTER COLUMN id SET DEFAULT nextval('public.request_collection_id_seq'::regclass);
+
+
+--
+-- Name: user_test id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_test ALTER COLUMN id SET DEFAULT nextval('public.user_test_id_seq'::regclass);
 
 
 --
@@ -645,6 +683,14 @@ ALTER TABLE ONLY public.scene_node
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: user_test user_test_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_test
+    ADD CONSTRAINT user_test_pkey PRIMARY KEY (id);
 
 
 --

@@ -22,6 +22,7 @@ module App( mkApp
           , PSessionApi
           , AccountApi
           , RestApi
+          , TestApi
           ) where
 
 
@@ -452,10 +453,29 @@ type TestApi =
   Flat (
     "test" :> (
       "deleteNoContent" :> DeleteNoContent '[JSON] NoContent :<|>
-      "getNotFound" :> Get '[JSON] () :<|>
-      "getInternalServerError" :> Get '[JSON] ()
+      "getStatusCode" :> Capture "statusCode" Int :> Get '[JSON] () :<|>
+       -- create
+      "users" :> ReqBody '[JSON] NewUserTest :> Post '[JSON] UserTest :<|>
+      -- delete
+      "users" :> Capture "userId" Int :> Delete '[JSON] () :<|>
+      -- show
+      "users" :> Capture "userId" Int :> Get '[JSON] UserTest :<|>
+      -- update
+      "users" :> Capture "userId" Int :> ReqBody '[JSON] UpdateUserTest :> Put '[JSON] UserTest :<|>
+      -- list
+      "users" :> Get '[JSON] [UserTest]
     )
   )
+
+testApiServer :: ServerT TestApi AppM
+testApiServer =
+  deleteNoContentHandler :<|>
+  getStatusCodeHandler :<|>
+  createUserHandler :<|>
+  deleteUserHandler :<|>
+  showUserHandler :<|>
+  updateUserHandler :<|>
+  listUserHandler
 
 type AssetApi =
   "public" :> Raw
@@ -494,12 +514,6 @@ authorize f = \case
 
   Authenticated _ ->
     f
-
-testApiServer :: ServerT TestApi AppM
-testApiServer =
-  deleteNoContentHandler :<|>
-  getNotFoundHandler :<|>
-  getInternalServerErrorHandler
 
 assetApiServer :: ServerT AssetApi AppM
 assetApiServer =
