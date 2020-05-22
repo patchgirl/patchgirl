@@ -44,28 +44,28 @@ spec =
 -- ** handles user resource
 
 
-    fdescribe "user test ressource" $ do
+    describe "user test ressource" $ do
       it "creates a user" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test {} -> do
-          UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserFirstname = "John", newUserLastname = "Doe"}
+          UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           userTest_firstname `shouldBe` "John"
           userTest_lastname `shouldBe` "Doe"
 
       it "deletes a user" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test {} -> do
-          UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserFirstname = "John", newUserLastname = "Doe"}
+          UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           try clientEnv (deleteUser userTest_id) `shouldReturn` ()
 
       it "shows a user" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test {} -> do
-          userTest <- try clientEnv $ createUser NewUserTest { newUserFirstname = "John", newUserLastname = "Doe"}
+          userTest <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           UserTest{..} <- try clientEnv $ showUser (userTest_id userTest)
           userTest_firstname `shouldBe` "John"
           userTest_lastname `shouldBe` "Doe"
 
       it "updates a user" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test {} -> do
-          userTest <- try clientEnv $ createUser NewUserTest { newUserFirstname = "John", newUserLastname = "Doe"}
+          userTest <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           UserTest{..} <- try clientEnv $ updateUser (userTest_id userTest) $ UpdateUserTest { updateUserTest_firstname = "Jack"
                                                                                              , updateUserTest_lastname = "Terry"
                                                                                              }
@@ -74,8 +74,8 @@ spec =
 
       it "list users" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test {} -> do
-          userTest1 <- try clientEnv $ createUser NewUserTest { newUserFirstname = "John", newUserLastname = "Doe"}
-          userTest2 <- try clientEnv $ createUser NewUserTest { newUserFirstname = "Jack", newUserLastname = "Raiden"}
+          userTest1 <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
+          userTest2 <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "Jack", newUserTest_lastname = "Raiden"}
           [user1, user2] <- try clientEnv listUsers
           user1 `shouldBe` userTest1
           user2 `shouldBe` userTest2

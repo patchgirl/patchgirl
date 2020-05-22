@@ -36,10 +36,11 @@ runRequestComputationHandler
   -> m RequestComputationResult
 runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
   runner <- Reader.ask <&> _envHttpRequest
-  IO.liftIO $
+  result <- IO.liftIO $
     Exception.try (
       buildRequest templatedRequestComputationInput environmentVars Map.empty Map.empty >>= runner
-    ) <&> responseToComputationResult
+    )
+  responseToComputationResult result
 
 
 -- * run request computation with scenario context
@@ -56,10 +57,11 @@ runRequestComputationWithScenarioContext
   -> m RequestComputationResult
 runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
   runner <- Reader.ask <&> _envHttpRequest
-  IO.liftIO $
+  result <- IO.liftIO $
     Exception.try (
       buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars >>= runner
-    ) <&> responseToComputationResult
+    )
+  responseToComputationResult result
 
 
 -- * build request
@@ -123,20 +125,28 @@ ioRequestRunner request =
 -- * create request computation output
 
 
-responseToComputationResult :: Either Http.HttpException (HttpResponse BSU.ByteString) -> Either HttpException RequestComputationOutput
-responseToComputationResult = \case
+responseToComputationResult
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     )
+  => Either Http.HttpException (HttpResponse BSU.ByteString)
+  -> m (Either HttpException RequestComputationOutput)
+responseToComputationResult either = do
+  case either of
     Right response ->
-      Right $
+      return . Right $
         RequestComputationOutput { _requestComputationOutputStatusCode = Http.statusCode $ httpResponseStatus response
                                  , _requestComputationOutputHeaders    = parseResponseHeaders response
                                  , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
                                  }
 
-    Left (Http.InvalidUrlException url reason) ->
-      Left (InvalidUrlException url reason)
+    Left (ex@(Http.InvalidUrlException url reason)) -> do
+      logError $ show ex
+      return $ Left (InvalidUrlException url reason)
 
-    Left (Http.HttpExceptionRequest _ content) ->
-      Left matching
+    Left (ex@(Http.HttpExceptionRequest _ content)) -> do
+      logError $ show ex
+      return $ Left matching
       where
         matching = case content of
           Http.TooManyRedirects _ -> TooManyRedirects
@@ -147,7 +157,7 @@ responseToComputationResult = \case
           Http.InvalidStatusLine _ -> InvalidStatusLine
           Http.InvalidHeader _-> InvalidHeader
           Http.InvalidRequestHeader _ -> InvalidRequestHeader
-          Http.InternalException _ -> InternalException
+          Http.InternalException someException -> InternalException (show someException)
           Http.ProxyConnectException {} -> ProxyConnectException
           Http.NoResponseDataReceived -> NoResponseDataReceived
           Http.WrongRequestBodyStreamSize _ _ -> WrongRequestBodyStreamSize

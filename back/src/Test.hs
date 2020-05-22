@@ -46,18 +46,18 @@ instance Aeson.FromJSON UserTest where
 
 
 data NewUserTest
-  = NewUserTest { newUserFirstname :: String
-                , newUserLastname  :: String
+  = NewUserTest { newUserTest_firstname :: String
+                , newUserTest_lastname  :: String
                 }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
 instance Aeson.ToJSON NewUserTest where
   toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("newUserTest_" :: String) }
 
 instance Aeson.FromJSON NewUserTest where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("newUserTest_" :: String) }
 
 
 -- * handler

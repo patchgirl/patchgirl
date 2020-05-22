@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fec55e1397500fefe9bf2097a0016eff56acdad5a8a8eec65450009d9c2f9058
+-- hash: e406f07672189164250fc3119e606839eb7d9dbdd3ee15da772d512c648dc8f1
 
 name:           patchGirl
 version:        0.0.0
@@ -59,6 +59,7 @@ library
     , base
     , bytestring
     , case-insensitive
+    , connection
     , containers
     , control-monad-free
     , cookie
@@ -110,6 +111,7 @@ executable patchGirl
     , base
     , bytestring
     , case-insensitive
+    , connection
     , containers
     , control-monad-free
     , cookie
@@ -185,6 +187,7 @@ test-suite spec
     , base
     , bytestring
     , case-insensitive
+    , connection
     , containers
     , control-monad-free
     , cookie

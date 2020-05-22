@@ -116,7 +116,7 @@ data HttpException
   | InvalidStatusLine
   | InvalidHeader
   | InvalidRequestHeader
-  | InternalException
+  | InternalException String
   | ProxyConnectException
   | NoResponseDataReceived
   | WrongRequestBodyStreamSize

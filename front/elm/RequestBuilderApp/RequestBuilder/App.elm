@@ -610,7 +610,7 @@ responseView model =
             none
 
         Just (Ok requestComputationOutput) ->
-            column [ spacing 10, width fill ]
+            column [ spacing 10, scrollbars, width fill ]
                 [ statusResponseView requestComputationOutput
                 , whichResponseButtonView
                       [ ("Body", model.whichResponseView == BodyResponseView, ShowBodyResponseView)

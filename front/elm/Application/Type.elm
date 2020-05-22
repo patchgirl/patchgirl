@@ -282,7 +282,7 @@ type HttpException
     | InvalidStatusLine
     | InvalidHeader
     | InvalidRequestHeader
-    | InternalException
+    | InternalException String
     | ProxyConnectException
     | NoResponseDataReceived
     | WrongRequestBodyStreamSize
@@ -327,8 +327,8 @@ httpExceptionToString httpException =
         InvalidRequestHeader ->
             "Invalid Request Header"
 
-        InternalException ->
-            "Internal Exception"
+        InternalException exception ->
+            "Internal Exception: " ++ exception
 
         ProxyConnectException ->
             "Proxy Connect Exception"

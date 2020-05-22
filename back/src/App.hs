@@ -32,6 +32,7 @@ import qualified Control.Monad.IO.Class                as IO
 import qualified Control.Monad.Reader                  as Reader
 import           Data.UUID
 import qualified GHC.Natural                           as Natural
+import qualified Network.Connection                    as Tls
 import qualified Network.HTTP.Client.TLS               as Tls
 import qualified Network.Wai.Handler.Warp              as Warp
 import qualified Network.Wai.Middleware.Prometheus     as Prometheus
@@ -557,7 +558,9 @@ run = do
 
 mkApp :: Env -> IO Application
 mkApp env = do
-  Tls.setGlobalManager =<< Tls.newTlsManager -- this manager will mainly be used by RequestComputation
+  let tlsSettings = Tls.TLSSettingsSimple True False False
+  -- this manager will mainly be used by RequestComputation
+  Tls.setGlobalManager =<< Tls.newTlsManagerWith (Tls.mkManagerSettings tlsSettings Nothing)
   key <- readKey $ env ^. envAppKeyFilePath
   let
     jwtSettings = defaultJWTSettings key

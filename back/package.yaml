@@ -92,3 +92,4 @@ dependencies:
   - say
   - stm
   - containers
+  - connection

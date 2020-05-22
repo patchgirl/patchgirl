@@ -250,8 +250,8 @@ convertHttpExceptionFromBackToFront backHttpException =
         Back.InvalidRequestHeader ->
             Front.InvalidRequestHeader
 
-        Back.InternalException ->
-            Front.InternalException
+        Back.InternalException str ->
+            Front.InternalException str
 
         Back.ProxyConnectException ->
             Front.ProxyConnectException

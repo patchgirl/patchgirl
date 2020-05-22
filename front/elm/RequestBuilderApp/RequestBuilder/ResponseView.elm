@@ -48,7 +48,7 @@ statusResponseView requestComputationOutput =
 
 bodyResponseView : RequestComputationOutput -> (String -> a) -> Element a
 bodyResponseView requestComputationOutput msg =
-    Input.multiline []
+    Input.multiline [ explain Debug.todo, scrollbars, width fill ]
         { onChange = msg
         , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
         , placeholder = Nothing
