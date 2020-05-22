@@ -3,21 +3,18 @@
 
 module Test where
 
-import qualified Control.Monad                        as Monad
-import qualified Control.Monad.Except                 as Except
-import qualified Control.Monad.IO.Class               as IO
-import qualified Control.Monad.Reader                 as Reader
-import qualified Data.Aeson                           as Aeson
-import qualified Database.PostgreSQL.Simple           as PG
-import qualified Database.PostgreSQL.Simple.FromField as PG
+import qualified Control.Monad                    as Monad
+import qualified Control.Monad.Except             as Except
+import qualified Control.Monad.IO.Class           as IO
+import qualified Control.Monad.Reader             as Reader
+import qualified Data.Aeson                       as Aeson
+import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
-import qualified Database.PostgreSQL.Simple.ToField   as PG
-import qualified Database.PostgreSQL.Simple.Types     as PG
-import           GHC.Generics                         (Generic)
-import qualified GHC.Int                              as Int
+import           GHC.Generics                     (Generic)
+import qualified GHC.Int                          as Int
 import qualified Servant
-import           Servant.API.ContentTypes             (NoContent (..))
-import           Servant.Server                       (ServerError)
+import           Servant.API.ContentTypes         (NoContent (..))
+import           Servant.Server                   (ServerError)
 
 import           DB
 import           Env
@@ -221,3 +218,4 @@ getStatusCodeHandler :: (Except.MonadError ServerError m) => Int -> m ()
 getStatusCodeHandler = \case
   200 -> return ()
   404 -> Servant.throwError Servant.err404
+  _ -> Servant.throwError Servant.err404
