@@ -7,7 +7,6 @@ import Element.Border as Border
 import Element.Input as Input
 import Util exposing (..)
 import TangoScript.Parser exposing(..)
-import TangoScript.Checker exposing(..)
 import Parser as P
 
 
@@ -96,7 +95,7 @@ compatibilityView : TangoAst -> Element Msg
 compatibilityView tangoAst =
     Input.multiline [ width fill, centerX ]
         { onChange = always DoNothing
-        , text = check tangoAst |> List.map showError |> String.join "\n"
+        , text = "" -- check tangoAst |> List.map showError |> String.join "\n"
         , placeholder = Nothing
         , label = Input.labelAbove [] (text "Errors:")
         , spellcheck = False

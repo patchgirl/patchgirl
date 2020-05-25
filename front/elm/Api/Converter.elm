@@ -474,6 +474,7 @@ convertExpressionFromBackToFront backEx =
         Back.Eq a b -> Front.Eq (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
         Back.Add a b -> Front.Add (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
         Back.HttpResponseBodyAsString -> Front.HttpResponseBodyAsString
+        Back.HttpResponseStatus -> Front.HttpResponseStatus
 
 convertExpressionFromFrontToBack : Front.Expr -> Back.Expr
 convertExpressionFromFrontToBack frontExpr =
@@ -486,3 +487,4 @@ convertExpressionFromFrontToBack frontExpr =
         Front.Eq a b -> Back.Eq (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
         Front.HttpResponseBodyAsString -> Back.HttpResponseBodyAsString
         Front.Add a b -> Back.Add (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
+        Front.HttpResponseStatus -> Back.HttpResponseStatus

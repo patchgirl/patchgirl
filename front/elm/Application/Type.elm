@@ -615,6 +615,7 @@ type Expr
     | Eq Expr Expr
     | Add Expr Expr
     | HttpResponseBodyAsString
+    | HttpResponseStatus
 
 
 exprToString : Expr -> String
@@ -631,3 +632,4 @@ exprToString expr =
         Eq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
         Add e1 e2 -> "Add " ++ (exprToString e1) ++ " " ++ (exprToString e2)
         HttpResponseBodyAsString -> "HttpResponseBodyAsString"
+        HttpResponseStatus -> "HttpResponseStatus"

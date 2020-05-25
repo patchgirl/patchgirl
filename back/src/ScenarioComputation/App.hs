@@ -227,6 +227,7 @@ runPostscriptExpr RequestComputationOutput{..} scenarioGlobalVars scenarioLocalV
   Var var -> Map.lookup var scenarioLocalVars
   Fetch var -> Map.lookup var scenarioGlobalVars
   HttpResponseBodyAsString -> Just (LString _requestComputationOutputBody)
+  HttpResponseStatus -> Just (LInt _requestComputationOutputStatusCode)
   expr -> Just expr
 
 

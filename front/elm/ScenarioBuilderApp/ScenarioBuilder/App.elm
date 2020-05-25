@@ -6,6 +6,7 @@ import TangoScript.Parser exposing (..)
 import Dict
 import Application.Type exposing (..)
 import Json.Decode as Json
+import Parser as P
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -661,16 +662,18 @@ arrowView : Uuid.Uuid -> Element Msg
 arrowView id =
     let
         addSceneBtn =
-            Input.button [ centerX ]
-            { onPress = Just (ShowHttpRequestSelectionModal (Just id))
-            , label = row [] [ addIcon
-                             , text " add request"
-                             ]
-            }
+            Input.button []
+                { onPress = Just (ShowHttpRequestSelectionModal (Just id))
+                , label = row [] [ addIcon
+                                 , text " add request"
+                                 ]
+                }
     in
-    el [ centerX
-       , onRight addSceneBtn
-       ] arrowDownwardIcon
+        column [ centerX, spacing 5 ]
+            [ el [ centerX ] addSceneBtn
+            , el [ centerX ] arrowDownwardIcon
+            ]
+
 
 
 -- ** detailed scene view
@@ -800,32 +803,44 @@ detailedSceneView model scene requestFileRecord =
 
 
 
--- ** prescript view
+-- ** script view
 
+
+scriptValidityView : Result (List P.DeadEnd) TangoAst -> Element Msg
+scriptValidityView result =
+    case result of
+        Ok _ ->
+            none
+
+        Err err ->
+            text ("Error in script: " ++ showErrors err)
 
 prescriptView : Scene -> Element Msg
 prescriptView scene =
-    Input.multiline []
-        { onChange = SetPrescript scene
-        , text = editedOrNotEditedValue scene.prescriptStr
-        , placeholder = Just <| Input.placeholder [] (text "set(\"userId\", 1); // set variable to use in your request")
-        , label = labelInputView "Prescript: "
-        , spellcheck = False
-        }
-
-
--- ** postscript view
+    column [ width fill, spacing 10 ]
+        [ el [] <| scriptValidityView scene.prescriptAst
+        , Input.multiline []
+              { onChange = SetPrescript scene
+              , text = editedOrNotEditedValue scene.prescriptStr
+              , placeholder = Just <| Input.placeholder [] (text "set(\"userId\", 1); // set variable to use in your request")
+              , label = labelInputView "Prescript: "
+              , spellcheck = False
+              }
+        ]
 
 
 postscriptView : Scene -> Element Msg
 postscriptView scene =
-    Input.multiline []
-        { onChange = SetPostscript scene
-        , text = editedOrNotEditedValue scene.postscriptStr
-        , placeholder = Just <| Input.placeholder [] (text "assertEqual(HttpResponseBodyAsString, \"userCreated\"); // test the http response")
-        , label = labelInputView "Postscript: "
-        , spellcheck = False
-        }
+    column [ width fill, spacing 10 ]
+        [ el [] <| scriptValidityView scene.postscriptAst
+        , Input.multiline []
+            { onChange = SetPostscript scene
+            , text = editedOrNotEditedValue scene.postscriptStr
+            , placeholder = Just <| Input.placeholder [] (text "assertEqual(httpResponseStatus, 200); // test the http response")
+            , label = labelInputView "Postscript: "
+            , spellcheck = False
+            }
+        ]
 
 
 -- ** util

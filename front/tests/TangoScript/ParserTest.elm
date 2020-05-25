@@ -120,10 +120,10 @@ getTests =
       , input = """get("a")"""
       , expect = Ok <| Fetch "a"
       }
---    , { message = "parse `get`"
---      , input = """get ( " a " ) """
---      , expect = Ok <| Get " a "
---      }
+    , { message = "parse `get`"
+      , input = """get ( " a " ) """
+      , expect = Ok <| Fetch " a "
+      }
     ]
 
 
@@ -135,6 +135,18 @@ responseAsStringTests =
     [ { message = "parse simple `httpResponseBodyAsString`"
       , input = "httpResponseBodyAsString"
       , expect = Ok <| HttpResponseBodyAsString
+      }
+    ]
+
+
+-- ** http response status
+
+
+responseStatusAsStringTests : List (ParserTest (List P.DeadEnd) Expr)
+responseStatusAsStringTests =
+    [ { message = "parse simple `httpResponseStatus`"
+      , input = "httpResponseStatus"
+      , expect = Ok <| HttpResponseStatus
       }
     ]
 
@@ -308,6 +320,7 @@ suite =
             , describe "Var" <| List.map checkExprParser varTests
             , describe "Get" <| List.map checkExprParser getTests
             , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
+            , describe "ResponseStatusAsString" <| List.map checkExprParser responseStatusAsStringTests
 --            , describe "Eq" <| List.map checkExprParser eqTests
 --            , describe "Add" <| List.map checkExprParser addTests
             , describe "DQString" <| List.map checkDStringParser doubleQTests
@@ -389,7 +402,7 @@ checkTangoAstParser : ParserTests (List P.DeadEnd) TangoAst -> Test
 checkTangoAstParser { message, input, expect } =
     test message <|
         \_ ->
-            case parseTangoscript input of
+            case Debug.log "err" <| parseTangoscript input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 

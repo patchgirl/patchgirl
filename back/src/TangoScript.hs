@@ -43,6 +43,7 @@ data Expr
   | Eq Expr Expr
   | Add Expr Expr
   | HttpResponseBodyAsString
+  | HttpResponseStatus
   deriving (Show, Eq, Generic)
 
 instance Aeson.ToJSON Expr where
@@ -67,3 +68,4 @@ exprToString = \case
   Eq _ _ -> Nothing
   Add _ _ -> Nothing
   HttpResponseBodyAsString -> Nothing
+  HttpResponseStatus -> Nothing

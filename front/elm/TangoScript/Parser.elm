@@ -1,4 +1,5 @@
 module TangoScript.Parser exposing ( parseTangoscript
+                                   , showErrors
                                    , tangoParser
                                    , exprParser
                                    , procParser
@@ -112,10 +113,11 @@ exprParser =
     P.succeed identity
         |. P.spaces
         |= P.oneOf
-           [ varParser
-           , lBoolParser
+           [ lBoolParser
            , lIntParser
            , httpResponseBodyAsStringParser
+           , httpResponseStatusParser
+           , varParser
            , getParser
            , lStringParser
            , binOpParser
@@ -140,6 +142,10 @@ lStringParser =
 httpResponseBodyAsStringParser : Parser Expr
 httpResponseBodyAsStringParser =
     P.keyword "httpResponseBodyAsString" |> P.map (always HttpResponseBodyAsString)
+
+httpResponseStatusParser : Parser Expr
+httpResponseStatusParser =
+    P.keyword "httpResponseStatus" |> P.map (always HttpResponseStatus)
 
 getParser : Parser Expr
 getParser =
@@ -283,3 +289,36 @@ showExpr expr =
 
         HttpResponseBodyAsString ->
             "(HttpResponseBodyAsString)"
+
+        HttpResponseStatus ->
+            "(HttpResponseStatus)"
+
+
+-- ** error
+
+
+showErrors : List P.DeadEnd -> String
+showErrors deadEnds =
+    List.map showError deadEnds |> List.take 1 |> String.join "\n"
+
+showError : P.DeadEnd -> String
+showError deadEnd =
+    let
+        error =
+            case deadEnd.problem of
+                P.Expecting s -> "Expecting"
+                P.ExpectingInt -> "Expecting an integer"
+                P.ExpectingHex -> "Expecting an hexadecimal"
+                P.ExpectingOctal -> "Expecting an octal"
+                P.ExpectingBinary -> "Expecting a binary"
+                P.ExpectingFloat -> "Expecting a float"
+                P.ExpectingNumber -> "Expecting a number"
+                P.ExpectingVariable -> "Expecting a variable"
+                P.ExpectingSymbol s -> "Expecting symbol [" ++ s ++ "]"
+                P.ExpectingKeyword s -> "Expecting keyword [" ++ s ++ "]"
+                P.ExpectingEnd -> "Expecting end"
+                P.UnexpectedChar -> "Unexpected char"
+                P.Problem s -> "Problem with string [" ++ s ++ "]"
+                P.BadRepeat -> "Bad repeat"
+    in
+    error ++ " at line " ++ String.fromInt(deadEnd.row)
