@@ -1,12 +1,12 @@
-module Lib where
+module Lib (app) where
 
 import qualified Graphics.UI.Webviewhs as WHS
 
-main :: IO ()
-main = do
+app :: IO ()
+app = do
   WHS.createWindowAndBlock
     WHS.WindowParams
-      { WHS.windowParamsTitle      = "Test"
+      { WHS.windowParamsTitle      = "PatchGirl"
       , WHS.windowParamsUri        = "https://patchgirl.io"
       , WHS.windowParamsWidth      = 1400
       , WHS.windowParamsHeight     = 1000

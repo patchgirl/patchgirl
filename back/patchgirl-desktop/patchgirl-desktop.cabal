@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 373c2f894e43365859510ac639f3862ac8267afa518cf8988cc64a3126378e0d
+-- hash: 5ef356d26165c30c8ffa8b8075bc466f8d6de947fe4de7c1c4e9f5779469070b
 
 name:           patchgirl-desktop
 version:        0.0.0
@@ -20,7 +20,8 @@ library
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
-      base
+      async
+    , base
     , webviewhs
   default-language: Haskell2010
 
@@ -31,7 +32,8 @@ executable patchgirl-desktop-exe
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
-      base
+      async
+    , base
     , patchgirl-desktop
     , patchgirl-web
     , webviewhs
@@ -47,7 +49,8 @@ test-suite spec
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
-      base
+      async
+    , base
     , hspec
     , patchgirl-desktop
     , servant-client
