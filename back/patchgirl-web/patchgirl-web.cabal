@@ -1,0 +1,230 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 088cf49114304b854718be9bac1187038389a20a756d698f0901211eea4e60cf
+
+name:           patchgirl-web
+version:        0.0.0
+build-type:     Simple
+
+library
+  exposed-modules:
+      Account.App
+      Account.Sql
+      App
+      DB
+      ElmOption
+      Env
+      Environment.App
+      Environment.Model
+      Foo
+      Github.App
+      Health.App
+      Http
+      Interpolator
+      Model
+      PatchGirl
+      RequestCollection.App
+      RequestCollection.Model
+      RequestCollection.Sql
+      RequestComputation.App
+      RequestComputation.Model
+      RequestNode.App
+      RequestNode.Model
+      RequestNode.Sql
+      ScenarioCollection.App
+      ScenarioCollection.Model
+      ScenarioCollection.Sql
+      ScenarioComputation.App
+      ScenarioComputation.Model
+      ScenarioNode.App
+      ScenarioNode.Model
+      ScenarioNode.Sql
+      Session.App
+      Session.Model
+      TangoScript
+      Test
+  other-modules:
+      Paths_patchgirl_web
+  hs-source-dirs:
+      src
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
+  build-depends:
+      aeson
+    , aeson-qq
+    , base
+    , bytestring
+    , case-insensitive
+    , connection
+    , containers
+    , control-monad-free
+    , cookie
+    , dhall
+    , email-validate
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , jose
+    , lens
+    , monad-loops
+    , mtl
+    , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
+    , say
+    , servant
+    , servant-auth
+    , servant-auth-client
+    , servant-auth-server
+    , servant-client
+    , servant-elm
+    , servant-flatten
+    , servant-server
+    , stm
+    , strings
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , utf8-string
+    , uuid
+    , wai
+    , wai-middleware-prometheus
+    , warp
+    , warp-tls
+  default-language: Haskell2010
+
+executable patchgirl
+  main-is: exe/Main.hs
+  other-modules:
+      Paths_patchgirl_web
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
+  build-depends:
+      aeson
+    , aeson-qq
+    , base
+    , bytestring
+    , case-insensitive
+    , connection
+    , containers
+    , control-monad-free
+    , cookie
+    , dhall
+    , email-validate
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , jose
+    , lens
+    , monad-loops
+    , mtl
+    , patchgirl-web
+    , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
+    , say
+    , servant
+    , servant-auth
+    , servant-auth-client
+    , servant-auth-server
+    , servant-client
+    , servant-elm
+    , servant-flatten
+    , servant-server
+    , stm
+    , strings
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , utf8-string
+    , uuid
+    , wai
+    , wai-middleware-prometheus
+    , warp
+    , warp-tls
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Account.AppSpec
+      DBUtil
+      Environment.AppSpec
+      FakeHttpRequest
+      Helper.App
+      InterpolatorSpec
+      RequestCollection.AppSpec
+      RequestCollection.DB
+      RequestComputation.AppSpec
+      RequestFile.AppSpec
+      RequestFolder.AppSpec
+      RequestNode.AppSpec
+      ScenarioCollection.AppSpec
+      ScenarioComputation.AppSpec
+      ScenarioFile.AppSpec
+      ScenarioFolder.AppSpec
+      ScenarioNode.AppSpec
+      Scene.AppSpec
+      Session.AppSpec
+      TestSpec
+      Paths_patchgirl_web
+  hs-source-dirs:
+      test
+  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
+  build-depends:
+      aeson
+    , aeson-qq
+    , base
+    , bytestring
+    , case-insensitive
+    , connection
+    , containers
+    , control-monad-free
+    , cookie
+    , dhall
+    , email-validate
+    , hspec
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , jose
+    , lens
+    , monad-loops
+    , mtl
+    , patchgirl-web
+    , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
+    , say
+    , servant
+    , servant-auth
+    , servant-auth-client
+    , servant-auth-server
+    , servant-client
+    , servant-elm
+    , servant-flatten
+    , servant-server
+    , stm
+    , strings
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , utf8-string
+    , uuid
+    , wai
+    , wai-middleware-prometheus
+    , warp >=3.2.4
+    , warp-tls
+  default-language: Haskell2010
