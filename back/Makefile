@@ -1,6 +1,12 @@
 run:
 	clear; stack exec patchGirl
 
+web:
+	clear; echo "building back/patchgirl-web"; stack build patchgirl-web --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
+
+check-web:
+	clear; ghcid --command 'stack ghci --test --main-is patchgirl-web:test:spec --ghc-options="-Werror"' --test ':main' --warnings
+
 app:
 	clear; echo "building back/app"; stack build --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
 

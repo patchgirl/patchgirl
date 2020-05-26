@@ -1,6 +1,7 @@
-resolver: lts-14.27
+resolver: lts-15.13
 packages:
-  - '.'
+  - patchgirl-web/
+  - patchgirl-desktop/
 
 extra-deps:
   - servant-flatten-0.2
@@ -14,7 +15,9 @@ extra-deps:
   - strings-1.1
   - elm-bridge-0.6.1
   - servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
+  - git: https://github.com/lettier/webviewhs.git
+    commit: 21ddd4b4872b2e7eb50c9735e70cfbdedf2c6c1a
 
-nix:
-  enable: true
-  packages: [postgresql, zlib]
+flags:
+  webviewhs:
+    light: true

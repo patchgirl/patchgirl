@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 088cf49114304b854718be9bac1187038389a20a756d698f0901211eea4e60cf
+-- hash: d66d9d579a305e028badf915191afd8e54755fb0c1431f01df5c30627caa13ca
 
 name:           patchgirl-web
 version:        0.0.0
@@ -99,8 +99,8 @@ library
     , warp-tls
   default-language: Haskell2010
 
-executable patchgirl
-  main-is: exe/Main.hs
+executable patchgirl-web-exe
+  main-is: app/Main.hs
   other-modules:
       Paths_patchgirl_web
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications

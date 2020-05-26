@@ -1,4 +1,4 @@
-name: patchgirl-web
+name: patchgirl-desktop
 
 default-extensions:
   - LambdaCase
@@ -33,63 +33,20 @@ tests:
       - test
     dependencies:
       - hspec
-      - patchgirl-web
+      - patchgirl-desktop
       - servant-client
-      - warp >= 3.2.4
-      - http-client
-      - http-types
 
 library:
   source-dirs:
     - src
 
 executables:
-  patchgirl-web-exe:
+  patchgirl-desktop-exe:
     main: app/Main.hs
     dependencies:
+      - patchgirl-desktop
       - patchgirl-web
 
 dependencies:
   - base
-  - servant
-  - servant-client
-  - servant-server
-  - servant-auth
-  - servant-auth-server
-  - servant-auth-client
-  - servant-flatten
-  - transformers
-  - aeson
-  - wai
-  - warp
-  - warp-tls
-  - postgresql-simple
-  - text
-  - servant-elm
-  - aeson-qq
-  - unordered-containers
-  - lens
-  - mtl
-  - case-insensitive
-  - cookie
-  - bytestring
-  - utf8-string
-  - email-validate
-  - dhall
-  - http-client
-  - http-client-tls
-  - http-conduit
-  - http-types
-  - time
-  - jose
-  - wai-middleware-prometheus
-  - prometheus-client
-  - prometheus-metrics-ghc
-  - uuid
-  - strings
-  - control-monad-free
-  - monad-loops
-  - say
-  - stm
-  - containers
-  - connection
+  - webviewhs
