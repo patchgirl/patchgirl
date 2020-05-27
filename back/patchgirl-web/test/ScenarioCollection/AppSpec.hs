@@ -7,18 +7,18 @@
 
 module ScenarioCollection.AppSpec where
 
-import qualified Network.HTTP.Types       as HTTP
+import qualified Network.HTTP.Types  as HTTP
 import           Servant
-import qualified Servant.Auth.Client      as Auth
-import           Servant.Auth.Server      (JWT)
+import qualified Servant.Auth.Client as Auth
+import           Servant.Auth.Server (JWT)
 import           Servant.Client
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Api
+import           PatchGirl.Client
+import           PatchGirl.Internal
 import           PatchGirl.Server
-import           ScenarioCollection.Model
 
 
 -- * client

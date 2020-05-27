@@ -3,34 +3,31 @@
 module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
 
 import           Control.Concurrent.STM
+import           Control.Exception                (finally, throwIO)
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
-import           Data.Functor                     ((<&>))
-import           Data.Text                        (Text)
-import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.Types (Identifier (..))
-import           DB                               (getDBConnection)
-import qualified Say
-
-import           CaseInsensitive
-import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
+import           Data.Functor                     ((<&>))
 import qualified Data.Maybe                       as Maybe
+import           Data.Text                        (Text)
 import           Data.Time                        (UTCTime)
 import           Data.UUID                        (UUID)
 import qualified Data.UUID                        as UUID
+import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DBUtil
-import           Env
 import qualified Network.HTTP.Client              as Client
 import           Network.HTTP.Types               (Status)
 import           Network.Wai.Handler.Warp         (testWithApplication)
+import qualified Say
 import           Servant
 import qualified Servant.Auth.Client              as Auth
 import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
                                                            makeJWT, readKey)
 import           Servant.Client
-import           Session.Model
 import qualified Test.Hspec                       as Hspec
+
+import           PatchGirl.Internal               hiding (Http)
 
 
 -- * helper
@@ -112,7 +109,7 @@ mkToken cookieSession mexp = do
 defaultEnv :: Env
 defaultEnv =
   Env { _envPort = 3001
-      , _envAppKeyFilePath = ".appKey.test"
+      , _envAppKeyFilePath = "../.appKey.test"
       , _envDB = DBConfig { _dbPort = 5432
                          , _dbName = "test"
                          , _dbUser = "postgres"

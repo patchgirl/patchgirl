@@ -7,23 +7,21 @@
 
 module RequestComputation.AppSpec where
 
-import qualified Data.ByteString.UTF8     as BSU
-import           Data.Map.Strict          (Map)
-import qualified Data.Map.Strict          as Map
-import qualified Network.HTTP.Client      as HTTP
-import qualified Network.HTTP.Types       as HTTP
+import qualified Data.ByteString.UTF8 as BSU
+import           Data.Map.Strict      (Map)
+import qualified Data.Map.Strict      as Map
+import qualified Network.HTTP.Client  as HTTP
+import qualified Network.HTTP.Types   as HTTP
 import           Servant
-import qualified Servant.Auth.Client      as Auth
-import           Servant.Auth.Server      (JWT)
-import           Servant.Client
+import qualified Servant.Auth.Client  as Auth
+import           Servant.Auth.Server  (JWT)
+import qualified Servant.Client       as Servant
 import           Test.Hspec
 
 import           FakeHttpRequest
 import           Helper.App
-import qualified Http
-import           Interpolator
-import           PatchGirl.Api
-import           RequestComputation.Model
+import           PatchGirl.Client
+import           PatchGirl.Internal
 
 
 -- * client
@@ -32,9 +30,9 @@ import           RequestComputation.Model
 runRequestComputation
   :: Auth.Token
   -> (TemplatedRequestComputationInput, EnvironmentVars)
-  -> ClientM RequestComputationResult
+  -> Servant.ClientM RequestComputationResult
 runRequestComputation =
-  client (Proxy :: Proxy (RequestComputationApi '[JWT]))
+  Servant.client (Proxy :: Proxy (RequestComputationApi '[JWT]))
 
 
 -- * spec
@@ -109,9 +107,9 @@ spec = do
       )
 
     (input1, output1) =
-      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Http.Get
+      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
                                          , _templatedRequestComputationInputHeaders = []
-                                         , _templatedRequestComputationInputScheme = Http.Http
+                                         , _templatedRequestComputationInputScheme = Http
                                          , _templatedRequestComputationInputUrl = [ Sentence "foo.com" ]
                                          , _templatedRequestComputationInputBody = [ Sentence "" ]
                                          }
@@ -137,9 +135,9 @@ spec = do
       )
 
     (input2, output2) =
-      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Http.Get
+      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
                                          , _templatedRequestComputationInputHeaders = []
-                                         , _templatedRequestComputationInputScheme = Http.Http
+                                         , _templatedRequestComputationInputScheme = Http
                                          , _templatedRequestComputationInputUrl = [ Key "host" ]
                                          , _templatedRequestComputationInputBody = [ Sentence "" ]
                                          }

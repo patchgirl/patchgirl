@@ -7,24 +7,21 @@ module FakeHttpRequest ( throwException
                        , buildRequest
                        ) where
 
-import qualified Control.Exception        as Exception
-import           Control.Lens.Operators   ((.~))
-import qualified Control.Monad            as Monad
-import qualified Control.Monad.IO.Class   as IO
-import qualified Data.ByteString.UTF8     as BSU
-import           Data.Functor             ((<&>))
-import           Data.Map                 (Map)
-import qualified Data.Map                 as Map
-import qualified Network.HTTP.Client      as HTTP
-import qualified Network.HTTP.Types       as HTTP
+import qualified Control.Exception      as Exception
+import           Control.Lens.Operators ((.~))
+import qualified Control.Monad          as Monad
+import qualified Control.Monad.IO.Class as IO
+import qualified Data.ByteString.UTF8   as BSU
+import           Data.Functor           ((<&>))
+import           Data.Map               (Map)
+import qualified Data.Map               as Map
+import qualified Network.HTTP.Client    as HTTP
+import qualified Network.HTTP.Types     as HTTP
 import           Servant
 
-import           Env
 import           Helper.App
-import qualified Http
-import           Interpolator
+import           PatchGirl.Internal
 import           PatchGirl.Server
-import           RequestComputation.Model
 
 
 -- * fake request
@@ -69,9 +66,9 @@ throwException exceptionContent = do
 
 defaultRequestComputationInput :: TemplatedRequestComputationInput
 defaultRequestComputationInput =
-  TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Http.Get
+  TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
                                    , _templatedRequestComputationInputHeaders = []
-                                   , _templatedRequestComputationInputScheme = Http.Http
+                                   , _templatedRequestComputationInputScheme = Http
                                    , _templatedRequestComputationInputUrl = [ Sentence "foo.com" ]
                                    , _templatedRequestComputationInputBody = [ Sentence "" ]
                                    }

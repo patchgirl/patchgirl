@@ -12,7 +12,7 @@ import           Servant.Client   (ClientM, client)
 import           Test.Hspec
 
 import           Helper.App
-import           PatchGirl.Api
+import           PatchGirl.Client
 import           PatchGirl.Server
 
 

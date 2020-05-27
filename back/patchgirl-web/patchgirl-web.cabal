@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc7f3645b96473896e78da6ca8c25d982af8a704364338218e1f8b0a89fc27d3
+-- hash: cc263505d726b4ea579fb7835926944ea8d63bcd6f52ecd763dc56b6e9801856
 
 name:           patchgirl-web
 version:        0.0.0
@@ -14,6 +14,7 @@ library
   exposed-modules:
       PatchGirl.Client
       PatchGirl.Server
+      PatchGirl.Internal
   other-modules:
       Account.App
       Account.Sql

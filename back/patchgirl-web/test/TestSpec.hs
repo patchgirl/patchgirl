@@ -8,13 +8,13 @@
 module TestSpec where
 
 import           Servant
-import           Servant.Client   (ClientM, client)
+import           Servant.Client     (ClientM, client)
 import           Test.Hspec
 
 import           Helper.App
-import           PatchGirl.Api
+import           PatchGirl.Client
+import           PatchGirl.Internal
 import           PatchGirl.Server
-import           Test
 
 
 -- * client

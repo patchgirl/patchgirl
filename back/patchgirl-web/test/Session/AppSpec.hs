@@ -8,15 +8,16 @@
 module Session.AppSpec where
 
 import           Data.Functor        ((<&>))
-import           Helper.App
-import           PatchGirl.Api
-import           PatchGirl.Server
 import           Servant
 import           Servant.Auth.Client
 import           Servant.Auth.Server (JWT, SetCookie)
 import           Servant.Client      (ClientM, client)
-import           Session.Model
 import           Test.Hspec
+
+import           Helper.App
+import           PatchGirl.Client
+import           PatchGirl.Internal
+import           PatchGirl.Server
 
 
 -- * client

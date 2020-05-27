@@ -8,22 +8,21 @@
 
 module RequestNode.AppSpec where
 
-import           Control.Lens.Getter     ((^.))
+import           Control.Lens.Getter ((^.))
 import           Data.UUID
-import qualified Data.UUID               as UUID
-import qualified Network.HTTP.Types      as HTTP
+import qualified Data.UUID           as UUID
+import qualified Network.HTTP.Types  as HTTP
 import           Servant
-import qualified Servant.Auth.Client     as Auth
-import qualified Servant.Auth.Server     as Auth
-import           Servant.Client          (ClientM, client)
+import qualified Servant.Auth.Client as Auth
+import qualified Servant.Auth.Server as Auth
+import           Servant.Client      (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Api
+import           PatchGirl.Client
+import           PatchGirl.Internal
 import           PatchGirl.Server
-import           RequestCollection.Model
-import           RequestNode.Model
 
 
 -- * client

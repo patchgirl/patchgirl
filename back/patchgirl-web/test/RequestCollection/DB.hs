@@ -10,8 +10,8 @@ import qualified Data.UUID.V4                     as UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
-import           RequestCollection.Model
-import           RequestNode.Sql
+
+import           PatchGirl.Internal
 
 
 -- * new fake request collection
