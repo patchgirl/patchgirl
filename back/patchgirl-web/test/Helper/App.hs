@@ -129,7 +129,7 @@ defaultEnv2 = do
   let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
   return $
     Env { _envPort = 3001
-        , _envAppKeyFilePath = ".appKey.test"
+        , _envAppKeyFilePath = "../.appKey.test"
         , _envDB = DBConfig { _dbPort = 5432
                            , _dbName = "test"
                            , _dbUser = "postgres"
