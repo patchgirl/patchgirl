@@ -23,18 +23,16 @@ import qualified Data.UUID                           as UUID
 import           DB
 
 import           Account.Sql
+import           CaseInsensitive
 import           Github.App
-import           Model
 import           PatchGirl
 import           Servant
-import           Servant.API.ResponseHeaders         (noHeader)
 import           Servant.Auth.Server                 (AuthResult (..),
                                                       CookieSettings,
                                                       JWTSettings, SetCookie,
                                                       acceptLogin, clearSession,
                                                       makeXsrfCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()
-import           Servant.Server                      (ServerError)
 import           Session.Model
 import           Web.Cookie                          (setCookieValue)
 

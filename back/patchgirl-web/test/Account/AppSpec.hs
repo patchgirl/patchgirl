@@ -7,11 +7,13 @@
 
 module Account.AppSpec where
 
-import           App
-import           Helper.App
 import           Servant
-import           Servant.Client (ClientM, client)
+import           Servant.Client   (ClientM, client)
 import           Test.Hspec
+
+import           Helper.App
+import           PatchGirl.Api
+import           PatchGirl.Server
 
 
 -- * client

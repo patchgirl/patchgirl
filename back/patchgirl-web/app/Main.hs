@@ -1,6 +1,6 @@
 module Main where
 
-import           App
+import           PatchGirl.Server (run)
 
 main :: IO ()
 main =

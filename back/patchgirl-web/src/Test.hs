@@ -78,7 +78,7 @@ createUserHandler newUser = do
 
 insertNewUserTestSql :: NewUserTest -> PG.Connection -> IO UserTest
 insertNewUserTestSql newUser connection = do
-  [user] <- PG.query connection rawQuery (newUser)
+  [user] <- PG.query connection rawQuery newUser
   return user
   where
     rawQuery =

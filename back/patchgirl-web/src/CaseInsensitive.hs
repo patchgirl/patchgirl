@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module Model where
+module CaseInsensitive where
 
 import           Data.Aeson                           (FromJSON (..),
                                                        ToJSON (..))

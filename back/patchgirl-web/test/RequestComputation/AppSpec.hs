@@ -18,11 +18,11 @@ import           Servant.Auth.Server      (JWT)
 import           Servant.Client
 import           Test.Hspec
 
-import           App
 import           FakeHttpRequest
 import           Helper.App
 import qualified Http
 import           Interpolator
+import           PatchGirl.Api
 import           RequestComputation.Model
 
 

@@ -1,70 +1,45 @@
-{-# LANGUAGE ConstraintKinds            #-}
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds       #-}
+{-# LANGUAGE TypeOperators   #-}
 
-module App( mkApp
-          , run
-          , RequestCollectionApi
-          , ScenarioCollectionApi
-          , EnvironmentApi
-          , ScenarioNodeApi
-          , ScenarioFileApi
-          , ScenarioFolderApi
-          , SceneApi
-          , RequestNodeApi
-          , RequestFileApi
-          , RequestFolderApi
-          , RequestComputationApi
-          , ScenarioComputationApi
-          , SessionApi
-          , PSessionApi
-          , AccountApi
-          , RestApi
-          , TestApi
-          ) where
+module PatchGirl.Api( CombinedApi
+                    , combinedApiServer
+                    , RequestCollectionApi
+                    , ScenarioCollectionApi
+                    , EnvironmentApi
+                    , ScenarioNodeApi
+                    , ScenarioFileApi
+                    , ScenarioFolderApi
+                    , SceneApi
+                    , RequestNodeApi
+                    , RequestFileApi
+                    , RequestFolderApi
+                    , RequestComputationApi
+                    , ScenarioComputationApi
+                    , SessionApi
+                    , PSessionApi
+                    , AccountApi
+                    , RestApi
+                    , TestApi
+                    ) where
 
 
-import           Control.Lens.Getter                   ((^.))
-import qualified Control.Monad.Except                  as Except
-import qualified Control.Monad.IO.Class                as IO
-import qualified Control.Monad.Reader                  as Reader
 import           Data.UUID
-import qualified GHC.Natural                           as Natural
-import qualified Network.Connection                    as Tls
-import qualified Network.HTTP.Client.TLS               as Tls
-import qualified Network.Wai.Handler.Warp              as Warp
-import qualified Network.Wai.Middleware.Prometheus     as Prometheus
-import qualified Prometheus
-import qualified Prometheus.Metric.GHC                 as Prometheus
-import qualified Say
 import           Servant                               hiding (BadPassword,
                                                         NoSuchUser)
-import           Servant.API.ContentTypes              (NoContent)
 import           Servant.API.Flatten                   (Flat)
 import           Servant.Auth.Server                   (Auth, AuthResult (..),
-                                                        Cookie, CookieSettings,
-                                                        IsSecure (..), JWT,
-                                                        JWTSettings,
-                                                        SameSite (..),
-                                                        SetCookie,
-                                                        cookieIsSecure,
-                                                        cookieSameSite,
-                                                        cookieXsrfSetting,
-                                                        defaultCookieSettings,
-                                                        defaultJWTSettings,
-                                                        readKey,
-                                                        sessionCookieName,
+                                                        CookieSettings,
+                                                        JWTSettings, SetCookie,
                                                         throwAll)
 
 import           Account.App
-import           Env
 import           Environment.App
 import           Environment.Model
 import           Github.App
 import           Health.App
 import           Interpolator
+import           PatchGirl.Model
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestComputation.App
@@ -81,6 +56,7 @@ import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
 import           Session.App
 import           Session.Model
 import           Test
+
 
 -- * api
 
@@ -519,63 +495,3 @@ authorize f = \case
 assetApiServer :: ServerT AssetApi AppM
 assetApiServer =
   serveDirectoryWebApp "../public"
-
-
--- * model
-
-
-newtype AppM a =
-  AppM { unAppM :: Except.ExceptT ServerError (Reader.ReaderT Env IO) a }
-  deriving ( Except.MonadError ServerError
-           , Reader.MonadReader Env
-           , Functor
-           , Applicative
-           , Monad
-           , IO.MonadIO
-           )
-
-appMToHandler
-  :: Env
-  -> AppM a
-  -> Handler a
-appMToHandler env r = do
-  eitherErrorOrResult <- IO.liftIO $ flip Reader.runReaderT env . Except.runExceptT . unAppM $ r
-  case eitherErrorOrResult of
-    Left error   -> throwError error
-    Right result -> return result
-
-
--- * app
-
-
-run :: IO ()
-run = do
-  putStrLn "Running web server"
-  env :: Env <- createEnv Say.sayString ioRequestRunner
-  _ <- Prometheus.register Prometheus.ghcMetrics
-  let
-    promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
-  Warp.run (Natural.naturalToInt $ _envPort env ) =<< promMiddleware <$> mkApp env
-
-mkApp :: Env -> IO Application
-mkApp env = do
-  let tlsSettings = Tls.TLSSettingsSimple True False False
-  -- this manager will mainly be used by RequestComputation
-  Tls.setGlobalManager =<< Tls.newTlsManagerWith (Tls.mkManagerSettings tlsSettings Nothing)
-  key <- readKey $ env ^. envAppKeyFilePath
-  let
-    jwtSettings = defaultJWTSettings key
-    cookieSettings =
-      defaultCookieSettings { cookieIsSecure = Secure
-                            , cookieSameSite = AnySite
-                            , cookieXsrfSetting = Nothing
-                            , sessionCookieName = "JWT"
-                            }
-    context = cookieSettings :. jwtSettings :. EmptyContext
-    combinedApiProxy = Proxy :: Proxy (CombinedApi '[Cookie, JWT]) -- JWT is needed for the tests to run
-    apiServer =
-      combinedApiServer cookieSettings jwtSettings
-    server =
-      hoistServerWithContext combinedApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler env) apiServer
-  return $
-    serveWithContext combinedApiProxy context server

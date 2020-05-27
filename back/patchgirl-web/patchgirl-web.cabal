@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 04db750b30e850b460fdb9aade958930af2f25800173818f1c2baf3c1c69a945
+-- hash: cc7f3645b96473896e78da6ca8c25d982af8a704364338218e1f8b0a89fc27d3
 
 name:           patchgirl-web
 version:        0.0.0
@@ -12,10 +12,12 @@ build-type:     Simple
 
 library
   exposed-modules:
-      App
+      PatchGirl.Client
+      PatchGirl.Server
   other-modules:
       Account.App
       Account.Sql
+      CaseInsensitive
       DB
       ElmOption
       Env
@@ -26,8 +28,9 @@ library
       Health.App
       Http
       Interpolator
-      Model
       PatchGirl
+      PatchGirl.Api
+      PatchGirl.Model
       RequestCollection.App
       RequestCollection.Model
       RequestCollection.Sql

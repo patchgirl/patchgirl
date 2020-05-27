@@ -8,11 +8,12 @@
 module TestSpec where
 
 import           Servant
-import           Servant.Client (ClientM, client)
+import           Servant.Client   (ClientM, client)
 import           Test.Hspec
 
-import           App
 import           Helper.App
+import           PatchGirl.Api
+import           PatchGirl.Server
 import           Test
 
 
@@ -30,7 +31,7 @@ _ :<|> _
   :<|> showUser
   :<|> updateUser
   :<|> listUsers =
-  client (Proxy :: Proxy (TestApi))
+  client (Proxy :: Proxy TestApi)
 
 
 -- * spec

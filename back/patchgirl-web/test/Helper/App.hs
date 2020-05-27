@@ -12,6 +12,7 @@ import           Database.PostgreSQL.Simple.Types (Identifier (..))
 import           DB                               (getDBConnection)
 import qualified Say
 
+import           CaseInsensitive
 import           Control.Exception                (finally, throwIO)
 import qualified Data.ByteString.Lazy             as BSL
 import qualified Data.Maybe                       as Maybe
@@ -20,7 +21,6 @@ import           Data.UUID                        (UUID)
 import qualified Data.UUID                        as UUID
 import           DBUtil
 import           Env
-import           Model
 import qualified Network.HTTP.Client              as Client
 import           Network.HTTP.Types               (Status)
 import           Network.Wai.Handler.Warp         (testWithApplication)

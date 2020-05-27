@@ -1,12 +1,12 @@
 module Lib (app) where
 
-import qualified App
 import qualified Control.Concurrent.Async as Async
 import qualified Graphics.UI.Webviewhs    as WHS
+import           PatchGirl.Server         (run)
 
 app :: IO ()
 app = do
-  Async.race_ createWindow App.run
+  Async.race_ createWindow run
 
 createWindow :: IO ()
 createWindow =

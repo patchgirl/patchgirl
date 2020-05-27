@@ -7,7 +7,6 @@
 
 module ScenarioComputation.AppSpec where
 
-import           App
 import qualified Data.ByteString.UTF8      as BSU
 import qualified Data.Map.Strict           as Map
 import qualified Data.UUID                 as UUID
@@ -23,6 +22,8 @@ import           FakeHttpRequest
 import           Helper.App
 import qualified Http
 import           Interpolator
+import           PatchGirl.Api
+import           PatchGirl.Server
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           TangoScript

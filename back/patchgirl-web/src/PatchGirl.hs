@@ -16,4 +16,4 @@ logError
   -> m ()
 logError msg = do
   env <- Reader.ask
-  IO.liftIO $ (_envLog env) msg
+  IO.liftIO $ _envLog env msg

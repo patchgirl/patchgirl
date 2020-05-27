@@ -140,11 +140,11 @@ responseToComputationResult either = do
                                  , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
                                  }
 
-    Left (ex@(Http.InvalidUrlException url reason)) -> do
+    Left ex@(Http.InvalidUrlException url reason) -> do
       logError $ show ex
       return $ Left (InvalidUrlException url reason)
 
-    Left (ex@(Http.HttpExceptionRequest _ content)) -> do
+    Left ex@(Http.HttpExceptionRequest _ content) -> do
       logError $ show ex
       return $ Left matching
       where

@@ -9,7 +9,7 @@ module ScenarioNode.Model where
 
 
 import           Control.Lens                         (makeLenses)
-import           Data.Aeson                           (Value, parseJSON)
+import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
                                                        constructorTagModifier,

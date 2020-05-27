@@ -7,19 +7,21 @@
 
 module Environment.AppSpec where
 
-import           App
 import qualified Data.Maybe                 as Maybe
 import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
-import           DBUtil
-import           Environment.Model
-import           Helper.App
 import qualified Network.HTTP.Types         as HTTP
 import           Servant
 import qualified Servant.Auth.Client        as Auth
 import qualified Servant.Auth.Server        as Auth
 import           Servant.Client             (ClientM, client)
 import           Test.Hspec
+
+import           DBUtil
+import           Environment.Model
+import           Helper.App
+import           PatchGirl.Api
+import           PatchGirl.Server
 
 
 -- * client

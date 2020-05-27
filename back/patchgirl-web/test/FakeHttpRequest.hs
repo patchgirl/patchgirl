@@ -19,11 +19,11 @@ import qualified Network.HTTP.Client      as HTTP
 import qualified Network.HTTP.Types       as HTTP
 import           Servant
 
-import           App
 import           Env
 import           Helper.App
 import qualified Http
 import           Interpolator
+import           PatchGirl.Server
 import           RequestComputation.Model
 
 

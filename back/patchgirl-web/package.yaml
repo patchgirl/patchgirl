@@ -43,7 +43,8 @@ library:
   source-dirs:
     - src
   exposed-modules:
-    - App
+    - PatchGirl.Client # APIs & Models
+    - PatchGirl.Server
 
 executables:
   patchgirl-web-exe:

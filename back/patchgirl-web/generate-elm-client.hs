@@ -14,48 +14,27 @@
 {-# LANGUAGE TypeOperators         #-}
 
 
--- * third party lib
 
-
-import           Control.Lens              ((&), (<>~))
-import qualified Data.Aeson                as Aeson
-import qualified Data.Text                 as T
+import           Control.Lens             ((&), (<>~))
+import qualified Data.Aeson               as Aeson
+import qualified Data.Text                as T
 import           Data.Word
-import           Elm.Module                as Elm
+import           Elm.Module               as Elm
 import           Elm.TyRep
-import           ElmOption                 (deriveWithSingleFieldObject,
-                                            deriveWithTaggedObject)
-import           GHC.TypeLits              (ErrorMessage (Text), KnownSymbol,
-                                            Symbol, TypeError, symbolVal)
-
-
--- * patchgirl lib
-
-
-import           App
-import           Environment.Model
-import           Github.App
-import           Health.App
-import           Http
-import           Interpolator
-import           Model                     (CaseInsensitive)
-import           RequestCollection.Model
-import           RequestComputation.Model
-import           RequestNode.Model
-import           ScenarioCollection.Model
-import           ScenarioComputation.Model
-import           ScenarioNode.Model
-import           Servant                   ((:<|>))
-import           Servant.API               ((:>), Capture, Get, JSON)
-import           Servant.API.ContentTypes  (NoContent)
-import           Servant.API.Flatten       (Flat)
-import           Servant.Auth              (Auth (..), Cookie)
-import           Servant.Auth.Client       (Token)
-import           Servant.Auth.Server       (JWT)
+import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
+                                           Symbol, TypeError, symbolVal)
+import           Servant                  ((:<|>))
+import           Servant.API              ((:>), Capture, Get, JSON)
+import           Servant.API.ContentTypes (NoContent)
+import           Servant.API.Flatten      (Flat)
+import           Servant.Auth             (Auth (..), Cookie)
+import           Servant.Auth.Client      (Token)
+import           Servant.Auth.Server      (JWT)
 import           Servant.Elm
-import           Servant.Foreign           hiding (Static)
-import           Session.Model
-import           TangoScript
+import           Servant.Foreign          hiding (Static)
+
+import           PatchGirl.Client
+
 
 -- * util
 

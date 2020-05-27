@@ -19,9 +19,10 @@ import qualified Servant.Auth.Server      as Auth
 import           Servant.Client           (ClientM, client)
 import           Test.Hspec
 
-import           App
 import           DBUtil
 import           Helper.App
+import           PatchGirl.Api
+import           PatchGirl.Server
 import           ScenarioCollection.Model
 import           ScenarioNode.Model
 

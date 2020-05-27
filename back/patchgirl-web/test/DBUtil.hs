@@ -19,15 +19,12 @@ import qualified Database.PostgreSQL.Simple           as PG
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple.Types     as PG
+
 import           Environment.Model
 import           GHC.Generics
 import           Http
-import           Model
-import           RequestCollection.Model
-import           RequestNode.Model
+import           PatchGirl.Client
 import           RequestNode.Sql
-import           ScenarioCollection.Model
-import           ScenarioNode.Model
 import           ScenarioNode.Sql
 
 

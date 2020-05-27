@@ -2,6 +2,7 @@
 
 module Session.Model where
 
+import           CaseInsensitive
 import           Data.Aeson          (FromJSON (..), ToJSON (..),
                                       genericParseJSON, genericToJSON,
                                       parseJSON)
@@ -9,7 +10,6 @@ import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
 import           Data.Text           (Text)
 import           Data.UUID
 import           GHC.Generics        (Generic)
-import           Model
 import           Servant.Auth.Server (FromJWT, ToJWT)
 
 

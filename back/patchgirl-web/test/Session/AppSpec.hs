@@ -7,9 +7,10 @@
 
 module Session.AppSpec where
 
-import           App
 import           Data.Functor        ((<&>))
 import           Helper.App
+import           PatchGirl.Api
+import           PatchGirl.Server
 import           Servant
 import           Servant.Auth.Client
 import           Servant.Auth.Server (JWT, SetCookie)
