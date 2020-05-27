@@ -45,9 +45,9 @@ executables:
     main: app/Main.hs
     dependencies:
       - patchgirl-desktop
-      - patchgirl-web
 
 dependencies:
   - base
   - webviewhs
   - async
+  - patchgirl-web

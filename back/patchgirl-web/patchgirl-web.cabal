@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d66d9d579a305e028badf915191afd8e54755fb0c1431f01df5c30627caa13ca
+-- hash: 04db750b30e850b460fdb9aade958930af2f25800173818f1c2baf3c1c69a945
 
 name:           patchgirl-web
 version:        0.0.0
@@ -12,9 +12,10 @@ build-type:     Simple
 
 library
   exposed-modules:
+      App
+  other-modules:
       Account.App
       Account.Sql
-      App
       DB
       ElmOption
       Env
@@ -47,7 +48,6 @@ library
       Session.Model
       TangoScript
       Test
-  other-modules:
       Paths_patchgirl_web
   hs-source-dirs:
       src

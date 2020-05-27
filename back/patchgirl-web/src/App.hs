@@ -550,6 +550,7 @@ appMToHandler env r = do
 
 run :: IO ()
 run = do
+  putStrLn "Running web server"
   env :: Env <- createEnv Say.sayString ioRequestRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   let

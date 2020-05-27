@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5ef356d26165c30c8ffa8b8075bc466f8d6de947fe4de7c1c4e9f5779469070b
+-- hash: a82c78641243b65f6a2667c65749fb80b2c857c6aab4df63f82d81284f1d7a22
 
 name:           patchgirl-desktop
 version:        0.0.0
@@ -22,6 +22,7 @@ library
   build-depends:
       async
     , base
+    , patchgirl-web
     , webviewhs
   default-language: Haskell2010
 
@@ -53,6 +54,7 @@ test-suite spec
     , base
     , hspec
     , patchgirl-desktop
+    , patchgirl-web
     , servant-client
     , webviewhs
   default-language: Haskell2010

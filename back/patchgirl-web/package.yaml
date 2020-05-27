@@ -42,6 +42,8 @@ tests:
 library:
   source-dirs:
     - src
+  exposed-modules:
+    - App
 
 executables:
   patchgirl-web-exe:

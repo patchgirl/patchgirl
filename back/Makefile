@@ -1,6 +1,9 @@
 run:
 	clear; stack exec patchgirl-$(APP)-exe
 
+both:
+	make app APP=web; make app APP=desktop
+
 app:
 	clear; echo "building back/patchgirl-$(APP)"; stack build patchgirl-$(APP) --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
 
