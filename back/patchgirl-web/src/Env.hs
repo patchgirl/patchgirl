@@ -11,8 +11,10 @@ module Env( createEnv
           , envFrontConfig
           , DBConfig(..)
           , GithubConfig(..)
+          , Config(..)
           , Mode(..)
           , FrontConfig(..)
+          , getConfig
           ) where
 
 import qualified Control.Lens             as Lens
@@ -25,6 +27,13 @@ import           GHC.Generics             (Generic)
 import qualified Network.HTTP.Client      as Http
 
 import           RequestComputation.Model
+
+
+-- * mode
+
+
+data Mode = DesktopMode | WebMode
+
 
 -- * db
 
@@ -91,6 +100,16 @@ instance Dhall.FromDhall Config where
       <*> Dhall.field "github" Dhall.auto
       <*> Dhall.field "frontConfig" Dhall.auto
 
+getConfig :: Mode -> IO Config
+getConfig mode = do
+  globalConfig :: GlobalConfig <- Dhall.input Dhall.auto "./config.dhall"
+  return $ chooseConfig globalConfig mode
+  where
+    chooseConfig :: GlobalConfig -> Mode -> Config
+    chooseConfig GlobalConfig { desktopConfig, webConfig } = \case
+      DesktopMode -> desktopConfig
+      WebMode -> webConfig
+
 
 -- * front config
 
@@ -131,18 +150,12 @@ data Env
 $(Lens.makeLenses ''Env)
 
 
--- * mode
-
-
-data Mode = DesktopMode | WebMode
-
-
 -- * create env
+
 
 createEnv :: Mode -> (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
 createEnv mode log httpRequest = do
-  globalConfig :: GlobalConfig <- Dhall.input Dhall.auto "./config.dhall"
-  let Config{..} = chooseConfig globalConfig mode
+  Config{..} <- getConfig mode
   return $ Env { _envPort = _configPort
                , _envAppKeyFilePath = _configAppKeyFilePath
                , _envDB = _configDB
@@ -151,8 +164,3 @@ createEnv mode log httpRequest = do
                , _envHttpRequest = httpRequest
                , _envFrontConfig = _configFrontConfig
                }
-  where
-    chooseConfig :: GlobalConfig -> Mode -> Config
-    chooseConfig GlobalConfig { desktopConfig, webConfig } = \case
-      DesktopMode -> desktopConfig
-      WebMode -> webConfig

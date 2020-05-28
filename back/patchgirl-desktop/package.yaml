@@ -51,3 +51,4 @@ dependencies:
   - webviewhs
   - async
   - patchgirl-web
+  - text
