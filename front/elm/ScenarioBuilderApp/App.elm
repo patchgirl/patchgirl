@@ -32,6 +32,7 @@ type alias Model a =
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
+        , config : Config
     }
 
 
@@ -130,6 +131,7 @@ convertFromFileToBuilder :
     -> ScenarioBuilder.Model
 convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =
     { notification = model.notification
+    , config = model.config
     , session = model.session
     , whichModal = model.whichModal
     , id = file.id

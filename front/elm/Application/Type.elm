@@ -6,6 +6,14 @@ import Uuid exposing (Uuid)
 import Parser exposing(DeadEnd)
 
 
+-- * config
+
+
+type alias Config =
+    { runnerUrl : String
+    }
+
+
 -- * menu
 
 

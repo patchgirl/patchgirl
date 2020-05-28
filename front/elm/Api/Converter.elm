@@ -124,6 +124,14 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
     }
 
 
+-- * config
+
+
+convertFrontConfigFromBackToFront : Back.FrontConfig -> Front.Config
+convertFrontConfigFromBackToFront { frontConfigRunnerUrl } =
+    { runnerUrl = frontConfigRunnerUrl
+    }
+
 
 -- * environment key values
 

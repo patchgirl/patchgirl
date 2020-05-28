@@ -45,6 +45,8 @@ port loadApplication : E.Value -> Cmd msg
 
 
 -- * model
+
+
 -- ** loader model
 
 
@@ -65,6 +67,7 @@ type LoaderState
         , mRequestCollection : Maybe Client.RequestCollection
         , mScenarioCollection : Maybe Client.ScenarioCollection
         , mEnvironments : Maybe (List Client.Environment)
+        , mFrontConfig : Maybe Client.FrontConfig
         }
     | DataLoaded -- third state: we can fade out the loader
     | StopLoader -- fourth state: we can hide the loader
@@ -72,6 +75,8 @@ type LoaderState
 
 
 -- * page
+
+
 -- ** model
 
 
@@ -109,8 +114,9 @@ urlToPage url =
             LoadingPage
 
 
-
 -- * port
+
+
 -- ** model
 
 
@@ -119,22 +125,22 @@ type alias LoadedData =
     , requestCollection : Client.RequestCollection
     , scenarioCollection : Client.ScenarioCollection
     , environments : List Client.Environment
+    , frontConfig : Client.FrontConfig
     }
-
 
 
 -- ** encoder
 
 
 loadedDataEncoder : LoadedData -> E.Value
-loadedDataEncoder { session, requestCollection, environments, scenarioCollection } =
+loadedDataEncoder { session, requestCollection, environments, scenarioCollection, frontConfig } =
     E.object
         [ ( "session", Client.jsonEncSession session )
         , ( "environments", E.list Client.jsonEncEnvironment environments )
         , ( "requestCollection", Client.jsonEncRequestCollection requestCollection )
         , ( "scenarioCollection", Client.jsonEncScenarioCollection scenarioCollection )
+        , ( "frontConfig", Client.jsonEncFrontConfig frontConfig )
         ]
-
 
 
 -- ** start main app
@@ -143,15 +149,38 @@ loadedDataEncoder { session, requestCollection, environments, scenarioCollection
 startMainApp : Model -> ( Model, Cmd Msg )
 startMainApp model =
     case model.appState of
-        AppDataPending { session, mRequestCollection, mScenarioCollection, mEnvironments } ->
-            case ( mRequestCollection, mScenarioCollection, mEnvironments ) of
-                ( Just requestCollection, Just scenarioCollection, Just environments ) ->
+        AppDataPending { session, mRequestCollection, mScenarioCollection, mEnvironments, mFrontConfig } ->
+            let
+                dataPending : Maybe { requestCollection : Client.RequestCollection
+                                    , scenarioCollection : Client.ScenarioCollection
+                                    , environments : List Client.Environment
+                                    , frontConfig : Client.FrontConfig
+                                    }
+                dataPending =
+                    mRequestCollection
+                        |> Maybe.andThen (\requestCollection -> mScenarioCollection
+                             |> Maybe.andThen (\scenarioCollection -> mEnvironments
+                                 |> Maybe.andThen (\environments -> mFrontConfig
+                                     |> Maybe.andThen (\frontConfig ->
+                                                           Just { requestCollection = requestCollection
+                                                                , scenarioCollection = scenarioCollection
+                                                                , environments = environments
+                                                                , frontConfig = frontConfig
+                                                                }
+                                                      )
+                                              )
+                                          )
+                                     )
+            in
+            case dataPending of
+                Just { requestCollection, scenarioCollection, environments, frontConfig } ->
                     let
                         loadedData =
                             { session = session
                             , requestCollection = requestCollection
                             , scenarioCollection = scenarioCollection
                             , environments = environments
+                            , frontConfig = frontConfig
                             }
 
                         newBackgroundStyle =
@@ -193,6 +222,7 @@ type Msg
     = SessionFetched Client.Session
     | RequestCollectionFetched Client.RequestCollection
     | EnvironmentsFetched (List Client.Environment)
+    | FrontConfigFetched Client.FrontConfig
     | LoaderConcealed LoadedData
     | ServerError Http.Error
     | Animate Animation.Msg
@@ -257,6 +287,7 @@ update msg model =
                         , mRequestCollection = Nothing
                         , mScenarioCollection = Nothing
                         , mEnvironments = Nothing
+                        , mFrontConfig = Nothing
                         }
 
                 getRequestCollection =
@@ -267,6 +298,9 @@ update msg model =
 
                 getEnvironments =
                     Client.getApiEnvironment "" (getCsrfToken (Client.convertSessionFromBackToFront session)) environmentsResultToMsg
+
+                getFrontConfig =
+                    Client.getApiConfig "" frontConfigResultToMsg
 
                 setBlankUrl =
                     case model.page of
@@ -281,6 +315,7 @@ update msg model =
                         [ getRequestCollection
                         , getScenarioCollection
                         , getEnvironments
+                        , getFrontConfig
                         , setBlankUrl
                         ]
 
@@ -321,6 +356,19 @@ update msg model =
                     let
                         newState =
                             AppDataPending { pending | mScenarioCollection = Just scenarioCollection }
+                    in
+                    { model | appState = newState }
+                        |> startMainApp
+
+                _ ->
+                    Debug.todo "already initialized app received initialization infos"
+
+        FrontConfigFetched frontConfig ->
+            case model.appState of
+                AppDataPending pending ->
+                    let
+                        newState =
+                            AppDataPending { pending | mFrontConfig = Just frontConfig }
                     in
                     { model | appState = newState }
                         |> startMainApp
@@ -418,6 +466,15 @@ environmentsResultToMsg result =
     case result of
         Ok environments ->
             EnvironmentsFetched environments
+
+        Err error ->
+            ServerError error
+
+frontConfigResultToMsg : Result Http.Error Client.FrontConfig -> Msg
+frontConfigResultToMsg result =
+    case result of
+        Ok frontConfig ->
+            FrontConfigFetched frontConfig
 
         Err error ->
             ServerError error

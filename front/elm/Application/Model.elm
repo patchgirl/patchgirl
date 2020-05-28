@@ -4,7 +4,7 @@ import Animation
 import Application.Type exposing (..)
 import Browser.Navigation as Navigation
 import List.Extra as List
-import Modal exposing (..)
+import Modal exposing (Modal)
 import Page exposing (..)
 import Url as Url
 import Uuid
@@ -46,6 +46,9 @@ type alias Model =
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
     , environments : List Environment
+
+    -- CONFIG
+    , config : Config
     }
 
 

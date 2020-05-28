@@ -35,16 +35,18 @@ decodeLoadedData json =
 loadedDataDecoder : D.Decoder Application.UserData
 loadedDataDecoder =
     let
-        mkLoadedData : Session -> List Environment -> RequestCollection -> ScenarioCollection -> Application.UserData
-        mkLoadedData session environments requestCollection scenarioCollection =
+        mkLoadedData : Session -> List Environment -> RequestCollection -> ScenarioCollection -> Config -> Application.UserData
+        mkLoadedData session environments requestCollection scenarioCollection config =
             { session = session
             , environments = environments
             , requestCollection = requestCollection
             , scenarioCollection = scenarioCollection
+            , config = config
             }
     in
-    D.map4 mkLoadedData
+    D.map5 mkLoadedData
         (D.at [ "session" ] (D.map Client.convertSessionFromBackToFront Client.jsonDecSession))
         (D.at [ "environments" ] (D.map (List.map Client.convertEnvironmentFromBackToFront) (D.list Client.jsonDecEnvironment)))
         (D.at [ "requestCollection" ] (D.map Client.convertRequestCollectionFromBackToFront Client.jsonDecRequestCollection))
         (D.at [ "scenarioCollection" ] (D.map Client.convertScenarioCollectionFromBackToFront Client.jsonDecScenarioCollection))
+        (D.at [ "frontConfig" ] (D.map Client.convertFrontConfigFromBackToFront Client.jsonDecFrontConfig))

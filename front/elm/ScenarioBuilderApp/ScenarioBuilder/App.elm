@@ -32,6 +32,7 @@ import Dict exposing (Dict)
 
 type alias Model =
     { session : Session
+    , config : Config
     , notification : Maybe String
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
@@ -270,7 +271,7 @@ update msg model =
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiScenarioComputation "" (getCsrfToken model.session) payload runScenarioResultToMsg
+                            Client.postApiScenarioComputation model.config.runnerUrl (getCsrfToken model.session) payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none
