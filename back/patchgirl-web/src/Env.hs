@@ -8,6 +8,7 @@ module Env( createEnv
           , envGithub
           , envLog
           , envHttpRequest
+          , envFrontConfig
           , DBConfig(..)
           , GithubConfig(..)
           , Mode(..)
@@ -24,25 +25,6 @@ import           GHC.Generics             (Generic)
 import qualified Network.HTTP.Client      as Http
 
 import           RequestComputation.Model
-
-data Mode = DesktopMode | WebMode
-
-createEnv :: Mode -> (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
-createEnv whichConfig log httpRequest = do
-  globalConfig :: GlobalConfig <- Dhall.input Dhall.auto "./config.dhall"
-  let Config{..} = chooseConfig globalConfig whichConfig
-  return $ Env { _envPort = _configPort
-               , _envAppKeyFilePath = _configAppKeyFilePath
-               , _envDB = _configDB
-               , _envGithub = _configGithub
-               , _envLog = log
-               , _envHttpRequest = httpRequest
-               }
-  where
-    chooseConfig :: GlobalConfig -> Mode -> Config
-    chooseConfig GlobalConfig { desktopConfig, webConfig } = \case
-      DesktopMode -> desktopConfig
-      WebMode -> webConfig
 
 -- * db
 
@@ -132,6 +114,7 @@ instance Aeson.FromJSON FrontConfig where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
+
 -- * env
 
 
@@ -146,3 +129,30 @@ data Env
         }
 
 $(Lens.makeLenses ''Env)
+
+
+-- * mode
+
+
+data Mode = DesktopMode | WebMode
+
+
+-- * create env
+
+createEnv :: Mode -> (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
+createEnv mode log httpRequest = do
+  globalConfig :: GlobalConfig <- Dhall.input Dhall.auto "./config.dhall"
+  let Config{..} = chooseConfig globalConfig mode
+  return $ Env { _envPort = _configPort
+               , _envAppKeyFilePath = _configAppKeyFilePath
+               , _envDB = _configDB
+               , _envGithub = _configGithub
+               , _envLog = log
+               , _envHttpRequest = httpRequest
+               , _envFrontConfig = _configFrontConfig
+               }
+  where
+    chooseConfig :: GlobalConfig -> Mode -> Config
+    chooseConfig GlobalConfig { desktopConfig, webConfig } = \case
+      DesktopMode -> desktopConfig
+      WebMode -> webConfig

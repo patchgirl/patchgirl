@@ -4,7 +4,6 @@
 
 module PatchGirl.Server(run, mkApp) where
 
-import           Control.Lens.Getter               ((^.))
 import qualified GHC.Natural                       as Natural
 import qualified Network.Connection                as Tls
 import qualified Network.HTTP.Client.TLS           as Tls
@@ -45,7 +44,7 @@ mkApp env = do
   let tlsSettings = Tls.TLSSettingsSimple True False False
   -- this manager will mainly be used by RequestComputation
   Tls.setGlobalManager =<< Tls.newTlsManagerWith (Tls.mkManagerSettings tlsSettings Nothing)
-  key <- readKey $ env ^. envAppKeyFilePath
+  key <- readKey $ _envAppKeyFilePath env
   let
     jwtSettings = defaultJWTSettings key
     cookieSettings =
