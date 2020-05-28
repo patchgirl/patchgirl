@@ -1,7 +1,9 @@
 module Main where
 
-import           PatchGirl.Server (run)
+import qualified PatchGirl.Client as Client
+import qualified PatchGirl.Server as Server
+
 
 main :: IO ()
 main =
-  run
+  Server.run Client.WebMode

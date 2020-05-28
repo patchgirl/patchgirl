@@ -2,6 +2,7 @@ module PatchGirl.Client (module Lib) where
 
 import           CaseInsensitive           as Lib
 import           ElmOption                 as Lib
+import           Env                       as Lib
 import           Environment.Model         as Lib
 import           Github.App                as Lib
 import           Health.App                as Lib

@@ -21,7 +21,6 @@ import           Test.Hspec
 import           FakeHttpRequest
 import           Helper.App
 import           PatchGirl.Client
-import           PatchGirl.Internal
 
 
 -- * client

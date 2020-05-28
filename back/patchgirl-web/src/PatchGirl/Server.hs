@@ -31,10 +31,10 @@ import           PatchGirl.Model
 import           RequestComputation.App
 
 
-run :: IO ()
-run = do
+run :: Mode -> IO ()
+run mode = do
   putStrLn "Running web server"
-  env :: Env <- createEnv Say.sayString ioRequestRunner
+  env :: Env <- createEnv mode Say.sayString ioRequestRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   let
     promMiddleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
