@@ -11,15 +11,18 @@ module Env( createEnv
           , DBConfig(..)
           , GithubConfig(..)
           , Mode(..)
+          , FrontConfig(..)
           ) where
 
 import qualified Control.Lens             as Lens
+import qualified Data.Aeson               as Aeson
 import qualified Data.ByteString.UTF8     as BSU
 import           Data.Text                (Text)
 import           Dhall                    (Natural)
 import qualified Dhall
 import           GHC.Generics             (Generic)
 import qualified Network.HTTP.Client      as Http
+
 import           RequestComputation.Model
 
 data Mode = DesktopMode | WebMode
@@ -93,7 +96,7 @@ data Config
            , _configAppKeyFilePath :: String
            , _configDB             :: DBConfig
            , _configGithub         :: GithubConfig
-           , _configRunnerUrl      :: String
+           , _configFrontConfig    :: FrontConfig
            }
   deriving (Generic, Show)
 
@@ -104,7 +107,29 @@ instance Dhall.FromDhall Config where
       <*> Dhall.field "appKeyFilePath" Dhall.string
       <*> Dhall.field "db" Dhall.auto
       <*> Dhall.field "github" Dhall.auto
-      <*> Dhall.field "runnerUrl" Dhall.string
+      <*> Dhall.field "frontConfig" Dhall.auto
+
+
+-- * front config
+
+
+data FrontConfig
+  = FrontConfig { _frontConfigRunnerUrl :: String
+                }
+  deriving (Generic, Show)
+
+instance Dhall.FromDhall FrontConfig where
+  autoWith _ = Dhall.record $
+    FrontConfig
+      <$> Dhall.field "runnerUrl" Dhall.auto
+
+instance Aeson.ToJSON FrontConfig where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON FrontConfig where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- * env
@@ -117,6 +142,7 @@ data Env
         , _envGithub         :: GithubConfig
         , _envLog            :: String -> IO ()
         , _envHttpRequest    :: Http.Request -> IO (HttpResponse BSU.ByteString)
+        , _envFrontConfig    :: FrontConfig
         }
 
 $(Lens.makeLenses ''Env)

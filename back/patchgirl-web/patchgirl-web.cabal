@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc263505d726b4ea579fb7835926944ea8d63bcd6f52ecd763dc56b6e9801856
+-- hash: e300177e977d4437246bedb2d87890210617dacf95e0c9561cd24ab11dc5f108
 
 name:           patchgirl-web
 version:        0.0.0
@@ -25,6 +25,7 @@ library
       Environment.App
       Environment.Model
       Foo
+      FrontConfig.App
       Github.App
       Health.App
       Http

@@ -34,8 +34,10 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
                                                         throwAll)
 
 import           Account.App
+import           Env
 import           Environment.App
 import           Environment.Model
+import           FrontConfig.App
 import           Github.App
 import           Health.App
 import           Interpolator
@@ -95,7 +97,8 @@ type RestApi auths =
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
-  HealthApi
+  HealthApi :<|>
+  ConfigApi
 
 restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
@@ -115,6 +118,7 @@ restApiServer cookieSettings jwtSettings =
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
   :<|> healthApiServer
+  :<|> configApiServer
 
 
 -- ** request collection
@@ -423,6 +427,17 @@ healthApiServer =
   getAppHealthHandler
 
 
+-- ** config
+
+
+type ConfigApi =
+  "api" :> "config" :> Get '[JSON] FrontConfig
+
+configApiServer :: ServerT ConfigApi AppM
+configApiServer =
+  getConfigApiHandler
+
+
 -- ** other
 
 
@@ -458,7 +473,7 @@ type AssetApi =
   "public" :> Raw
 
 
--- * server
+-- * util
 
 
 authorizeWithAccountId
