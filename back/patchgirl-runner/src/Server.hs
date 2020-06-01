@@ -35,7 +35,7 @@ import           RequestComputation.App
 
 run :: IO ()
 run = do
-  putStrLn "Running web server"
+  putStrLn "Running web server for web"
   env :: Env <- createEnv Say.sayString ioRequestRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   app :: Application <- mkApp env <&> cors
