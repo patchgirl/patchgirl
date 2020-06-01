@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e300177e977d4437246bedb2d87890210617dacf95e0c9561cd24ab11dc5f108
+-- hash: 23e18f028156e5ae9d5cbc472c746932f7d5747763bee9e4259724f340684139
 
 name:           patchgirl-web
 version:        0.0.0
@@ -99,6 +99,7 @@ library
     , utf8-string
     , uuid
     , wai
+    , wai-cors
     , wai-middleware-prometheus
     , warp
     , warp-tls
@@ -152,6 +153,7 @@ executable patchgirl-web-exe
     , utf8-string
     , uuid
     , wai
+    , wai-cors
     , wai-middleware-prometheus
     , warp
     , warp-tls
@@ -229,6 +231,7 @@ test-suite spec
     , utf8-string
     , uuid
     , wai
+    , wai-cors
     , wai-middleware-prometheus
     , warp >=3.2.4
     , warp-tls

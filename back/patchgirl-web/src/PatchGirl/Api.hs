@@ -337,7 +337,7 @@ requestFolderApiServer =
 
 
 type RequestComputationApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "requestComputation" :> (
+  Flat (Auth auths CookieSession :> "api" :> "runner" :> "requestComputation" :> (
     ReqBody '[JSON] (TemplatedRequestComputationInput, EnvironmentVars) :> Post '[JSON] RequestComputationResult
   ))
 
@@ -353,7 +353,7 @@ requestComputationApiServer =
 
 
 type ScenarioComputationApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioComputation" :> (
+  Flat (Auth auths CookieSession :> "api" :> "runner" :> "scenarioComputation" :> (
     ReqBody '[JSON] ScenarioInput :> Post '[JSON] ScenarioOutput
   ))
 
