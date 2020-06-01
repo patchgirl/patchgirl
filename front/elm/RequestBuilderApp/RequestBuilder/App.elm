@@ -372,7 +372,7 @@ buildRequestToRun envKeyValues builder =
             )
 
     in
-    Client.postApiRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
+    Client.postApiRunnerRequestComputation "" "" backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError

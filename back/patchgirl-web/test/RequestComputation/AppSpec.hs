@@ -13,8 +13,6 @@ import qualified Data.Map.Strict      as Map
 import qualified Network.HTTP.Client  as HTTP
 import qualified Network.HTTP.Types   as HTTP
 import           Servant
-import qualified Servant.Auth.Client  as Auth
-import           Servant.Auth.Server  (JWT)
 import qualified Servant.Client       as Servant
 import           Test.Hspec
 
@@ -26,12 +24,9 @@ import           PatchGirl.Client
 -- * client
 
 
-runRequestComputation
-  :: Auth.Token
-  -> (TemplatedRequestComputationInput, EnvironmentVars)
-  -> Servant.ClientM RequestComputationResult
+runRequestComputation :: (TemplatedRequestComputationInput, EnvironmentVars) -> Servant.ClientM RequestComputationResult
 runRequestComputation =
-  Servant.client (Proxy :: Proxy (RequestComputationApi '[JWT]))
+  Servant.client (Proxy :: Proxy RequestComputationApi)
 
 
 -- * spec
@@ -47,8 +42,8 @@ spec = do
   describe "valid request computation input" $
     withClient (withHttpMock [ requestWithResponse1 ]) $
       it "returns ok200" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (input1, envVars)) `shouldReturn` output1
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runRequestComputation (input1, envVars)) `shouldReturn` output1
 
 
 -- ** computation interpolate env vars
@@ -57,12 +52,12 @@ spec = do
   describe "computation interpolate env vars" $
     withClient (withHttpMock [ requestWithResponse2 ]) $
       it "interpolate env vars" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } -> do
+        createAccountAndcleanDBAfter $ \_ -> do
           let envVars = Map.fromList [ ( "host"
                                        , [ Sentence "foo.com" ]
                                        )
                                      ]
-          try clientEnv (runRequestComputation token (input2, envVars))
+          try clientEnv (runRequestComputation (input2, envVars))
           `shouldReturn` output2
 
 
@@ -72,20 +67,20 @@ spec = do
   describe "invalid url" $
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, envVars)) `shouldReturn` Left (InvalidUrlException "" "")
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
       it "returns too many redirects" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, envVars)) `shouldReturn` Left TooManyRedirects
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left TooManyRedirects
 
   describe "connection timeout" $
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runRequestComputation token (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
 
 
   where

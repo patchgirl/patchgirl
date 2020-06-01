@@ -92,8 +92,8 @@ type RestApi auths =
   RequestNodeApi auths :<|>
   RequestFileApi auths :<|>
   RequestFolderApi auths :<|>
-  RequestComputationApi auths :<|>
-  ScenarioComputationApi auths :<|>
+  RequestComputationApi :<|>
+  ScenarioComputationApi :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
@@ -336,30 +336,27 @@ requestFolderApiServer =
 -- ** request computation
 
 
-type RequestComputationApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "runner" :> "requestComputation" :> (
+type RequestComputationApi =
+  "api" :> "runner" :> "requestComputation" :> (
     ReqBody '[JSON] (TemplatedRequestComputationInput, EnvironmentVars) :> Post '[JSON] RequestComputationResult
-  ))
+  )
 
-requestComputationApiServer
-  :: AuthResult CookieSession
-  -> (TemplatedRequestComputationInput, EnvironmentVars)
-  -> AppM RequestComputationResult
+requestComputationApiServer :: (TemplatedRequestComputationInput, EnvironmentVars) -> AppM RequestComputationResult
 requestComputationApiServer =
-  authorize runRequestComputationHandler
+  runRequestComputationHandler
 
 
 -- ** scenario computation
 
 
-type ScenarioComputationApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "runner" :> "scenarioComputation" :> (
+type ScenarioComputationApi =
+  "api" :> "runner" :> "scenarioComputation" :> (
     ReqBody '[JSON] ScenarioInput :> Post '[JSON] ScenarioOutput
-  ))
+  )
 
-scenarioComputationApiServer :: AuthResult CookieSession -> ScenarioInput -> AppM ScenarioOutput
+scenarioComputationApiServer :: ScenarioInput -> AppM ScenarioOutput
 scenarioComputationApiServer =
-  authorize runScenarioComputationHandler
+  runScenarioComputationHandler
 
 
 -- ** session
@@ -491,21 +488,6 @@ authorizeWithAccountId f = \case
 
   Authenticated cookieSession ->
     f (_cookieAccountId cookieSession)
-
-authorize
-  :: (ThrowAll a) => a -> AuthResult b -> a
-authorize f = \case
-  BadPassword ->
-    throwAll err402
-
-  NoSuchUser ->
-    throwAll err403
-
-  Indefinite ->
-    throwAll err405
-
-  Authenticated _ ->
-    f
 
 assetApiServer :: ServerT AssetApi AppM
 assetApiServer =

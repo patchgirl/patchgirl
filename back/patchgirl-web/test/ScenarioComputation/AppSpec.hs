@@ -13,8 +13,6 @@ import qualified Data.UUID            as UUID
 import qualified Network.HTTP.Client  as HTTP
 import qualified Network.HTTP.Types   as HTTP
 import           Servant
-import qualified Servant.Auth.Client  as Auth
-import           Servant.Auth.Server  (JWT)
 import qualified Servant.Client       as Servant
 import           Test.Hspec
 
@@ -27,9 +25,9 @@ import           PatchGirl.Server
 -- * client
 
 
-runScenarioComputation :: Auth.Token -> ScenarioInput -> Servant.ClientM ScenarioOutput
+runScenarioComputation :: ScenarioInput -> Servant.ClientM ScenarioOutput
 runScenarioComputation =
-  Servant.client (Proxy :: Proxy (ScenarioComputationApi '[JWT]))
+  Servant.client (Proxy :: Proxy ScenarioComputationApi)
 
 
 -- * spec
@@ -54,8 +52,8 @@ spec = do
 
     withClient (mkApp defaultEnv) $
       it "runs empty scenario" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** scenario with one valid scene
@@ -83,8 +81,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "runs a single scene scenario" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** scenario with last scene invalid (invalid url)
@@ -116,8 +114,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "run all scenes" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** scenario first scene invalid (invalid url)
@@ -145,8 +143,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "doesnt run scenes after a failing scene" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** prescript fails: cannot `assertEqual`
@@ -170,8 +168,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "fails" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** prescript fails: trying to access unknown local variable
@@ -195,8 +193,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "fails" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** prescript succeed: assertEqual
@@ -224,8 +222,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "fails" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** prescript succeed: set global variable for next scene prescript
@@ -260,8 +258,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "succeed" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** postscript succeed: assert equal http body response
@@ -290,8 +288,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "succeed" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** postscript fails: assert equal http body response
@@ -316,8 +314,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "fails" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** postscript succeed: set global variable for next scene postscript
@@ -352,8 +350,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "succeed" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- ** pre/postscript succeed: set global variable from prescript to next scene postscript
@@ -388,8 +386,8 @@ spec = do
 
     withClient (withHttpMock2 mock) $
       it "succeed" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
-          try clientEnv (runScenarioComputation token input) `shouldReturn` output
+        createAccountAndcleanDBAfter $ \_ ->
+          try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- * util
