@@ -101,7 +101,7 @@ getConfig = do
 -- * front config
 
 
-data FrontConfig
+newtype FrontConfig
   = FrontConfig { _frontConfigRunnerUrl :: String
                 }
   deriving (Generic, Show)

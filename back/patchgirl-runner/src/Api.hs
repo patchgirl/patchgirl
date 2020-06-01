@@ -25,7 +25,7 @@ type RunnerApi =
   RequestComputationApi :<|>
   ScenarioComputationApi
 
-runnerApiServer :: ServerT (RunnerApi) AppM
+runnerApiServer :: ServerT RunnerApi AppM
 runnerApiServer =
   requestComputationApiServer
   :<|> scenarioComputationApiServer

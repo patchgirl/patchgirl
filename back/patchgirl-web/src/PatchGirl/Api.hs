@@ -38,7 +38,6 @@ import           Environment.Model
 import           FrontConfig.App
 import           Github.App
 import           Health.App
-import           Interpolator
 import           PatchGirl.Model
 import           RequestCollection.App
 import           RequestCollection.Model

@@ -7,13 +7,13 @@
 
 module RequestComputation.AppSpec where
 
-import qualified Data.ByteString.UTF8      as BSU
-import           Data.Map.Strict           (Map)
-import qualified Data.Map.Strict           as Map
-import qualified Network.HTTP.Client       as HTTP
-import qualified Network.HTTP.Types        as HTTP
+import qualified Data.ByteString.UTF8     as BSU
+import           Data.Map.Strict          (Map)
+import qualified Data.Map.Strict          as Map
+import qualified Network.HTTP.Client      as HTTP
+import qualified Network.HTTP.Types       as HTTP
 import           Servant
-import qualified Servant.Client            as Servant
+import qualified Servant.Client           as Servant
 import           Test.Hspec
 
 import           Api
@@ -22,9 +22,6 @@ import           Helper.App
 import           Http
 import           Interpolator
 import           RequestComputation.Model
-import           ScenarioComputation.Model
-import           Server
-import           TangoScript
 
 
 -- * client

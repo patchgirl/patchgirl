@@ -15,14 +15,12 @@ module Env( createEnv
           , getConfig
           ) where
 
-import qualified Control.Lens         as Lens
-import qualified Data.Aeson           as Aeson
-import qualified Data.ByteString.UTF8 as BSU
-import           Data.Text            (Text)
-import           Dhall                (Natural)
+import qualified Control.Lens as Lens
+import qualified Data.Aeson   as Aeson
+import           Data.Text    (Text)
+import           Dhall        (Natural)
 import qualified Dhall
-import           GHC.Generics         (Generic)
-import qualified Network.HTTP.Client  as Http
+import           GHC.Generics (Generic)
 
 
 -- * db
@@ -98,7 +96,7 @@ getConfig = do
 -- * front config
 
 
-data FrontConfig
+newtype FrontConfig
   = FrontConfig { _frontConfigRunnerUrl :: String
                 }
   deriving (Generic, Show)

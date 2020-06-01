@@ -4,15 +4,10 @@
 
 module PatchGirl.Server(run, mkApp) where
 
-import qualified Data.CaseInsensitive              as CI
-import           Data.Functor                      ((<&>))
 import qualified GHC.Natural                       as Natural
 import qualified Network.Connection                as Tls
 import qualified Network.HTTP.Client.TLS           as Tls
-import qualified Network.HTTP.Types.Header         as HTTP
-import qualified Network.HTTP.Types.Method         as HTTP
 import           Network.Wai                       (Middleware)
-import qualified Network.Wai                       as Wai
 import qualified Network.Wai.Handler.Warp          as Warp
 import qualified Network.Wai.Middleware.Prometheus as Prometheus
 import qualified Prometheus
