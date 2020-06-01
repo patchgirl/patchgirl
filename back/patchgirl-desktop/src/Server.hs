@@ -2,7 +2,7 @@
 {-# LANGUAGE DataKinds       #-}
 {-# LANGUAGE TypeOperators   #-}
 
-module PatchGirl.Server(run, mkApp) where
+module Server(run, mkApp) where
 
 import qualified Data.CaseInsensitive              as CI
 import           Data.Functor                      ((<&>))
@@ -21,19 +21,13 @@ import qualified Prometheus.Metric.GHC             as Prometheus
 import qualified Say
 import           Servant                           hiding (BadPassword,
                                                     NoSuchUser)
-import           Servant.Auth.Server               (Cookie, CookieSettings, JWT,
-                                                    JWTSettings, SameSite (..),
-                                                    cookieIsSecure,
-                                                    cookieSameSite,
-                                                    cookieXsrfSetting,
-                                                    defaultCookieSettings,
-                                                    defaultJWTSettings, readKey,
-                                                    sessionCookieName)
 
 
+import           Api
 import           Env
-import           PatchGirl.Api
-import           PatchGirl.Model
+import           Model
+import           RequestComputation.App
+
 
 
 -- * run
@@ -42,7 +36,7 @@ import           PatchGirl.Model
 run :: IO ()
 run = do
   putStrLn "Running web server"
-  env :: Env <- createEnv Say.sayString
+  env :: Env <- createEnv Say.sayString ioRequestRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   app :: Application <- mkApp env <&> cors
   let promMiddleware :: Middleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True
@@ -93,20 +87,11 @@ mkApp env = do
   let tlsSettings = Tls.TLSSettingsSimple True False False
   -- this manager will mainly be used by RequestComputation
   Tls.setGlobalManager =<< Tls.newTlsManagerWith (Tls.mkManagerSettings tlsSettings Nothing)
-  key <- readKey $ _envAppKeyFilePath env
   let
-    jwtSettings = defaultJWTSettings key
-    cookieSettings =
-      defaultCookieSettings { cookieIsSecure = Secure
-                            , cookieSameSite = AnySite
-                            , cookieXsrfSetting = Nothing
-                            , sessionCookieName = "JWT"
-                            }
-    context = cookieSettings :. jwtSettings :. EmptyContext
-    webApiProxy = Proxy :: Proxy (WebApi '[Cookie, JWT]) -- JWT is needed for the tests to run
-    apiServer =
-      webApiServer cookieSettings jwtSettings
+    context = EmptyContext
+    webApiProxy = Proxy :: Proxy RunnerApi
+    apiServer = runnerApiServer
     server =
-      hoistServerWithContext webApiProxy (Proxy :: Proxy '[CookieSettings, JWTSettings]) (appMToHandler env) apiServer
+      hoistServerWithContext webApiProxy Proxy (appMToHandler env) apiServer
   return $
     serveWithContext webApiProxy context server

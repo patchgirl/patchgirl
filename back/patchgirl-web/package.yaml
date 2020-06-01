@@ -42,10 +42,6 @@ tests:
 library:
   source-dirs:
     - src
-  exposed-modules:
-    - PatchGirl.Client # APIs & Models
-    - PatchGirl.Server
-    - PatchGirl.Internal
 
 executables:
   patchgirl-web-exe:

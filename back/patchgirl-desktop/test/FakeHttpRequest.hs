@@ -7,21 +7,26 @@ module FakeHttpRequest ( throwException
                        , buildRequest
                        ) where
 
-import qualified Control.Exception      as Exception
-import           Control.Lens.Operators ((.~))
-import qualified Control.Monad          as Monad
-import qualified Control.Monad.IO.Class as IO
-import qualified Data.ByteString.UTF8   as BSU
-import           Data.Functor           ((<&>))
-import           Data.Map               (Map)
-import qualified Data.Map               as Map
-import qualified Network.HTTP.Client    as HTTP
-import qualified Network.HTTP.Types     as HTTP
+import qualified Control.Exception        as Exception
+import           Control.Lens.Operators   ((.~))
+import qualified Control.Monad            as Monad
+import qualified Control.Monad.IO.Class   as IO
+import qualified Data.ByteString.UTF8     as BSU
+import           Data.Functor             ((<&>))
+import           Data.Map                 (Map)
+import qualified Data.Map                 as Map
+import qualified Network.HTTP.Client      as HTTP
+import qualified Network.HTTP.Types       as HTTP
 import           Servant
 
+import           Env
 import           Helper.App
-import           PatchGirl.Internal
-import           PatchGirl.Server
+import           Http
+import           Interpolator
+import           Model
+import           RequestComputation.Model
+import           Server
+import           TangoScript
 
 
 -- * fake request

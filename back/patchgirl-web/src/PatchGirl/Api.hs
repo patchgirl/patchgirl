@@ -2,8 +2,8 @@
 {-# LANGUAGE DataKinds       #-}
 {-# LANGUAGE TypeOperators   #-}
 
-module PatchGirl.Api( CombinedApi
-                    , combinedApiServer
+module PatchGirl.Api( WebApi
+                    , webApiServer
                     , RequestCollectionApi
                     , ScenarioCollectionApi
                     , EnvironmentApi
@@ -14,8 +14,6 @@ module PatchGirl.Api( CombinedApi
                     , RequestNodeApi
                     , RequestFileApi
                     , RequestFolderApi
-                    , RequestComputationApi
-                    , ScenarioComputationApi
                     , SessionApi
                     , PSessionApi
                     , AccountApi
@@ -44,14 +42,10 @@ import           Interpolator
 import           PatchGirl.Model
 import           RequestCollection.App
 import           RequestCollection.Model
-import           RequestComputation.App
-import           RequestComputation.Model
 import           RequestNode.App
 import           RequestNode.Model
 import           ScenarioCollection.App
 import           ScenarioCollection.Model
-import           ScenarioComputation.App
-import           ScenarioComputation.Model
 import           ScenarioNode.App
 import           ScenarioNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
@@ -60,19 +54,14 @@ import           Session.Model
 import           Test
 
 
--- * api
-
-
--- ** combined
-
-
-type CombinedApi auths =
+type WebApi auths =
   RestApi auths :<|>
   TestApi :<|>
   AssetApi
 
-combinedApiServer :: CookieSettings -> JWTSettings -> ServerT (CombinedApi a) AppM
-combinedApiServer cookieSettings jwtSettings =
+
+webApiServer :: CookieSettings -> JWTSettings -> ServerT (WebApi a) AppM
+webApiServer cookieSettings jwtSettings =
   restApiServer cookieSettings jwtSettings :<|>
   testApiServer :<|>
   assetApiServer
@@ -92,8 +81,6 @@ type RestApi auths =
   RequestNodeApi auths :<|>
   RequestFileApi auths :<|>
   RequestFolderApi auths :<|>
-  RequestComputationApi :<|>
-  ScenarioComputationApi :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
@@ -112,8 +99,6 @@ restApiServer cookieSettings jwtSettings =
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
   :<|> requestFolderApiServer
-  :<|> requestComputationApiServer
-  :<|> scenarioComputationApiServer
   :<|> sessionApiServer cookieSettings jwtSettings
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
@@ -331,32 +316,6 @@ requestFolderApiServer
 requestFolderApiServer =
   authorizeWithAccountId createRequestFolderHandler
   :<|> authorizeWithAccountId createRootRequestFolderHandler
-
-
--- ** request computation
-
-
-type RequestComputationApi =
-  "api" :> "runner" :> "requestComputation" :> (
-    ReqBody '[JSON] (TemplatedRequestComputationInput, EnvironmentVars) :> Post '[JSON] RequestComputationResult
-  )
-
-requestComputationApiServer :: (TemplatedRequestComputationInput, EnvironmentVars) -> AppM RequestComputationResult
-requestComputationApiServer =
-  runRequestComputationHandler
-
-
--- ** scenario computation
-
-
-type ScenarioComputationApi =
-  "api" :> "runner" :> "scenarioComputation" :> (
-    ReqBody '[JSON] ScenarioInput :> Post '[JSON] ScenarioOutput
-  )
-
-scenarioComputationApiServer :: ScenarioInput -> AppM ScenarioOutput
-scenarioComputationApiServer =
-  runScenarioComputationHandler
 
 
 -- ** session

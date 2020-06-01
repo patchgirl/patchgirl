@@ -7,6 +7,7 @@ module Env( createEnv
           , envDB
           , envGithub
           , envLog
+          , envHttpRequest
           , envFrontConfig
           , DBConfig(..)
           , GithubConfig(..)
@@ -15,14 +16,16 @@ module Env( createEnv
           , getConfig
           ) where
 
-import qualified Control.Lens         as Lens
-import qualified Data.Aeson           as Aeson
-import qualified Data.ByteString.UTF8 as BSU
-import           Data.Text            (Text)
-import           Dhall                (Natural)
+import qualified Control.Lens             as Lens
+import qualified Data.Aeson               as Aeson
+import qualified Data.ByteString.UTF8     as BSU
+import           Data.Text                (Text)
+import           Dhall                    (Natural)
 import qualified Dhall
-import           GHC.Generics         (Generic)
-import qualified Network.HTTP.Client  as Http
+import           GHC.Generics             (Generic)
+import qualified Network.HTTP.Client      as Http
+
+import           RequestComputation.Model
 
 
 -- * db
@@ -127,6 +130,7 @@ data Env
         , _envDB             :: DBConfig
         , _envGithub         :: GithubConfig
         , _envLog            :: String -> IO ()
+        , _envHttpRequest    :: Http.Request -> IO (HttpResponse BSU.ByteString)
         , _envFrontConfig    :: FrontConfig
         }
 
@@ -136,13 +140,14 @@ $(Lens.makeLenses ''Env)
 -- * create env
 
 
-createEnv :: (String -> IO ()) -> IO Env
-createEnv log = do
+createEnv :: (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
+createEnv log httpRequest = do
   Config{..} <- getConfig
   return $ Env { _envPort = _configPort
                , _envAppKeyFilePath = _configAppKeyFilePath
                , _envDB = _configDB
                , _envGithub = _configGithub
                , _envLog = log
+               , _envHttpRequest = httpRequest
                , _envFrontConfig = _configFrontConfig
                }

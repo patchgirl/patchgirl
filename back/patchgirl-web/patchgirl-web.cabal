@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23e18f028156e5ae9d5cbc472c746932f7d5747763bee9e4259724f340684139
+-- hash: 0aa282d105ab8e430b96ee0dc08044112d114a090b3931908faa6b6973801029
 
 name:           patchgirl-web
 version:        0.0.0
@@ -12,10 +12,6 @@ build-type:     Simple
 
 library
   exposed-modules:
-      PatchGirl.Client
-      PatchGirl.Server
-      PatchGirl.Internal
-  other-modules:
       Account.App
       Account.Sql
       CaseInsensitive
@@ -32,20 +28,19 @@ library
       Interpolator
       PatchGirl
       PatchGirl.Api
+      PatchGirl.Client
+      PatchGirl.Internal
       PatchGirl.Model
+      PatchGirl.Server
       RequestCollection.App
       RequestCollection.Model
       RequestCollection.Sql
-      RequestComputation.App
-      RequestComputation.Model
       RequestNode.App
       RequestNode.Model
       RequestNode.Sql
       ScenarioCollection.App
       ScenarioCollection.Model
       ScenarioCollection.Sql
-      ScenarioComputation.App
-      ScenarioComputation.Model
       ScenarioNode.App
       ScenarioNode.Model
       ScenarioNode.Sql
@@ -53,6 +48,7 @@ library
       Session.Model
       TangoScript
       Test
+  other-modules:
       Paths_patchgirl_web
   hs-source-dirs:
       src
@@ -171,12 +167,10 @@ test-suite spec
       InterpolatorSpec
       RequestCollection.AppSpec
       RequestCollection.DB
-      RequestComputation.AppSpec
       RequestFile.AppSpec
       RequestFolder.AppSpec
       RequestNode.AppSpec
       ScenarioCollection.AppSpec
-      ScenarioComputation.AppSpec
       ScenarioFile.AppSpec
       ScenarioFolder.AppSpec
       ScenarioNode.AppSpec

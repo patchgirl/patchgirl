@@ -48,7 +48,31 @@ executables:
 
 dependencies:
   - base
-  - webviewhs
-  - async
-  - patchgirl-web
   - text
+  - wai-cors
+  - servant-server
+  - transformers
+  - utf8-string
+  - dhall
+  - aeson
+  - wai
+  - warp
+  - warp-tls
+  - mtl
+  - bytestring
+  - postgresql-simple
+  - uuid
+  - lens
+  - case-insensitive
+  - http-client
+  - http-client-tls
+  - http-conduit
+  - http-types
+  - say
+  - containers
+  - connection
+  - wai-cors
+  - wai-middleware-prometheus
+  - prometheus-client
+  - prometheus-metrics-ghc
+  - stm

@@ -81,17 +81,6 @@ packages:
       sha256: 491bd345773bf319bc6e703d781f9f139f7869a2d915c45f576cff3bcaf54ae3
   original:
     hackage: servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
-- completed:
-    name: webviewhs
-    version: 0.1.0.0
-    git: https://github.com/lettier/webviewhs.git
-    pantry-tree:
-      size: 4168
-      sha256: 3b13369a771be7e6b7554ae23b311f80e256c8dece6cbf69674a7c63bcedde61
-    commit: 21ddd4b4872b2e7eb50c9735e70cfbdedf2c6c1a
-  original:
-    git: https://github.com/lettier/webviewhs.git
-    commit: 21ddd4b4872b2e7eb50c9735e70cfbdedf2c6c1a
 snapshots:
 - completed:
     size: 496112

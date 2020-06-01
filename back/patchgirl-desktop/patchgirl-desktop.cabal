@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a4ab7c4db0663e55eafab22abd4e8db00537d2efe0654bb359d3faea692a9fbd
+-- hash: 42a9979ba1d45d6df24ecd44a9df0efaf2fe0ac29d50f1f36bc2c42a499c80e6
 
 name:           patchgirl-desktop
 version:        0.0.0
@@ -12,7 +12,19 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Api
+      Env
+      Http
+      Interpolator
       Lib
+      Log
+      Model
+      RequestComputation.App
+      RequestComputation.Model
+      ScenarioComputation.App
+      ScenarioComputation.Model
+      Server
+      TangoScript
   other-modules:
       Paths_patchgirl_desktop
   hs-source-dirs:
@@ -20,11 +32,34 @@ library
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
-      async
+      aeson
     , base
-    , patchgirl-web
+    , bytestring
+    , case-insensitive
+    , connection
+    , containers
+    , dhall
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , lens
+    , mtl
+    , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
+    , say
+    , servant-server
+    , stm
     , text
-    , webviewhs
+    , transformers
+    , utf8-string
+    , uuid
+    , wai
+    , wai-cors
+    , wai-middleware-prometheus
+    , warp
+    , warp-tls
   default-language: Haskell2010
 
 executable patchgirl-desktop-exe
@@ -34,30 +69,80 @@ executable patchgirl-desktop-exe
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
-      async
+      aeson
     , base
+    , bytestring
+    , case-insensitive
+    , connection
+    , containers
+    , dhall
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , lens
+    , mtl
     , patchgirl-desktop
-    , patchgirl-web
+    , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
+    , say
+    , servant-server
+    , stm
     , text
-    , webviewhs
+    , transformers
+    , utf8-string
+    , uuid
+    , wai
+    , wai-cors
+    , wai-middleware-prometheus
+    , warp
+    , warp-tls
   default-language: Haskell2010
 
 test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      FakeHttpRequest
+      Helper.App
+      RequestComputation.AppSpec
+      ScenarioComputation.AppSpec
       Paths_patchgirl_desktop
   hs-source-dirs:
       test
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
-      async
+      aeson
     , base
+    , bytestring
+    , case-insensitive
+    , connection
+    , containers
+    , dhall
     , hspec
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , lens
+    , mtl
     , patchgirl-desktop
-    , patchgirl-web
+    , postgresql-simple
+    , prometheus-client
+    , prometheus-metrics-ghc
+    , say
     , servant-client
+    , servant-server
+    , stm
     , text
-    , webviewhs
+    , transformers
+    , utf8-string
+    , uuid
+    , wai
+    , wai-cors
+    , wai-middleware-prometheus
+    , warp
+    , warp-tls
   default-language: Haskell2010

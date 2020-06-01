@@ -7,18 +7,24 @@
 
 module RequestComputation.AppSpec where
 
-import qualified Data.ByteString.UTF8 as BSU
-import           Data.Map.Strict      (Map)
-import qualified Data.Map.Strict      as Map
-import qualified Network.HTTP.Client  as HTTP
-import qualified Network.HTTP.Types   as HTTP
+import qualified Data.ByteString.UTF8      as BSU
+import           Data.Map.Strict           (Map)
+import qualified Data.Map.Strict           as Map
+import qualified Network.HTTP.Client       as HTTP
+import qualified Network.HTTP.Types        as HTTP
 import           Servant
-import qualified Servant.Client       as Servant
+import qualified Servant.Client            as Servant
 import           Test.Hspec
 
+import           Api
 import           FakeHttpRequest
 import           Helper.App
-import           PatchGirl.Client
+import           Http
+import           Interpolator
+import           RequestComputation.Model
+import           ScenarioComputation.Model
+import           Server
+import           TangoScript
 
 
 -- * client
@@ -42,8 +48,7 @@ spec = do
   describe "valid request computation input" $
     withClient (withHttpMock [ requestWithResponse1 ]) $
       it "returns ok200" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \_ ->
-          try clientEnv (runRequestComputation (input1, envVars)) `shouldReturn` output1
+        try clientEnv (runRequestComputation (input1, envVars)) `shouldReturn` output1
 
 
 -- ** computation interpolate env vars
@@ -51,14 +56,13 @@ spec = do
 
   describe "computation interpolate env vars" $
     withClient (withHttpMock [ requestWithResponse2 ]) $
-      it "interpolate env vars" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \_ -> do
-          let envVars = Map.fromList [ ( "host"
-                                       , [ Sentence "foo.com" ]
-                                       )
-                                     ]
-          try clientEnv (runRequestComputation (input2, envVars))
-          `shouldReturn` output2
+      it "interpolate env vars" $ \clientEnv -> do
+        let envVars = Map.fromList [ ( "host"
+                                     , [ Sentence "foo.com" ]
+                                     )
+                                   ]
+        try clientEnv (runRequestComputation (input2, envVars))
+        `shouldReturn` output2
 
 
 -- ** computation failed
@@ -67,20 +71,17 @@ spec = do
   describe "invalid url" $
     withClient (withExceptionHttpMock (pure $ HTTP.InvalidUrlException "" "")) $
       it "returns invalid url exception" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \_ ->
-          try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left (InvalidUrlException "" "")
+        try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left (InvalidUrlException "" "")
 
   describe "too many redirects" $
     withClient (withExceptionHttpMock (throwException $ HTTP.TooManyRedirects [])) $
       it "returns too many redirects" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \_ ->
-          try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left TooManyRedirects
+        try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left TooManyRedirects
 
   describe "connection timeout" $
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \_ ->
-          try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
+        try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
 
 
   where
