@@ -1,7 +1,7 @@
 resolver: lts-15.13
 packages:
   - patchgirl-web/
-  - patchgirl-desktop/
+  - patchgirl-runner/
 
 extra-deps:
   - servant-flatten-0.2

@@ -4,9 +4,9 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 42a9979ba1d45d6df24ecd44a9df0efaf2fe0ac29d50f1f36bc2c42a499c80e6
+-- hash: 9a0cb2ee941b5b0cf47d0cc2746943ffe9640bb8b6041d2737ae676465400568
 
-name:           patchgirl-desktop
+name:           patchgirl-runner
 version:        0.0.0
 build-type:     Simple
 
@@ -26,7 +26,7 @@ library
       Server
       TangoScript
   other-modules:
-      Paths_patchgirl_desktop
+      Paths_patchgirl_runner
   hs-source-dirs:
       src
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
@@ -62,10 +62,10 @@ library
     , warp-tls
   default-language: Haskell2010
 
-executable patchgirl-desktop-exe
+executable patchgirl-runner-exe
   main-is: app/Main.hs
   other-modules:
-      Paths_patchgirl_desktop
+      Paths_patchgirl_runner
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
@@ -82,7 +82,7 @@ executable patchgirl-desktop-exe
     , http-types
     , lens
     , mtl
-    , patchgirl-desktop
+    , patchgirl-runner
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
@@ -108,7 +108,7 @@ test-suite spec
       Helper.App
       RequestComputation.AppSpec
       ScenarioComputation.AppSpec
-      Paths_patchgirl_desktop
+      Paths_patchgirl_runner
   hs-source-dirs:
       test
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
@@ -128,7 +128,7 @@ test-suite spec
     , http-types
     , lens
     , mtl
-    , patchgirl-desktop
+    , patchgirl-runner
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc

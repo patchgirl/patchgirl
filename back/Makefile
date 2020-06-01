@@ -4,7 +4,7 @@ run:
 	clear; stack exec $(PACKAGE)-exe
 
 both:
-	clear; make app APP=web; make app APP=desktop
+	clear; make app APP=web; make app APP=runner
 
 app:
 	clear; echo "building back/$(PACKAGE)"; stack build $(PACKAGE) --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"

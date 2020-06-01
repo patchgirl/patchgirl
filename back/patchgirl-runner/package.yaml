@@ -1,4 +1,4 @@
-name: patchgirl-desktop
+name: patchgirl-runner
 
 default-extensions:
   - LambdaCase
@@ -33,7 +33,7 @@ tests:
       - test
     dependencies:
       - hspec
-      - patchgirl-desktop
+      - patchgirl-runner
       - servant-client
 
 library:
@@ -41,10 +41,10 @@ library:
     - src
 
 executables:
-  patchgirl-desktop-exe:
+  patchgirl-runner-exe:
     main: app/Main.hs
     dependencies:
-      - patchgirl-desktop
+      - patchgirl-runner
 
 dependencies:
   - base
