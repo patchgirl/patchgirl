@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2b052e8c23fe2320c9a2cad1c2adf3e18bfdf6c8c863b87da786229af67bbbff
+-- hash: 8efe1ea7b9282ed4966014815099dc53a2c634555c920e7f410aef063f12d8af
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -14,7 +14,6 @@ library
   exposed-modules:
       Api
       Env
-      Http
       Interpolator
       Lib
       Log
@@ -45,6 +44,7 @@ library
     , http-types
     , lens
     , mtl
+    , patchgirl-web
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc

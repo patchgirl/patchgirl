@@ -3,7 +3,7 @@ port module AppLoader exposing (..)
 import Animation
 import Animation.Messenger as Messenger
 import Api.Converter as Client
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
 import Application.Type exposing (..)
 import Browser
 import Browser.Navigation as Navigation
@@ -67,7 +67,7 @@ type LoaderState
         , mRequestCollection : Maybe Client.RequestCollection
         , mScenarioCollection : Maybe Client.ScenarioCollection
         , mEnvironments : Maybe (List Client.Environment)
-        , mFrontConfig : Maybe Client.FrontConfig
+        , mFrontConfig : Maybe Client.RunnerConfig
         }
     | DataLoaded -- third state: we can fade out the loader
     | StopLoader -- fourth state: we can hide the loader
@@ -125,7 +125,7 @@ type alias LoadedData =
     , requestCollection : Client.RequestCollection
     , scenarioCollection : Client.ScenarioCollection
     , environments : List Client.Environment
-    , frontConfig : Client.FrontConfig
+    , frontConfig : Client.RunnerConfig
     }
 
 
@@ -139,7 +139,7 @@ loadedDataEncoder { session, requestCollection, environments, scenarioCollection
         , ( "environments", E.list Client.jsonEncEnvironment environments )
         , ( "requestCollection", Client.jsonEncRequestCollection requestCollection )
         , ( "scenarioCollection", Client.jsonEncScenarioCollection scenarioCollection )
-        , ( "frontConfig", Client.jsonEncFrontConfig frontConfig )
+        , ( "frontConfig", Client.jsonEncRunnerConfig frontConfig )
         ]
 
 
@@ -154,7 +154,7 @@ startMainApp model =
                 dataPending : Maybe { requestCollection : Client.RequestCollection
                                     , scenarioCollection : Client.ScenarioCollection
                                     , environments : List Client.Environment
-                                    , frontConfig : Client.FrontConfig
+                                    , frontConfig : Client.RunnerConfig
                                     }
                 dataPending =
                     mRequestCollection
@@ -222,7 +222,7 @@ type Msg
     = SessionFetched Client.Session
     | RequestCollectionFetched Client.RequestCollection
     | EnvironmentsFetched (List Client.Environment)
-    | FrontConfigFetched Client.FrontConfig
+    | FrontConfigFetched Client.RunnerConfig
     | LoaderConcealed LoadedData
     | ServerError Http.Error
     | Animate Animation.Msg
@@ -470,7 +470,7 @@ environmentsResultToMsg result =
         Err error ->
             ServerError error
 
-frontConfigResultToMsg : Result Http.Error Client.FrontConfig -> Msg
+frontConfigResultToMsg : Result Http.Error Client.RunnerConfig -> Msg
 frontConfigResultToMsg result =
     case result of
         Ok frontConfig ->

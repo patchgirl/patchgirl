@@ -1,6 +1,6 @@
 module ScenarioBuilderApp.ScenarioTree.App exposing (..)
 
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Input as Input

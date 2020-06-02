@@ -14,27 +14,30 @@
 {-# LANGUAGE TypeOperators         #-}
 
 
-
-import           Control.Lens             ((&), (<>~))
-import qualified Data.Aeson               as Aeson
-import qualified Data.Text                as T
+import           Control.Lens              ((&), (<>~))
+import qualified Data.Aeson                as Aeson
+import qualified Data.Text                 as T
 import           Data.Word
-import           Elm.Module               as Elm
+import           Elm.Module                as Elm
 import           Elm.TyRep
-import           GHC.TypeLits             (ErrorMessage (Text), KnownSymbol,
-                                           Symbol, TypeError, symbolVal)
-import           Servant                  ((:<|>))
-import           Servant.API              ((:>), Capture, Get, JSON)
-import           Servant.API.ContentTypes (NoContent)
-import           Servant.API.Flatten      (Flat)
-import           Servant.Auth             (Auth (..), Cookie)
-import           Servant.Auth.Client      (Token)
-import           Servant.Auth.Server      (JWT)
+import           GHC.TypeLits              (ErrorMessage (Text), KnownSymbol,
+                                            Symbol, TypeError, symbolVal)
+import           Servant                   ((:<|>))
+import           Servant.API               ((:>), Capture, Get, JSON)
+import           Servant.API.ContentTypes  (NoContent)
+import           Servant.API.Flatten       (Flat)
+import           Servant.Auth              (Auth (..), Cookie)
+import           Servant.Auth.Client       (Token)
+import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
-import           Servant.Foreign          hiding (Static)
+import           Servant.Foreign           hiding (Static)
 
+import           Api                       (RunnerApi)
+import           Interpolator
 import           PatchGirl.Client
-
+import           RequestComputation.Model
+import           ScenarioComputation.Model
+import           TangoScript
 
 -- * util
 
@@ -82,8 +85,11 @@ myDefaultElmToString argType =
 -- * custom code
 
 
-customCode :: T.Text
-customCode = T.unlines
+-- ** web
+
+
+webCustomCode :: T.Text
+webCustomCode = T.unlines
   [ "import Json.Decode"
   , "import Json.Encode exposing (Value)"
   , "-- The following module comes from bartavelle/json-helpers"
@@ -94,6 +100,48 @@ customCode = T.unlines
   , "import String"
   , "import Url.Builder"
   , "import Uuid as Uuid"
+  , ""
+  , "type alias UUID = Uuid.Uuid"
+  , ""
+  , "jsonDecUUID : Json.Decode.Decoder UUID"
+  , "jsonDecUUID = Uuid.decoder"
+  , ""
+  , "jsonEncUUID : UUID -> Value"
+  , "jsonEncUUID = Uuid.encode"
+  , ""
+  , "type alias Either a b = Result a b"
+  , ""
+  , "jsonDecEither : Json.Decode.Decoder a -> Json.Decode.Decoder b -> Json.Decode.Decoder (Either a b)"
+  , "jsonDecEither decoder1 decoder2 ="
+  , "  Json.Decode.oneOf [ Json.Decode.field \"Left\" decoder1 |> Json.Decode.map Err"
+  , "                    , Json.Decode.field \"Right\" decoder2 |> Json.Decode.map Ok"
+  , "                    ]"
+  , ""
+  , "jsonEncEither : (a -> Value) -> (b -> Value) -> Either a b -> Value"
+  , "jsonEncEither encoder1 encoder2 either ="
+  , "  case either of"
+  , "    Err err -> encoder1 err"
+  , "    Ok ok -> encoder2 ok"
+  , ""
+  ]
+
+
+-- ** runner
+
+
+runnerCustomCode :: T.Text
+runnerCustomCode = T.unlines
+  [ "import Json.Decode"
+  , "import Json.Encode exposing (Value)"
+  , "-- The following module comes from bartavelle/json-helpers"
+  , "import Json.Helpers exposing (..)"
+  , "import Dict exposing (Dict)"
+  , "import Set"
+  , "import Http"
+  , "import String"
+  , "import Url.Builder"
+  , "import Uuid as Uuid"
+  , "import Api.WebGeneratedClient exposing(..)"
   , ""
   , "type alias UUID = Uuid.Uuid"
   , ""
@@ -174,14 +222,17 @@ deriveElmDef deriveWithTaggedObject ''EnvironmentVars
 deriveElmDef deriveWithTaggedObject ''StringTemplate
 deriveElmDef deriveWithTaggedObject ''UpdateScenarioFile
 deriveElmDef deriveWithTaggedObject ''UpdateScene
-deriveElmDef deriveWithTaggedObject ''FrontConfig
+deriveElmDef deriveWithTaggedObject ''RunnerConfig
 
 
 -- * main
 
 
-main :: IO ()
-main =
+-- ** web
+
+
+webModule :: IO ()
+webModule =
   let
     options :: ElmOptions
     options =
@@ -195,7 +246,7 @@ main =
                     }
     namespace =
       [ "Api"
-      , "Generated"
+      , "WebGeneratedClient"
       ]
     targetFolder = "../front/elm"
     elmDefinitions =
@@ -215,9 +266,6 @@ main =
       , DefineElm (Proxy :: Proxy CaseInsensitive)
       , DefineElm (Proxy :: Proxy Session)
       , DefineElm (Proxy :: Proxy Token)
-      , DefineElm (Proxy :: Proxy RequestComputationInput)
-      , DefineElm (Proxy :: Proxy RequestComputationOutput)
-      , DefineElm (Proxy :: Proxy RequestComputationResult)
       , DefineElm (Proxy :: Proxy Scheme)
       , DefineElm (Proxy :: Proxy NewRequestFolder)
       , DefineElm (Proxy :: Proxy NewRootRequestFile)
@@ -234,26 +282,66 @@ main =
       , DefineElm (Proxy :: Proxy ScenarioNode)
       , DefineElm (Proxy :: Proxy Scene)
       , DefineElm (Proxy :: Proxy NewScene)
-      , DefineElm (Proxy :: Proxy HttpException)
-      , DefineElm (Proxy :: Proxy SceneComputation)
-      , DefineElm (Proxy :: Proxy ScriptException)
-      , DefineElm (Proxy :: Proxy Proc)
-      , DefineElm (Proxy :: Proxy Expr)
-      , DefineElm (Proxy :: Proxy ScenarioInput)
-      , DefineElm (Proxy :: Proxy ScenarioOutput)
-      , DefineElm (Proxy :: Proxy SceneOutput)
-      , DefineElm (Proxy :: Proxy SceneInput)
-      , DefineElm (Proxy :: Proxy TangoAst)
-      , DefineElm (Proxy :: Proxy ScenarioVars)
-      , DefineElm (Proxy :: Proxy Template)
-      , DefineElm (Proxy :: Proxy TemplatedRequestComputationInput)
-      , DefineElm (Proxy :: Proxy EnvironmentVars)
-      , DefineElm (Proxy :: Proxy StringTemplate)
       , DefineElm (Proxy :: Proxy UpdateScenarioFile)
       , DefineElm (Proxy :: Proxy UpdateScene)
-      , DefineElm (Proxy :: Proxy FrontConfig)
+      , DefineElm (Proxy :: Proxy RunnerConfig)
       ]
     proxyApi =
       (Proxy :: Proxy (RestApi '[Cookie]))
   in
-    generateElmModuleWith options namespace customCode targetFolder elmDefinitions proxyApi
+    generateElmModuleWith options namespace webCustomCode targetFolder elmDefinitions proxyApi
+
+
+-- ** runner
+
+
+runnerElmModule :: IO ()
+runnerElmModule =
+  let
+    options :: ElmOptions
+    options =
+      defElmOptions { urlPrefix = Dynamic
+                    , stringElmTypes =
+                      [ toElmType (Proxy @String)
+                      , toElmType (Proxy @T.Text)
+                      , toElmType (Proxy @Token)
+                      ]
+                    , elmToString = myDefaultElmToString
+                    }
+    namespace =
+      [ "Api"
+      , "RunnerGeneratedClient"
+      ]
+    targetFolder = "../front/elm"
+    elmDefinitions =
+      [ DefineElm (Proxy :: Proxy RequestComputationInput)
+      , DefineElm (Proxy :: Proxy RequestComputationOutput)
+      , DefineElm (Proxy :: Proxy RequestComputationResult)
+      , DefineElm (Proxy :: Proxy ScriptException)
+      , DefineElm (Proxy :: Proxy HttpException)
+      , DefineElm (Proxy :: Proxy Template)
+      , DefineElm (Proxy :: Proxy StringTemplate)
+      , DefineElm (Proxy :: Proxy TemplatedRequestComputationInput)
+      , DefineElm (Proxy :: Proxy ScenarioOutput)
+      , DefineElm (Proxy :: Proxy ScenarioInput)
+      , DefineElm (Proxy :: Proxy SceneOutput)
+      , DefineElm (Proxy :: Proxy SceneInput)
+      , DefineElm (Proxy :: Proxy Expr)
+      , DefineElm (Proxy :: Proxy TangoAst)
+      , DefineElm (Proxy :: Proxy Proc)
+      , DefineElm (Proxy :: Proxy EnvironmentVars)
+      , DefineElm (Proxy :: Proxy SceneComputation)
+      ]
+    proxyApi =
+      (Proxy :: Proxy RunnerApi)
+  in
+    generateElmModuleWith options namespace runnerCustomCode targetFolder elmDefinitions proxyApi
+
+
+-- ** main
+
+
+main :: IO ()
+main = do
+  runnerElmModule
+  webModule

@@ -1,7 +1,7 @@
 module MainNavBar.App exposing (..)
 
 import Api.Converter as Client
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
 import Application.Type exposing (..)
 import Browser.Navigation as Navigation
 import Element exposing (..)

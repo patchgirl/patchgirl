@@ -2,7 +2,8 @@ module RequestBuilderApp.RequestBuilder.App exposing (..)
 
 import Animation
 import Api.Converter as Client
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
+import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Dict
 import Element exposing (..)
@@ -372,7 +373,7 @@ buildRequestToRun envKeyValues builder =
             )
 
     in
-    Client.postApiRunnerRequestComputation "http://127.0.0.1:37465" "" backRequestComputationInput remoteComputationDoneToMsg
+    Client.postApiRunnerRequestComputation "http://127.0.0.1:37465" backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError

@@ -1,7 +1,7 @@
 module EnvironmentEdition.App exposing (..)
 
 import Api.Converter as Client
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background

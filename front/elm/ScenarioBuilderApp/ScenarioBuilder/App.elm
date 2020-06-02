@@ -1,7 +1,8 @@
 module ScenarioBuilderApp.ScenarioBuilder.App exposing (..)
 
 import Api.Converter as Client
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
+import Api.RunnerGeneratedClient as Client
 import TangoScript.Parser exposing (..)
 import Dict
 import Application.Type exposing (..)
@@ -271,7 +272,7 @@ update msg model =
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiRunnerScenarioComputation "http://127.0.0.1:37465" (Debug.log "token" (getCsrfToken model.session)) payload runScenarioResultToMsg
+                            Client.postApiRunnerScenarioComputation "http://127.0.0.1:37465" payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none

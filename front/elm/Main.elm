@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import Api.Converter as Client
-import Api.Generated as Client
+import Api.WebGeneratedClient as Client
+import Api.RunnerGeneratedClient as Client
 import Application.App as Application
 import Application.Model as Application
 import Application.Type exposing (..)
@@ -49,4 +50,4 @@ loadedDataDecoder =
         (D.at [ "environments" ] (D.map (List.map Client.convertEnvironmentFromBackToFront) (D.list Client.jsonDecEnvironment)))
         (D.at [ "requestCollection" ] (D.map Client.convertRequestCollectionFromBackToFront Client.jsonDecRequestCollection))
         (D.at [ "scenarioCollection" ] (D.map Client.convertScenarioCollectionFromBackToFront Client.jsonDecScenarioCollection))
-        (D.at [ "frontConfig" ] (D.map Client.convertFrontConfigFromBackToFront Client.jsonDecFrontConfig))
+        (D.at [ "frontConfig" ] (D.map Client.convertRunnerConfigFromBackToFront Client.jsonDecRunnerConfig))

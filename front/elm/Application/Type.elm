@@ -10,7 +10,7 @@ import Parser exposing(DeadEnd)
 
 
 type alias Config =
-    { runnerUrl : String
+    { runnerPort : Int
     }
 
 

@@ -1,7 +1,8 @@
 module Api.Converter exposing (..)
 
 import Animation
-import Api.Generated as Back
+import Api.WebGeneratedClient as Back
+import Api.RunnerGeneratedClient as Back
 import Application.Type as Front exposing (..)
 import Dict
 import Tuple
@@ -127,9 +128,12 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
 -- * config
 
 
-convertFrontConfigFromBackToFront : Back.FrontConfig -> Front.Config
-convertFrontConfigFromBackToFront { frontConfigRunnerUrl } =
-    { runnerUrl = frontConfigRunnerUrl
+convertRunnerConfigFromBackToFront : Back.RunnerConfig -> Front.Config
+convertRunnerConfigFromBackToFront runnerConfig =
+    let
+        (Back.RunnerConfig { runnerConfigPort }) = runnerConfig
+    in
+    { runnerPort = runnerConfigPort
     }
 
 

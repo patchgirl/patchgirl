@@ -39,6 +39,8 @@ tests:
 library:
   source-dirs:
     - src
+  dependencies:
+    - patchgirl-web
 
 executables:
   patchgirl-runner-exe:
