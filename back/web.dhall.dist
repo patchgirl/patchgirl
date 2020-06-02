@@ -2,14 +2,14 @@ let config =
   { port = 3000
   , appKeyFilePath = ".appKey.test"
   , db = { port = 5433
-         , name = ""
-         , user = ""
+         , name = "dev"
+         , user = "dev"
          , password = ""
          }
   , github = { clientId = ""
              , clientSecret = ""
              }
+  , runner = ./runner.dhall
   }
 
-in
-  config
+in config

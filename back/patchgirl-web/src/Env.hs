@@ -7,11 +7,11 @@ module Env( createEnv
           , envDB
           , envGithub
           , envLog
-          , envFrontConfig
+          , envRunnerConfig
           , DBConfig(..)
           , GithubConfig(..)
           , Config(..)
-          , FrontConfig(..)
+          , RunnerConfig(..)
           , getConfig
           ) where
 
@@ -53,20 +53,6 @@ instance Dhall.FromDhall GithubConfig where
     GithubConfig <$> Dhall.field "clientId" Dhall.strictText <*> Dhall.field "clientSecret" Dhall.strictText
 
 
--- * global config (desktop and web)
-
-
-data GlobalConfig
-  = GlobalConfig { desktopConfig :: Config
-                 , webConfig     :: Config
-                 }
-  deriving (Generic, Show)
-
-instance Dhall.FromDhall GlobalConfig where
-  autoWith _ = Dhall.record $
-    GlobalConfig <$> Dhall.field "desktop" Dhall.auto <*> Dhall.field "web" Dhall.auto
-
-
 -- * config
 
 
@@ -75,7 +61,7 @@ data Config
            , _configAppKeyFilePath :: String
            , _configDB             :: DBConfig
            , _configGithub         :: GithubConfig
-           , _configFrontConfig    :: FrontConfig
+           , _configRunnerConfig   :: RunnerConfig
            }
   deriving (Generic, Show)
 
@@ -86,34 +72,32 @@ instance Dhall.FromDhall Config where
       <*> Dhall.field "appKeyFilePath" Dhall.string
       <*> Dhall.field "db" Dhall.auto
       <*> Dhall.field "github" Dhall.auto
-      <*> Dhall.field "frontConfig" Dhall.auto
+      <*> Dhall.field "runner" Dhall.auto
 
 getConfig :: IO Config
-getConfig = do
-  Dhall.input Dhall.auto "./config.dhall"
+getConfig =
+  Dhall.input Dhall.auto "./web.dhall"
 
 
--- * front config
+-- * runner config
 
 
-newtype FrontConfig
-  = FrontConfig { _frontConfigRunnerUrl :: String
-                }
+newtype RunnerConfig
+  = RunnerConfig { _runnerConfigPort :: Natural }
   deriving (Generic, Show)
 
-instance Dhall.FromDhall FrontConfig where
+instance Dhall.FromDhall RunnerConfig where
   autoWith _ = Dhall.record $
-    FrontConfig
-      <$> Dhall.field "runnerUrl" Dhall.auto
+    RunnerConfig
+      <$> Dhall.field "port" Dhall.auto
 
-instance Aeson.ToJSON FrontConfig where
+instance Aeson.ToJSON RunnerConfig where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON FrontConfig where
+instance Aeson.FromJSON RunnerConfig where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
 
 
 -- * env
@@ -125,7 +109,7 @@ data Env
         , _envDB             :: DBConfig
         , _envGithub         :: GithubConfig
         , _envLog            :: String -> IO ()
-        , _envFrontConfig    :: FrontConfig
+        , _envRunnerConfig   :: RunnerConfig
         }
 
 $(Lens.makeLenses ''Env)
@@ -142,5 +126,5 @@ createEnv log = do
                , _envDB = _configDB
                , _envGithub = _configGithub
                , _envLog = log
-               , _envFrontConfig = _configFrontConfig
+               , _envRunnerConfig = _configRunnerConfig
                }

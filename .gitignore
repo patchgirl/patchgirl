@@ -20,6 +20,7 @@ Generated.elm
 front/bin/elm
 *.pem
 config.dhall
+web.dhall
 node_modules
 package-lock.json
 report.html

@@ -1,5 +1,7 @@
 module Lib (app) where
 
+import           Server
+
 app :: IO ()
-app = do
-  undefined
+app =
+  run

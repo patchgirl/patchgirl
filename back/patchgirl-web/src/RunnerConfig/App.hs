@@ -2,7 +2,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
 
-module FrontConfig.App(getConfigApiHandler) where
+module RunnerConfig.App(getConfigApiHandler) where
 
 
 import qualified Control.Monad.Reader as Reader
@@ -14,6 +14,6 @@ import           PatchGirl
 -- * handler
 
 
-getConfigApiHandler :: (Reader.MonadReader Env m) => m FrontConfig
+getConfigApiHandler :: (Reader.MonadReader Env m) => m RunnerConfig
 getConfigApiHandler = do
-  Reader.ask <&> _envFrontConfig
+  Reader.ask <&> _envRunnerConfig

@@ -49,18 +49,7 @@ withClient app innerSpec =
 defaultEnv :: Env
 defaultEnv =
   Env { _envPort = 3001
-      , _envAppKeyFilePath = "../.appKey.test"
-      , _envDB = DBConfig { _dbPort = 5432
-                         , _dbName = "test"
-                         , _dbUser = "postgres"
-                         , _dbPassword = ""
-                         }
-      , _envGithub = GithubConfig { _githubConfigClientId    = "whatever"
-                                 , _githubConfigClientSecret = "whatever"
-                                 }
-      , _envLog = Say.sayString
-      , _envHttpRequest = undefined
-      , _envFrontConfig = undefined
+      , _envLog = undefined
       }
 
 
@@ -70,16 +59,5 @@ defaultEnv2 = do
   let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
   return $
     Env { _envPort = 3001
-        , _envAppKeyFilePath = "../.appKey.test"
-        , _envDB = DBConfig { _dbPort = 5432
-                           , _dbName = "test"
-                           , _dbUser = "postgres"
-                           , _dbPassword = ""
-                           }
-        , _envGithub = GithubConfig { _githubConfigClientId    = "whatever"
-                                   , _githubConfigClientSecret = "whatever"
-                                   }
         , _envLog = logFunc
-        , _envHttpRequest = undefined
-        , _envFrontConfig = undefined
-      }
+        }

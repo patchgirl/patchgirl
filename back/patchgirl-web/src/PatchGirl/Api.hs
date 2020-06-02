@@ -35,7 +35,6 @@ import           Account.App
 import           Env
 import           Environment.App
 import           Environment.Model
-import           FrontConfig.App
 import           Github.App
 import           Health.App
 import           PatchGirl.Model
@@ -43,6 +42,7 @@ import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestNode.App
 import           RequestNode.Model
+import           RunnerConfig.App
 import           ScenarioCollection.App
 import           ScenarioCollection.Model
 import           ScenarioNode.App
@@ -386,7 +386,7 @@ healthApiServer =
 
 
 type ConfigApi =
-  "api" :> "config" :> Get '[JSON] FrontConfig
+  "api" :> "config" :> Get '[JSON] RunnerConfig
 
 configApiServer :: ServerT ConfigApi AppM
 configApiServer =
