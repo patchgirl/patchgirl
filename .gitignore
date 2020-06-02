@@ -27,3 +27,4 @@ config.yml
 .appKey
 package.json
 .hspec-failures
+*.hie

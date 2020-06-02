@@ -7,9 +7,10 @@
 
 module InterpolatorSpec where
 
-import qualified Data.Map.Strict    as Map
+import qualified Data.Map.Strict as Map
 
-import           PatchGirl.Internal
+import           Interpolator
+import           TangoScript
 import           Test.Hspec
 
 

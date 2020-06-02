@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a0cb2ee941b5b0cf47d0cc2746943ffe9640bb8b6041d2737ae676465400568
+-- hash: 2b052e8c23fe2320c9a2cad1c2adf3e18bfdf6c8c863b87da786229af67bbbff
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -106,6 +106,7 @@ test-suite spec
   other-modules:
       FakeHttpRequest
       Helper.App
+      InterpolatorSpec
       RequestComputation.AppSpec
       ScenarioComputation.AppSpec
       Paths_patchgirl_runner

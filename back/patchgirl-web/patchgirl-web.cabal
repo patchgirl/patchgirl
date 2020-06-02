@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e42bf116312077bd0fca004b633993a1e480a1fcdf72236164fddf37be8b7150
+-- hash: 5493e61ce45e7a9c9662561ddf9e0f35164ce87fc3195dc6fbba8118081690f2
 
 name:           patchgirl-web
 version:        0.0.0
@@ -25,7 +25,6 @@ library
       Github.App
       Health.App
       Http
-      Interpolator
       PatchGirl
       PatchGirl.Api
       PatchGirl.Client
@@ -46,7 +45,6 @@ library
       ScenarioNode.Sql
       Session.App
       Session.Model
-      TangoScript
       Test
   other-modules:
       Paths_patchgirl_web
@@ -163,7 +161,6 @@ test-suite spec
       DBUtil
       Environment.AppSpec
       Helper.App
-      InterpolatorSpec
       RequestCollection.AppSpec
       RequestCollection.DB
       RequestFile.AppSpec
