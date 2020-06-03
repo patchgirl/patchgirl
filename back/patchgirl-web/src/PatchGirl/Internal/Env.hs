@@ -1,19 +1,20 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Env( createEnv
-          , Env(..)
-          , envPort
-          , envAppKeyFilePath
-          , envDB
-          , envGithub
-          , envLog
-          , envRunnerConfig
-          , DBConfig(..)
-          , GithubConfig(..)
-          , Config(..)
-          , RunnerConfig(..)
-          , getConfig
-          ) where
+module PatchGirl.Internal.Env
+  ( createEnv
+  , Env(..)
+  , envPort
+  , envAppKeyFilePath
+  , envDB
+  , envGithub
+  , envLog
+  , envRunnerConfig
+  , DBConfig(..)
+  , GithubConfig(..)
+  , Config(..)
+  , RunnerConfig(..)
+  , getConfig
+  ) where
 
 import qualified Control.Lens as Lens
 import qualified Data.Aeson   as Aeson

@@ -35,6 +35,7 @@ tests:
       - hspec
       - patchgirl-runner
       - servant-client
+      - patchgirl-web
 
 library:
   source-dirs:

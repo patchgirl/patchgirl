@@ -21,8 +21,8 @@ import           Servant
 
 import           Env
 import           Helper.App
-import           Http
 import           Interpolator
+import           PatchGirl.Client
 import           RequestComputation.Model
 import           Server
 

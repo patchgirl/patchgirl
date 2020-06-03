@@ -32,11 +32,11 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
                                                         throwAll)
 
 import           Account.App
-import           Env
 import           Environment.App
 import           Environment.Model
 import           Github.App
 import           Health.App
+import           PatchGirl.Internal.Env
 import           PatchGirl.Model
 import           RequestCollection.App
 import           RequestCollection.Model

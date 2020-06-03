@@ -17,7 +17,7 @@ import           Servant.API.ContentTypes         (NoContent (..))
 import           Servant.Server                   (ServerError)
 
 import           DB
-import           Env
+import           PatchGirl.Internal.Env
 
 
 -- * model

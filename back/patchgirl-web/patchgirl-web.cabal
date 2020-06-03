@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 87e39e40154ebf836b5a315432e587cf89f3d8d3993d20ed50248b77e4e8c586
+-- hash: dcaa99da810a1395b3177b2213376156bcbe7c8a76b047fcfc26de24aab2d782
 
 name:           patchgirl-web
 version:        0.0.0
@@ -17,7 +17,6 @@ library
       CaseInsensitive
       DB
       ElmOption
-      Env
       Environment.App
       Environment.Model
       Foo
@@ -28,6 +27,7 @@ library
       PatchGirl.Api
       PatchGirl.Client
       PatchGirl.Internal
+      PatchGirl.Internal.Env
       PatchGirl.Model
       PatchGirl.Server
       RequestCollection.App

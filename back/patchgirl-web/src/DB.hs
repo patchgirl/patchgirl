@@ -6,8 +6,9 @@ import           Control.Monad.Reader       (MonadReader, ask)
 import           Data.Functor               ((<&>))
 import           Data.Text                  as TS
 import qualified Database.PostgreSQL.Simple as PG
-import           Env
 import           GHC.Natural                (naturalToInt)
+
+import           PatchGirl.Internal.Env
 
 getDBConnection
   :: ( MonadReader Env m

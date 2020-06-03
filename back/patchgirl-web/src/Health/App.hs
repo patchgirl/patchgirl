@@ -3,14 +3,15 @@
 
 module Health.App where
 
-import           Env
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Data.Aeson
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
-import           DB
 import           GHC.Generics
+
+import           DB
+import           PatchGirl.Internal.Env
 
 
 -- * Model

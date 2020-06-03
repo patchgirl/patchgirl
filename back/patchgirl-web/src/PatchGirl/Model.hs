@@ -11,7 +11,7 @@ import qualified Control.Monad.Reader   as Reader
 
 import           Servant                hiding (BadPassword, NoSuchUser)
 
-import           Env
+import           PatchGirl.Internal.Env
 
 
 newtype AppM a =
