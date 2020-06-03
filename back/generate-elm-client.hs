@@ -24,25 +24,29 @@ import           GHC.TypeLits              (ErrorMessage (Text), KnownSymbol,
                                             Symbol, TypeError, symbolVal)
 import           Servant                   ((:<|>))
 import           Servant.API               ((:>), Capture, Get, JSON)
-import           Servant.API.ContentTypes  (NoContent)
+import qualified Servant.API.ContentTypes  as Servant
 import           Servant.API.Flatten       (Flat)
 import           Servant.Auth              (Auth (..), Cookie)
-import           Servant.Auth.Client       (Token)
+import qualified Servant.Auth.Client       as Servant
 import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
 import           Servant.Foreign           hiding (Static)
 
-import           Api                       (RunnerApi)
-import           Interpolator
-import           PatchGirl.Client
-import           RequestComputation.Model
-import           ScenarioComputation.Model
-import           TangoScript
+import           PatchGirl.Client          (deriveWithSingleFieldObject,
+                                            deriveWithTaggedObject)
+import qualified PatchGirl.Client          as Web
+
+import qualified Api                       as Runner
+import qualified Interpolator              as Runner
+import qualified RequestComputation.Model  as Runner
+import qualified ScenarioComputation.Model as Runner
+import qualified TangoScript               as Runner
+
 
 -- * util
 
 
-instance IsElmDefinition Token where
+instance IsElmDefinition Servant.Token where
   compileElmDef _ = ETypePrimAlias (EPrimAlias (ETypeName "Token" []) (ETyCon (ETCon "String")))
 
 type family TokenHeaderName xs :: Symbol where
@@ -54,7 +58,7 @@ type family TokenHeaderName xs :: Symbol where
 instance
   ( TokenHeaderName auths ~ header
   , KnownSymbol header
-  , HasForeignType lang ftype Token
+  , HasForeignType lang ftype Servant.Token
   , HasForeign lang ftype sub
   , Show ftype
   )
@@ -68,7 +72,7 @@ instance
           { _argName = PathSegment . T.pack $ symbolVal @header Proxy
           , _argType = token
           }
-        token = typeFor lang (Proxy @ftype) (Proxy @Token)
+        token = typeFor lang (Proxy @ftype) (Proxy @Servant.Token)
         subP  = Proxy @sub
 
 {-
@@ -171,58 +175,60 @@ runnerCustomCode = T.unlines
 -- * elm def
 
 
-deriveElmDef deriveWithTaggedObject ''RequestCollection
-deriveElmDef deriveWithTaggedObject ''RequestNode
-deriveElmDef deriveWithTaggedObject ''Method
-deriveElmDef deriveWithTaggedObject ''AppHealth
-deriveElmDef deriveWithTaggedObject ''NoContent
-deriveElmDef deriveWithTaggedObject ''NewRequestFile
-deriveElmDef deriveWithTaggedObject ''ParentNodeId
-deriveElmDef deriveWithTaggedObject ''UpdateRequestNode
-deriveElmDef deriveWithTaggedObject ''NewEnvironment
-deriveElmDef deriveWithTaggedObject ''UpdateEnvironment
-deriveElmDef deriveWithTaggedObject ''Environment
-deriveElmDef deriveWithTaggedObject ''KeyValue
-deriveElmDef deriveWithTaggedObject ''NewKeyValue
-deriveElmDef deriveWithTaggedObject ''CaseInsensitive
-deriveElmDef deriveWithTaggedObject ''Session
-deriveElmDef deriveWithTaggedObject ''RequestComputationInput
-deriveElmDef deriveWithTaggedObject ''RequestComputationOutput
-deriveElmDef deriveWithTaggedObject ''RequestComputationResult
-deriveElmDef deriveWithTaggedObject ''Scheme
-deriveElmDef deriveWithTaggedObject ''NewRequestFolder
-deriveElmDef deriveWithTaggedObject ''NewRootRequestFile
-deriveElmDef deriveWithTaggedObject ''NewRootRequestFolder
-deriveElmDef deriveWithTaggedObject ''UpdateRequestFile
-deriveElmDef deriveWithTaggedObject ''HttpHeader
-deriveElmDef deriveWithTaggedObject ''SignInWithGithub
-deriveElmDef deriveWithTaggedObject ''NewScenarioFile
-deriveElmDef deriveWithTaggedObject ''UpdateScenarioNode
-deriveElmDef deriveWithTaggedObject ''NewScenarioFolder
-deriveElmDef deriveWithTaggedObject ''NewRootScenarioFile
-deriveElmDef deriveWithTaggedObject ''NewRootScenarioFolder
-deriveElmDef deriveWithTaggedObject ''ScenarioCollection
-deriveElmDef deriveWithTaggedObject ''ScenarioNode
-deriveElmDef deriveWithTaggedObject ''Scene
-deriveElmDef deriveWithTaggedObject ''NewScene
-deriveElmDef deriveWithTaggedObject ''ScriptException
-deriveElmDef deriveWithSingleFieldObject ''HttpException
-deriveElmDef deriveWithSingleFieldObject ''SceneComputation
-deriveElmDef deriveWithSingleFieldObject ''ScenarioInput
-deriveElmDef deriveWithSingleFieldObject ''ScenarioOutput
-deriveElmDef deriveWithSingleFieldObject ''SceneOutput
-deriveElmDef deriveWithSingleFieldObject ''SceneInput
-deriveElmDef deriveWithSingleFieldObject ''ScenarioVars
-deriveElmDef deriveWithTaggedObject ''Template
-deriveElmDef deriveWithSingleFieldObject ''TemplatedRequestComputationInput
-deriveElmDef deriveWithTaggedObject ''TangoAst
-deriveElmDef deriveWithTaggedObject ''Proc
-deriveElmDef deriveWithTaggedObject ''Expr
-deriveElmDef deriveWithTaggedObject ''EnvironmentVars
-deriveElmDef deriveWithTaggedObject ''StringTemplate
-deriveElmDef deriveWithTaggedObject ''UpdateScenarioFile
-deriveElmDef deriveWithTaggedObject ''UpdateScene
-deriveElmDef deriveWithTaggedObject ''RunnerConfig
+deriveElmDef deriveWithTaggedObject ''Servant.NoContent
+
+deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationInput
+deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationOutput
+deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationResult
+deriveElmDef deriveWithTaggedObject ''Runner.ScriptException
+deriveElmDef deriveWithSingleFieldObject ''Runner.HttpException
+deriveElmDef deriveWithSingleFieldObject ''Runner.SceneComputation
+deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioInput
+deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioOutput
+deriveElmDef deriveWithSingleFieldObject ''Runner.SceneOutput
+deriveElmDef deriveWithSingleFieldObject ''Runner.SceneInput
+deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioVars
+deriveElmDef deriveWithTaggedObject ''Runner.Template
+deriveElmDef deriveWithSingleFieldObject ''Runner.TemplatedRequestComputationInput
+deriveElmDef deriveWithTaggedObject ''Runner.TangoAst
+deriveElmDef deriveWithTaggedObject ''Runner.Proc
+deriveElmDef deriveWithTaggedObject ''Runner.Expr
+deriveElmDef deriveWithTaggedObject ''Runner.EnvironmentVars
+deriveElmDef deriveWithTaggedObject ''Runner.StringTemplate
+
+deriveElmDef deriveWithTaggedObject ''Web.RequestCollection
+deriveElmDef deriveWithTaggedObject ''Web.RequestNode
+deriveElmDef deriveWithTaggedObject ''Web.Method
+deriveElmDef deriveWithTaggedObject ''Web.AppHealth
+deriveElmDef deriveWithTaggedObject ''Web.NewRequestFile
+deriveElmDef deriveWithTaggedObject ''Web.ParentNodeId
+deriveElmDef deriveWithTaggedObject ''Web.UpdateRequestNode
+deriveElmDef deriveWithTaggedObject ''Web.NewEnvironment
+deriveElmDef deriveWithTaggedObject ''Web.UpdateEnvironment
+deriveElmDef deriveWithTaggedObject ''Web.Environment
+deriveElmDef deriveWithTaggedObject ''Web.KeyValue
+deriveElmDef deriveWithTaggedObject ''Web.NewKeyValue
+deriveElmDef deriveWithTaggedObject ''Web.CaseInsensitive
+deriveElmDef deriveWithTaggedObject ''Web.Session
+deriveElmDef deriveWithTaggedObject ''Web.Scheme
+deriveElmDef deriveWithTaggedObject ''Web.NewRequestFolder
+deriveElmDef deriveWithTaggedObject ''Web.NewRootRequestFile
+deriveElmDef deriveWithTaggedObject ''Web.NewRootRequestFolder
+deriveElmDef deriveWithTaggedObject ''Web.UpdateRequestFile
+deriveElmDef deriveWithTaggedObject ''Web.HttpHeader
+deriveElmDef deriveWithTaggedObject ''Web.SignInWithGithub
+deriveElmDef deriveWithTaggedObject ''Web.NewScenarioFile
+deriveElmDef deriveWithTaggedObject ''Web.UpdateScenarioNode
+deriveElmDef deriveWithTaggedObject ''Web.NewScenarioFolder
+deriveElmDef deriveWithTaggedObject ''Web.NewRootScenarioFile
+deriveElmDef deriveWithTaggedObject ''Web.NewRootScenarioFolder
+deriveElmDef deriveWithTaggedObject ''Web.ScenarioCollection
+deriveElmDef deriveWithTaggedObject ''Web.ScenarioNode
+deriveElmDef deriveWithTaggedObject ''Web.Scene
+deriveElmDef deriveWithTaggedObject ''Web.NewScene
+deriveElmDef deriveWithTaggedObject ''Web.UpdateScenarioFile
+deriveElmDef deriveWithTaggedObject ''Web.UpdateScene
+deriveElmDef deriveWithTaggedObject ''Web.RunnerConfig
 
 
 -- * main
@@ -240,7 +246,7 @@ webModule =
                     , stringElmTypes =
                       [ toElmType (Proxy @String)
                       , toElmType (Proxy @T.Text)
-                      , toElmType (Proxy @Token)
+                      , toElmType (Proxy @Servant.Token)
                       ]
                     , elmToString = myDefaultElmToString
                     }
@@ -250,44 +256,44 @@ webModule =
       ]
     targetFolder = "../front/elm"
     elmDefinitions =
-      [ DefineElm (Proxy :: Proxy RequestCollection)
-      , DefineElm (Proxy :: Proxy RequestNode)
-      , DefineElm (Proxy :: Proxy Method)
-      , DefineElm (Proxy :: Proxy AppHealth)
-      , DefineElm (Proxy :: Proxy NoContent)
-      , DefineElm (Proxy :: Proxy NewRequestFile)
-      , DefineElm (Proxy :: Proxy ParentNodeId)
-      , DefineElm (Proxy :: Proxy UpdateRequestNode)
-      , DefineElm (Proxy :: Proxy NewEnvironment)
-      , DefineElm (Proxy :: Proxy UpdateEnvironment)
-      , DefineElm (Proxy :: Proxy Environment)
-      , DefineElm (Proxy :: Proxy KeyValue)
-      , DefineElm (Proxy :: Proxy NewKeyValue)
-      , DefineElm (Proxy :: Proxy CaseInsensitive)
-      , DefineElm (Proxy :: Proxy Session)
-      , DefineElm (Proxy :: Proxy Token)
-      , DefineElm (Proxy :: Proxy Scheme)
-      , DefineElm (Proxy :: Proxy NewRequestFolder)
-      , DefineElm (Proxy :: Proxy NewRootRequestFile)
-      , DefineElm (Proxy :: Proxy NewRootRequestFolder)
-      , DefineElm (Proxy :: Proxy UpdateRequestFile)
-      , DefineElm (Proxy :: Proxy HttpHeader)
-      , DefineElm (Proxy :: Proxy SignInWithGithub)
-      , DefineElm (Proxy :: Proxy NewScenarioFile)
-      , DefineElm (Proxy :: Proxy UpdateScenarioNode)
-      , DefineElm (Proxy :: Proxy NewScenarioFolder)
-      , DefineElm (Proxy :: Proxy NewRootScenarioFolder)
-      , DefineElm (Proxy :: Proxy NewRootScenarioFile)
-      , DefineElm (Proxy :: Proxy ScenarioCollection)
-      , DefineElm (Proxy :: Proxy ScenarioNode)
-      , DefineElm (Proxy :: Proxy Scene)
-      , DefineElm (Proxy :: Proxy NewScene)
-      , DefineElm (Proxy :: Proxy UpdateScenarioFile)
-      , DefineElm (Proxy :: Proxy UpdateScene)
-      , DefineElm (Proxy :: Proxy RunnerConfig)
+      [ DefineElm (Proxy :: Proxy Servant.NoContent)
+      , DefineElm (Proxy :: Proxy Servant.Token)
+      , DefineElm (Proxy :: Proxy Web.RequestCollection)
+      , DefineElm (Proxy :: Proxy Web.RequestNode)
+      , DefineElm (Proxy :: Proxy Web.Method)
+      , DefineElm (Proxy :: Proxy Web.AppHealth)
+      , DefineElm (Proxy :: Proxy Web.NewRequestFile)
+      , DefineElm (Proxy :: Proxy Web.ParentNodeId)
+      , DefineElm (Proxy :: Proxy Web.UpdateRequestNode)
+      , DefineElm (Proxy :: Proxy Web.NewEnvironment)
+      , DefineElm (Proxy :: Proxy Web.UpdateEnvironment)
+      , DefineElm (Proxy :: Proxy Web.Environment)
+      , DefineElm (Proxy :: Proxy Web.KeyValue)
+      , DefineElm (Proxy :: Proxy Web.NewKeyValue)
+      , DefineElm (Proxy :: Proxy Web.CaseInsensitive)
+      , DefineElm (Proxy :: Proxy Web.Session)
+      , DefineElm (Proxy :: Proxy Web.Scheme)
+      , DefineElm (Proxy :: Proxy Web.NewRequestFolder)
+      , DefineElm (Proxy :: Proxy Web.NewRootRequestFile)
+      , DefineElm (Proxy :: Proxy Web.NewRootRequestFolder)
+      , DefineElm (Proxy :: Proxy Web.UpdateRequestFile)
+      , DefineElm (Proxy :: Proxy Web.HttpHeader)
+      , DefineElm (Proxy :: Proxy Web.SignInWithGithub)
+      , DefineElm (Proxy :: Proxy Web.NewScenarioFile)
+      , DefineElm (Proxy :: Proxy Web.UpdateScenarioNode)
+      , DefineElm (Proxy :: Proxy Web.NewScenarioFolder)
+      , DefineElm (Proxy :: Proxy Web.NewRootScenarioFolder)
+      , DefineElm (Proxy :: Proxy Web.NewRootScenarioFile)
+      , DefineElm (Proxy :: Proxy Web.ScenarioCollection)
+      , DefineElm (Proxy :: Proxy Web.ScenarioNode)
+      , DefineElm (Proxy :: Proxy Web.Scene)
+      , DefineElm (Proxy :: Proxy Web.NewScene)
+      , DefineElm (Proxy :: Proxy Web.UpdateScenarioFile)
+      , DefineElm (Proxy :: Proxy Web.UpdateScene)
+      , DefineElm (Proxy :: Proxy Web.RunnerConfig)
       ]
     proxyApi =
-      (Proxy :: Proxy (RestApi '[Cookie]))
+      (Proxy :: Proxy (Web.RestApi '[Cookie]))
   in
     generateElmModuleWith options namespace webCustomCode targetFolder elmDefinitions proxyApi
 
@@ -304,7 +310,7 @@ runnerElmModule =
                     , stringElmTypes =
                       [ toElmType (Proxy @String)
                       , toElmType (Proxy @T.Text)
-                      , toElmType (Proxy @Token)
+                      , toElmType (Proxy @Servant.Token)
                       ]
                     , elmToString = myDefaultElmToString
                     }
@@ -314,26 +320,26 @@ runnerElmModule =
       ]
     targetFolder = "../front/elm"
     elmDefinitions =
-      [ DefineElm (Proxy :: Proxy RequestComputationInput)
-      , DefineElm (Proxy :: Proxy RequestComputationOutput)
-      , DefineElm (Proxy :: Proxy RequestComputationResult)
-      , DefineElm (Proxy :: Proxy ScriptException)
-      , DefineElm (Proxy :: Proxy HttpException)
-      , DefineElm (Proxy :: Proxy Template)
-      , DefineElm (Proxy :: Proxy StringTemplate)
-      , DefineElm (Proxy :: Proxy TemplatedRequestComputationInput)
-      , DefineElm (Proxy :: Proxy ScenarioOutput)
-      , DefineElm (Proxy :: Proxy ScenarioInput)
-      , DefineElm (Proxy :: Proxy SceneOutput)
-      , DefineElm (Proxy :: Proxy SceneInput)
-      , DefineElm (Proxy :: Proxy Expr)
-      , DefineElm (Proxy :: Proxy TangoAst)
-      , DefineElm (Proxy :: Proxy Proc)
-      , DefineElm (Proxy :: Proxy EnvironmentVars)
-      , DefineElm (Proxy :: Proxy SceneComputation)
+      [ DefineElm (Proxy :: Proxy Runner.RequestComputationInput)
+      , DefineElm (Proxy :: Proxy Runner.RequestComputationOutput)
+      , DefineElm (Proxy :: Proxy Runner.RequestComputationResult)
+      , DefineElm (Proxy :: Proxy Runner.ScriptException)
+      , DefineElm (Proxy :: Proxy Runner.HttpException)
+      , DefineElm (Proxy :: Proxy Runner.Template)
+      , DefineElm (Proxy :: Proxy Runner.StringTemplate)
+      , DefineElm (Proxy :: Proxy Runner.TemplatedRequestComputationInput)
+      , DefineElm (Proxy :: Proxy Runner.ScenarioOutput)
+      , DefineElm (Proxy :: Proxy Runner.ScenarioInput)
+      , DefineElm (Proxy :: Proxy Runner.SceneOutput)
+      , DefineElm (Proxy :: Proxy Runner.SceneInput)
+      , DefineElm (Proxy :: Proxy Runner.Expr)
+      , DefineElm (Proxy :: Proxy Runner.TangoAst)
+      , DefineElm (Proxy :: Proxy Runner.Proc)
+      , DefineElm (Proxy :: Proxy Runner.EnvironmentVars)
+      , DefineElm (Proxy :: Proxy Runner.SceneComputation)
       ]
     proxyApi =
-      (Proxy :: Proxy RunnerApi)
+      (Proxy :: Proxy Runner.RunnerApi)
   in
     generateElmModuleWith options namespace runnerCustomCode targetFolder elmDefinitions proxyApi
 

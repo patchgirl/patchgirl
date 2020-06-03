@@ -34,6 +34,32 @@ jsonEncEither encoder1 encoder2 either =
     Ok ok -> encoder2 ok
 
 
+type NoContent  =
+    NoContent 
+
+jsonDecNoContent : Json.Decode.Decoder ( NoContent )
+jsonDecNoContent = 
+    let jsonDecDictNoContent = Dict.fromList [("NoContent", NoContent)]
+    in  decodeSumUnaries "NoContent" jsonDecDictNoContent
+
+jsonEncNoContent : NoContent -> Value
+jsonEncNoContent  val =
+    case val of
+        NoContent -> Json.Encode.string "NoContent"
+
+
+
+type alias Token  = String
+
+jsonDecToken : Json.Decode.Decoder ( Token )
+jsonDecToken =
+    Json.Decode.string
+
+jsonEncToken : Token -> Value
+jsonEncToken  val = Json.Encode.string val
+
+
+
 type RequestCollection  =
     RequestCollection Int (List RequestNode)
 
@@ -114,21 +140,6 @@ jsonEncAppHealth  val =
    [ ("sAppRunning", Json.Encode.bool val.sAppRunning)
    , ("sDBUp", Json.Encode.bool val.sDBUp)
    ]
-
-
-
-type NoContent  =
-    NoContent 
-
-jsonDecNoContent : Json.Decode.Decoder ( NoContent )
-jsonDecNoContent = 
-    let jsonDecDictNoContent = Dict.fromList [("NoContent", NoContent)]
-    in  decodeSumUnaries "NoContent" jsonDecDictNoContent
-
-jsonEncNoContent : NoContent -> Value
-jsonEncNoContent  val =
-    case val of
-        NoContent -> Json.Encode.string "NoContent"
 
 
 
@@ -321,17 +332,6 @@ jsonEncSession  val =
                     VisitorSession vs -> ("VisitorSession", encodeObject [("sessionAccountId", jsonEncUUID vs.sessionAccountId), ("sessionCsrfToken", Json.Encode.string vs.sessionCsrfToken)])
                     SignedUserSession vs -> ("SignedUserSession", encodeObject [("sessionAccountId", jsonEncUUID vs.sessionAccountId), ("sessionCsrfToken", Json.Encode.string vs.sessionCsrfToken), ("sessionGithubEmail", Json.Encode.string vs.sessionGithubEmail), ("sessionGithubAvatarUrl", Json.Encode.string vs.sessionGithubAvatarUrl)])
     in encodeSumTaggedObject "tag" "contents" keyval val
-
-
-
-type alias Token  = String
-
-jsonDecToken : Json.Decode.Decoder ( Token )
-jsonDecToken =
-    Json.Decode.string
-
-jsonEncToken : Token -> Value
-jsonEncToken  val = Json.Encode.string val
 
 
 
