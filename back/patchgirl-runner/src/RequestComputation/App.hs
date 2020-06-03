@@ -107,7 +107,7 @@ buildRequestComputationInput
 buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars =
   RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
                           , _requestComputationInputHeaders =
-                            Bifunctor interpolate' interpolate' _templatedRequestComputationInputHeaders
+                            _templatedRequestComputationInputHeaders <&> Bifunctor.bimap interpolate' interpolate'
                           , _requestComputationInputScheme = _templatedRequestComputationInputScheme
                           , _requestComputationInputUrl = interpolate' _templatedRequestComputationInputUrl
                           , _requestComputationInputBody = interpolate' _templatedRequestComputationInputBody
