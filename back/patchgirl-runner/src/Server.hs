@@ -1,6 +1,5 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TypeOperators   #-}
 
 module Server(run, mkApp) where
 

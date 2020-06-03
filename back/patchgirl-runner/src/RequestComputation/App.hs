@@ -11,6 +11,7 @@ module RequestComputation.App ( runRequestComputationHandler
 import qualified Control.Exception           as Exception
 import qualified Control.Monad.IO.Class      as IO
 import qualified Control.Monad.Reader        as Reader
+import qualified Data.Bifunctor              as Bifunctor
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
 import           Data.Functor                ((<&>))
@@ -106,7 +107,7 @@ buildRequestComputationInput
 buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars =
   RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
                           , _requestComputationInputHeaders =
-                            _templatedRequestComputationInputHeaders <&> \(h, v) -> (interpolate' h, interpolate' v)
+                            Bifunctor interpolate' interpolate' _templatedRequestComputationInputHeaders
                           , _requestComputationInputScheme = _templatedRequestComputationInputScheme
                           , _requestComputationInputUrl = interpolate' _templatedRequestComputationInputUrl
                           , _requestComputationInputBody = interpolate' _templatedRequestComputationInputBody

@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE TypeOperators             #-}
+
 
 module InterpolatorSpec where
 
@@ -21,7 +21,7 @@ spec :: Spec
 spec =
     describe "interpolation" $ do
       it "doesnt interpolate when there is no key" $ do
-        let envVars = Map.fromList []
+        let envVars = Map.empty
         let scenarioVars = Map.empty
         interpolate envVars scenarioVars scenarioVars [ Sentence "hello ", Sentence "user" ]
           `shouldBe` "hello user"

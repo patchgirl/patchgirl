@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE TypeOperators             #-}
+
 
 
 module RequestNode.AppSpec where

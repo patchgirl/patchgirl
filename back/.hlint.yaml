@@ -25,7 +25,7 @@
 
 # Specify additional command line arguments
 #
-- arguments: [--color, --cpp-simple, -XQuasiQuotes]
+- arguments: [--cpp-simple, -XQuasiQuotes]
 
 
 # Control which extensions/flags/modules/functions can be used

@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE TypeOperators             #-}
+
 
 module RequestComputation.AppSpec where
 
@@ -144,4 +144,4 @@ spec = do
 
 
 envVars :: Map String StringTemplate
-envVars = Map.fromList []
+envVars = Map.empty

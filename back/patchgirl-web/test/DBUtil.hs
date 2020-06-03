@@ -845,7 +845,7 @@ selectFakeKeyValues environmentId connection =
 
 getFirstScenarioFolder :: [ScenarioNode] -> Maybe ScenarioNode
 getFirstScenarioFolder scenarioNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findFolder scenarioNodes
+  Maybe.listToMaybe (Maybe.mapMaybe findFolder scenarioNodes)
   where
     findFolder :: ScenarioNode -> Maybe ScenarioNode
     findFolder = \case
@@ -855,7 +855,7 @@ getFirstScenarioFolder scenarioNodes =
 
 getFirstScenarioFile :: [ScenarioNode] -> Maybe ScenarioNode
 getFirstScenarioFile scenarioNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findFile scenarioNodes
+  Maybe.listToMaybe (Maybe.mapMaybe findFile scenarioNodes)
   where
     findFile :: ScenarioNode -> Maybe ScenarioNode
     findFile = \case
@@ -869,7 +869,7 @@ getFirstScenarioFile scenarioNodes =
 
 getFirstFolder :: [RequestNode] -> Maybe RequestNode
 getFirstFolder requestNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findFolder requestNodes
+  Maybe.listToMaybe (Maybe.mapMaybe findFolder requestNodes)
   where
     findFolder :: RequestNode -> Maybe RequestNode
     findFolder = \case
@@ -878,7 +878,7 @@ getFirstFolder requestNodes =
 
 getFirstFile :: [RequestNode] -> Maybe RequestNode
 getFirstFile requestNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findFile requestNodes
+  Maybe.listToMaybe (Maybe.mapMaybe findFile requestNodes)
   where
     findFile :: RequestNode -> Maybe RequestNode
     findFile = \case

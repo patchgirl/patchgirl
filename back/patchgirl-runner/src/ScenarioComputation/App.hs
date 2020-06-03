@@ -56,7 +56,7 @@ runScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> EnvironmentVars 
 runScene lastSceneWasSuccessful environmentVars scenarioGlobalVars sceneInput =
   case lastSceneWasSuccessful of
     True ->
-      case runPrescript scenarioGlobalVars (Map.fromList []) sceneInput of
+      case runPrescript scenarioGlobalVars Map.empty sceneInput of
         Left scriptException ->
           return ( buildSceneOutput sceneInput (PrescriptFailed scriptException)
                  , scenarioGlobalVars
@@ -72,7 +72,7 @@ runScene lastSceneWasSuccessful environmentVars scenarioGlobalVars sceneInput =
                      )
 
             Right requestComputationOutput ->
-              case runPostscript scenarioGlobalVarsAfterPrescript (Map.fromList []) sceneInput requestComputationOutput of
+              case runPostscript scenarioGlobalVarsAfterPrescript Map.empty sceneInput requestComputationOutput of
                 Left scriptException ->
                   return ( buildSceneOutput sceneInput (PostscriptFailed scriptException)
                          , scenarioGlobalVarsAfterPrescript

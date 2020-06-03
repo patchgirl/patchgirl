@@ -1,6 +1,5 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TypeOperators   #-}
 
 module PatchGirl.Server(run, mkApp) where
 

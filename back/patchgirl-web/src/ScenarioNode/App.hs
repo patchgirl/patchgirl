@@ -348,7 +348,7 @@ isScenarioFile = not . isScenarioFolder
 
 findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
 findNodeInScenarioNodes nodeIdToFind scenarioNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findNodeInScenarioNode scenarioNodes
+  Maybe.listToMaybe (Maybe.mapMaybe findNodeInScenarioNode scenarioNodes)
   where
     findNodeInScenarioNode :: ScenarioNode -> Maybe ScenarioNode
     findNodeInScenarioNode scenarioNode =

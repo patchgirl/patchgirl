@@ -85,7 +85,7 @@ deleteRequestNodeHandler accountId requestCollectionId requestNodeId = do
 
 findNodeInRequestNodes :: UUID -> [RequestNode] -> Maybe RequestNode
 findNodeInRequestNodes nodeIdToFind requestNodes =
-  Maybe.listToMaybe . Maybe.catMaybes $ map findNodeInRequestNode requestNodes
+  Maybe.listToMaybe (Maybe.mapMaybe findNodeInRequestNode requestNodes)
   where
     findNodeInRequestNode :: RequestNode -> Maybe RequestNode
     findNodeInRequestNode requestNode =
