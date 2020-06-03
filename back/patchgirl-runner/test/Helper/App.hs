@@ -7,7 +7,6 @@ import           Control.Exception        (throwIO)
 import qualified Network.HTTP.Client      as Client
 import           Network.HTTP.Types       (Status)
 import           Network.Wai.Handler.Warp (testWithApplication)
-import qualified Say
 import           Servant
 import           Servant.Client
 import qualified Test.Hspec               as Hspec
@@ -50,6 +49,7 @@ defaultEnv :: Env
 defaultEnv =
   Env { _envPort = 3001
       , _envLog = undefined
+      , _envHttpRequest = undefined
       }
 
 
@@ -60,4 +60,5 @@ defaultEnv2 = do
   return $
     Env { _envPort = 3001
         , _envLog = logFunc
+        , _envHttpRequest = undefined
         }

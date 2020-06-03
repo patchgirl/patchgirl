@@ -47,5 +47,6 @@ before_script:
 script:
 # Build the package, its tests, and its docs and run the tests
 - cd back
-- stack --no-nix --no-terminal test --ghc-options="-Wall -Werror -fno-warn-name-shadowing"
+- stack  --no-nix --no-terminal test patchgirl-web --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
+- stack  --no-nix --no-terminal test patchgirl-runner --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
 - cd ..

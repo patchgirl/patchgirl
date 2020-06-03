@@ -22,7 +22,7 @@ install:
 	clear; echo "installing binary"; stack build --copy-bins
 
 check-dhall:
-	clear; dhall --explain --file ./config.dhall
+	clear; dhall --explain --file ./web.dhall
 
 hlint:
 	clear; hlint .
