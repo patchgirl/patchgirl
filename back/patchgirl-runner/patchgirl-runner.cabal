@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9b4556a50333a2eecb25159bde5e6eb980ed936c3d10b99a6a146be3d6c24625
+-- hash: 1cde3e0a8dc460c3012cb4d69bd1575848c783d3e3c4bc79fd34cc0e3d21689d
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -45,21 +45,17 @@ library
     , lens
     , mtl
     , patchgirl-web
-    , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
     , say
     , servant-server
     , stm
-    , text
-    , transformers
     , utf8-string
     , uuid
     , wai
     , wai-cors
     , wai-middleware-prometheus
     , warp
-    , warp-tls
   default-language: Haskell2010
 
 executable patchgirl-runner-exe
@@ -83,21 +79,17 @@ executable patchgirl-runner-exe
     , lens
     , mtl
     , patchgirl-runner
-    , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
     , say
     , servant-server
     , stm
-    , text
-    , transformers
     , utf8-string
     , uuid
     , wai
     , wai-cors
     , wai-middleware-prometheus
     , warp
-    , warp-tls
   default-language: Haskell2010
 
 test-suite spec
@@ -131,20 +123,16 @@ test-suite spec
     , mtl
     , patchgirl-runner
     , patchgirl-web
-    , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
     , say
     , servant-client
     , servant-server
     , stm
-    , text
-    , transformers
     , utf8-string
     , uuid
     , wai
     , wai-cors
     , wai-middleware-prometheus
     , warp
-    , warp-tls
   default-language: Haskell2010
