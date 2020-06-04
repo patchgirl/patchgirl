@@ -38,17 +38,15 @@ jsonEncEither encoder1 encoder2 either =
 type alias RequestComputationInput  =
    { requestComputationInputMethod: Method
    , requestComputationInputHeaders: (List (String, String))
-   , requestComputationInputScheme: Scheme
    , requestComputationInputUrl: String
    , requestComputationInputBody: String
    }
 
 jsonDecRequestComputationInput : Json.Decode.Decoder ( RequestComputationInput )
 jsonDecRequestComputationInput =
-   Json.Decode.succeed (\prequestComputationInputMethod prequestComputationInputHeaders prequestComputationInputScheme prequestComputationInputUrl prequestComputationInputBody -> {requestComputationInputMethod = prequestComputationInputMethod, requestComputationInputHeaders = prequestComputationInputHeaders, requestComputationInputScheme = prequestComputationInputScheme, requestComputationInputUrl = prequestComputationInputUrl, requestComputationInputBody = prequestComputationInputBody})
+   Json.Decode.succeed (\prequestComputationInputMethod prequestComputationInputHeaders prequestComputationInputUrl prequestComputationInputBody -> {requestComputationInputMethod = prequestComputationInputMethod, requestComputationInputHeaders = prequestComputationInputHeaders, requestComputationInputUrl = prequestComputationInputUrl, requestComputationInputBody = prequestComputationInputBody})
    |> required "requestComputationInputMethod" (jsonDecMethod)
    |> required "requestComputationInputHeaders" (Json.Decode.list (Json.Decode.map2 tuple2 (Json.Decode.index 0 (Json.Decode.string)) (Json.Decode.index 1 (Json.Decode.string))))
-   |> required "requestComputationInputScheme" (jsonDecScheme)
    |> required "requestComputationInputUrl" (Json.Decode.string)
    |> required "requestComputationInputBody" (Json.Decode.string)
 
@@ -57,7 +55,6 @@ jsonEncRequestComputationInput  val =
    Json.Encode.object
    [ ("requestComputationInputMethod", jsonEncMethod val.requestComputationInputMethod)
    , ("requestComputationInputHeaders", (Json.Encode.list (\(t1,t2) -> Json.Encode.list identity [(Json.Encode.string) t1,(Json.Encode.string) t2])) val.requestComputationInputHeaders)
-   , ("requestComputationInputScheme", jsonEncScheme val.requestComputationInputScheme)
    , ("requestComputationInputUrl", Json.Encode.string val.requestComputationInputUrl)
    , ("requestComputationInputBody", Json.Encode.string val.requestComputationInputBody)
    ]
@@ -237,17 +234,15 @@ jsonEncStringTemplate  val = (Json.Encode.list jsonEncTemplate) val
 type alias TemplatedRequestComputationInput  =
    { templatedRequestComputationInputMethod: Method
    , templatedRequestComputationInputHeaders: (List ((List Template), (List Template)))
-   , templatedRequestComputationInputScheme: Scheme
    , templatedRequestComputationInputUrl: (List Template)
    , templatedRequestComputationInputBody: (List Template)
    }
 
 jsonDecTemplatedRequestComputationInput : Json.Decode.Decoder ( TemplatedRequestComputationInput )
 jsonDecTemplatedRequestComputationInput =
-   Json.Decode.succeed (\ptemplatedRequestComputationInputMethod ptemplatedRequestComputationInputHeaders ptemplatedRequestComputationInputScheme ptemplatedRequestComputationInputUrl ptemplatedRequestComputationInputBody -> {templatedRequestComputationInputMethod = ptemplatedRequestComputationInputMethod, templatedRequestComputationInputHeaders = ptemplatedRequestComputationInputHeaders, templatedRequestComputationInputScheme = ptemplatedRequestComputationInputScheme, templatedRequestComputationInputUrl = ptemplatedRequestComputationInputUrl, templatedRequestComputationInputBody = ptemplatedRequestComputationInputBody})
+   Json.Decode.succeed (\ptemplatedRequestComputationInputMethod ptemplatedRequestComputationInputHeaders ptemplatedRequestComputationInputUrl ptemplatedRequestComputationInputBody -> {templatedRequestComputationInputMethod = ptemplatedRequestComputationInputMethod, templatedRequestComputationInputHeaders = ptemplatedRequestComputationInputHeaders, templatedRequestComputationInputUrl = ptemplatedRequestComputationInputUrl, templatedRequestComputationInputBody = ptemplatedRequestComputationInputBody})
    |> required "templatedRequestComputationInputMethod" (jsonDecMethod)
    |> required "templatedRequestComputationInputHeaders" (Json.Decode.list (Json.Decode.map2 tuple2 (Json.Decode.index 0 (Json.Decode.list (jsonDecTemplate))) (Json.Decode.index 1 (Json.Decode.list (jsonDecTemplate)))))
-   |> required "templatedRequestComputationInputScheme" (jsonDecScheme)
    |> required "templatedRequestComputationInputUrl" (Json.Decode.list (jsonDecTemplate))
    |> required "templatedRequestComputationInputBody" (Json.Decode.list (jsonDecTemplate))
 
@@ -256,7 +251,6 @@ jsonEncTemplatedRequestComputationInput  val =
    Json.Encode.object
    [ ("templatedRequestComputationInputMethod", jsonEncMethod val.templatedRequestComputationInputMethod)
    , ("templatedRequestComputationInputHeaders", (Json.Encode.list (\(t1,t2) -> Json.Encode.list identity [((Json.Encode.list jsonEncTemplate)) t1,((Json.Encode.list jsonEncTemplate)) t2])) val.templatedRequestComputationInputHeaders)
-   , ("templatedRequestComputationInputScheme", jsonEncScheme val.templatedRequestComputationInputScheme)
    , ("templatedRequestComputationInputUrl", (Json.Encode.list jsonEncTemplate) val.templatedRequestComputationInputUrl)
    , ("templatedRequestComputationInputBody", (Json.Encode.list jsonEncTemplate) val.templatedRequestComputationInputBody)
    ]

@@ -380,8 +380,7 @@ httpExceptionToString httpException =
 
 
 type alias RequestComputationInput =
-    { scheme : Scheme
-    , method : HttpMethod
+    { method : HttpMethod
     , headers : List (StringTemplate, StringTemplate)
     , url : StringTemplate
     , body : StringTemplate

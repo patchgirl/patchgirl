@@ -684,14 +684,12 @@ arrowView id =
 detailedSceneView : Model -> Scene -> RequestFileRecord -> Element Msg
 detailedSceneView model scene requestFileRecord =
     let
-        { scheme, method, headers, url, body } =
+        { method, headers, url, body } =
             buildRequestComputationInput requestFileRecord
 
         methodAndUrl =
             (methodToString method)
             ++ " "
-            ++ (schemeToString scheme)
-            ++ "://"
             ++ (stringTemplateToString url)
 
         saveSceneButton =

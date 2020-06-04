@@ -29,15 +29,18 @@ uuidParser =
 
 urlParser : Url.Parser (Page -> a) a
 urlParser =
+    let
+        appRoot = Url.s "app"
+    in
     Url.oneOf
         [ Url.map HomePage Url.top
-        , Url.map (\reqId scenarioId -> ReqPage (Just reqId) (Just scenarioId)) (Url.s "req" </> uuidParser </> uuidParser)
-        , Url.map (\id -> ReqPage (Just id) Nothing) (Url.s "req" </> uuidParser)
-        , Url.map (ReqPage Nothing Nothing) (Url.s "req")
-        , Url.map EnvPage (Url.s "env")
-        , Url.map (\id -> ScenarioPage (Just id)) (Url.s "scenario" </> uuidParser)
-        , Url.map (ScenarioPage Nothing) (Url.s "scenario")
-        , Url.map (TangoScriptPage) (Url.s "tangoscript")
+        , Url.map (\reqId scenarioId -> ReqPage (Just reqId) (Just scenarioId)) (appRoot </> Url.s "req" </> uuidParser </> uuidParser)
+        , Url.map (\id -> ReqPage (Just id) Nothing) (appRoot </> Url.s "req" </> uuidParser)
+        , Url.map (ReqPage Nothing Nothing) (appRoot </> Url.s "req")
+        , Url.map EnvPage (appRoot </> Url.s "env")
+        , Url.map (\id -> ScenarioPage (Just id)) (appRoot </> Url.s "scenario" </> uuidParser)
+        , Url.map (ScenarioPage Nothing) (appRoot </> Url.s "scenario")
+        , Url.map (TangoScriptPage) (appRoot </> Url.s "tangoscript")
         ]
 
 
@@ -53,28 +56,28 @@ href page =
                     []
 
                 ReqPage (Just reqId) (Just scenarioId) ->
-                    [ "req", Uuid.toString reqId, Uuid.toString scenarioId ]
+                    [ "app", "req", Uuid.toString reqId, Uuid.toString scenarioId ]
 
                 ReqPage (Just uuid) Nothing ->
-                    [ "req", Uuid.toString uuid ]
+                    [ "app", "req", Uuid.toString uuid ]
 
                 ReqPage Nothing _ ->
-                    [ "req" ]
+                    [ "app", "req" ]
 
                 EnvPage ->
-                    [ "env" ]
+                    [ "app", "env" ]
 
                 ScenarioPage (Just uuid) ->
-                    [ "scenario", Uuid.toString uuid ]
+                    [ "app", "scenario", Uuid.toString uuid ]
 
                 ScenarioPage Nothing ->
-                    [ "scenario" ]
+                    [ "app", "scenario" ]
 
                 TangoScriptPage ->
-                    [ "tangoscript" ]
+                    [ "app", "tangoscript" ]
 
                 NotFoundPage ->
-                    [ "notFound" ]
+                    [ "app", "notFound" ]
     in
     "#" ++ String.join "/" pieces
 

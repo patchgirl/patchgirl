@@ -71,8 +71,7 @@ defaultRequestComputationInput :: TemplatedRequestComputationInput
 defaultRequestComputationInput =
   TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
                                    , _templatedRequestComputationInputHeaders = []
-                                   , _templatedRequestComputationInputScheme = Http
-                                   , _templatedRequestComputationInputUrl = [ Sentence "foo.com" ]
+                                   , _templatedRequestComputationInputUrl = [ Sentence "http://foo.com" ]
                                    , _templatedRequestComputationInputBody = [ Sentence "" ]
                                    }
 

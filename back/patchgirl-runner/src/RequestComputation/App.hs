@@ -77,22 +77,21 @@ buildRequest
   -> IO Http.Request
 buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
   let RequestComputationInput{..} = buildRequestComputationInput templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars
-  let url = schemeToString _requestComputationInputScheme  <> "://" <> _requestComputationInputUrl
-  parsedRequest <- IO.liftIO $ Http.parseRequest url
+  parsedRequest <- IO.liftIO $ Http.parseRequest _requestComputationInputUrl
   return
     $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
-    $ setPortAndSecure _requestComputationInputScheme
+    $ setPortAndSecure _requestComputationInputUrl
     $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
     $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
     parsedRequest
   where
-    setPortAndSecure :: Scheme -> Http.Request -> Http.Request
+    setPortAndSecure :: String -> Http.Request -> Http.Request
     setPortAndSecure = \case
-        Http ->
-          Http.setRequestSecure False . Http.setRequestPort 80
-
-        Https ->
+        ('h' : 't' : 't' : 'p' : 's' : _) ->
           Http.setRequestSecure True . Http.setRequestPort 443
+
+        _ ->
+          Http.setRequestSecure False . Http.setRequestPort 80
 
 
 -- * build request computation input
@@ -108,7 +107,6 @@ buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVar
   RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
                           , _requestComputationInputHeaders =
                             _templatedRequestComputationInputHeaders <&> Bifunctor.bimap interpolate' interpolate'
-                          , _requestComputationInputScheme = _templatedRequestComputationInputScheme
                           , _requestComputationInputUrl = interpolate' _templatedRequestComputationInputUrl
                           , _requestComputationInputBody = interpolate' _templatedRequestComputationInputBody
                           }

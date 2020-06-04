@@ -354,15 +354,6 @@ buildRequestToRun envKeyValues builder =
         mkHeader ( headerKey, headerValue ) =
             Http.header headerKey headerValue
 
-        schemeToString : Scheme -> String
-        schemeToString scheme =
-            case scheme of
-                Http ->
-                    "http"
-
-                Https ->
-                    "https"
-
         backRequestComputationInput =
             ( Client.convertRequestComputationInputFromFrontToBack request
             , envKeyValues

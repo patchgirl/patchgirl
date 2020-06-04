@@ -42,7 +42,6 @@ fromResponseToHttpResponse response =
 data TemplatedRequestComputationInput
   = TemplatedRequestComputationInput { _templatedRequestComputationInputMethod  :: Method
                                      , _templatedRequestComputationInputHeaders :: [( [Template], [Template])]
-                                     , _templatedRequestComputationInputScheme  :: Scheme
                                      , _templatedRequestComputationInputUrl     :: [Template]
                                      , _templatedRequestComputationInputBody    :: [Template]
                                      }
@@ -63,7 +62,6 @@ instance Aeson.FromJSON TemplatedRequestComputationInput where
 data RequestComputationInput
   = RequestComputationInput { _requestComputationInputMethod  :: Method
                             , _requestComputationInputHeaders :: [(String, String)]
-                            , _requestComputationInputScheme  :: Scheme
                             , _requestComputationInputUrl     :: String
                             , _requestComputationInputBody    :: String
                             }

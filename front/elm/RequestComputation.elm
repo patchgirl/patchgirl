@@ -1,6 +1,5 @@
 module RequestComputation
     exposing ( buildRequestComputationInput
-             , removeSchemeFromUrl
              )
 
 import Application.Type exposing (..)
@@ -28,10 +27,7 @@ type alias Model a =
 
 buildRequestComputationInput : Model a -> RequestComputationInput
 buildRequestComputationInput model =
-    { scheme =
-        editedOrNotEditedValue model.httpUrl
-           |> schemeFromUrl
-    , method =
+    { method =
         editedOrNotEditedValue model.httpMethod
     , headers =
         editedOrNotEditedValue model.httpHeaders
@@ -51,29 +47,4 @@ buildRequestComputationInput model =
 
 cleanUrl : String -> String
 cleanUrl url =
-    removeSchemeFromUrl (String.trimLeft url)
-
-
-removeSchemeFromUrl : String -> String
-removeSchemeFromUrl url =
-    let
-        schemeRegex : Regex.Regex
-        schemeRegex =
-            Maybe.withDefault Regex.never <|
-                Regex.fromStringWith
-                    { caseInsensitive = False
-                    , multiline = False
-                    }
-                    "^https?://"
-    in
-    Regex.replace schemeRegex (always "") url
-
-
-schemeFromUrl : String -> Scheme
-schemeFromUrl url =
-    case String.startsWith "https://" url of
-        True ->
-            Https
-
-        False ->
-            Http
+    String.trimLeft url

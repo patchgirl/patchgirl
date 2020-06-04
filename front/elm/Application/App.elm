@@ -7,6 +7,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Navigation
 import Element exposing (..)
 import Element.Background as Background
+import Element.Font as Font
 import EnvironmentEdition.App as EnvironmentEdition
 import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
@@ -209,33 +210,67 @@ mainView model =
     let
         builderView mScenarioId =
             map BuilderAppMsg (RequestBuilderApp.view model mScenarioId)
+
+        appLayout : Element Msg -> Element Msg
+        appLayout appView =
+            column [ width fill
+                   , height fill
+                   , centerY
+                   , spacing 30
+                   ] [ map MainNavBarMsg (MainNavBar.view model)
+                     , el [ width fill ] appView
+                     ]
+
     in
-    column
-        [ width fill
-        , height fill
-        , centerY
-        , spacing 30
-        ]
-        [ map MainNavBarMsg (MainNavBar.view model)
-        , el [ width fill ] <|
-            case model.page of
-                HomePage ->
-                    builderView Nothing
+        case model.page of
+            HomePage ->
+                homeView
 
-                NotFoundPage ->
-                    el [ centerY, centerX ] (text "not found")
+            NotFoundPage ->
+                appLayout <| el [ centerY, centerX ] (text "not found")
 
-                ReqPage _ mFromScenarioId ->
-                    builderView mFromScenarioId
+            ReqPage _ mFromScenarioId ->
+                appLayout <| builderView mFromScenarioId
 
-                EnvPage ->
-                    map EnvironmentEditionMsg (EnvironmentEdition.view model)
+            EnvPage ->
+                appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
-                ScenarioPage _ ->
-                    map ScenarioMsg (ScenarioBuilderApp.view model)
+            ScenarioPage _ ->
+                appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
 
-                TangoScriptPage ->
-                    map TangoScriptMsg (TangoScriptApp.view model)
+            TangoScriptPage ->
+                appLayout <| map TangoScriptMsg (TangoScriptApp.view model)
+
+
+-- ** home view
+
+
+homeView : Element Msg
+homeView =
+    let
+        gifs : Element Msg
+        gifs =
+            wrappedRow [ width fill, spacing 1, centerX, Font.center ]
+                [ column [ alignTop, width fill ]
+                      [ el [ width fill ] (text "Create & store variables to reuse in your http request")
+                      , image [ centerX ] { src = "/public/images/create_variables.gif", description = "create variables" }
+                      ]
+                , column [ alignTop, width fill ]
+                      [ el [ width fill ] (text "Create variables to reuse anywhere")
+                      , image [ centerX ] { src = "/public/images/create_request.gif", description = "create http request" }
+                      ]
+                , column [ alignTop, width fill ]
+                      [ el [ width fill ] (text "Play scenario of http requests")
+                      , image [ centerX ] { src = "/public/images/run_scenario.gif", description = "play scenario of http requests" }
+                      ]
+                ]
+    in
+    column [ centerX, spacing 50, moveDown 100 ]
+        [ column [ centerX, spacing 20 ]
+             [ el [ centerX, Font.size 30 ] (text "PatchGirl")
+             , el [ centerX, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
+             ]
+        , gifs
         ]
 
 

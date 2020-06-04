@@ -71,7 +71,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "foo.com"] ]
+            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "http://foo.com"] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
@@ -100,8 +100,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "foo.com"]
-                                     , buildSceneInput Post [Sentence "foo.com"]
+            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "http://foo.com"]
+                                     , buildSceneInput Post [Sentence "http://foo.com"]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -132,8 +132,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "foo.com"]
-                                     , buildSceneInput Post [Sentence "foo.com"]
+            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "http://foo.com"]
+                                     , buildSceneInput Post [Sentence "http://foo.com"]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -207,7 +207,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [ AssertEqual (LString "a") (LString "a") ] [] ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [ AssertEqual (LString "a") (LString "a") ] [] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
@@ -235,8 +235,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildSceneInputWithScript Get [Sentence "foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
+            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildSceneInputWithScript Get [Sentence "http://foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -270,7 +270,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -299,7 +299,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -324,8 +324,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [] [ Set "a" (LInt 1) ]
-                                     , buildSceneInputWithScript Get [Sentence "foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ Set "a" (LInt 1) ]
+                                     , buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -359,8 +359,8 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildSceneInputWithScript Get [Sentence "foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
+            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }

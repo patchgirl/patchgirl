@@ -314,7 +314,6 @@ convertRequestComputationInputFromFrontToBack frontRequestInput =
     in
     { templatedRequestComputationInputMethod = convertMethodFromFrontToBack frontRequestInput.method
     , templatedRequestComputationInputHeaders = List.map (convertHeader convertStringTemplateFromFrontToBack) frontRequestInput.headers
-    , templatedRequestComputationInputScheme = convertSchemeFromFrontToBack frontRequestInput.scheme
     , templatedRequestComputationInputUrl = convertStringTemplateFromFrontToBack frontRequestInput.url
     , templatedRequestComputationInputBody = convertStringTemplateFromFrontToBack frontRequestInput.body
     }

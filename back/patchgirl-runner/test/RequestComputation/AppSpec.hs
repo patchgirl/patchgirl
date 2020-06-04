@@ -55,7 +55,7 @@ spec = do
     withClient (withHttpMock [ requestWithResponse2 ]) $
       it "interpolate env vars" $ \clientEnv -> do
         let envVars = Map.fromList [ ( "host"
-                                     , [ Sentence "foo.com" ]
+                                     , [ Sentence "http://foo.com" ]
                                      )
                                    ]
         try clientEnv (runRequestComputation (input2, envVars))
@@ -101,8 +101,7 @@ spec = do
     (input1, output1) =
       ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
                                          , _templatedRequestComputationInputHeaders = []
-                                         , _templatedRequestComputationInputScheme = Http
-                                         , _templatedRequestComputationInputUrl = [ Sentence "foo.com" ]
+                                         , _templatedRequestComputationInputUrl = [ Sentence "http://foo.com" ]
                                          , _templatedRequestComputationInputBody = [ Sentence "" ]
                                          }
       , Right (RequestComputationOutput { _requestComputationOutputStatusCode = 200
@@ -129,7 +128,6 @@ spec = do
     (input2, output2) =
       ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
                                          , _templatedRequestComputationInputHeaders = []
-                                         , _templatedRequestComputationInputScheme = Http
                                          , _templatedRequestComputationInputUrl = [ Key "host" ]
                                          , _templatedRequestComputationInputBody = [ Sentence "" ]
                                          }
