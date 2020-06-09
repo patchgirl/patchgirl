@@ -4,14 +4,15 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1cde3e0a8dc460c3012cb4d69bd1575848c783d3e3c4bc79fd34cc0e3d21689d
+-- hash: 3007aeeb966078a798d0c326a04643311e66d3d5569164f6d773babc794e8df0
 
 name:           patchgirl-runner
 version:        0.0.0
 build-type:     Simple
 
-library
-  exposed-modules:
+executable patchgirl-runner-exe
+  main-is: Main.hs
+  other-modules:
       Api
       Env
       Interpolator
@@ -24,10 +25,10 @@ library
       ScenarioComputation.Model
       Server
       TangoScript
-  other-modules:
       Paths_patchgirl_runner
   hs-source-dirs:
       src
+      app
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
@@ -45,40 +46,6 @@ library
     , lens
     , mtl
     , patchgirl-web
-    , prometheus-client
-    , prometheus-metrics-ghc
-    , say
-    , servant-server
-    , stm
-    , utf8-string
-    , uuid
-    , wai
-    , wai-cors
-    , wai-middleware-prometheus
-    , warp
-  default-language: Haskell2010
-
-executable patchgirl-runner-exe
-  main-is: app/Main.hs
-  other-modules:
-      Paths_patchgirl_runner
-  default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
-  build-depends:
-      aeson
-    , base
-    , bytestring
-    , case-insensitive
-    , connection
-    , containers
-    , dhall
-    , http-client
-    , http-client-tls
-    , http-conduit
-    , http-types
-    , lens
-    , mtl
-    , patchgirl-runner
     , prometheus-client
     , prometheus-metrics-ghc
     , say
@@ -121,7 +88,6 @@ test-suite spec
     , http-types
     , lens
     , mtl
-    , patchgirl-runner
     , patchgirl-web
     , prometheus-client
     , prometheus-metrics-ghc

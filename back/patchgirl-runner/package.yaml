@@ -33,23 +33,25 @@ tests:
       - test
     dependencies:
       - hspec
-      - patchgirl-runner
       - servant-client
-      - patchgirl-web
-
-library:
-  source-dirs:
-    - src
-  dependencies:
-    - patchgirl-web
 
 executables:
   patchgirl-runner-exe:
-    main: app/Main.hs
-    dependencies:
-      - patchgirl-runner
+    source-dirs:
+      - src
+      - app
+    main: Main.hs
+#    ghc-options:
+#    - -static # link haskell library statically
+#    - -optl-static
+#    - -optl-pthread
+#    extra-lib-dirs: /lib/x86_64-linux-gnu
+#    extra-lib-dirs: /usr/lib/x86_64-linux-gnu
+#    cc-options: -static
+#    ld-options: -static
 
 dependencies:
+  - patchgirl-web
   - base
   - wai-cors
   - servant-server

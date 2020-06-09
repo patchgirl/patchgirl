@@ -29,3 +29,5 @@ config.yml
 package.json
 .hspec-failures
 *.hie
+dist-newstyle
+result
