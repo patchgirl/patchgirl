@@ -1,9 +1,8 @@
-module Page exposing (Page(..), href, urlToPage)
+module Page exposing (Page(..), href, urlToPage, Documentation(..))
 
 import Url
 import Url.Parser as Url exposing ((</>))
 import Uuid
-
 
 
 -- * model
@@ -15,8 +14,25 @@ type Page
     | EnvPage
     | ScenarioPage (Maybe Uuid.Uuid)
     | NotFoundPage
+    | DocumentationPage Documentation
     | TangoScriptPage
 
+type Documentation
+    = ScenarioDoc
+    | RequestDoc
+    | EnvironmentDoc
+
+documentationToString : Documentation -> String
+documentationToString documentation =
+    case documentation of
+        ScenarioDoc ->
+            "scenario"
+
+        RequestDoc ->
+            "request"
+
+        EnvironmentDoc ->
+            "environment"
 
 
 -- * parser
@@ -25,6 +41,26 @@ type Page
 uuidParser : Url.Parser (Uuid.Uuid -> b) b
 uuidParser =
     Url.custom "UUID" Uuid.fromString
+
+documentationParser : Url.Parser (Documentation -> b) b
+documentationParser =
+    let
+        parser : String -> Maybe Documentation
+        parser s =
+            case s of
+                "request" ->
+                    Just RequestDoc
+
+                "scenario" ->
+                    Just ScenarioDoc
+
+                "environment" ->
+                    Just EnvironmentDoc
+
+                _  ->
+                    Nothing
+    in
+    Url.custom "Documentation" parser
 
 
 urlParser : Url.Parser (Page -> a) a
@@ -40,6 +76,7 @@ urlParser =
         , Url.map EnvPage (appRoot </> Url.s "env")
         , Url.map (\id -> ScenarioPage (Just id)) (appRoot </> Url.s "scenario" </> uuidParser)
         , Url.map (ScenarioPage Nothing) (appRoot </> Url.s "scenario")
+        , Url.map (\documentation -> DocumentationPage documentation) (appRoot </> Url.s "documentation" </> documentationParser)
         , Url.map (TangoScriptPage) (appRoot </> Url.s "tangoscript")
         ]
 
@@ -75,6 +112,9 @@ href page =
 
                 TangoScriptPage ->
                     [ "app", "tangoscript" ]
+
+                DocumentationPage documentation ->
+                    [ "app", "documentation", documentationToString documentation ]
 
                 NotFoundPage ->
                     [ "app", "notFound" ]

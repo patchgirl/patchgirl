@@ -11,6 +11,7 @@
             "andre-dietrich/parser-combinators": "3.1.0",
             "bartavelle/json-helpers": "2.0.2",
             "danyx23/elm-uuid": "2.1.2",
+            "dillonkearns/elm-markdown": "4.0.2",
             "elm/browser": "1.0.1",
             "elm/core": "1.0.2",
             "elm/html": "1.0.0",
@@ -34,6 +35,7 @@
             "elm/virtual-dom": "1.0.2",
             "elm-community/basics-extra": "4.0.0",
             "pilatch/flip": "1.0.0",
+            "rtfeldman/elm-hex": "1.0.0",
             "the-sett/elm-pretty-printer": "2.2.3"
         }
     },
@@ -42,8 +44,7 @@
             "elm-explorations/test": "1.2.2"
         },
         "indirect": {
-            "Skinney/murmur3": "2.0.8",
-            "rtfeldman/elm-hex": "1.0.0"
+            "Skinney/murmur3": "2.0.8"
         }
     }
 }

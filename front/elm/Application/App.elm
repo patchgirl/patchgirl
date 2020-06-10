@@ -15,12 +15,12 @@ import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import ScenarioBuilderApp.App as ScenarioBuilderApp
+import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import Url as Url
 import Url.Parser as Url
 import Util exposing (..)
-
 
 
 -- * model
@@ -237,6 +237,9 @@ mainView model =
 
             ScenarioPage _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
+
+            DocumentationPage mDocumentation ->
+                appLayout (DocumentationApp.view mDocumentation)
 
             TangoScriptPage ->
                 appLayout <| map TangoScriptMsg (TangoScriptApp.view model)

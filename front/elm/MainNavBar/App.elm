@@ -38,6 +38,7 @@ type Msg
     = OpenReqPage
     | OpenEnvPage
     | OpenScenarioPage
+    | OpenDocumentationPage
     | AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
@@ -70,6 +71,13 @@ update msg model =
             let
                 newModel =
                     { model | page = ScenarioPage Nothing }
+            in
+            ( newModel, Cmd.none )
+
+        OpenDocumentationPage ->
+            let
+                newModel =
+                    { model | page = DocumentationPage RequestDoc }
             in
             ( newModel, Cmd.none )
 
@@ -331,6 +339,10 @@ centerView model =
             { url = href EnvPage
             , label = el [] (text "Environment")
             }
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
+            { url = href (DocumentationPage RequestDoc)
+            , label = el [] (text "Documentation")
+            }
         ]
 
 
@@ -391,6 +403,15 @@ isEnvPage : Page -> Bool
 isEnvPage page =
     case page of
         EnvPage ->
+            True
+
+        _ ->
+            False
+
+isDocumentationPage : Page -> Bool
+isDocumentationPage page =
+    case page of
+        DocumentationPage _ ->
             True
 
         _ ->
