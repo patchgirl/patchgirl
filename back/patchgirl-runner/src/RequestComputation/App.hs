@@ -14,6 +14,7 @@ import qualified Control.Monad.Reader        as Reader
 import qualified Data.Bifunctor              as Bifunctor
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
+import           Data.Function               ((&))
 import           Data.Functor                ((<&>))
 import qualified Data.Map.Strict             as Map
 import qualified Network.HTTP.Client.Conduit as Http
@@ -76,14 +77,12 @@ buildRequest
   -> ScenarioVars
   -> IO Http.Request
 buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
-  let RequestComputationInput{..} = buildRequestComputationInput templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars
-  parsedRequest <- IO.liftIO $ Http.parseRequest _requestComputationInputUrl
-  return
-    $ Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
-    $ setPortAndSecure _requestComputationInputUrl
-    $ Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
-    $ Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
-    parsedRequest
+  buildRequestComputationInput templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars
+    & \RequestComputationInput{..} -> Http.parseRequest _requestComputationInputUrl
+    <&> Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
+    <&> Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
+    <&> Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
+    <&> setPortAndSecure _requestComputationInputUrl
   where
     setPortAndSecure :: String -> Http.Request -> Http.Request
     setPortAndSecure = \case
