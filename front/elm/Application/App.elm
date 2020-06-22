@@ -251,6 +251,28 @@ mainView model =
 homeView : Element Msg
 homeView =
     let
+        banner : Element Msg
+        banner =
+            row [ height (px 150), width fill
+                , Background.color primaryColor
+                ]
+            [ column [ centerX
+                     , spacing 20
+                     , Font.color secondaryColor
+                     ]
+                  [ el [ centerX, centerY, Font.size 30 ] (text "PatchGirl")
+                  , el [ centerX, centerY, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
+                  ]
+            , link []
+                { url = "https://github.com/patchgirl/patchgirl"
+                , label =
+                    image [ height (px 40), paddingXY 10 0, alignRight ]
+                        { src = "public/images/github.svg"
+                        , description = "github logo"
+                        }
+                }
+            ]
+
         gifs : Element Msg
         gifs =
             wrappedRow [ width fill, spacing 30, centerX, Font.center ]
@@ -272,23 +294,16 @@ homeView =
 
         tryIt : Element Msg
         tryIt =
-            text "Try it"
+            el [ height (px 100), width fill
+               , Background.color primaryColor
+               , Font.color secondaryColor, Font.size 25, Font.center
+               ]
+            <| link [ centerY, centerX, Font.underline ]
+                { url = "#app/scenario"
+                , label = text "Try it"
+                }
     in
-    column [ width fill
-           , spacing 100
-           ]
-        [ column [ height (px 150), width fill
-                 , Background.color primaryColor
-                 , centerX
-                 , spacing 20
-                 , Font.color secondaryColor
-                 ]
-              [ el [ centerX, centerY, Font.size 30 ] (text "PatchGirl")
-              , el [ centerX, centerY, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
-              ]
-        , gifs
-        , tryIt
-        ]
+    column [ width fill, spacing 100 ] [ banner, gifs, tryIt ]
 
 
 
