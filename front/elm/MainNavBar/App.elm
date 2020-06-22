@@ -150,25 +150,13 @@ view model =
 
 leftView : Element Msg
 leftView =
-    let
-        linkContent =
-            html <|
-                Html.span
-                    [ Html.style "color" (colorToString secondaryColor)
-                    , Html.style "font-size" "30px"
-                    ]
-                    [ Html.i
-                        [ Html.class "material-icons"
-                        , Html.style "font-size" "30px"
-                        , Html.style "vertical-align" "bottom"
-                        ]
-                        [ Html.text "call_split" ]
-                    , Html.text "PatchGirl"
-                    ]
-    in
     link []
         { url = href HomePage
-        , label = linkContent
+        , label =
+            image [ height (px 50) ]
+                { src = "public/images/logo.png"
+                , description = "logo"
+                }
         }
 
 

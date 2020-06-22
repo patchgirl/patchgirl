@@ -253,14 +253,18 @@ homeView =
     let
         banner : Element Msg
         banner =
-            row [ height (px 150), width fill
+            row [ height (px 200), width fill
                 , Background.color primaryColor
+                , paddingXY 0 50
                 ]
             [ column [ centerX
                      , spacing 20
                      , Font.color secondaryColor
                      ]
-                  [ el [ centerX, centerY, Font.size 30 ] (text "PatchGirl")
+                  [ image [ centerX, height (px 70) ]
+                        { src = "public/images/logo.png"
+                        , description = "logo"
+                        }
                   , el [ centerX, centerY, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
                   ]
             , link []
