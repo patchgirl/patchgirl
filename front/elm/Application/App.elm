@@ -253,27 +253,41 @@ homeView =
     let
         gifs : Element Msg
         gifs =
-            wrappedRow [ width fill, spacing 1, centerX, Font.center ]
-                [ column [ alignTop, width fill ]
-                      [ el [ width fill ] (text "Create & store variables to reuse in your http request")
-                      , image [ centerX ] { src = "/public/images/create_variables.gif", description = "create variables" }
+            wrappedRow [ width fill, spacing 30, centerX, Font.center ]
+                [ column [ alignTop, width fill, spacing 20 ]
+                      [ el [ width fill ] (text "Create and run http request")
+                      , image [ ]
+                          { src = "/public/images/create_request.gif"
+                          , description = "create http request"
+                          }
                       ]
-                , column [ alignTop, width fill ]
-                      [ el [ width fill ] (text "Create variables to reuse anywhere")
-                      , image [ centerX ] { src = "/public/images/create_request.gif", description = "create http request" }
-                      ]
-                , column [ alignTop, width fill ]
+                , column [ alignTop, width fill, spacing 20 ]
                       [ el [ width fill ] (text "Play scenario of http requests")
-                      , image [ centerX ] { src = "/public/images/run_scenario.gif", description = "play scenario of http requests" }
+                      , image []
+                          { src = "/public/images/run_scenario.gif"
+                          , description = "play scenario of http requests"
+                          }
                       ]
                 ]
+
+        tryIt : Element Msg
+        tryIt =
+            text "Try it"
     in
-    column [ centerX, spacing 50, moveDown 100 ]
-        [ column [ centerX, spacing 20 ]
-             [ el [ centerX, Font.size 30 ] (text "PatchGirl")
-             , el [ centerX, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
-             ]
+    column [ width fill
+           , spacing 100
+           ]
+        [ column [ height (px 150), width fill
+                 , Background.color primaryColor
+                 , centerX
+                 , spacing 20
+                 , Font.color secondaryColor
+                 ]
+              [ el [ centerX, centerY, Font.size 30 ] (text "PatchGirl")
+              , el [ centerX, centerY, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
+              ]
         , gifs
+        , tryIt
         ]
 
 

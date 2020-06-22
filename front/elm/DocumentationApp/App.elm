@@ -79,7 +79,7 @@ contentView documentation =
 -- ** request
 
 
-requestView : List (Element msg)
+requestView : String
 requestView =
     """
 # Request
@@ -104,7 +104,7 @@ The PatchGirl desktop app acts as a tiny proxy. You still use the web app but ev
 -- ** scenario
 
 
-scenarioView : Element msg
+scenarioView : String
 scenarioView =
     """
 # Scenario
@@ -151,7 +151,7 @@ So if you want to check that the response succeeded you can write: `assertEqual(
 -- ** environment
 
 
-environmentView : Element msg
+environmentView : String
 environmentView =
     """
 # Environment variables
