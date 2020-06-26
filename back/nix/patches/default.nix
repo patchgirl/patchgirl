@@ -32,8 +32,8 @@
   static-haskell-nix-postgrest-openssl-linking-fix =
     ./static-haskell-nix-postgrest-openssl-linking-fix.patch;
 
-  static-haskell-nix-patchgirl-web-openssl-linking-fix =
-    ./static-haskell-nix-patchgirl-web-openssl-linking-fix.patch;
+  static-haskell-nix-patchgirl-openssl-linking-fix =
+    ./static-haskell-nix-patchgirl-openssl-linking-fix.patch;
 
   static-haskell-nix-hasql-notifications-openssl-linking-fix =
     ./static-haskell-nix-hasql-notifications-openssl-linking-fix.patch;
