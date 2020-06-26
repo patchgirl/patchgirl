@@ -36,13 +36,11 @@ import           Environment.App
 import           Environment.Model
 import           Github.App
 import           Health.App
-import           PatchGirl.Internal.Env
 import           PatchGirl.Model
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestNode.App
 import           RequestNode.Model
-import           RunnerConfig.App
 import           ScenarioCollection.App
 import           ScenarioCollection.Model
 import           ScenarioNode.App
@@ -83,8 +81,7 @@ type RestApi auths =
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
-  HealthApi :<|>
-  ConfigApi
+  HealthApi
 
 restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
@@ -102,7 +99,6 @@ restApiServer cookieSettings jwtSettings =
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
   :<|> healthApiServer
-  :<|> configApiServer
 
 
 -- ** request collection
@@ -380,17 +376,6 @@ type HealthApi =
 healthApiServer :: ServerT HealthApi AppM
 healthApiServer =
   getAppHealthHandler
-
-
--- ** config
-
-
-type ConfigApi =
-  "api" :> "config" :> Get '[JSON] RunnerConfig
-
-configApiServer :: ServerT ConfigApi AppM
-configApiServer =
-  getConfigApiHandler
 
 
 -- ** other

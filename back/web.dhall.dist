@@ -9,7 +9,6 @@ let config =
   , github = { clientId = ""
              , clientSecret = ""
              }
-  , runner = ./runner.dhall
   }
 
 in config

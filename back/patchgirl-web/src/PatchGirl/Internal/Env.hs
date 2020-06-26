@@ -8,16 +8,13 @@ module PatchGirl.Internal.Env
   , envDB
   , envGithub
   , envLog
-  , envRunnerConfig
   , DBConfig(..)
   , GithubConfig(..)
   , Config(..)
-  , RunnerConfig(..)
   , getConfig
   ) where
 
 import qualified Control.Lens as Lens
-import qualified Data.Aeson   as Aeson
 import           Data.Text    (Text)
 import           Dhall        (Natural)
 import qualified Dhall
@@ -62,7 +59,6 @@ data Config
            , _configAppKeyFilePath :: String
            , _configDB             :: DBConfig
            , _configGithub         :: GithubConfig
-           , _configRunnerConfig   :: RunnerConfig
            }
   deriving (Generic, Show)
 
@@ -73,32 +69,10 @@ instance Dhall.FromDhall Config where
       <*> Dhall.field "appKeyFilePath" Dhall.string
       <*> Dhall.field "db" Dhall.auto
       <*> Dhall.field "github" Dhall.auto
-      <*> Dhall.field "runner" Dhall.auto
 
 getConfig :: IO Config
 getConfig =
   Dhall.input Dhall.auto "./web.dhall"
-
-
--- * runner config
-
-
-newtype RunnerConfig
-  = RunnerConfig { _runnerConfigPort :: Natural }
-  deriving (Generic, Show)
-
-instance Dhall.FromDhall RunnerConfig where
-  autoWith _ = Dhall.record $
-    RunnerConfig
-      <$> Dhall.field "port" Dhall.auto
-
-instance Aeson.ToJSON RunnerConfig where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON RunnerConfig where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- * env
@@ -110,7 +84,6 @@ data Env
         , _envDB             :: DBConfig
         , _envGithub         :: GithubConfig
         , _envLog            :: String -> IO ()
-        , _envRunnerConfig   :: RunnerConfig
         }
 
 $(Lens.makeLenses ''Env)
@@ -127,5 +100,4 @@ createEnv log = do
                , _envDB = _configDB
                , _envGithub = _configGithub
                , _envLog = log
-               , _envRunnerConfig = _configRunnerConfig
                }

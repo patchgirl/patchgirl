@@ -119,7 +119,6 @@ defaultEnv =
                                  , _githubConfigClientSecret = "whatever"
                                  }
       , _envLog = Say.sayString
-      , _envRunnerConfig = undefined
       }
 
 
@@ -139,7 +138,6 @@ defaultEnv2 = do
                                    , _githubConfigClientSecret = "whatever"
                                    }
         , _envLog = logFunc
-        , _envRunnerConfig = undefined
       }
 
 
