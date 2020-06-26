@@ -17,9 +17,7 @@ let
     "patched-static-haskell-nix"
     static-haskell-nix
     [
-      patches.static-haskell-nix-postgrest-openssl-linking-fix
       patches.static-haskell-nix-patchgirl-openssl-linking-fix
-      patches.static-haskell-nix-hasql-notifications-openssl-linking-fix
     ];
 
   patchedNixpkgs = patches.applyPatches
