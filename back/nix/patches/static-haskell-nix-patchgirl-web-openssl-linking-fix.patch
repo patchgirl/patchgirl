@@ -1,0 +1,16 @@
+diff --git a/survey/default.nix b/survey/default.nix
+index 828beaa..b0cc724 100644
+--- a/survey/default.nix
++++ b/survey/default.nix
+@@ -1034,6 +1034,11 @@ let
+                   super.pg-harness-server
+                   [ final.openssl final.postgresql ]
+                   "--libs libpq";
++              patchgirl-web =
++                addStaticLinkerFlagsWithPkgconfig
++                  super.patchgirl-web
++                  [ final.openssl final.postgresql ]
++                  "--libs libpq";
+               postgresql-orm =
+                 addStaticLinkerFlagsWithPkgconfig
+                   super.postgresql-orm
