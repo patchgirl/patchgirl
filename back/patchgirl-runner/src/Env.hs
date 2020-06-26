@@ -53,8 +53,7 @@ $(Lens.makeLenses ''Env)
 
 createEnv :: (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
 createEnv log httpRequest = do
-  Config{..} <- getConfig
-  return $ Env { _envPort = _configPort
+  return $ Env { _envPort = 37465
                , _envLog = log
                , _envHttpRequest = httpRequest
                }
