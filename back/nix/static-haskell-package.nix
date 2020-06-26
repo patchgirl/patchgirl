@@ -30,9 +30,11 @@ let
       patches.nixpkgs-openssl-split-runtime-dependencies-of-static-builds
     ];
 
+  lib = (import nixpkgs {}).haskell.lib;
+
   extraOverrides = final: prev:
     rec {
-      "${patchgirl-web.name}" = prev.callCabal2nix "${patchgirl-web.name}" patchgirl-web.src {};
+      "${patchgirl-web.name}" = lib.dontCheck (prev.callCabal2nix "${patchgirl-web.name}" patchgirl-web.src {});
       "${patchgirl-runner.name}" = prev.callCabal2nix "${patchgirl-runner.name}" patchgirl-runner.src {};
     };
 
