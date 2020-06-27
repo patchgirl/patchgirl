@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 673678402e53fef2980861268f8c02a2b53e73dcd8c2548fe742394751a83370
+-- hash: 4def241b342e43320a80f1f6becd2aab0594b2bd5903220ac27f18421bab0d74
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -136,6 +136,7 @@ test-suite spec
     , http-types
     , lens
     , mtl
+    , patchgirl-runner
     , patchgirl-web
     , prometheus-client
     , prometheus-metrics-ghc

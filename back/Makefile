@@ -9,6 +9,9 @@ both:
 app:
 	clear; echo "building back/$(PACKAGE)"; stack build $(PACKAGE) --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
 
+static:
+	clear; echo "building static back/$(PACKAGE)"; nix-build -A $(PACKAGE)-static
+
 test:
 	clear; echo "testing back/$(PACKAGE)"; stack test $(PACKAGE) --ghc-options="-Werror"
 
