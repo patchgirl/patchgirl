@@ -46,9 +46,6 @@ type alias Model =
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
     , environments : List Environment
-
-    -- CONFIG
-    , config : Config
     }
 
 

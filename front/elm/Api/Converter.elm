@@ -125,18 +125,6 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
     }
 
 
--- * config
-
-
-convertRunnerConfigFromBackToFront : Back.RunnerConfig -> Front.Config
-convertRunnerConfigFromBackToFront runnerConfig =
-    let
-        (Back.RunnerConfig { runnerConfigPort }) = runnerConfig
-    in
-    { runnerPort = runnerConfigPort
-    }
-
-
 -- * environment key values
 
 

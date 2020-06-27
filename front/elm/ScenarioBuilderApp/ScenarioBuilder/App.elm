@@ -33,7 +33,6 @@ import Dict exposing (Dict)
 
 type alias Model =
     { session : Session
-    , config : Config
     , notification : Maybe String
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
