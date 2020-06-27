@@ -35,20 +35,16 @@ tests:
       - hspec
       - servant-client
 
+library:
+  source-dirs:
+    - src
+
 executables:
   patchgirl-runner-exe:
     source-dirs:
       - src
       - app
     main: Main.hs
-#    ghc-options:
-#    - -static # link haskell library statically
-#    - -optl-static
-#    - -optl-pthread
-#    extra-lib-dirs: /lib/x86_64-linux-gnu
-#    extra-lib-dirs: /usr/lib/x86_64-linux-gnu
-#    cc-options: -static
-#    ld-options: -static
 
 dependencies:
   - patchgirl-web

@@ -31,3 +31,4 @@ package.json
 *.hie
 dist-newstyle
 result
+WebGeneratedClient.elm

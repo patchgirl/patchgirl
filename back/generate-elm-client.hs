@@ -228,7 +228,6 @@ deriveElmDef deriveWithTaggedObject ''Web.Scene
 deriveElmDef deriveWithTaggedObject ''Web.NewScene
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScenarioFile
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScene
-deriveElmDef deriveWithTaggedObject ''Web.RunnerConfig
 
 
 -- * main
@@ -290,7 +289,6 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewScene)
       , DefineElm (Proxy :: Proxy Web.UpdateScenarioFile)
       , DefineElm (Proxy :: Proxy Web.UpdateScene)
-      , DefineElm (Proxy :: Proxy Web.RunnerConfig)
       ]
     proxyApi =
       (Proxy :: Proxy (Web.RestApi '[Cookie]))
