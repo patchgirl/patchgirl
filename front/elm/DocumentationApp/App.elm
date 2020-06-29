@@ -31,10 +31,11 @@ view documentation =
 
 navView : Documentation -> Element msg
 navView documentation =
-    column [ spacing 20 ]
+    column [ spacing 20, alignTop ]
         [ documentationLink documentation RequestDoc "Request"
         , documentationLink documentation ScenarioDoc "Scenario"
         , documentationLink documentation EnvironmentDoc "Environment"
+        , documentationLink documentation PatchGirlRunnerAppDoc "PatchGirl Runner App"
         ]
 
 documentationLink : Documentation -> Documentation -> String -> Element msg
@@ -70,10 +71,41 @@ contentView documentation =
                 column [] (renderMarkdown requestView)
 
             ScenarioDoc ->
-                none
+                column [] (renderMarkdown scenarioView)
 
             EnvironmentDoc ->
-                none
+                column [] (renderMarkdown environmentView)
+
+            PatchGirlRunnerAppDoc ->
+                column [] (renderMarkdown patchgirlRunnerAppView)
+
+
+-- ** patchgirl runner app
+
+
+patchgirlRunnerAppView : String
+patchgirlRunnerAppView =
+    """
+# PatchGirl Runner App
+
+The **PatchGirl runner app** allows http requests and scenarios to be run from your computer instead of from our servers.
+This is quite useful if you need to:
+- query a local host (i.e: *127.0.0.1*)
+- query a host through a VPN/Proxy you've defined on your computer
+
+## Available platform
+
+As of today, the PatchGirl runner app is only available on Linux. We plan to make it available on MacOS and Windows as well soon enough.
+
+## How to install
+
+Installation is quite easy because the PatchGirl runner app is a standalone executable. After downloading it, you only need to make it executable and run it:
+
+**`chmod +x ./patchGirlRunnerApp`**
+
+**`./patchGirlRunnerApp`**
+
+    """
 
 
 -- ** request
@@ -90,14 +122,14 @@ The "Request" menu allows you to create and run HTTP request.
 
 Variables are available through the mustache syntax.
 
-If you have variable `userId` set in your environment you can use it in any text input with `{{userId}}`.
+If you have variable `userId` set in your environment you can use it in any text input with `{{userId}}`
 
 ## Limitations
 
-Due to browser restrictions (cf: [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) and [same origin policy](https://developer.mozilla.org/docs/Web/Security/Same_origin_policy_for_JavaScript)), PatchGirl cannot run from your device.
-Instead, every requests you make are being sent from our servers which means that you can't by default query local hosts (eg: 127.0.0.1) or use your personnal VPN/Proxy.
+Due to browser restrictions (cf: [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) and [same origin policy](https://developer.mozilla.org/docs/Web/Security/Same_origin_policy_for_JavaScript)), PatchGirl cannot run from your computer.
+Instead, every requests you make are being sent from our servers which means that you can't by default query local hosts (i.e: `127.0.0.1`) or use your personnal VPN/Proxy.
 To overcome this issue, you need to download and run the **PatchGirl Desktop App** (only available for Linux at the time) which runs on your computer and allows you to run requests from your device.
-The PatchGirl desktop app acts as a tiny proxy. You still use the web app but every calls are being sent from the desktop app instead of our servers.
+The PatchGirl desktop app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the desktop app instead of our servers.
     """
 
 
@@ -109,41 +141,52 @@ scenarioView =
     """
 # Scenario
 
-The "Scenario" menu allows you to sequentially play HTTP requests.
+The "Scenario" menu allows you to play HTTP requests sequentially.
 
 ## Http Requests
 
-Once your http requests are created, they can be added to your scenario.
+Only existing http requests can be added to a scenario.
 
 ## [Pre|Post] Script
 
 You can add script before and after every http requests of a scenario. This might come in handy if you need to override a variable before executing a request or if you need to test the response of a request.
+Script uses a syntax similar to javascript.
 
 ### Local variable
 
-In your script, you can define local variable with the syntax `var foo = 1;`
+In your [pre|post] script, you can define local variable with the syntax:
+
+**`var foo = 1;`**
+
 Local variable's scope is only limited to the script they are being defined in.
 
 ### Global variable
 
-You can define a variable that will live through out its script with the syntax: `set("foo", 1);`
-You can use a global variable with this syntax: `get("foo");`
+You can define a variable that will live through out its script with the syntax:
+
+**`set("foo", 1);`**
+
+You can use a global variable with this syntax:
+
+**`get("foo");`**
+
 Note that global variable's scope is only limited to the scenario they are defined in.
 For variable that lives everywhere, you need to use environment variables.
 
 ### Assertion
 
-When you run a scenario, you can make assertions in a script with the `assertEqual` function. Its syntax is `assertEqual("someString", "someOtherString");`. If both parameter are of the same type and same value, then the script succeeds.
-When an assertion fails, every following scenes won't be ran.
+When you run a scenario, you can make assertions in a script with the `assertEqual` function. Its syntax is:
+
+**`assertEqual("someValue", "someOtherValue");`**
+
+If both parameter are of the same type and same value, then the script succeeds.
+When an assertion fails, every following scenes of a scenario won't be ran.
 
 In a post script, some utilities are available:
-- `httpResponseBodyAsString` returns the response body as a string
-- `httpResponseStatus` returns the response status as an int
+- **`httpResponseBodyAsString`** returns the response body as a string
+- **`httpResponseStatus`** returns the response status as an int
 
-So if you want to check that the response succeeded you can write: `assertEqual(httpResponseStatus, 200);`
-
-
-## Limitations
+So if you want to check that the response succeeded you can write: **`assertEqual(httpResponseStatus, 200);`**
 
 """
 
@@ -160,8 +203,8 @@ The environment menu allows you to create variables that you can reuse in your h
 
 ## use variable
 
-Once defined, a variable can easily be used in an http request text inputs or in a scenario's script.
-The syntax used is the mustache syntax, e.g: `http://{{host}}/somePath`
+Once defined, a variable can easily be used in an http request text inputs or in a scenario's script input.
+The syntax used is the mustache syntax i.e: `http://{{host}}/somePath`
 
      """
 

@@ -21,6 +21,7 @@ type Documentation
     = ScenarioDoc
     | RequestDoc
     | EnvironmentDoc
+    | PatchGirlRunnerAppDoc
 
 documentationToString : Documentation -> String
 documentationToString documentation =
@@ -33,6 +34,9 @@ documentationToString documentation =
 
         EnvironmentDoc ->
             "environment"
+
+        PatchGirlRunnerAppDoc ->
+            "patchGirlRunnerApp"
 
 
 -- * parser
@@ -56,6 +60,9 @@ documentationParser =
 
                 "environment" ->
                     Just EnvironmentDoc
+
+                "patchGirlRunnerApp" ->
+                    Just PatchGirlRunnerAppDoc
 
                 _  ->
                     Nothing
