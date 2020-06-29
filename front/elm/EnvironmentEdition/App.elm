@@ -295,14 +295,15 @@ view model =
     wrappedRow
         [ width fill
         , centerX
-        , paddingXY 30 10
-        , spacing 20
+        , paddingXY 10 0
+        , spacing 10
         ]
         [ column
             [ alignLeft
             , alignTop
             , spacing 10
-            , padding 10
+            , padding 20
+            , Background.color white
             , boxShadow
             ]
             [ column [ spacing 10 ] envListView

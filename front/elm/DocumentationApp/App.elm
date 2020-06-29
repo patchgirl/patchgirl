@@ -13,6 +13,7 @@ import Markdown.Renderer as Md
 import Markdown.Block as Md
 import Html
 import Html.Attributes
+import Util exposing (..)
 
 
 -- * view
@@ -20,7 +21,7 @@ import Html.Attributes
 
 view : Documentation -> Element msg
 view documentation =
-    wrappedRow [ width fill, spacing 20, paddingXY 20 0 ]
+    wrappedRow [ width fill, spacing 10, paddingXY 10 0 ]
         [ navView documentation
         , contentView documentation
         ]
@@ -31,7 +32,12 @@ view documentation =
 
 navView : Documentation -> Element msg
 navView documentation =
-    column [ spacing 20, alignTop ]
+    column [ Background.color white
+           , boxShadow
+           , spacing 20
+           , padding 20
+           , alignTop
+           ]
         [ documentationLink documentation RequestDoc "Request"
         , documentationLink documentation ScenarioDoc "Scenario"
         , documentationLink documentation EnvironmentDoc "Environment"
@@ -65,19 +71,27 @@ documentationLink currentDocumentation documentation title =
 
 contentView : Documentation -> Element msg
 contentView documentation =
+    let
+        doc : String -> Element msg
+        doc markdown =
+            column [ boxShadow
+                   , Background.color white
+                   , padding 20
+                   ] (renderMarkdown markdown)
+    in
     el [ width (fill |> maximum 800), centerX ] <|
         case documentation of
             RequestDoc ->
-                column [] (renderMarkdown requestView)
+                doc requestView
 
             ScenarioDoc ->
-                column [] (renderMarkdown scenarioView)
+                doc scenarioView
 
             EnvironmentDoc ->
-                column [] (renderMarkdown environmentView)
+                doc environmentView
 
             PatchGirlRunnerAppDoc ->
-                column [] (renderMarkdown patchgirlRunnerAppView)
+                doc patchgirlRunnerAppView
 
 
 -- ** patchgirl runner app
