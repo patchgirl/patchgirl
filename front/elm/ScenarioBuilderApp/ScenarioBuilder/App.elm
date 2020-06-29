@@ -717,7 +717,7 @@ detailedSceneView model scene requestFileRecord =
               [ row [ spacing 10 ]
                     [ link []
                           { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
-                          , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
+                          , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
                                     secondaryColor
                           }
                     , saveSceneButton
