@@ -275,37 +275,77 @@ homeView =
                 }
             ]
 
-        gifs : Element Msg
-        gifs =
-            wrappedRow [ width fill, spacing 30, centerX, Font.center ]
-                [ column [ alignTop, width fill, spacing 20 ]
-                      [ el [ width fill ] (text "Create and run http request")
-                      , image [ ]
-                          { src = "/public/images/create_request.gif"
-                          , description = "create http request"
-                          }
+        feature : String -> String -> String -> String -> Element Msg
+        feature title subtitle imageSrc imageDescription =
+            column [ spacing 30, alignTop, width fill ]
+                [ column [ centerX, spacing 10 ]
+                      [ el [ Font.size 20, Font.bold, width fill ] (text title)
+                      , el [ Font.size 18, width fill ] (text subtitle)
                       ]
-                , column [ alignTop, width fill, spacing 20 ]
-                      [ el [ width fill ] (text "Play scenario of http requests")
-                      , image []
-                          { src = "/public/images/run_scenario.gif"
-                          , description = "play scenario of http requests"
-                          }
-                      ]
+                , image [ centerX ]
+                    { src = imageSrc
+                    , description = imageDescription
+                    }
+                ]
+
+        features : Element Msg
+        features =
+            wrappedRow [ width fill, spacing 0, Font.center, centerX ]
+                [ feature
+                      "Http request"
+                      "Create, share and run http requests from your browser"
+                      "/public/images/http_request.png"
+                      "create http request"
+                , feature
+                      "Free & Open source"
+                      "PatchGirl is and will remain open source ❤️"
+                      "/public/images/laptop.png"
+                      "free and open source"
+                , feature
+                      "Scenario"
+                      "Play scenario of http request, create assertion on result"
+                      "/public/images/scenario.png"
+                      "play scenario of http requests"
                 ]
 
         tryIt : Element Msg
         tryIt =
-            el [ height (px 100), width fill
-               , Background.color primaryColor
-               , Font.color secondaryColor, Font.size 25, Font.center
-               ]
-            <| link [ centerY, centerX, Font.underline ]
-                { url = "#app/scenario"
-                , label = text "Try it"
-                }
+            row [ height (px 100), width fill
+                , Background.color primaryColor
+                , Font.color secondaryColor, Font.size 25, Font.center
+                , spacing 20
+                ]
+                [ link [ centerY, centerX, Font.underline ]
+                      { url = "#app/scenario"
+                      , label = text "Try it"
+                      }
+                ]
+
+        footer : Element Msg
+        footer =
+            row [ height (px 100), width fill
+                , Font.color primaryColor, Font.size 20, Font.center
+                , spacing 20
+                ]
+                [ link [ centerY, centerX, Font.underline ]
+                    { url = "https://blog.patchgirl.io/"
+                    , label = text "Blog"
+                    }
+                , link [ centerY, centerX, Font.underline ]
+                    { url = "https://github.com/patchgirl/patchgirl"
+                    , label = text "Github"
+                    }
+                ]
+
     in
-    column [ width fill, spacing 100 ] [ banner, gifs, tryIt ]
+    column [ width fill, height fill ]
+        [ column [ width fill, height fill, spacing 70 ]
+              [ banner
+              , features
+              , tryIt
+              ]
+        , footer
+        ]
 
 
 
