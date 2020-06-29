@@ -847,15 +847,14 @@ postscriptView scene =
 
 labelInputView : String -> Input.Label Msg
 labelInputView labelText =
-    let
-        size =
-            width
-                (fill
-                    |> maximum 100
-                    |> minimum 100
-                )
-    in
-    Input.labelAbove [ centerY, size ] <| text labelText
+    Input.labelAbove [ centerY, width fill ]
+        <| row [ width fill ]
+            [ el [ alignLeft ] (text labelText)
+            , link [ alignRight, Font.alignRight ]
+                { url = href <| DocumentationPage ScenarioDoc
+                , label = el [ Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
+                }
+            ]
 
 
 -- * modal

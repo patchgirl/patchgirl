@@ -104,6 +104,20 @@ iconWithTextAndColor iconText someText color =
             , Html.text someText
             ]
 
+rightIconWithTextAndColor : String -> String -> Color -> Element a
+rightIconWithTextAndColor iconText someText color =
+    html <|
+        Html.span []
+            [ Html.text someText
+            , Html.i
+                [ Html.class "material-icons"
+                , Html.style "vertical-align" "bottom"
+                , Html.style "color" (colorToString color)
+                ]
+                [ Html.text iconText ]
+            ]
+
+
 
 iconWithTextAndColorAndAttr : String -> String -> Color -> List (Html.Attribute a) -> Element a
 iconWithTextAndColorAndAttr iconText someText color someAttr =
