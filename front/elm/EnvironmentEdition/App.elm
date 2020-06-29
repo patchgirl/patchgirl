@@ -277,7 +277,7 @@ view model =
                         map EnvironmentKeyValueEditionMsg (envKeyValueView subModel)
 
                 Nothing ->
-                    el [] (text "no environment selected")
+                    text "no environment selected"
 
         envListView =
             List.map (entryView model.selectedEnvironmentToEditId) model.environments
@@ -294,7 +294,6 @@ view model =
     in
     wrappedRow
         [ width fill
-        , centerX
         , paddingXY 10 0
         , spacing 10
         ]
@@ -303,20 +302,22 @@ view model =
             , alignTop
             , spacing 10
             , padding 20
+            , width (fillPortion 1)
             , Background.color white
             , boxShadow
             ]
             [ column [ spacing 10 ] envListView
             , el [ centerX ] addEnvButtonView
             ]
-        , el
-            ( [ centerX
-              , alignTop
-              , padding 20
-              , spacing 10
-              ] ++ boxAttrs
-            )
-            keyValuesEditionView
+        , el [ width (fillPortion 9)
+             , centerX, alignTop
+             ]
+              <| el [ centerX
+                    , alignTop
+                    , padding 20
+                    , Background.color white
+                    , boxShadow
+                    ] keyValuesEditionView
         ]
 
 

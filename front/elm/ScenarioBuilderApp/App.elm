@@ -197,11 +197,11 @@ builderView model =
 
         Nothing ->
             el [ width (fillPortion 9)
-               , centerX, centerY, alignTop
+               , centerX, alignTop
                ]
-                <| el ( [ centerX
-                        , alignTop
-                        , padding 20
-                        , spacing 10
-                        ] ++ boxAttrs
-                      ) (text "No scenario selected")
+                <| el [ centerX
+                      , alignTop
+                      , padding 20
+                      , Background.color white
+                      , boxShadow
+                      ] (text "No scenario selected")
