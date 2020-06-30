@@ -32,6 +32,7 @@ type alias Model a =
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
+        , runnerRunning : Bool
     }
 
 
@@ -142,6 +143,7 @@ convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =
     , whichResponseView = file.whichResponseView
     , environments = model.environments
     , environmentId = file.environmentId
+    , runnerRunning = model.runnerRunning
     }
 
 convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord

@@ -30,6 +30,7 @@ type alias Model a =
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
+        , runnerRunning : Bool
     }
 
 
@@ -122,15 +123,15 @@ getBuilder model =
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
             in
-            Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model.notification)
+            Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model)
 
         _ ->
             Nothing
 
 
-convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Maybe String -> RequestBuilder.Model
-convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
-    { notification = notification
+convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Model a -> RequestBuilder.Model
+convertFromFileToBuilder file requestCollectionId keyValuesToRun model =
+    { notification = model.notification
     , id = file.id
     , requestCollectionId = requestCollectionId
     , keyValues = keyValuesToRun
@@ -143,6 +144,7 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun notification =
     , showResponseView = file.showResponseView
     , whichResponseView = file.whichResponseView
     , runRequestIconAnimation = file.runRequestIconAnimation
+    , runnerRunning = model.runnerRunning
     }
 
 

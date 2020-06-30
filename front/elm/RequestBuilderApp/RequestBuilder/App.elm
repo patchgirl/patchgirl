@@ -44,6 +44,7 @@ type alias Model =
     , showResponseView : Bool
     , whichResponseView : HttpResponseView
     , runRequestIconAnimation : Animation.State
+    , runnerRunning : Bool
     }
 
 
@@ -345,11 +346,11 @@ parseHeaders headers =
 
 
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> Model -> Cmd Msg
-buildRequestToRun envKeyValues builder =
+buildRequestToRun envKeyValues model =
     let
         request : RequestComputationInput
         request =
-            buildRequestComputationInput builder
+            buildRequestComputationInput model
 
         mkHeader : ( String, String ) -> Http.Header
         mkHeader ( headerKey, headerValue ) =
@@ -361,11 +362,15 @@ buildRequestToRun envKeyValues builder =
                 |> List.map latestValueOfStorable
                 |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                 |> Dict.fromList
-
             )
 
+        runnerUrl =
+            case model.runnerRunning of
+                True -> Const.runnerUrl
+                False -> ""
+
     in
-    Client.postApiRunnerRequestComputation Const.runnerUrl backRequestComputationInput remoteComputationDoneToMsg
+    Client.postApiRunnerRequestComputation runnerUrl backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError

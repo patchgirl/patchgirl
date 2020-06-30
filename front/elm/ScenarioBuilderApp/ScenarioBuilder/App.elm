@@ -46,6 +46,7 @@ type alias Model =
     , whichResponseView : HttpResponseView
     , environments : List Environment
     , environmentId : Editable (Maybe Int)
+    , runnerRunning : Bool
     }
 
 
@@ -269,10 +270,15 @@ update msg model =
                                 }
                            )
 
+                runnerUrl =
+                    case model.runnerRunning of
+                        True -> Const.runnerUrl
+                        False -> ""
+
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiRunnerScenarioComputation Const.runnerUrl payload runScenarioResultToMsg
+                            Client.postApiRunnerScenarioComputation runnerUrl payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none
