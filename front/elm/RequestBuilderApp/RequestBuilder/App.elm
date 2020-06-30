@@ -24,7 +24,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
-import Const
+import Runner
 
 
 -- * model
@@ -364,13 +364,8 @@ buildRequestToRun envKeyValues model =
                 |> Dict.fromList
             )
 
-        runnerUrl =
-            case model.runnerRunning of
-                True -> Const.runnerUrl
-                False -> ""
-
     in
-    Client.postApiRunnerRequestComputation runnerUrl backRequestComputationInput remoteComputationDoneToMsg
+    Client.postApiRunnerRequestComputation (Runner.runnerUrl model.runnerRunning) backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError

@@ -26,7 +26,7 @@ import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import StringTemplate exposing (..)
 import Dict exposing (Dict)
-import Const
+import Runner
 
 
 -- * model
@@ -270,15 +270,10 @@ update msg model =
                                 }
                            )
 
-                runnerUrl =
-                    case model.runnerRunning of
-                        True -> Const.runnerUrl
-                        False -> ""
-
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiRunnerScenarioComputation runnerUrl payload runScenarioResultToMsg
+                            Client.postApiRunnerScenarioComputation (Runner.runnerUrl model.runnerRunning) payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none

@@ -24,7 +24,7 @@ import Util exposing (..)
 import Time
 import Http
 import Api.RunnerGeneratedClient as Client
-import Const
+import Runner
 
 
 -- * model
@@ -218,7 +218,7 @@ fetchRunnerStatus =
                 Err _ ->
                     RunnerNotRunning
     in
-    Client.getApiRunnerHealth Const.runnerUrl resultHandler
+    Client.getApiRunnerHealth Runner.desktopRunnerUrl resultHandler
 
 
 -- * view
