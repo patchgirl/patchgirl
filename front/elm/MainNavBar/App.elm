@@ -137,10 +137,24 @@ deleteSessionSignOutResultToMsg result =
 
 view : Model a -> Element Msg
 view model =
-    row [ width fill, Background.color primaryColor, height (px 50) ]
-        [ el [ alignLeft, paddingXY 20 0 ] leftView
-        , el [ centerX, centerY, height fill ] (centerView model)
-        , el [ centerY, height fill, alignRight ] (rightView model)
+    column [ width fill, spacing 20 ]
+        [ row [ width fill, Background.color primaryColor, height (px 50) ]
+              [ el [ alignLeft, paddingXY 20 0 ] leftView
+              , el [ centerX, centerY, height fill ] (centerView model)
+              , el [ centerY, height fill, alignRight ] (rightView model)
+              ]
+        , case model.session of
+              Visitor _ ->
+                  el [ width fill
+                     , paddingXY 0 10
+                     , centerY
+                     , Background.color secondaryColor
+                     , Font.color primaryColor
+                     , Font.center
+                     ] (text "Sandbox mode - data will be reset every 5min, sign in to keep your data!")
+
+              _ ->
+                  none
         ]
 
 
