@@ -40,6 +40,9 @@ insertAccount githubId connection = do
           ), new_request_collection as (
             INSERT INTO request_collection(account_id)
             (SELECT id FROM new_account)
+          ), new_scenario_collection as (
+            INSERT INTO scenario_collection(account_id)
+            (SELECT id FROM new_account)
           )
           SELECT id
           FROM new_account
