@@ -219,8 +219,8 @@ runnerStatusView model =
 
         runnerIcon =
             case model.runnerRunning of
-                True -> "link"
-                False -> "link_off"
+                True -> "compare_arrows"
+                False -> "compare_arrows"
 
         iconColor =
             case model.runnerRunning of
@@ -234,7 +234,7 @@ runnerStatusView model =
                                case model.runnerRunning of
                                    True -> runnerIcon
                                    False -> runnerIcon
-                             , iconSize = "30px"
+                             , iconSize = "33px"
                              , primIconColor = iconColor
                          }
     in
@@ -363,7 +363,7 @@ centerView model =
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
             { url = href (ReqPage Nothing Nothing)
-            , label = el [] (text "Request")
+            , label = el [] (text "Http Request")
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
             { url = href EnvPage

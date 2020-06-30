@@ -304,29 +304,22 @@ homeView =
             [ column [ centerX
                      , spacing 20
                      , Font.color secondaryColor
+                     , width fill
                      ]
                   [ image [ centerX, height (px 70) ]
                         { src = "public/images/logo.png"
                         , description = "logo"
                         }
-                  , el [ centerX, centerY, Font.size 25 ] (text "An open source rest-client to play scenarios of http requests")
+                  , paragraph [ centerX, centerY, Font.size 25, Font.center ] [ text "An open source rest-client to play scenarios of http requests" ]
                   ]
-            , link []
-                { url = "https://github.com/patchgirl/patchgirl"
-                , label =
-                    image [ height (px 40), paddingXY 10 0, alignRight ]
-                        { src = "public/images/github.svg"
-                        , description = "github logo"
-                        }
-                }
             ]
 
         feature : String -> String -> String -> String -> Element Msg
         feature title subtitle imageSrc imageDescription =
             column [ spacing 30, alignTop, width fill ]
                 [ column [ centerX, spacing 10 ]
-                      [ el [ Font.size 20, Font.bold, width fill ] (text title)
-                      , el [ Font.size 18, width fill ] (text subtitle)
+                      [ el [ Font.size 20, Font.bold, width fill ] (paragraph [] [ text title ])
+                      , el [ Font.size 18, width fill ] (paragraph [] [ text subtitle ])
                       ]
                 , image [ centerX ]
                     { src = imageSrc
@@ -343,15 +336,15 @@ homeView =
                       "/public/images/http_request.png"
                       "create http request"
                 , feature
+                      "Scenario"
+                      "Run and test scenario of http requests"
+                      "/public/images/scenario.png"
+                      "play scenario of http requests"
+                , feature
                       "Free & Open source"
                       "PatchGirl is and will remain open source ❤️"
                       "/public/images/laptop.png"
                       "free and open source"
-                , feature
-                      "Scenario"
-                      "Play scenario of http request, create assertion on result"
-                      "/public/images/scenario.png"
-                      "play scenario of http requests"
                 ]
 
         tryIt : Element Msg
@@ -379,7 +372,10 @@ homeView =
                     }
                 , link [ centerY, centerX, Font.underline ]
                     { url = "https://github.com/patchgirl/patchgirl"
-                    , label = text "Github"
+                    , label = image [ height (px 40), paddingXY 10 0, alignRight ]
+                        { src = "public/images/github_prim.svg"
+                        , description = "github logo"
+                        }
                     }
                 ]
 
