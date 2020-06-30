@@ -310,7 +310,7 @@ homeView =
                         { src = "public/images/logo.png"
                         , description = "logo"
                         }
-                  , paragraph [ centerX, centerY, Font.size 25, Font.center ] [ text "An open source rest-client to play scenarios of http requests" ]
+                  , paragraph [ centerX, centerY, Font.size 25, Font.center ] [ text "Play scenarios of http requests online" ]
                   ]
             ]
 
@@ -321,29 +321,30 @@ homeView =
                       [ el [ Font.size 20, Font.bold, width fill ] (paragraph [] [ text title ])
                       , el [ Font.size 18, width fill ] (paragraph [] [ text subtitle ])
                       ]
-                , image [ centerX ]
+                , image [ centerX, width (px 120) ]
                     { src = imageSrc
                     , description = imageDescription
                     }
+                , el [ height (px 10) ] none
                 ]
 
         features : Element Msg
         features =
-            wrappedRow [ width fill, spacing 0, Font.center, centerX ]
+            wrappedRow [ width fill, spacing 10, Font.center, centerX ]
                 [ feature
                       "Http request"
                       "Create, share and run http requests from your browser"
-                      "/public/images/http_request.png"
+                      "/public/images/http_request.svg"
                       "create http request"
                 , feature
                       "Scenario"
                       "Run and test scenario of http requests"
-                      "/public/images/scenario.png"
+                      "/public/images/scenario.svg"
                       "play scenario of http requests"
                 , feature
                       "Free & Open source"
                       "PatchGirl is and will remain open source ❤️"
-                      "/public/images/laptop.png"
+                      "/public/images/laptop.svg"
                       "free and open source"
                 ]
 
@@ -356,7 +357,7 @@ homeView =
                 ]
                 [ link [ centerY, centerX, Font.underline ]
                       { url = "#app/scenario"
-                      , label = text "Try it"
+                      , label = text "Try it on your laptop!"
                       }
                 ]
 
@@ -381,7 +382,7 @@ homeView =
 
     in
     column [ width fill, height fill ]
-        [ column [ width fill, height fill, spacing 70 ]
+        [ column [ width fill, height fill, spacing 50 ]
               [ banner
               , features
               , tryIt
