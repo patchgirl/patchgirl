@@ -21,6 +21,10 @@ import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import Url as Url
 import Url.Parser as Url
 import Util exposing (..)
+import Time
+import Http
+import Api.RunnerGeneratedClient as Client
+import Const
 
 
 -- * model
@@ -46,6 +50,9 @@ type Msg
     | TangoScriptMsg TangoScriptApp.Msg
     | MainNavBarMsg MainNavBar.Msg
     | Animate Animation.Msg
+    | CheckRunnerStatus
+    | RunnerNotRunning
+    | RunnerRunning
 
 
 
@@ -104,6 +111,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , environments = environments
+            , runnerRunning = False
             }
     in
     ( model, Cmd.none )
@@ -173,6 +181,44 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
+        CheckRunnerStatus ->
+            let
+                newMsg =
+                    fetchRunnerStatus
+            in
+            (model, newMsg)
+
+        RunnerNotRunning ->
+            let
+                newModel =
+                    { model | runnerRunning = False }
+            in
+            (newModel, Cmd.none)
+
+        RunnerRunning ->
+            let
+                newModel =
+                    { model | runnerRunning = True }
+            in
+            (newModel, Cmd.none)
+
+
+-- * util
+
+
+fetchRunnerStatus : Cmd Msg
+fetchRunnerStatus =
+    let
+        resultHandler : Result Http.Error () -> Msg
+        resultHandler result =
+            case result of
+                Ok () ->
+                    RunnerRunning
+
+                Err _ ->
+                    RunnerNotRunning
+    in
+    Client.getApiRunnerHealth Const.runnerUrl resultHandler
 
 
 -- * view
@@ -431,5 +477,6 @@ subscriptions model =
         ([ Animation.subscription Animate [ model.loadingAnimation ]
          , Animation.subscription Animate [ model.notificationAnimation ]
          ]
-            ++ buildersSubs
+             ++ buildersSubs
+             ++ [ Time.every 5000 (always CheckRunnerStatus) ]
         )

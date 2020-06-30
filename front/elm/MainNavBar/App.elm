@@ -27,8 +27,8 @@ type alias Model a =
         | session : Session
         , page : Page
         , showMainMenuName : Maybe MainMenuName
+        , runnerRunning : Bool
     }
-
 
 
 -- * message
@@ -177,11 +177,11 @@ rightView model =
 signedUserRightView : Model a -> SignedUserSession -> Element Msg
 signedUserRightView model signedUserSession =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ signOutView model signedUserSession
+        [ runnerStatusView model
+        , signOutView model signedUserSession
         , blogView model
         , githubLinkView model
         ]
-
 
 signOutView : Model a -> SignedUserSession -> Element Msg
 signOutView model { avatarUrl } =
@@ -209,6 +209,47 @@ signOutView model { avatarUrl } =
                     avatar
         }
 
+runnerStatusView : Model a -> Element Msg
+runnerStatusView model =
+    let
+        runnerLabel =
+            case model.runnerRunning of
+                True -> "PatchGirl runner app is up!"
+                False -> "PatchGirl runner app is not running"
+
+        runnerIcon =
+            case model.runnerRunning of
+                True -> "link"
+                False -> "link_off"
+
+        iconColor =
+            case model.runnerRunning of
+                True -> onColor
+                False -> offColor
+
+        runnerStatus =
+            iconWithAttr { defaultIconAttribute
+                             | title = ""
+                             , icon =
+                               case model.runnerRunning of
+                                   True -> runnerIcon
+                                   False -> runnerIcon
+                             , iconSize = "30px"
+                             , primIconColor = iconColor
+                         }
+    in
+    el [ Events.onMouseEnter (ShowMainMenuName RunnerStatusMenu)
+       , Events.onMouseLeave HideMainMenuName
+       ] <|
+        el [ height fill, centerY, paddingXY 15 0 ] <|
+            case model.showMainMenuName of
+                Just RunnerStatusMenu ->
+                    el [ below (el [ centerX, moveDown 20, Font.size 18, Font.color primaryColor ] (text runnerLabel)) ]
+                        runnerStatus
+
+                _ ->
+                    runnerStatus
+
 
 blogView : Model a -> Element Msg
 blogView model =
@@ -233,7 +274,8 @@ blogView model =
 visitorRightView : Model a -> Element Msg
 visitorRightView model =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ blogView model
+        [ runnerStatusView model
+        , blogView model
         , signInView model
         , githubLinkView model
         ]

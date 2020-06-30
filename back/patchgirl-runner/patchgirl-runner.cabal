@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4def241b342e43320a80f1f6becd2aab0594b2bd5903220ac27f18421bab0d74
+-- hash: 151a82ae2bfd9ee67d0ad98ddf2aaed8bee195c1c1bf12531c2ba71ede179a9a
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -14,6 +14,7 @@ library
   exposed-modules:
       Api
       Env
+      Health.App
       Interpolator
       Lib
       Log
@@ -63,6 +64,7 @@ executable patchgirl-runner-exe
   other-modules:
       Api
       Env
+      Health.App
       Interpolator
       Lib
       Log

@@ -26,6 +26,7 @@ import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import StringTemplate exposing (..)
 import Dict exposing (Dict)
+import Const
 
 
 -- * model
@@ -271,7 +272,7 @@ update msg model =
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiRunnerScenarioComputation "http://127.0.0.1:37465" payload runScenarioResultToMsg
+                            Client.postApiRunnerScenarioComputation Const.runnerUrl payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none

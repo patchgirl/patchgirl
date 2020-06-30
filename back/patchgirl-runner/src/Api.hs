@@ -10,6 +10,7 @@ module Api( RunnerApi
 
 import           Servant                   hiding (BadPassword, NoSuchUser)
 
+import           Health.App
 import           Interpolator
 import           Model
 import           RequestComputation.App
@@ -23,12 +24,14 @@ import           ScenarioComputation.Model
 
 type RunnerApi =
   RequestComputationApi :<|>
-  ScenarioComputationApi
+  ScenarioComputationApi :<|>
+  HealthApi
 
 runnerApiServer :: ServerT RunnerApi AppM
 runnerApiServer =
   requestComputationApiServer
   :<|> scenarioComputationApiServer
+  :<|> healthApiServer
 
 
 -- ** request computation
@@ -55,3 +58,16 @@ type ScenarioComputationApi =
 scenarioComputationApiServer :: ScenarioInput -> AppM ScenarioOutput
 scenarioComputationApiServer =
   runScenarioComputationHandler
+
+
+-- ** health
+
+
+type HealthApi =
+  "api" :> "runner" :> "health" :> (
+    Get '[JSON] ()
+  )
+
+healthApiServer :: AppM ()
+healthApiServer =
+  healthHandler

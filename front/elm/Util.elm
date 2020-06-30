@@ -14,6 +14,14 @@ import Json.Decode as Json
 -- * color
 
 
+offColor : Color
+offColor =
+    rgb255 183 47 59
+
+onColor : Color
+onColor =
+    rgb255 187 234 166
+
 white : Color
 white =
     rgb255 255 255 255
@@ -90,6 +98,40 @@ icon : String -> Element a
 icon whichIcon =
     iconWithText whichIcon ""
 
+type alias IconAttribute =
+    { title : String
+    , icon : String
+    , iconSize : String
+    , primTextColor : Color
+    , secTextColor : Color
+    , primIconColor : Color
+    , secIconColor : Color
+    }
+
+defaultIconAttribute : IconAttribute
+defaultIconAttribute =
+    { title = "title"
+    , iconSize = "20px"
+    , icon = "icon"
+    , primTextColor = black
+    , secTextColor = black
+    , primIconColor = black
+    , secIconColor = black
+    }
+
+iconWithAttr : IconAttribute -> Element a
+iconWithAttr attr =
+    html <|
+        Html.span []
+            [ Html.i
+                [ Html.class "material-icons"
+                , Html.style "vertical-align" "middle"
+                , Html.style "font-size" attr.iconSize
+                , Html.style "color" (colorToString attr.primIconColor)
+                ]
+                [ Html.text attr.icon ]
+            , Html.text attr.title
+            ]
 
 iconWithTextAndColor : String -> String -> Color -> Element a
 iconWithTextAndColor iconText someText color =

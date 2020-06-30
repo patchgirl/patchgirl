@@ -24,6 +24,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
+import Const
 
 
 -- * model
@@ -364,7 +365,7 @@ buildRequestToRun envKeyValues builder =
             )
 
     in
-    Client.postApiRunnerRequestComputation "http://127.0.0.1:37465" backRequestComputationInput remoteComputationDoneToMsg
+    Client.postApiRunnerRequestComputation Const.runnerUrl backRequestComputationInput remoteComputationDoneToMsg
 
 
 type DetailedError

@@ -14,7 +14,7 @@ type MainMenuName
     | BlogMenu
     | SignOutMenu
     | GithubMenu
-
+    | RunnerStatusMenu
 
 
 -- * session

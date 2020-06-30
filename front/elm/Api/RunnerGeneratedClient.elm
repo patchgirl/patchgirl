@@ -521,3 +521,36 @@ postApiRunnerScenarioComputation urlBase body toMsg =
             , tracker =
                 Nothing
             }
+
+getApiRunnerHealth : String -> (Result Http.Error  (())  -> msg) -> Cmd msg
+getApiRunnerHealth urlBase toMsg =
+    let
+        params =
+            List.filterMap identity
+            (List.concat
+                [])
+    in
+        Http.request
+            { method =
+                "GET"
+            , headers =
+                []
+            , url =
+                Url.Builder.crossOrigin urlBase
+                    [ "api"
+                    , "runner"
+                    , "health"
+                    ]
+                    params
+            , body =
+                Http.emptyBody
+            , expect =
+                Http.expectString 
+                     (\x -> case x of
+                     Err e -> toMsg (Err e)
+                     Ok _ -> toMsg (Ok ()))
+            , timeout =
+                Nothing
+            , tracker =
+                Nothing
+            }
