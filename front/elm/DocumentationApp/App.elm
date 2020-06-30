@@ -102,7 +102,7 @@ patchgirlRunnerAppView =
     """
 # PatchGirl Runner App
 
-The **PatchGirl runner app** allows http requests and scenarios to be run from your computer instead of from our servers.
+The **PatchGirl runner app** (that you can [download](https://github.com/patchgirl/patchgirl/releases/) here) allows http requests and scenarios to be run from your computer instead of from our servers.
 This is quite useful if you need to:
 - query a local host (i.e: *127.0.0.1*)
 - query a host through a VPN/Proxy you've defined on your computer
@@ -115,9 +115,9 @@ As of today, the PatchGirl runner app is only available on Linux. We plan to mak
 
 Installation is quite easy because the PatchGirl runner app is a standalone executable. After downloading it, you only need to make it executable and run it:
 
-**`chmod +x ./patchGirlRunnerApp`**
+**`chmod +x ./linux-x86-64-patchgirl-runner-exe`**
 
-**`./patchGirlRunnerApp`**
+**`./linux-x86-64-patchgirl-runner-exe`**
 
     """
 
