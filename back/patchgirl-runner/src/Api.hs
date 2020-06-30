@@ -64,9 +64,7 @@ scenarioComputationApiServer =
 
 
 type HealthApi =
-  "api" :> "runner" :> "health" :> (
-    Get '[JSON] ()
-  )
+  "api" :> "runner" :> "health" :> Get '[JSON] ()
 
 healthApiServer :: AppM ()
 healthApiServer =
