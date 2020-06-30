@@ -51,18 +51,18 @@ documentationLink currentDocumentation documentation title =
         selected =
             currentDocumentation == documentation
 
-        selectedLink : List (Attribute msg)
-        selectedLink =
-            case selected of
-                False ->
-                    []
-
-                True ->
-                    [ Font.bold, Font.underline, paddingXY 10 0 ]
     in
     link []
         { url = href (DocumentationPage (documentation))
-        , label = el selectedLink (text title)
+        , label =
+            case selected of
+                True ->
+                    el [ paddingXY 20 0 ] <|
+                        iconWithAttr { defaultIconAttribute
+                                         | title = title
+                                         , icon = "keyboard_arrow_right"
+                                     }
+                False -> el [] (text title)
         }
 
 
