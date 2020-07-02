@@ -1,19 +1,16 @@
 # PatchGirl
 
-
 [![Build Status](https://travis-ci.com/patchgirl/patchgirl.svg?branch=master)](https://travis-ci.com/patchgirl/patchgirl)
 
 A postman/postwoman like, web app to test your APIs !
-PatchGirl is only built with functional programming languages:
-- **NixOS** for the operating system
-- **Haskell** for the backend API
-- **Elm** for the front end single page app
 
-## [Live demo](https://patchgirl.io) 🚀
+## How to use
 
+To use PatchGirl, you only need to go to the [app page 🚀](https://patchgirl.io).
+If you want to make request to an API running on your computer (e.g: localhost), you need to run the [patchgirl-runner app](https://github.com/patchgirl/patchgirl/releases).
+Running the patchgirl-runner app is simple, just download it and execute it in a terminal 🚀 (nb: only linux platforms are supported as of today, MacOS and Windows are on the roadmap).
 
 ## Features
-
 
 ✅: available<br/>
 🔧: in development<br/>
@@ -35,10 +32,6 @@ PatchGirl is only built with functional programming languages:
 | 📝        | API documentation                    | Generate documentation from a set of requests                                                                                                 |
 | 📝        | Team mode                            | Share your collections with your team                                                                                                         |
 | 📝        | Keyboard shortcuts                   |                                                                                                                                               |
-
-
-
-## Features
 
 
 📢 Scenario of tests
@@ -65,3 +58,12 @@ Install a desktop app (Only Linux at the moment) so you can use PatchGirl locall
 - Use PatchGirl without internet access
 - Call localhost url (This would also solve browser CORS restriction)
 - Have faster request execution (no round trip to a remote server, everything is done on your computer)
+
+## Architecture
+
+![architecture](architecture_schema.svg)
+
+PatchGirl is only built with functional programing languages:
+- **NixOS** for the operating system
+- **Haskell** for the backend API
+- **Elm** for the front end single page app
