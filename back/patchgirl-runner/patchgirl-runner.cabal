@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 151a82ae2bfd9ee67d0ad98ddf2aaed8bee195c1c1bf12531c2ba71ede179a9a
+-- hash: 28de2502fc1e03215b2cc3b2a330ca13d376447c91e82b02948859e4c71dccf4
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -19,6 +19,7 @@ library
       Lib
       Log
       Model
+      PgSqlComputation.App
       RequestComputation.App
       RequestComputation.Model
       ScenarioComputation.App
@@ -46,6 +47,7 @@ library
     , lens
     , mtl
     , patchgirl-web
+    , postgresql-libpq
     , prometheus-client
     , prometheus-metrics-ghc
     , say
@@ -69,6 +71,7 @@ executable patchgirl-runner-exe
       Lib
       Log
       Model
+      PgSqlComputation.App
       RequestComputation.App
       RequestComputation.Model
       ScenarioComputation.App
@@ -96,6 +99,7 @@ executable patchgirl-runner-exe
     , lens
     , mtl
     , patchgirl-web
+    , postgresql-libpq
     , prometheus-client
     , prometheus-metrics-ghc
     , say
@@ -116,6 +120,7 @@ test-suite spec
       FakeHttpRequest
       Helper.App
       InterpolatorSpec
+      PgSqlComputation.AppSpec
       RequestComputation.AppSpec
       ScenarioComputation.AppSpec
       Paths_patchgirl_runner
@@ -140,6 +145,7 @@ test-suite spec
     , mtl
     , patchgirl-runner
     , patchgirl-web
+    , postgresql-libpq
     , prometheus-client
     , prometheus-metrics-ghc
     , say

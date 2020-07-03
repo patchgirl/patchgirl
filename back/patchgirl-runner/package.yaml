@@ -74,3 +74,4 @@ dependencies:
   - prometheus-client
   - prometheus-metrics-ghc
   - stm
+  - postgresql-libpq
