@@ -15,6 +15,7 @@ import           Health.App
 import           Interpolator
 import           Model
 import           PgSqlComputation.App
+import           PgSqlComputation.Model
 import           RequestComputation.App
 import           RequestComputation.Model
 import           ScenarioComputation.App

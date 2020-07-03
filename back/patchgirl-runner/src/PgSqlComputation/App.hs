@@ -1,11 +1,8 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module PgSqlComputation.App where
 
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.IO.Class    as IO
 import qualified Control.Monad.Reader      as Reader
-import qualified Data.Aeson                as Aeson
 import qualified Data.ByteString           as BS
 import qualified Data.ByteString.UTF8      as BSU
 import           Data.Function             ((&))
@@ -13,9 +10,9 @@ import           Data.Functor              ((<&>))
 import qualified Data.Maybe                as Maybe
 import qualified Database.PostgreSQL.LibPQ as LibPQ
 import           Debug.Trace
-import           GHC.Generics              (Generic)
 
 import           Env
+import           PgSqlComputation.Model
 
 
 -- * handler
@@ -56,41 +53,37 @@ resultToTable result = do
   where
     buildColumn :: LibPQ.Row -> LibPQ.Column -> IO Column
     buildColumn rowSize columnIndex = do
-      columName <- columnInfo result columnIndex <&> Maybe.fromMaybe ""
-      rows <- Monad.forM [0..rowSize] (buildRow columnIndex)
-      return $ Column columName rows
+      (mColumName, oid) <- columnInfo result columnIndex
+      let columnName = Maybe.fromMaybe "" mColumName
+      rows <- Monad.forM [0..rowSize] (buildRow oid columnIndex)
+      return $ Column columnName rows
 
-    buildRow :: LibPQ.Column -> LibPQ.Row -> IO String
-    buildRow columnIndex rowIndex = do
-      LibPQ.getvalue result rowIndex columnIndex <&> \mBS ->
-        Maybe.fromMaybe "NULL" mBS &
-        BSU.toString
+    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO PGValue
+    buildRow oid columnIndex rowIndex = do
+      mValue <- LibPQ.getvalue result rowIndex columnIndex
+      case mValue of
+        Nothing -> return PGNull
+        Just bs -> return $ BSU.toString bs & convertBytestringToPGValue oid
 
+convertBytestringToPGValue :: LibPQ.Oid -> String -> PGValue
+convertBytestringToPGValue oid value =
+  case oid of
+    LibPQ.Oid 16 ->
+      case value of
+        "t" -> PGBool True
+        "f" -> PGBool False
+        _   -> undefined
 
-columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String)
-columnInfo result columnIndex =
-  LibPQ.fname result columnIndex <&> (fmap BSU.toString)
+    LibPQ.Oid 23 ->
+      PGInt $ read @Int value
 
+    LibPQ.Oid 25 ->
+      PGString value
 
--- * model
+    _            -> undefined
 
-
-data Table = Table [Column] deriving (Eq, Show, Read, Generic, Ord)
-
-instance Aeson.ToJSON Table where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON Table where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-data Column = Column String [String] deriving (Eq, Show, Read, Generic, Ord)
-
-instance Aeson.ToJSON Column where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON Column where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
+columnInfo result columnIndex = do
+  mName <- LibPQ.fname result columnIndex <&> (fmap BSU.toString)
+  oid <- LibPQ.ftype result columnIndex
+  return (mName, oid)
