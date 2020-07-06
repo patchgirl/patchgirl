@@ -14,6 +14,7 @@ import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
+import PGBuilderApp.App as PGBuilderApp
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
@@ -252,9 +253,6 @@ view model =
 mainView : Model -> Element Msg
 mainView model =
     let
-        builderView mScenarioId =
-            map BuilderAppMsg (RequestBuilderApp.view model mScenarioId)
-
         appLayout : Element Msg -> Element Msg
         appLayout appView =
             column [ width fill
@@ -274,10 +272,10 @@ mainView model =
                 appLayout <| el [ centerY, centerX ] (text "not found")
 
             ReqPage _ mFromScenarioId ->
-                appLayout <| builderView mFromScenarioId
+                appLayout <| map BuilderAppMsg (RequestBuilderApp.view model mFromScenarioId)
 
             PGPage _ ->
-                appLayout <| builderView Nothing
+                appLayout <| none -- map BuilderAppMsg (RequestBuilderApp.view model mScenarioId)
 
             EnvPage ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
