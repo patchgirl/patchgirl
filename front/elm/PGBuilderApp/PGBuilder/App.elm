@@ -35,6 +35,7 @@ type alias Model =
     -- , requestCollectionId : Int
 --    , name : Editable String
     sqlQuery : Editable String
+  , pgComputation : Client.PGComputation
 --    , httpMethod : Editable HttpMethod
 --    , httpHeaders : Editable (List ( String, String ))
 --    , httpBody : Editable String
@@ -42,7 +43,7 @@ type alias Model =
 --    , showResponseView : Bool
 --    , whichResponseView : HttpResponseView
 --    , runRequestIconAnimation : Animation.State
---    , runnerRunning : Bool
+    , runnerRunning : Bool
     }
 
 
@@ -53,7 +54,7 @@ type alias Model =
 type Msg
     = UpdateSqlQuery String
     | AskRun
-    | RemoteComputationDone RequestComputationResult -- request ran from the server
+    | RemoteComputationDone Client.PGComputation
     | RemoteComputationFailed
     | ServerError
     | AskSave
@@ -76,12 +77,38 @@ update msg model =
             in
             (newModel, Cmd.none)
 
+        AskRun ->
+            let
+                newMsg =
+                    Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl (editedOrNotEditedValue model.sqlQuery) postPgSqlComputationResultToMsg
+            in
+                (model, newMsg)
+
+        RemoteComputationDone newPgComputation ->
+            let
+                newModel =
+                    { model | pgComputation = newPgComputation }
+            in
+            (newModel, Cmd.none)
+
         _ ->
             (model, Cmd.none)
 
 
 
 -- * util
+
+
+postPgSqlComputationResultToMsg : Result Http.Error Client.PGComputation -> Msg
+postPgSqlComputationResultToMsg result =
+    case result of
+        Ok pgComputation ->
+            RemoteComputationDone pgComputation
+
+        Err error ->
+            ServerError
+
+
 -- * view
 
 
@@ -115,7 +142,31 @@ builderView model =
 
 responseView : Model -> Element Msg
 responseView model =
-    none
+    case model.pgComputation of
+        Client.PGError error -> text error
+        Client.PGCommandOK -> text "PGCommandOK"
+        Client.PGTuplesOk (Client.Table columns) ->
+            let
+                columnView : Client.Column -> Element Msg
+                columnView col =
+                    let
+                        (Client.Column columnName pgValues) = col
+                    in
+                    column [] <|
+                        (text columnName) :: List.map showPGValue pgValues
+
+            in
+            row [ ] <|
+                List.map columnView columns
+
+
+showPGValue : Client.PGValue -> Element Msg
+showPGValue pgValue =
+    case pgValue of
+        Client.PGString str -> text str
+        Client.PGInt int -> text (String.fromInt int)
+        Client.PGBool bool -> text "true"
+        Client.PGNull -> text "NULL"
 
 
 -- * util

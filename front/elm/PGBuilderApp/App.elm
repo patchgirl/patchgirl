@@ -16,6 +16,7 @@ import PGBuilderApp.PGTree.App as PGTree
 import PGBuilderApp.PGTree.Util as PGTree
 import Util exposing (..)
 import Uuid exposing (Uuid)
+import Api.RunnerGeneratedClient as Client
 
 
 
@@ -27,6 +28,8 @@ type alias Model a =
         | page : Page
         , environments : List Environment
         , sqlQuery : Editable String
+        , pgComputation : Client.PGComputation
+        , runnerRunning : Bool
     }
 
 
@@ -50,9 +53,9 @@ update msg model =
         BuilderMsg subMsg ->
             let
                 (newModel, newSubMsg) =
-                    PGBuilder.update subMsg { sqlQuery = model.sqlQuery }
+                    PGBuilder.update subMsg { sqlQuery = model.sqlQuery, runnerRunning = model.runnerRunning, pgComputation = model.pgComputation }
             in
-            ( { model | sqlQuery = newModel.sqlQuery }, Cmd.none )
+            ( { model | sqlQuery = newModel.sqlQuery, pgComputation = newModel.pgComputation }, Cmd.map BuilderMsg newSubMsg)
 
         _ ->
             (model, Cmd.none)
@@ -121,7 +124,7 @@ builderView model mId =
                , width fill
                , height fill
                , alignTop
-               ] <| map BuilderMsg (PGBuilder.view { sqlQuery = model.sqlQuery })
+               ] <| map BuilderMsg (PGBuilder.view { sqlQuery = model.sqlQuery, runnerRunning = model.runnerRunning, pgComputation = model.pgComputation })
 
         Nothing ->
             el [ width (fillPortion 9)

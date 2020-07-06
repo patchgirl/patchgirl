@@ -462,6 +462,87 @@ jsonEncSceneComputation  val =
     in encodeSumObjectWithSingleField keyval val
 
 
+
+type PGComputation  =
+    PGError String
+    | PGCommandOK 
+    | PGTuplesOk Table
+
+jsonDecPGComputation : Json.Decode.Decoder ( PGComputation )
+jsonDecPGComputation =
+    let jsonDecDictPGComputation = Dict.fromList
+            [ ("PGError", Json.Decode.lazy (\_ -> Json.Decode.map PGError (Json.Decode.string)))
+            , ("PGCommandOK", Json.Decode.lazy (\_ -> Json.Decode.succeed PGCommandOK))
+            , ("PGTuplesOk", Json.Decode.lazy (\_ -> Json.Decode.map PGTuplesOk (jsonDecTable)))
+            ]
+        jsonDecObjectSetPGComputation = Set.fromList []
+    in  decodeSumTaggedObject "PGComputation" "tag" "contents" jsonDecDictPGComputation jsonDecObjectSetPGComputation
+
+jsonEncPGComputation : PGComputation -> Value
+jsonEncPGComputation  val =
+    let keyval v = case v of
+                    PGError v1 -> ("PGError", encodeValue (Json.Encode.string v1))
+                    PGCommandOK  -> ("PGCommandOK", encodeValue (Json.Encode.list identity []))
+                    PGTuplesOk v1 -> ("PGTuplesOk", encodeValue (jsonEncTable v1))
+    in encodeSumTaggedObject "tag" "contents" keyval val
+
+
+
+type Table  =
+    Table (List Column)
+
+jsonDecTable : Json.Decode.Decoder ( Table )
+jsonDecTable =
+    Json.Decode.lazy (\_ -> Json.Decode.map Table (Json.Decode.list (jsonDecColumn)))
+
+
+jsonEncTable : Table -> Value
+jsonEncTable (Table v1) =
+    (Json.Encode.list jsonEncColumn) v1
+
+
+
+type Column  =
+    Column String (List PGValue)
+
+jsonDecColumn : Json.Decode.Decoder ( Column )
+jsonDecColumn =
+    Json.Decode.lazy (\_ -> Json.Decode.map2 Column (Json.Decode.index 0 (Json.Decode.string)) (Json.Decode.index 1 (Json.Decode.list (jsonDecPGValue))))
+
+
+jsonEncColumn : Column -> Value
+jsonEncColumn (Column v1 v2) =
+    Json.Encode.list identity [Json.Encode.string v1, (Json.Encode.list jsonEncPGValue) v2]
+
+
+
+type PGValue  =
+    PGString String
+    | PGInt Int
+    | PGBool Bool
+    | PGNull 
+
+jsonDecPGValue : Json.Decode.Decoder ( PGValue )
+jsonDecPGValue =
+    let jsonDecDictPGValue = Dict.fromList
+            [ ("PGString", Json.Decode.lazy (\_ -> Json.Decode.map PGString (Json.Decode.string)))
+            , ("PGInt", Json.Decode.lazy (\_ -> Json.Decode.map PGInt (Json.Decode.int)))
+            , ("PGBool", Json.Decode.lazy (\_ -> Json.Decode.map PGBool (Json.Decode.bool)))
+            , ("PGNull", Json.Decode.lazy (\_ -> Json.Decode.succeed PGNull))
+            ]
+        jsonDecObjectSetPGValue = Set.fromList []
+    in  decodeSumTaggedObject "PGValue" "tag" "contents" jsonDecDictPGValue jsonDecObjectSetPGValue
+
+jsonEncPGValue : PGValue -> Value
+jsonEncPGValue  val =
+    let keyval v = case v of
+                    PGString v1 -> ("PGString", encodeValue (Json.Encode.string v1))
+                    PGInt v1 -> ("PGInt", encodeValue (Json.Encode.int v1))
+                    PGBool v1 -> ("PGBool", encodeValue (Json.Encode.bool v1))
+                    PGNull  -> ("PGNull", encodeValue (Json.Encode.list identity []))
+    in encodeSumTaggedObject "tag" "contents" keyval val
+
+
 postApiRunnerRequestComputation : String -> (TemplatedRequestComputationInput, (Dict String (List Template))) -> (Result Http.Error  ((Either HttpException RequestComputationOutput))  -> msg) -> Cmd msg
 postApiRunnerRequestComputation urlBase body toMsg =
     let
@@ -516,6 +597,36 @@ postApiRunnerScenarioComputation urlBase body toMsg =
                 Http.jsonBody (jsonEncScenarioInput body)
             , expect =
                 Http.expectJson toMsg jsonDecScenarioOutput
+            , timeout =
+                Nothing
+            , tracker =
+                Nothing
+            }
+
+postApiRunnerPgSqlComputation : String -> String -> (Result Http.Error  (PGComputation)  -> msg) -> Cmd msg
+postApiRunnerPgSqlComputation urlBase body toMsg =
+    let
+        params =
+            List.filterMap identity
+            (List.concat
+                [])
+    in
+        Http.request
+            { method =
+                "POST"
+            , headers =
+                []
+            , url =
+                Url.Builder.crossOrigin urlBase
+                    [ "api"
+                    , "runner"
+                    , "pgSqlComputation"
+                    ]
+                    params
+            , body =
+                Http.jsonBody (Json.Encode.string body)
+            , expect =
+                Http.expectJson toMsg jsonDecPGComputation
             , timeout =
                 Nothing
             , tracker =

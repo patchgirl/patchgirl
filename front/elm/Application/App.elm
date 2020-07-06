@@ -107,6 +107,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
             , sqlQuery = NotEdited ""
+            , pgComputation = Client.PGCommandOK
             , displayedRequestNodeMenuId = Nothing
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
