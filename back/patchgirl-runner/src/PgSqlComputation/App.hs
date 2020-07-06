@@ -23,26 +23,29 @@ runPgSqlComputationHandler
      , IO.MonadIO m
      )
   => String
-  -> m (Maybe Table)
+  -> m PGComputation
 runPgSqlComputationHandler rawSql = do
   connection <- IO.liftIO $ getConnection
-  IO.liftIO $ getResult connection rawSql >>= Monad.mapM resultToTable
+  mResult <- IO.liftIO $ LibPQ.exec connection (BSU.fromString rawSql)
+  resultStatus <- IO.liftIO $
+    case mResult of
+      Nothing ->
+        return LibPQ.FatalError
+      Just result ->
+        LibPQ.resultStatus result
 
-getConnection :: IO LibPQ.Connection
-getConnection =
-  LibPQ.connectdb (BS.intercalate " " components)
-  where
-    components =
-      [ "host=" <> "localhost"
-      , "port=" <> "5433"
-      , "user=" <> "dev"
-      , "password=" <> ""
-      , "dbname=" <> "dev"
-      ]
+  IO.liftIO $ case (mResult, resultStatus) of
+    (Nothing, _) ->
+      return $ PGError "fatal error"
 
-getResult :: LibPQ.Connection -> String -> IO (Maybe LibPQ.Result)
-getResult connection rawSql =
-  LibPQ.exec connection (BSU.fromString rawSql)
+    (Just result, LibPQ.CommandOk) ->
+      return $ PGCommandOK
+
+    (Just result, LibPQ.TuplesOk) ->
+      resultToTable result <&> PGTuplesOk
+
+    (_, error) ->
+      return $ PGError (show error)
 
 resultToTable :: LibPQ.Result -> IO Table
 resultToTable result = do
@@ -63,10 +66,17 @@ resultToTable result = do
       mValue <- LibPQ.getvalue result rowIndex columnIndex
       case mValue of
         Nothing -> return PGNull
-        Just bs -> return $ BSU.toString bs & convertBytestringToPGValue oid
+        Just bs -> return $ BSU.toString bs & convertPGRawValueToPGValue oid
 
-convertBytestringToPGValue :: LibPQ.Oid -> String -> PGValue
-convertBytestringToPGValue oid value =
+    columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
+    columnInfo result columnIndex = do
+      mName <- LibPQ.fname result columnIndex <&> (fmap BSU.toString)
+      oid <- LibPQ.ftype result columnIndex
+      return (mName, oid)
+
+-- https://github.com/rwinlib/libpq/blob/0b054b90cf6ec76f48accd2299bb90395dac7e29/include/postgresql/server/catalog/pg_type_d.h
+convertPGRawValueToPGValue :: LibPQ.Oid -> String -> PGValue
+convertPGRawValueToPGValue oid value =
   case oid of
     LibPQ.Oid 16 ->
       case value of
@@ -80,10 +90,24 @@ convertBytestringToPGValue oid value =
     LibPQ.Oid 25 ->
       PGString value
 
-    _            -> undefined
+    LibPQ.Oid 2249 -> -- record
+      PGString value
 
-columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
-columnInfo result columnIndex = do
-  mName <- LibPQ.fname result columnIndex <&> (fmap BSU.toString)
-  oid <- LibPQ.ftype result columnIndex
-  return (mName, oid)
+    LibPQ.Oid oid ->
+      traceShow ("oid" ++ show oid) undefined
+
+
+-- * util
+
+
+getConnection :: IO LibPQ.Connection
+getConnection =
+  LibPQ.connectdb (BS.intercalate " " components)
+  where
+    components =
+      [ "host=" <> "localhost"
+      , "port=" <> "5433"
+      , "user=" <> "dev"
+      , "password=" <> ""
+      , "dbname=" <> "dev"
+      ]

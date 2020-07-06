@@ -5,6 +5,23 @@ module PgSqlComputation.Model where
 import qualified Data.Aeson   as Aeson
 import           GHC.Generics (Generic)
 
+-- * pg computation
+
+
+data PGComputation
+  = PGError String
+  | PGCommandOK
+  | PGTuplesOk Table
+  deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON PGComputation where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON PGComputation where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
 
 -- * table
 
