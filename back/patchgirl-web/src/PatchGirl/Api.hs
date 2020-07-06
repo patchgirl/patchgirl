@@ -37,6 +37,8 @@ import           Environment.Model
 import           Github.App
 import           Health.App
 import           PatchGirl.Model
+import           PgCollection.App
+import           PgCollection.Model
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestNode.App
@@ -64,7 +66,7 @@ webApiServer cookieSettings jwtSettings =
   assetApiServer
 
 
--- ** rest
+-- * rest
 
 
 type RestApi auths =
@@ -101,7 +103,7 @@ restApiServer cookieSettings jwtSettings =
   :<|> healthApiServer
 
 
--- ** request collection
+-- * request collection
 
 
 type RequestCollectionApi auths =
@@ -112,7 +114,18 @@ requestCollectionApiServer =
   authorizeWithAccountId getRequestCollectionHandler
 
 
--- ** scenario collection
+-- *  pg collection
+
+
+type PgCollectionApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Get '[JSON] PgCollection)
+
+pgCollectionApiServer :: (AuthResult CookieSession -> AppM PgCollection)
+pgCollectionApiServer =
+  authorizeWithAccountId getPgCollectionHandler
+
+
+-- * scenario collection
 
 
 type ScenarioCollectionApi auths =
@@ -123,7 +136,7 @@ scenarioCollectionApiServer =
   authorizeWithAccountId getScenarioCollectionHandler
 
 
--- ** environment
+-- * environment
 
 
 type EnvironmentApi auths =
@@ -156,7 +169,7 @@ environmentApiServer =
   :<|> authorizeWithAccountId deleteKeyValueHandler
 
 
--- ** scenario node
+-- * scenario node
 
 
 type ScenarioNodeApi auths =
@@ -174,7 +187,8 @@ scenarioNodeApiServer =
   authorizeWithAccountId updateScenarioNodeHandler
   :<|> authorizeWithAccountId deleteScenarioNodeHandler
 
--- ** scenario file
+
+-- * scenario file
 
 
 type ScenarioFileApi auths =
@@ -200,7 +214,7 @@ scenarioFileApiServer =
   :<|> authorizeWithAccountId createRootScenarioFileHandler
 
 
--- ** scenario folder
+-- * scenario folder
 
 
 type ScenarioFolderApi auths =
@@ -223,7 +237,7 @@ scenarioFolderApiServer =
   :<|> authorizeWithAccountId createRootScenarioFolderHandler
 
 
--- ** scene
+-- * scene
 
 
 type SceneApi auths =
@@ -248,7 +262,7 @@ sceneApiServer =
   :<|> authorizeWithAccountId updateSceneHandler
 
 
--- ** request node
+-- * request node
 
 
 type RequestNodeApi auths =
@@ -267,7 +281,7 @@ requestNodeApiServer =
   :<|> authorizeWithAccountId deleteRequestNodeHandler
 
 
--- ** request file api
+-- * request file api
 
 
 type RequestFileApi auths =
@@ -291,7 +305,7 @@ requestFileApiServer =
   :<|> authorizeWithAccountId updateRequestFileHandler
 
 
--- ** request folder api
+-- * request folder api
 
 
 type RequestFolderApi auths =
@@ -313,7 +327,7 @@ requestFolderApiServer =
   :<|> authorizeWithAccountId createRootRequestFolderHandler
 
 
--- ** session
+-- * session
 
 
 type SessionApi =
@@ -335,7 +349,7 @@ sessionApiServer cookieSettings jwtSettings  =
   deleteSessionHandler cookieSettings
 
 
--- ** whoami
+-- * whoami
 
 
 type PSessionApi auths =
@@ -355,7 +369,7 @@ pSessionApiServer cookieSettings jwtSettings cookieSessionAuthResult =
   whoAmIHandler cookieSettings jwtSettings cookieSessionAuthResult
 
 
--- ** account
+-- * account
 
 type AccountApi =
   "api" :> "account" :> (
@@ -367,7 +381,7 @@ accountApiServer =
   resetVisitorAccountHandler
 
 
--- ** health
+-- * health
 
 
 type HealthApi =
@@ -378,7 +392,7 @@ healthApiServer =
   getAppHealthHandler
 
 
--- ** other
+-- * other
 
 
 type TestApi =

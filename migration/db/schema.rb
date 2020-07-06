@@ -77,6 +77,16 @@ CREATE TYPE public.http_method_type AS ENUM (
 
 
 --
+-- Name: pg_node_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.pg_node_type AS ENUM (
+    'PgFolder',
+    'PgFile'
+);
+
+
+--
 -- Name: request_node_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -94,6 +104,39 @@ CREATE TYPE public.scenario_node_type AS ENUM (
     'ScenarioFolder',
     'ScenarioFile'
 );
+
+
+--
+-- Name: pg_nodes_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pg_nodes_as_json(node_id uuid) RETURNS jsonb[]
+    LANGUAGE plpgsql
+    AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'PgFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(pg_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'sql', sql
+      )
+    END
+  ) INTO result
+  FROM pg_node
+  WHERE pg_node_parent_id = node_id;
+  RETURN result;
+END;
+$$;
 
 
 --
@@ -127,6 +170,40 @@ BEGIN
   ) INTO result
   FROM request_node
   WHERE request_node_parent_id = node_id;
+  RETURN result;
+END;
+$$;
+
+
+--
+-- Name: root_pg_nodes_as_json(integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.root_pg_nodes_as_json(rc_id integer) RETURNS jsonb[]
+    LANGUAGE plpgsql
+    AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'PgFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(pg_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'sql', sql
+      )
+    END
+  ) INTO result
+  FROM pg_node rn
+  INNER JOIN pg_collection_to_pg_node rcrn ON rcrn.pg_node_id = rn.id
+  WHERE rcrn.pg_collection_id = rc_id;
   RETURN result;
 END;
 $$;
@@ -393,6 +470,39 @@ ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 
 
 --
+-- Name: pg_collection; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pg_collection (
+    id uuid NOT NULL,
+    account_id uuid
+);
+
+
+--
+-- Name: pg_collection_to_pg_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pg_collection_to_pg_node (
+    pg_collection_id uuid NOT NULL,
+    pg_node_id uuid NOT NULL
+);
+
+
+--
+-- Name: pg_node; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pg_node (
+    id uuid NOT NULL,
+    pg_node_parent_id uuid,
+    tag public.pg_node_type NOT NULL,
+    name text NOT NULL,
+    sql text NOT NULL
+);
+
+
+--
 -- Name: request_collection; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -622,6 +732,30 @@ ALTER TABLE ONLY public.key_value
 
 
 --
+-- Name: pg_collection pg_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_collection
+    ADD CONSTRAINT pg_collection_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pg_collection_to_pg_node pg_collection_to_pg_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_collection_to_pg_node
+    ADD CONSTRAINT pg_collection_to_pg_node_pkey PRIMARY KEY (pg_collection_id, pg_node_id);
+
+
+--
+-- Name: pg_node pg_node_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_node
+    ADD CONSTRAINT pg_node_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: request_collection request_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -715,6 +849,38 @@ ALTER TABLE ONLY public.account_environment
 
 ALTER TABLE ONLY public.key_value
     ADD CONSTRAINT key_value_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pg_collection pg_collection_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_collection
+    ADD CONSTRAINT pg_collection_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pg_collection_to_pg_node pg_collection_to_pg_node_pg_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_collection_to_pg_node
+    ADD CONSTRAINT pg_collection_to_pg_node_pg_collection_id_fkey FOREIGN KEY (pg_collection_id) REFERENCES public.pg_collection(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pg_collection_to_pg_node pg_collection_to_pg_node_pg_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_collection_to_pg_node
+    ADD CONSTRAINT pg_collection_to_pg_node_pg_node_id_fkey FOREIGN KEY (pg_node_id) REFERENCES public.pg_node(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pg_node pg_node_pg_node_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_node
+    ADD CONSTRAINT pg_node_pg_node_parent_id_fkey FOREIGN KEY (pg_node_parent_id) REFERENCES public.pg_node(id) ON DELETE CASCADE;
 
 
 --

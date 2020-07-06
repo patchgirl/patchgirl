@@ -56,6 +56,35 @@ CREATE TABLE request_collection_to_request_node(
 );
 
 
+-- * pg node
+
+
+CREATE TYPE pg_node_type AS ENUM ('PgFolder', 'PgFile');
+
+CREATE TABLE pg_node(
+  id UUID PRIMARY KEY,
+  pg_node_parent_id UUID REFERENCES pg_node(id) ON DELETE CASCADE,
+  tag pg_node_type NOT NULL,
+  name TEXT NOT NULL,
+  sql TEXT NOT NULL
+);
+
+
+-- * pg collection
+
+
+CREATE TABLE pg_collection(
+  id UUID PRIMARY KEY,
+  account_id UUID REFERENCES account(id) ON DELETE CASCADE
+);
+
+CREATE TABLE pg_collection_to_pg_node(
+  pg_collection_id UUID REFERENCES pg_collection(id) ON DELETE CASCADE,
+  pg_node_id UUID REFERENCES pg_node(id) ON DELETE CASCADE,
+  PRIMARY KEY (pg_collection_id, pg_node_id)
+);
+
+
 -- * scene node
 
 
@@ -183,6 +212,64 @@ BEGIN
   ) INTO result
   FROM request_node
   WHERE request_node_parent_id = node_id;
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- * pg node as json
+
+
+CREATE OR REPLACE FUNCTION root_pg_nodes_as_json(rc_id int) RETURNS jsonb[] AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'PgFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(pg_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'sql', sql
+      )
+    END
+  ) INTO result
+  FROM pg_node rn
+  INNER JOIN pg_collection_to_pg_node rcrn ON rcrn.pg_node_id = rn.id
+  WHERE rcrn.pg_collection_id = rc_id;
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION pg_nodes_as_json(node_id uuid) RETURNS jsonb[] AS $$
+DECLARE result jsonb[];
+BEGIN
+  SELECT array_agg (
+    CASE WHEN tag = 'PgFolder' THEN
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'children', COALESCE(pg_nodes_as_json(id), '{}'::jsonb[])
+      )
+    ELSE
+      jsonb_build_object(
+        'id', id,
+        'name', name,
+        'tag', tag,
+        'sql', sql
+      )
+    END
+  ) INTO result
+  FROM pg_node
+  WHERE pg_node_parent_id = node_id;
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
