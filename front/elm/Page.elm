@@ -11,6 +11,7 @@ import Uuid
 type Page
     = HomePage
     | ReqPage (Maybe Uuid.Uuid) (Maybe Uuid.Uuid)
+    | PGPage (Maybe Uuid.Uuid)
     | EnvPage
     | ScenarioPage (Maybe Uuid.Uuid)
     | NotFoundPage
@@ -80,6 +81,8 @@ urlParser =
         , Url.map (\reqId scenarioId -> ReqPage (Just reqId) (Just scenarioId)) (appRoot </> Url.s "req" </> uuidParser </> uuidParser)
         , Url.map (\id -> ReqPage (Just id) Nothing) (appRoot </> Url.s "req" </> uuidParser)
         , Url.map (ReqPage Nothing Nothing) (appRoot </> Url.s "req")
+        , Url.map (\id -> PGPage (Just id)) (appRoot </> Url.s "pg" </> uuidParser)
+        , Url.map (PGPage Nothing) (appRoot </> Url.s "pg")
         , Url.map EnvPage (appRoot </> Url.s "env")
         , Url.map (\id -> ScenarioPage (Just id)) (appRoot </> Url.s "scenario" </> uuidParser)
         , Url.map (ScenarioPage Nothing) (appRoot </> Url.s "scenario")
@@ -107,6 +110,12 @@ href page =
 
                 ReqPage Nothing _ ->
                     [ "app", "req" ]
+
+                PGPage (Just uuid) ->
+                    [ "app", "pg", Uuid.toString uuid ]
+
+                PGPage Nothing ->
+                    [ "app", "pg" ]
 
                 EnvPage ->
                     [ "app", "env" ]

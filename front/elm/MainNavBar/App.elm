@@ -36,6 +36,7 @@ type alias Model a =
 
 type Msg
     = OpenReqPage
+    | OpenPGPage
     | OpenEnvPage
     | OpenScenarioPage
     | OpenDocumentationPage
@@ -57,6 +58,13 @@ update msg model =
             let
                 newModel =
                     { model | page = ReqPage Nothing Nothing }
+            in
+            ( newModel, Cmd.none )
+
+        OpenPGPage ->
+            let
+                newModel =
+                    { model | page = PGPage Nothing }
             in
             ( newModel, Cmd.none )
 
@@ -379,6 +387,11 @@ centerView model =
             { url = href (ReqPage Nothing Nothing)
             , label = el [] (text "Http Request")
             }
+        , link
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPGPage (isPgPage model.page))
+            { url = href (PGPage Nothing)
+            , label = el [] (text "Postgres Request")
+            }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
             { url = href EnvPage
             , label = el [] (text "Environment")
@@ -456,6 +469,15 @@ isDocumentationPage : Page -> Bool
 isDocumentationPage page =
     case page of
         DocumentationPage _ ->
+            True
+
+        _ ->
+            False
+
+isPgPage : Page -> Bool
+isPgPage page =
+    case page of
+        PGPage _ ->
             True
 
         _ ->

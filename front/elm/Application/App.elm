@@ -276,6 +276,9 @@ mainView model =
             ReqPage _ mFromScenarioId ->
                 appLayout <| builderView mFromScenarioId
 
+            PGPage _ ->
+                appLayout <| builderView Nothing
+
             EnvPage ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
