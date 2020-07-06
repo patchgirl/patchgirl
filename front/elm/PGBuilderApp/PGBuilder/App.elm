@@ -31,10 +31,10 @@ import Runner
 
 
 type alias Model =
-    { id : Uuid
+    { --id : Uuid
     -- , requestCollectionId : Int
 --    , name : Editable String
-    , sqlQuery : Editable String
+    sqlQuery : Editable String
 --    , httpMethod : Editable HttpMethod
 --    , httpHeaders : Editable (List ( String, String ))
 --    , httpBody : Editable String
@@ -51,14 +51,7 @@ type alias Model =
 
 
 type Msg
-    = UpdateUrl String
-    | SetHttpMethod HttpMethod
-    | SetHttpBody String
-    | SetHttpBodyResponse String
-    | AddHeaderInput
-    | UpdateHeaderKey Int String
-    | UpdateHeaderValue Int String
-    | DeleteHeader Int
+    = UpdateSqlQuery String
     | AskRun
     | RemoteComputationDone RequestComputationResult -- request ran from the server
     | RemoteComputationFailed
@@ -75,7 +68,16 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    (model, Cmd.none)
+    case msg of
+        UpdateSqlQuery newSqlQuery ->
+            let
+                newModel =
+                    { model | sqlQuery = changeEditedValue newSqlQuery model.sqlQuery }
+            in
+            (newModel, Cmd.none)
+
+        _ ->
+            (model, Cmd.none)
 
 
 
@@ -85,4 +87,47 @@ update msg model =
 
 view : Model -> Element Msg
 view model =
+    wrappedRow [ alignTop, width fill, spacing 10 ]
+        [ el [ width (fillPortion 1)
+             , alignTop
+             , Background.color white
+             , boxShadow
+             , padding 20
+             ] (builderView model)
+        , el [ width (fillPortion 1)
+             , Background.color white
+             , boxShadow
+             , alignTop
+             , padding 30
+             ] (responseView model)
+        ]
+
+builderView : Model -> Element Msg
+builderView model =
+    el [ alignLeft, width fill ] <|
+        Input.text [ Util.onEnter AskRun ]
+            { onChange = UpdateSqlQuery
+            , text = editedOrNotEditedValue model.sqlQuery
+            , placeholder = Just <| Input.placeholder [] (text "SELECT * FROM your_table;")
+            , label = labelInputView "Postgres SQL: "
+            }
+
+
+responseView : Model -> Element Msg
+responseView model =
     none
+
+
+-- * util
+
+labelInputView : String -> Input.Label Msg
+labelInputView labelText =
+    let
+        size =
+            width
+                (fill
+                    |> maximum 100
+                    |> minimum 100
+                )
+    in
+    Input.labelAbove [ centerY, size ] <| text labelText

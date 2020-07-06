@@ -35,6 +35,9 @@ type alias Model =
     , displayedRequestNodeMenuId : Maybe Uuid.Uuid
     , requestCollection : RequestCollection
 
+    -- SQL
+    , sqlQuery : Editable String
+
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid.Uuid

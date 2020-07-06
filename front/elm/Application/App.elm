@@ -106,6 +106,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , whichModal = Nothing
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
+            , sqlQuery = NotEdited ""
             , displayedRequestNodeMenuId = Nothing
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing

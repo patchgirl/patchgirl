@@ -26,6 +26,7 @@ type alias Model a =
     { a
         | page : Page
         , environments : List Environment
+        , sqlQuery : Editable String
     }
 
 
@@ -46,8 +47,15 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
+        BuilderMsg subMsg ->
+            let
+                (newModel, newSubMsg) =
+                    PGBuilder.update subMsg { sqlQuery = model.sqlQuery }
+            in
+            ( { model | sqlQuery = newModel.sqlQuery }, Cmd.none )
+
         _ ->
-            ( model, Cmd.none )
+            (model, Cmd.none)
 
 
 
@@ -113,7 +121,7 @@ builderView model mId =
                , width fill
                , height fill
                , alignTop
-               ] <| map BuilderMsg (PGBuilder.view { id = id, sqlQuery = NotEdited "" })
+               ] <| map BuilderMsg (PGBuilder.view { sqlQuery = model.sqlQuery })
 
         Nothing ->
             el [ width (fillPortion 9)
