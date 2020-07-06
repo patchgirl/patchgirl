@@ -12,7 +12,6 @@ import           Test.Hspec
 
 import           Api
 import           Helper.App
-import           PgSqlComputation.App
 import           PgSqlComputation.Model
 import           Server
 

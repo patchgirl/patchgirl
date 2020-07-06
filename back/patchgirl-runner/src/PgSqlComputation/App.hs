@@ -38,7 +38,7 @@ runPgSqlComputationHandler rawSql = do
     (Nothing, _) ->
       return $ PGError "fatal error"
 
-    (Just result, LibPQ.CommandOk) ->
+    (Just _, LibPQ.CommandOk) ->
       return $ PGCommandOK
 
     (Just result, LibPQ.TuplesOk) ->
