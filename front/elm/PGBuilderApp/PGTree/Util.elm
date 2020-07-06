@@ -1,4 +1,4 @@
-module PGBuilderApp.RequestTree.Util exposing (..)
+module PGBuilderApp.PGTree.Util exposing (..)
 
 import Application.Type exposing (..)
 import Util exposing (..)

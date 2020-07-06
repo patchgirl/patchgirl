@@ -12,8 +12,8 @@ import Json.Decode as Json
 import List.Extra as List
 import Page exposing (..)
 import PGBuilderApp.PGBuilder.App as PGBuilder
-import PGBuilderApp.RequestTree.App as RequestTree
-import PGBuilderApp.RequestTree.Util as RequestTree
+import PGBuilderApp.PGTree.App as PGTree
+import PGBuilderApp.PGTree.Util as PGTree
 import Util exposing (..)
 import Uuid exposing (Uuid)
 
@@ -35,7 +35,7 @@ type alias Model a =
 
 type Msg
     = BuilderMsg PGBuilder.Msg
-    | TreeMsg RequestTree.Msg
+    | TreeMsg PGTree.Msg
     | EnvSelectionMsg Int
 
 
@@ -54,11 +54,21 @@ update msg model =
 -- * util
 
 
+getSelectedBuilderId : Model a -> Maybe Uuid
+getSelectedBuilderId model =
+    case model.page of
+        PGPage (Just id) ->
+            Just id
+
+        _ ->
+            Nothing
+
+
 -- * view
 
 
 view : Model a -> Maybe Uuid -> Element Msg
-view model fromScenarioId =
+view model mId =
     wrappedRow
         [ width fill
         , paddingXY 10 0
@@ -74,9 +84,9 @@ view model fromScenarioId =
             , boxShadow
             ]
             [ el [] <| envSelectionView <| List.map .name model.environments
-            , el [ paddingXY 10 0 ] none -- (map TreeMsg (RequestTree.view model))
+            , el [ paddingXY 10 0 ] <| map TreeMsg (PGTree.view model)
             ]
-        , none -- builderView model fromScenarioId
+        , builderView model mId
         ]
 
 
@@ -95,16 +105,15 @@ envSelectionView environmentNames =
             ]
 
 
-{-builderView : Model a -> Maybe Uuid -> Element Msg
-builderView model fromScenarioId =
-    case getBuilder model of
-        Just builder ->
+builderView : Model a -> Maybe Uuid -> Element Msg
+builderView model mId =
+    case mId of
+        Just id ->
             el [ width (fillPortion 9)
                , width fill
                , height fill
                , alignTop
-               ]
-                (map BuilderMsg (PGBuilder.view builder fromScenarioId))
+               ] <| map BuilderMsg (PGBuilder.view { id = id, sqlQuery = NotEdited "" })
 
         Nothing ->
             el [ width (fillPortion 9)
@@ -116,4 +125,3 @@ builderView model fromScenarioId =
                         , spacing 10
                         ] ++ boxAttrs
                       ) (text "No request selected")
--}

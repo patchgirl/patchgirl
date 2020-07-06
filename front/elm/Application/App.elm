@@ -46,6 +46,7 @@ type Msg
     = LinkClicked UrlRequest
     | UrlChanged Url.Url
     | BuilderAppMsg RequestBuilderApp.Msg
+    | PGBuilderAppMsg PGBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
     | TangoScriptMsg TangoScriptApp.Msg
@@ -149,6 +150,13 @@ update msg model =
                     RequestBuilderApp.update subMsg model
             in
             ( newModel, Cmd.map BuilderAppMsg newMsg )
+
+        PGBuilderAppMsg subMsg ->
+            let
+                ( newModel, newMsg ) =
+                    PGBuilderApp.update subMsg model
+            in
+            ( newModel, Cmd.map PGBuilderAppMsg newMsg )
 
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
@@ -274,8 +282,8 @@ mainView model =
             ReqPage _ mFromScenarioId ->
                 appLayout <| map BuilderAppMsg (RequestBuilderApp.view model mFromScenarioId)
 
-            PGPage _ ->
-                appLayout <| none -- map BuilderAppMsg (RequestBuilderApp.view model mScenarioId)
+            PGPage id ->
+                appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model id)
 
             EnvPage ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
