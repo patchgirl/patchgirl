@@ -23,7 +23,7 @@ runPgSqlComputationHandler
      , IO.MonadIO m
      )
   => String
-  -> m PGComputation
+  -> m PgComputation
 runPgSqlComputationHandler rawSql = do
   (mResult, resultStatus) <- IO.liftIO $ do
     connection <- getConnection
@@ -36,16 +36,16 @@ runPgSqlComputationHandler rawSql = do
 
   IO.liftIO $ case (mResult, resultStatus) of
     (Nothing, _) ->
-      return $ PGError "fatal error"
+      return $ PgError "fatal error"
 
     (Just _, LibPQ.CommandOk) ->
-      return PGCommandOK
+      return PgCommandOK
 
     (Just result, LibPQ.TuplesOk) ->
-      resultToTable result <&> PGTuplesOk
+      resultToTable result <&> PgTuplesOk
 
     (_, error) ->
-      return $ PGError (show error)
+      return $ PgError (show error)
 
 resultToTable :: LibPQ.Result -> IO Table
 resultToTable result = do
@@ -61,12 +61,12 @@ resultToTable result = do
       rows <- Monad.forM [0..rowSize] (buildRow oid columnIndex)
       return $ Column columnName rows
 
-    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO PGValue
+    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO PgValue
     buildRow oid columnIndex rowIndex = do
       mValue <- LibPQ.getvalue result rowIndex columnIndex
       case mValue of
-        Nothing -> return PGNull
-        Just bs -> return $ BSU.toString bs & convertPGRawValueToPGValue oid
+        Nothing -> return PgNull
+        Just bs -> return $ BSU.toString bs & convertPgRawValueToPgValue oid
 
     columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
     columnInfo result columnIndex = do
@@ -75,23 +75,23 @@ resultToTable result = do
       return (mName, oid)
 
 -- https://github.com/rwinlib/libpq/blob/0b054b90cf6ec76f48accd2299bb90395dac7e29/include/postgresql/server/catalog/pg_type_d.h
-convertPGRawValueToPGValue :: LibPQ.Oid -> String -> PGValue
-convertPGRawValueToPGValue oid value =
+convertPgRawValueToPgValue :: LibPQ.Oid -> String -> PgValue
+convertPgRawValueToPgValue oid value =
   case oid of
     LibPQ.Oid 16 ->
       case value of
-        "t" -> PGBool True
-        "f" -> PGBool False
+        "t" -> PgBool True
+        "f" -> PgBool False
         _   -> undefined
 
     LibPQ.Oid 23 ->
-      PGInt $ read @Int value
+      PgInt $ read @Int value
 
     LibPQ.Oid 25 ->
-      PGString value
+      PgString value
 
     LibPQ.Oid 2249 -> -- record
-      PGString value
+      PgString value
 
     LibPQ.Oid oid ->
       traceShow ("oid" ++ show oid) undefined

@@ -8,17 +8,17 @@ import           GHC.Generics (Generic)
 -- * pg computation
 
 
-data PGComputation
-  = PGError String
-  | PGCommandOK
-  | PGTuplesOk Table
+data PgComputation
+  = PgError String
+  | PgCommandOK
+  | PgTuplesOk Table
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON PGComputation where
+instance Aeson.ToJSON PgComputation where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON PGComputation where
+instance Aeson.FromJSON PgComputation where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
@@ -40,7 +40,7 @@ instance Aeson.FromJSON Table where
 -- * column
 
 
-data Column = Column String [PGValue] deriving (Eq, Show, Read, Generic, Ord)
+data Column = Column String [PgValue] deriving (Eq, Show, Read, Generic, Ord)
 
 instance Aeson.ToJSON Column where
   toJSON =
@@ -54,17 +54,17 @@ instance Aeson.FromJSON Column where
 -- * PGValue
 
 
-data PGValue
-  = PGString String
-  | PGInt Int
-  | PGBool Bool
-  | PGNull
+data PgValue
+  = PgString String
+  | PgInt Int
+  | PgBool Bool
+  | PgNull
   deriving (Eq, Show, Read, Generic, Ord)
 
-instance Aeson.ToJSON PGValue where
+instance Aeson.ToJSON PgValue where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON PGValue where
+instance Aeson.FromJSON PgValue where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }

@@ -200,10 +200,10 @@ deriveElmDef deriveWithTaggedObject ''Runner.Proc
 deriveElmDef deriveWithTaggedObject ''Runner.Expr
 deriveElmDef deriveWithTaggedObject ''Runner.EnvironmentVars
 deriveElmDef deriveWithTaggedObject ''Runner.StringTemplate
-deriveElmDef deriveWithTaggedObject ''Runner.PGComputation
+deriveElmDef deriveWithTaggedObject ''Runner.PgComputation
 deriveElmDef deriveWithTaggedObject ''Runner.Table
 deriveElmDef deriveWithTaggedObject ''Runner.Column
-deriveElmDef deriveWithTaggedObject ''Runner.PGValue
+deriveElmDef deriveWithTaggedObject ''Runner.PgValue
 
 
 -- ** web
@@ -364,10 +364,10 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.Proc)
       , DefineElm (Proxy :: Proxy Runner.EnvironmentVars)
       , DefineElm (Proxy :: Proxy Runner.SceneComputation)
-      , DefineElm (Proxy :: Proxy Runner.PGComputation)
+      , DefineElm (Proxy :: Proxy Runner.PgComputation)
       , DefineElm (Proxy :: Proxy Runner.Table)
       , DefineElm (Proxy :: Proxy Runner.Column)
-      , DefineElm (Proxy :: Proxy Runner.PGValue)
+      , DefineElm (Proxy :: Proxy Runner.PgValue)
       ]
     proxyApi =
       (Proxy :: Proxy Runner.RunnerApi)
