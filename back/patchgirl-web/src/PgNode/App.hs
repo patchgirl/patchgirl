@@ -34,7 +34,7 @@ updatePgNodeHandler
      , Except.MonadError Servant.ServerError m
      )
   => UUID
-  -> Int
+  -> UUID
   -> UUID
   -> UpdatePgNode
   -> m ()
@@ -157,7 +157,7 @@ updatePgFileHandler
      , Except.MonadError Servant.ServerError m
      )
   => UUID
-  -> Int
+  -> UUID
   -> UUID
   -> UpdatePgFile
   -> m ()

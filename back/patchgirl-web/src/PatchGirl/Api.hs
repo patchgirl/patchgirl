@@ -40,6 +40,8 @@ import           Health.App
 import           PatchGirl.Model
 import           PgCollection.App
 import           PgCollection.Model
+import           PgNode.App
+import           PgNode.Model
 import           RequestCollection.App
 import           RequestCollection.Model
 import           RequestNode.App
@@ -82,6 +84,9 @@ type RestApi auths =
   RequestNodeApi auths :<|>
   RequestFileApi auths :<|>
   RequestFolderApi auths :<|>
+  PgNodeApi auths :<|>
+  PgFileApi auths :<|>
+  PgFolderApi auths :<|>
   SessionApi :<|>
   PSessionApi auths :<|>
   AccountApi  :<|>
@@ -100,6 +105,9 @@ restApiServer cookieSettings jwtSettings =
   :<|> requestNodeApiServer
   :<|> requestFileApiServer
   :<|> requestFolderApiServer
+  :<|> pgNodeApiServer
+  :<|> pgFileApiServer
+  :<|> pgFolderApiServer
   :<|> sessionApiServer cookieSettings jwtSettings
   :<|> pSessionApiServer cookieSettings jwtSettings
   :<|> accountApiServer
@@ -328,6 +336,71 @@ requestFolderApiServer
 requestFolderApiServer =
   authorizeWithAccountId createRequestFolderHandler
   :<|> authorizeWithAccountId createRootRequestFolderHandler
+
+
+-- * pg node
+
+
+type PgNodeApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> "pgNode" :> Capture "pgNodeId" UUID :> (
+    -- rename pg node
+    ReqBody '[JSON] UpdatePgNode :> Put '[JSON] () :<|>
+    -- delete pg node
+    Delete '[JSON] ()
+  ))
+
+pgNodeApiServer
+  :: (AuthResult CookieSession -> UUID -> UUID -> UpdatePgNode -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+pgNodeApiServer =
+  authorizeWithAccountId updatePgNodeHandler
+  :<|> authorizeWithAccountId deletePgNodeHandler
+
+
+-- * pg file api
+
+
+type PgFileApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> (
+    "pgFile" :> (
+      -- createPgFile
+      ReqBody '[JSON] NewPgFile :> Post '[JSON] ()
+    ) :<|> "rootPgFile" :> (
+      -- create root pg file
+      ReqBody '[JSON] NewRootPgFile :> Post '[JSON] ()
+    ) :<|> Capture "pgNodeId" UUID :> ReqBody '[JSON] UpdatePgFile :> Put '[JSON] ()
+  ))
+
+pgFileApiServer
+  :: (AuthResult CookieSession -> UUID -> NewPgFile -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> NewRootPgFile -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> UUID -> UpdatePgFile -> AppM ())
+pgFileApiServer =
+  authorizeWithAccountId createPgFileHandler
+  :<|> authorizeWithAccountId createRootPgFileHandler
+  :<|> authorizeWithAccountId updatePgFileHandler
+
+
+-- * pg folder api
+
+
+type PgFolderApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> (
+    "pgFolder" :> (
+      -- create pg folder
+      ReqBody '[JSON] NewPgFolder :> Post '[JSON] ()
+    ) :<|> "rootPgFolder" :> (
+      -- create root pg folder
+      ReqBody '[JSON] NewRootPgFolder :> Post '[JSON] ()
+    )
+  ))
+
+pgFolderApiServer
+  :: (AuthResult CookieSession -> UUID -> NewPgFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> UUID -> NewRootPgFolder -> AppM ())
+pgFolderApiServer =
+  authorizeWithAccountId createPgFolderHandler
+  :<|> authorizeWithAccountId createRootPgFolderHandler
 
 
 -- * session
