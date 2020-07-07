@@ -25,14 +25,14 @@ runPgSqlComputationHandler
   => String
   -> m PGComputation
 runPgSqlComputationHandler rawSql = do
-  connection <- IO.liftIO getConnection
-  mResult <- IO.liftIO $ LibPQ.exec connection (BSU.fromString rawSql)
-  resultStatus <- IO.liftIO $
+  (mResult, resultStatus) <- IO.liftIO $ do
+    connection <- getConnection
+    mResult <- LibPQ.exec connection (BSU.fromString rawSql)
     case mResult of
       Nothing ->
-        return LibPQ.FatalError
+        return (mResult, LibPQ.FatalError)
       Just result ->
-        LibPQ.resultStatus result
+        LibPQ.resultStatus result <&> \resultStatus -> (mResult, resultStatus)
 
   IO.liftIO $ case (mResult, resultStatus) of
     (Nothing, _) ->

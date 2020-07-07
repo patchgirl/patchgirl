@@ -35,7 +35,7 @@ spec = do
 
 
   withClient (mkApp defaultEnv) $ do
-    fdescribe "valid select query" $ do
+    describe "valid select query" $ do
       it "returns string" $ \clientEnv -> do
         let expectedRes = PGTuplesOk $ Table [ Column "string" [ PGString "coucou" ]
                                              , Column "integer" [ PGInt 1 ]
@@ -59,7 +59,7 @@ spec = do
                                 ]
         try clientEnv (runPgSqlComputation "select (1,2);") `shouldReturn` PGTuplesOk expectedRes
 
-    fdescribe "insert, update, delete" $ do
+    describe "insert, update, delete" $ do
       it "inserts" $ \clientEnv -> do
         try clientEnv (runPgSqlComputation "insert into user_test (firstname, lastname) values ('a', 'b');")
           `shouldReturn` PGCommandOK
@@ -79,6 +79,6 @@ spec = do
         try clientEnv (runPgSqlComputation "delete from user_test where id = 0;")
           `shouldReturn` PGCommandOK
 
-    fdescribe "invalid query" $ do
+    describe "invalid query" $ do
       it "fails on bad syntax" $ \clientEnv -> do
         try clientEnv (runPgSqlComputation "selec t;") `shouldReturn` PGError "FatalError"
