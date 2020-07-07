@@ -282,6 +282,192 @@ insertSampleRequestCollection accountId connection = do
 
 
 
+-- * pg collection
+
+
+-- ** new fake pg collection
+
+
+insertFakePgCollection :: UUID -> PG.Connection -> IO UUID
+insertFakePgCollection accountId connection = do
+  [PG.Only id] <- PG.query connection rawQuery (PG.Only accountId)
+  return id
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO pg_collection (account_id)
+          VALUES (?)
+          RETURNING id
+          |]
+
+
+-- ** insert pg collection to pg node
+
+
+data NewFakePgCollectionToPgNode =
+  NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId :: UUID
+                              , _fakePgCollectionToPgNodePgPgNodeId     :: UUID
+                              }
+  deriving (Eq, Show, Read, Generic, PG.ToRow)
+
+insertFakePgCollectionToPgNode :: NewFakePgCollectionToPgNode -> PG.Connection -> IO ()
+insertFakePgCollectionToPgNode fakePgCollectionToPgNode connection = do
+  _ <- PG.execute connection rawQuery fakePgCollectionToPgNode
+  return ()
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_node_id)
+          VALUES (?, ?)
+          |]
+
+
+-- ** insert fake pg folder
+
+
+data NewFakePgFolder =
+  NewFakePgFolder { _newFakePgFolderId       :: UUID
+                  , _newFakePgFolderParentId :: Maybe UUID
+                  , _newFakePgName           :: String
+                  }
+  deriving (Eq, Show, Read, Generic, PG.ToRow)
+
+insertFakePgFolder :: NewFakePgFolder -> PG.Connection -> IO UUID
+insertFakePgFolder fakePgFolder connection = do
+  [PG.Only id] <- PG.query connection rawQuery fakePgFolder
+  return id
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
+          VALUES (?, ?, 'PgFolder', ?)
+          RETURNING id;
+          |]
+
+
+-- ** insert fake pg file
+
+
+data NewFakePgFile =
+  NewFakePgFile { _newFakePgFileId              :: UUID
+                     , _newFakePgFileParentId   :: Maybe UUID
+                     , _newFakePgFileName       :: String
+                     , _newFakePgFileHttpUrl    :: String
+                     , _newFakePgFileHttpMethod :: String
+                     , _newFakePgFileHttpBody   :: String
+                     }
+  deriving (Eq, Show, Read, Generic, PG.ToRow)
+
+
+insertFakePgFile :: NewFakePgFile -> PG.Connection -> IO UUID
+insertFakePgFile newFakePgFile connection = do
+  [PG.Only id] <- PG.query connection rawQuery newFakePgFile
+  return id
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO pg_node (
+            id,
+            pg_node_parent_id,
+            tag,
+            name,
+            http_url,
+            http_method,
+            http_body,
+            http_headers
+          ) VALUES (?, ?, 'PgFile', ?,?,?,?, '{}')
+          RETURNING id;
+          |]
+
+
+-- ** insert sample pg collection
+
+
+{-
+  insert a collection that looks like this:
+
+
+       1     2
+      / \
+     3   4
+    / \
+   5   6
+
+
+-}
+
+insertSamplePgCollection :: UUID -> PG.Connection -> IO PgCollection
+insertSamplePgCollection accountId connection = do
+  n1Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n1 id) connection
+  n2Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n2 id) connection
+  n3Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n3 id n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 id n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 id n3Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 id n3Id) connection
+  pgCollectionId <- insertFakePgCollection accountId connection
+  let fakePgCollectionToPgNode1 =
+        NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId = pgCollectionId
+                                    , _fakePgCollectionToPgNodePgPgNodeId = n1Id
+                                    }
+  let fakePgCollectionToPgNode2 =
+        NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId = pgCollectionId
+                                              , _fakePgCollectionToPgNodePgPgNodeId = n2Id
+                                              }
+
+  _ <- insertFakePgCollectionToPgNode fakePgCollectionToPgNode1 connection
+  _ <- insertFakePgCollectionToPgNode fakePgCollectionToPgNode2 connection
+  pgNodes <- selectPgNodesFromPgCollectionId pgCollectionId connection
+  return $
+    PgCollection pgCollectionId pgNodes
+
+  where
+
+-- *** level 1
+
+    n1 id = NewFakePgFolder { _newFakePgFolderId = id
+                                 , _newFakePgFolderParentId = Nothing
+                                 , _newFakePgName           = "1/"
+                                 }
+
+    n2 id = NewFakePgFolder { _newFakePgFolderId = id
+                                 , _newFakePgFolderParentId = Nothing
+                                 , _newFakePgName           = "2/"
+                                 }
+-- *** level 2
+
+    n3 id parentId = NewFakePgFolder { _newFakePgFolderId = id
+                                          , _newFakePgFolderParentId = Just parentId
+                                          , _newFakePgName           = "3/"
+                                          }
+
+    n4 id parentId = NewFakePgFile { _newFakePgFileId = id
+                                        , _newFakePgFileParentId = Just parentId
+                                        , _newFakePgFileName       = "4"
+                                        , _newFakePgFileHttpUrl    = "http://4.com"
+                                        , _newFakePgFileHttpMethod = "Get"
+                                        , _newFakePgFileHttpBody   = ""
+                                        }
+
+-- *** level 3
+
+    n5 id parentId = NewFakePgFile { _newFakePgFileId = id
+                                        , _newFakePgFileParentId = Just parentId
+                                        , _newFakePgFileName       = "5"
+                                        , _newFakePgFileHttpUrl    = "http://5.com"
+                                        , _newFakePgFileHttpMethod = "Get"
+                                        , _newFakePgFileHttpBody   = ""
+                                        }
+
+    n6 id parentId = NewFakePgFile { _newFakePgFileId = id
+                                        , _newFakePgFileParentId = Just parentId
+                                        , _newFakePgFileName       = "6"
+                                        , _newFakePgFileHttpUrl    = "http://6.com"
+                                        , _newFakePgFileHttpMethod = "Get"
+                                        , _newFakePgFileHttpBody   = ""
+                                        }
+
+
+
 -- * request node
 -- ** select fake request file
 
