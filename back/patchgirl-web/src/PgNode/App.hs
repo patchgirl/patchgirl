@@ -218,7 +218,7 @@ createPgFolderHandler accountId pgCollectionId newPgFolder = do
     _ -> do
       pgNodes <- IO.liftIO $ selectPgNodesFromPgCollectionId pgCollectionId connection
       case findNodeInPgNodes (newPgFolder ^. newPgFolderParentNodeId) pgNodes of
-        Just PgFolder {} ->
+        Just PgFolder {} -> do
           IO.liftIO $ insertPgFolder newPgFolder connection
         _ ->
           Servant.throwError Servant.err404
