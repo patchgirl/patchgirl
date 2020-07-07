@@ -19,13 +19,11 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        genericToJSON,
                                                        parseEither, withObject,
                                                        (.:))
-import qualified Data.List                            as List
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
-import           Http
 
 
 -- * pg node

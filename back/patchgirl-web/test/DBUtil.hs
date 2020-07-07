@@ -397,9 +397,9 @@ insertSamplePgCollection accountId connection = do
   n1Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n1 id) connection
   n2Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n2 id) connection
   n3Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n3 id n1Id) connection
-  n4Id <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 id n1Id) connection
-  n5Id <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 id n3Id) connection
-  n6Id <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 id n3Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 id n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 id n3Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 id n3Id) connection
   pgCollectionId <- insertFakePgCollection accountId connection
   let fakePgCollectionToPgNode1 =
         NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId = pgCollectionId
