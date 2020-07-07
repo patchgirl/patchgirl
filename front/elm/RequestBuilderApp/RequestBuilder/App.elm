@@ -138,7 +138,7 @@ update msg model =
                     }
 
                 newMsg =
-                    Client.putApiRequestCollectionByRequestCollectionIdByRequestNodeId "" "" 1 model.id payload updateRequestFileResultToMsg
+                    Client.putApiRequestCollectionByRequestCollectionIdByRequestNodeId "" "" model.requestCollectionId model.id payload updateRequestFileResultToMsg
             in
             ( model, newMsg )
 

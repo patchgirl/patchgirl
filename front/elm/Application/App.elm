@@ -110,7 +110,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , displayedPgNodeMenuId = Nothing
             , pgCollection = pgCollection
             , sqlQuery = NotEdited ""
-            , pgComputation = Client.PGCommandOK
+            , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing

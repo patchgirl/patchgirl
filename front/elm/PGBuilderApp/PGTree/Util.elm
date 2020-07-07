@@ -5,13 +5,13 @@ import Util exposing (..)
 import Uuid
 
 
-findNode : List RequestNode -> Uuid.Uuid -> Maybe RequestNode
-findNode requestNodes id =
+findNode : List PgNode -> Uuid.Uuid -> Maybe PgNode
+findNode pgNodes id =
     let
-        find : RequestNode -> Maybe RequestNode
-        find requestNode =
-            case requestNode of
-                (RequestFile file) as node ->
+        find : PgNode -> Maybe PgNode
+        find pgNode =
+            case pgNode of
+                (PgFile file) as node ->
                     case file.id == id of
                         True ->
                             Just node
@@ -19,7 +19,7 @@ findNode requestNodes id =
                         False ->
                             Nothing
 
-                (RequestFolder folder) as node ->
+                (PgFolder folder) as node ->
                     case folder.id == id of
                         True ->
                             Just node
@@ -27,13 +27,13 @@ findNode requestNodes id =
                         False ->
                             findNode folder.children id
     in
-    List.head <| catMaybes (List.map find requestNodes)
+    List.head <| catMaybes (List.map find pgNodes)
 
 
-findFile : List RequestNode -> Uuid.Uuid -> Maybe RequestFileRecord
-findFile requestNodes id =
-    case findNode requestNodes id of
-        Just (RequestFile file) ->
+findFile : List PgNode -> Uuid.Uuid -> Maybe PgFileRecord
+findFile pgNodes id =
+    case findNode pgNodes id of
+        Just (PgFile file) ->
             Just file
 
         _ ->

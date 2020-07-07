@@ -8,7 +8,6 @@ import Modal exposing (Modal)
 import Page exposing (..)
 import Url as Url
 import Uuid
-import Api.RunnerGeneratedClient as Client
 
 
 -- * model
@@ -39,7 +38,7 @@ type alias Model =
     , displayedPgNodeMenuId : Maybe Uuid.Uuid
     , pgCollection : PgCollection
     , sqlQuery : Editable String
-    , pgComputation : Client.PGComputation
+    , pgComputation : Maybe PgComputation
 
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection

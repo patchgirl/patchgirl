@@ -31,21 +31,14 @@ import Runner
 
 
 type alias Model =
-    { --id : Uuid
-    -- , requestCollectionId : Int
---    , name : Editable String
-    sqlQuery : Editable String
-  , pgComputation : Client.PGComputation
---    , httpMethod : Editable HttpMethod
---    , httpHeaders : Editable (List ( String, String ))
---    , httpBody : Editable String
---    , requestComputationResult : Maybe RequestComputationResult
---    , showResponseView : Bool
---    , whichResponseView : HttpResponseView
---    , runRequestIconAnimation : Animation.State
+    { id : Uuid
+    , pgCollectionId : Uuid
+    , name : Editable String
+    , sqlQuery : Editable String
+    , pgComputation : Maybe PgComputation
+    , showResponseView : Bool
     , runnerRunning : Bool
     }
-
 
 
 -- * message
@@ -54,14 +47,11 @@ type alias Model =
 type Msg
     = UpdateSqlQuery String
     | AskRun
-    | RemoteComputationDone Client.PGComputation
+    | RemoteComputationDone PgComputation
     | RemoteComputationFailed
     | ServerError
     | AskSave
     | SaveSuccessfully
-    | Animate Animation.Msg
-    | ShowBodyResponseView
-    | ShowHeaderResponseView
 
 
 -- * update
@@ -81,32 +71,108 @@ update msg model =
             let
                 newMsg =
                     Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl (editedOrNotEditedValue model.sqlQuery) postPgSqlComputationResultToMsg
-            in
-                (model, newMsg)
 
-        RemoteComputationDone newPgComputation ->
+                newModel =
+                    { model
+                        | showResponseView = False
+                        , pgComputation = Nothing
+                    }
+            in
+                (newModel, newMsg)
+
+        AskSave ->
+            let
+                payload : Client.UpdatePgFile
+                payload =
+                    { updatePgFileName = editedOrNotEditedValue model.name
+                    , updatePgFileSql = editedOrNotEditedValue model.sqlQuery
+                    }
+
+                newMsg =
+                    Client.putApiPgCollectionByPgCollectionIdByPgNodeId "" "" model.pgCollectionId model.id payload updatePgFileResultToMsg
+            in
+            ( model, newMsg )
+
+        SaveSuccessfully ->
             let
                 newModel =
-                    { model | pgComputation = newPgComputation }
+                    { model
+                        | name = NotEdited (editedOrNotEditedValue model.name)
+                        , sqlQuery = NotEdited (editedOrNotEditedValue model.sqlQuery)
+                    }
             in
-            (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
-        _ ->
-            (model, Cmd.none)
+        RemoteComputationDone remoteComputationResult ->
+            let
+                newModel =
+                    { model
+                        | showResponseView = True
+                        , pgComputation = Just remoteComputationResult
+                    }
+            in
+            ( newModel, Cmd.none )
 
+        RemoteComputationFailed ->
+            let
+                newModel =
+                    { model
+                        | pgComputation = Nothing
+                    }
+            in
+            ( newModel, Cmd.none )
+
+        ServerError ->
+            (Debug.log "server error" model, Cmd.none)
 
 
 -- * util
 
 
-postPgSqlComputationResultToMsg : Result Http.Error Client.PGComputation -> Msg
+
+postPgSqlComputationResultToMsg : Result Http.Error Client.PgComputation -> Msg
 postPgSqlComputationResultToMsg result =
     case result of
         Ok pgComputation ->
-            RemoteComputationDone pgComputation
+            RemoteComputationDone (Client.convertPgComputationFromBackToFront pgComputation)
 
         Err error ->
             ServerError
+
+isBuilderDirty : Model -> Bool
+isBuilderDirty model =
+    isDirty model.sqlQuery
+
+updatePgFileResultToMsg : Result Http.Error () -> Msg
+updatePgFileResultToMsg result =
+    case result of
+        Ok () ->
+            SaveSuccessfully
+
+        Err error ->
+            ServerError
+
+parseHeaders : String -> List ( String, String )
+parseHeaders headers =
+    let
+        parseRawHeader : String -> ( String, String )
+        parseRawHeader rawHeader =
+            case String.split ":" rawHeader of
+                [ headerKey, headerValue ] ->
+                    ( headerKey, headerValue )
+
+                _ ->
+                    ( "", "" )
+    in
+    String.lines headers |> List.map parseRawHeader
+
+
+latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, StringTemplate)
+latestValueOfStorable storable =
+    case storable of
+        New { key, value } -> (key, value)
+        Saved { key, value } -> (key, value)
+        Edited2 _ { key, value } -> (key, value)
 
 
 -- * view
@@ -126,7 +192,7 @@ view model =
              , boxShadow
              , alignTop
              , padding 30
-             ] (responseView model)
+             ] none
         ]
 
 builderView : Model -> Element Msg
@@ -139,34 +205,13 @@ builderView model =
             , label = labelInputView "Postgres SQL: "
             }
 
-
-responseView : Model -> Element Msg
-responseView model =
-    case model.pgComputation of
-        Client.PGError error -> text error
-        Client.PGCommandOK -> text "PGCommandOK"
-        Client.PGTuplesOk columns ->
-            let
-                columnView : Client.Column -> Element Msg
-                columnView col =
-                    let
-                        (Client.Column columnName pgValues) = col
-                    in
-                    column [] <|
-                        (text columnName) :: List.map showPGValue pgValues
-
-            in
-            row [ ] <|
-                List.map columnView columns
-
-
-showPGValue : Client.PGValue -> Element Msg
+showPGValue : Client.PgValue -> Element Msg
 showPGValue pgValue =
     case pgValue of
-        Client.PGString str -> text str
-        Client.PGInt int -> text (String.fromInt int)
-        Client.PGBool bool -> text "true"
-        Client.PGNull -> text "NULL"
+        Client.PgString str -> text str
+        Client.PgInt int -> text (String.fromInt int)
+        Client.PgBool bool -> text "true"
+        Client.PgNull -> text "NULL"
 
 
 -- * util

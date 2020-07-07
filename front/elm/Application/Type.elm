@@ -223,10 +223,8 @@ type alias PgFileRecord =
     { id : Uuid
     , name : Editable String
     , sql : Editable String
-    --, pgComputationResult : Maybe PgComputationResult
-    --, showResponseView : Bool
-    --, whichResponseView : HttpResponseView
-    --, runPgIconAnimation : Animation.State
+    , pgComputation : Maybe PgComputation
+    , showResponseView : Bool
     }
 
 
@@ -306,6 +304,8 @@ type alias Builder =
 
 
 -- * request computation
+
+
 -- ** request computation result
 
 
@@ -514,6 +514,34 @@ schemeToString scheme =
     case scheme of
         Http -> "http"
         Https -> "https"
+
+
+-- * pg computation
+
+
+-- ** pg computation result
+
+
+type PgComputation
+    = PgError String
+    | PgCommandOK
+    | PgTuplesOk (List Column)
+
+
+-- ** column
+
+
+type Column = Column String (List PgValue)
+
+
+-- ** pg Value
+
+
+type PgValue
+    = PgString String
+    | PgInt Int
+    | PgBool Bool
+    | PgNull
 
 
 -- * scenario computation

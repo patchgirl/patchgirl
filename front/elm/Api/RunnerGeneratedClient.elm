@@ -463,27 +463,27 @@ jsonEncSceneComputation  val =
 
 
 
-type PGComputation  =
-    PGError String
-    | PGCommandOK 
-    | PGTuplesOk Table
+type PgComputation  =
+    PgError String
+    | PgCommandOK 
+    | PgTuplesOk Table
 
-jsonDecPGComputation : Json.Decode.Decoder ( PGComputation )
-jsonDecPGComputation =
-    let jsonDecDictPGComputation = Dict.fromList
-            [ ("PGError", Json.Decode.lazy (\_ -> Json.Decode.map PGError (Json.Decode.string)))
-            , ("PGCommandOK", Json.Decode.lazy (\_ -> Json.Decode.succeed PGCommandOK))
-            , ("PGTuplesOk", Json.Decode.lazy (\_ -> Json.Decode.map PGTuplesOk (jsonDecTable)))
+jsonDecPgComputation : Json.Decode.Decoder ( PgComputation )
+jsonDecPgComputation =
+    let jsonDecDictPgComputation = Dict.fromList
+            [ ("PgError", Json.Decode.lazy (\_ -> Json.Decode.map PgError (Json.Decode.string)))
+            , ("PgCommandOK", Json.Decode.lazy (\_ -> Json.Decode.succeed PgCommandOK))
+            , ("PgTuplesOk", Json.Decode.lazy (\_ -> Json.Decode.map PgTuplesOk (jsonDecTable)))
             ]
-        jsonDecObjectSetPGComputation = Set.fromList []
-    in  decodeSumTaggedObject "PGComputation" "tag" "contents" jsonDecDictPGComputation jsonDecObjectSetPGComputation
+        jsonDecObjectSetPgComputation = Set.fromList []
+    in  decodeSumTaggedObject "PgComputation" "tag" "contents" jsonDecDictPgComputation jsonDecObjectSetPgComputation
 
-jsonEncPGComputation : PGComputation -> Value
-jsonEncPGComputation  val =
+jsonEncPgComputation : PgComputation -> Value
+jsonEncPgComputation  val =
     let keyval v = case v of
-                    PGError v1 -> ("PGError", encodeValue (Json.Encode.string v1))
-                    PGCommandOK  -> ("PGCommandOK", encodeValue (Json.Encode.list identity []))
-                    PGTuplesOk v1 -> ("PGTuplesOk", encodeValue (jsonEncTable v1))
+                    PgError v1 -> ("PgError", encodeValue (Json.Encode.string v1))
+                    PgCommandOK  -> ("PgCommandOK", encodeValue (Json.Encode.list identity []))
+                    PgTuplesOk v1 -> ("PgTuplesOk", encodeValue (jsonEncTable v1))
     in encodeSumTaggedObject "tag" "contents" keyval val
 
 
@@ -500,43 +500,43 @@ jsonEncTable  val = (Json.Encode.list jsonEncColumn) val
 
 
 type Column  =
-    Column String (List PGValue)
+    Column String (List PgValue)
 
 jsonDecColumn : Json.Decode.Decoder ( Column )
 jsonDecColumn =
-    Json.Decode.lazy (\_ -> Json.Decode.map2 Column (Json.Decode.index 0 (Json.Decode.string)) (Json.Decode.index 1 (Json.Decode.list (jsonDecPGValue))))
+    Json.Decode.lazy (\_ -> Json.Decode.map2 Column (Json.Decode.index 0 (Json.Decode.string)) (Json.Decode.index 1 (Json.Decode.list (jsonDecPgValue))))
 
 
 jsonEncColumn : Column -> Value
 jsonEncColumn (Column v1 v2) =
-    Json.Encode.list identity [Json.Encode.string v1, (Json.Encode.list jsonEncPGValue) v2]
+    Json.Encode.list identity [Json.Encode.string v1, (Json.Encode.list jsonEncPgValue) v2]
 
 
 
-type PGValue  =
-    PGString String
-    | PGInt Int
-    | PGBool Bool
-    | PGNull 
+type PgValue  =
+    PgString String
+    | PgInt Int
+    | PgBool Bool
+    | PgNull 
 
-jsonDecPGValue : Json.Decode.Decoder ( PGValue )
-jsonDecPGValue =
-    let jsonDecDictPGValue = Dict.fromList
-            [ ("PGString", Json.Decode.lazy (\_ -> Json.Decode.map PGString (Json.Decode.string)))
-            , ("PGInt", Json.Decode.lazy (\_ -> Json.Decode.map PGInt (Json.Decode.int)))
-            , ("PGBool", Json.Decode.lazy (\_ -> Json.Decode.map PGBool (Json.Decode.bool)))
-            , ("PGNull", Json.Decode.lazy (\_ -> Json.Decode.succeed PGNull))
+jsonDecPgValue : Json.Decode.Decoder ( PgValue )
+jsonDecPgValue =
+    let jsonDecDictPgValue = Dict.fromList
+            [ ("PgString", Json.Decode.lazy (\_ -> Json.Decode.map PgString (Json.Decode.string)))
+            , ("PgInt", Json.Decode.lazy (\_ -> Json.Decode.map PgInt (Json.Decode.int)))
+            , ("PgBool", Json.Decode.lazy (\_ -> Json.Decode.map PgBool (Json.Decode.bool)))
+            , ("PgNull", Json.Decode.lazy (\_ -> Json.Decode.succeed PgNull))
             ]
-        jsonDecObjectSetPGValue = Set.fromList []
-    in  decodeSumTaggedObject "PGValue" "tag" "contents" jsonDecDictPGValue jsonDecObjectSetPGValue
+        jsonDecObjectSetPgValue = Set.fromList []
+    in  decodeSumTaggedObject "PgValue" "tag" "contents" jsonDecDictPgValue jsonDecObjectSetPgValue
 
-jsonEncPGValue : PGValue -> Value
-jsonEncPGValue  val =
+jsonEncPgValue : PgValue -> Value
+jsonEncPgValue  val =
     let keyval v = case v of
-                    PGString v1 -> ("PGString", encodeValue (Json.Encode.string v1))
-                    PGInt v1 -> ("PGInt", encodeValue (Json.Encode.int v1))
-                    PGBool v1 -> ("PGBool", encodeValue (Json.Encode.bool v1))
-                    PGNull  -> ("PGNull", encodeValue (Json.Encode.list identity []))
+                    PgString v1 -> ("PgString", encodeValue (Json.Encode.string v1))
+                    PgInt v1 -> ("PgInt", encodeValue (Json.Encode.int v1))
+                    PgBool v1 -> ("PgBool", encodeValue (Json.Encode.bool v1))
+                    PgNull  -> ("PgNull", encodeValue (Json.Encode.list identity []))
     in encodeSumTaggedObject "tag" "contents" keyval val
 
 
@@ -600,7 +600,7 @@ postApiRunnerScenarioComputation urlBase body toMsg =
                 Nothing
             }
 
-postApiRunnerPgSqlComputation : String -> String -> (Result Http.Error  (PGComputation)  -> msg) -> Cmd msg
+postApiRunnerPgSqlComputation : String -> String -> (Result Http.Error  (PgComputation)  -> msg) -> Cmd msg
 postApiRunnerPgSqlComputation urlBase body toMsg =
     let
         params =
@@ -623,7 +623,7 @@ postApiRunnerPgSqlComputation urlBase body toMsg =
             , body =
                 Http.jsonBody (Json.Encode.string body)
             , expect =
-                Http.expectJson toMsg jsonDecPGComputation
+                Http.expectJson toMsg jsonDecPgComputation
             , timeout =
                 Nothing
             , tracker =

@@ -563,6 +563,8 @@ mkDefaultFile id =
         { id = id
         , name = NotEdited "new pg file"
         , sql = NotEdited ""
+        , pgComputation = Nothing
+        , showResponseView = False
         }
 
 

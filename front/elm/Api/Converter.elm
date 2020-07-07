@@ -84,10 +84,8 @@ convertPgNodesFromBackToFront backPgNodes =
                         { id = file.pgNodeId
                         , name = NotEdited file.pgNodeName
                         , sql = NotEdited file.pgNodeSql
---                        , pgComputationResult = Nothing
---                        , showResponseView = False
---                        , whichResponseView = BodyResponseView
---                        , runPgIconAnimation = Animation.style []
+                        , pgComputation = Nothing
+                        , showResponseView = False
                         }
     in
     List.map convertPgNodeFromBackToFront backPgNodes
@@ -412,6 +410,49 @@ convertSchemeFromFrontToBack scheme =
 
         Front.Https ->
             Back.Https
+
+
+-- * pg computation
+
+
+convertPgComputationFromBackToFront : Back.PgComputation -> Front.PgComputation
+convertPgComputationFromBackToFront backPgComputation =
+    case backPgComputation of
+        Back.PgError string ->
+            Front.PgError string
+
+        Back.PgCommandOK ->
+            Front.PgCommandOK
+
+        Back.PgTuplesOk columns ->
+            Front.PgTuplesOk (List.map convertPgTableFromBackToFront columns)
+
+
+-- ** column
+
+
+convertPgTableFromBackToFront : Back.Column -> Front.Column
+convertPgTableFromBackToFront backColumn =
+    let
+        (Back.Column columnName pgValues) = backColumn
+    in
+    Front.Column columnName (List.map convertPgValueFromBackToFront pgValues)
+
+
+convertPgValueFromBackToFront : Back.PgValue -> Front.PgValue
+convertPgValueFromBackToFront backPgValue =
+    case backPgValue of
+        Back.PgString str ->
+            Front.PgString str
+
+        Back.PgInt int ->
+            Front.PgInt int
+
+        Back.PgBool bool ->
+            Front.PgBool bool
+
+        Back.PgNull ->
+            Front.PgNull
 
 
 -- * string template
