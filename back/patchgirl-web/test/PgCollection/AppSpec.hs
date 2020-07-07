@@ -14,10 +14,10 @@ import           Servant.Auth.Server (JWT)
 import           Servant.Client
 import           Test.Hspec
 
+import           DBUtil
 import           Helper.App
 import           PatchGirl.Client
 import           PatchGirl.Server
-import           PgCollection.DB
 
 
 -- * client
