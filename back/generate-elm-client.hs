@@ -241,6 +241,14 @@ deriveElmDef deriveWithTaggedObject ''Web.Scene
 deriveElmDef deriveWithTaggedObject ''Web.NewScene
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScenarioFile
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScene
+deriveElmDef deriveWithTaggedObject ''Web.PgCollection
+deriveElmDef deriveWithTaggedObject ''Web.PgNode
+deriveElmDef deriveWithTaggedObject ''Web.UpdatePgNode
+deriveElmDef deriveWithTaggedObject ''Web.NewPgFile
+deriveElmDef deriveWithTaggedObject ''Web.UpdatePgFile
+deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFile
+deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFolder
+deriveElmDef deriveWithTaggedObject ''Web.NewPgFolder
 
 
 -- * main
@@ -302,6 +310,14 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewScene)
       , DefineElm (Proxy :: Proxy Web.UpdateScenarioFile)
       , DefineElm (Proxy :: Proxy Web.UpdateScene)
+      , DefineElm (Proxy :: Proxy Web.PgCollection)
+      , DefineElm (Proxy :: Proxy Web.PgNode)
+      , DefineElm (Proxy :: Proxy Web.UpdatePgNode)
+      , DefineElm (Proxy :: Proxy Web.NewPgFile)
+      , DefineElm (Proxy :: Proxy Web.UpdatePgFile)
+      , DefineElm (Proxy :: Proxy Web.NewRootPgFile)
+      , DefineElm (Proxy :: Proxy Web.NewRootPgFolder)
+      , DefineElm (Proxy :: Proxy Web.NewPgFolder)
       ]
     proxyApi =
       (Proxy :: Proxy (Web.RestApi '[Cookie]))

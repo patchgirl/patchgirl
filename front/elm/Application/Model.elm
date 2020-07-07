@@ -36,6 +36,7 @@ type alias Model =
     , requestCollection : RequestCollection
 
     -- SQL
+    , pgCollection : PgCollection
     , sqlQuery : Editable String
     , pgComputation : Client.PGComputation
 

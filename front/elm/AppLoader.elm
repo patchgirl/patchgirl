@@ -65,6 +65,7 @@ type LoaderState
         -- second state: we wait for the backend to give us the session's related data
         { session : Client.Session
         , mRequestCollection : Maybe Client.RequestCollection
+        , mPgCollection : Maybe Client.PgCollection
         , mScenarioCollection : Maybe Client.ScenarioCollection
         , mEnvironments : Maybe (List Client.Environment)
         }
@@ -122,6 +123,7 @@ urlToPage url =
 type alias LoadedData =
     { session : Client.Session
     , requestCollection : Client.RequestCollection
+    , pgCollection : Client.PgCollection
     , scenarioCollection : Client.ScenarioCollection
     , environments : List Client.Environment
     }
@@ -131,11 +133,12 @@ type alias LoadedData =
 
 
 loadedDataEncoder : LoadedData -> E.Value
-loadedDataEncoder { session, requestCollection, environments, scenarioCollection } =
+loadedDataEncoder { session, requestCollection, pgCollection, environments, scenarioCollection } =
     E.object
         [ ( "session", Client.jsonEncSession session )
         , ( "environments", E.list Client.jsonEncEnvironment environments )
         , ( "requestCollection", Client.jsonEncRequestCollection requestCollection )
+        , ( "pgCollection", Client.jsonEncPgCollection pgCollection )
         , ( "scenarioCollection", Client.jsonEncScenarioCollection scenarioCollection )
         ]
 
@@ -146,9 +149,10 @@ loadedDataEncoder { session, requestCollection, environments, scenarioCollection
 startMainApp : Model -> ( Model, Cmd Msg )
 startMainApp model =
     case model.appState of
-        AppDataPending { session, mRequestCollection, mScenarioCollection, mEnvironments } ->
+        AppDataPending { session, mRequestCollection, mPgCollection, mScenarioCollection, mEnvironments } ->
             let
                 dataPending : Maybe { requestCollection : Client.RequestCollection
+                                    , pgCollection : Client.PgCollection
                                     , scenarioCollection : Client.ScenarioCollection
                                     , environments : List Client.Environment
                                     }
@@ -156,22 +160,26 @@ startMainApp model =
                     mRequestCollection
                         |> Maybe.andThen (\requestCollection -> mScenarioCollection
                              |> Maybe.andThen (\scenarioCollection -> mEnvironments
-                                 |> Maybe.andThen (\environments ->
+                                 |> Maybe.andThen (\environments -> mPgCollection
+                                     |> Maybe.andThen (\pgCollection ->
                                                        Just { requestCollection = requestCollection
+                                                            , pgCollection = pgCollection
                                                             , scenarioCollection = scenarioCollection
                                                             , environments = environments
                                                             }
+                                                      )
                                                   )
                                               )
                                          )
 
             in
             case dataPending of
-                Just { requestCollection, scenarioCollection, environments } ->
+                Just { requestCollection, pgCollection, scenarioCollection, environments } ->
                     let
                         loadedData =
                             { session = session
                             , requestCollection = requestCollection
+                            , pgCollection = pgCollection
                             , scenarioCollection = scenarioCollection
                             , environments = environments
                             }
@@ -214,6 +222,7 @@ startMainApp model =
 type Msg
     = SessionFetched Client.Session
     | RequestCollectionFetched Client.RequestCollection
+    | PgCollectionFetched Client.PgCollection
     | EnvironmentsFetched (List Client.Environment)
     | LoaderConcealed LoadedData
     | ServerError Http.Error
@@ -277,12 +286,16 @@ update msg model =
                     AppDataPending
                         { session = session
                         , mRequestCollection = Nothing
+                        , mPgCollection = Nothing
                         , mScenarioCollection = Nothing
                         , mEnvironments = Nothing
                         }
 
                 getRequestCollection =
                     Client.getApiRequestCollection "" (getCsrfToken (Client.convertSessionFromBackToFront session)) requestCollectionResultToMsg
+
+                getPgCollection =
+                    Client.getApiPgCollection "" (getCsrfToken (Client.convertSessionFromBackToFront session)) pgCollectionResultToMsg
 
                 getScenarioCollection =
                     Client.getApiScenarioCollection "" (getCsrfToken (Client.convertSessionFromBackToFront session)) scenarioCollectionResultToMsg
@@ -301,6 +314,7 @@ update msg model =
                 getAppData =
                     Cmd.batch
                         [ getRequestCollection
+                        , getPgCollection
                         , getScenarioCollection
                         , getEnvironments
                         , setBlankUrl
@@ -330,6 +344,19 @@ update msg model =
                     let
                         newState =
                             AppDataPending { pending | mRequestCollection = Just requestCollection }
+                    in
+                    { model | appState = newState }
+                        |> startMainApp
+
+                _ ->
+                    Debug.todo "already initialized app received initialization infos"
+
+        PgCollectionFetched pgCollection ->
+            case model.appState of
+                AppDataPending pending ->
+                    let
+                        newState =
+                            AppDataPending { pending | mPgCollection = Just pgCollection }
                     in
                     { model | appState = newState }
                         |> startMainApp
@@ -424,6 +451,14 @@ requestCollectionResultToMsg result =
         Err error ->
             ServerError error
 
+pgCollectionResultToMsg : Result Http.Error Client.PgCollection -> Msg
+pgCollectionResultToMsg result =
+    case result of
+        Ok pgCollection ->
+            PgCollectionFetched pgCollection
+
+        Err error ->
+            ServerError error
 
 scenarioCollectionResultToMsg : Result Http.Error Client.ScenarioCollection -> Msg
 scenarioCollectionResultToMsg result =

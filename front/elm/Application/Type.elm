@@ -187,6 +187,49 @@ type HttpResponseView
     | HeaderResponseView
 
 
+-- * pg collection
+
+
+type PgCollection
+    = PgCollection Uuid (List PgNode)
+
+
+
+-- ** pg node
+
+
+type PgNode
+    = PgFolder PgFolderRecord
+    | PgFile PgFileRecord
+
+
+
+-- ** folder
+
+
+type alias PgFolderRecord =
+    { id : Uuid
+    , name : Editable String
+    , open : Bool
+    , children : List PgNode
+    }
+
+
+
+-- ** file
+
+
+type alias PgFileRecord =
+    { id : Uuid
+    , name : Editable String
+    , sql : Editable String
+    --, pgComputationResult : Maybe PgComputationResult
+    --, showResponseView : Bool
+    --, whichResponseView : HttpResponseView
+    --, runPgIconAnimation : Animation.State
+    }
+
+
 -- * scenario collection
 
 

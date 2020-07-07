@@ -27,6 +27,7 @@ type alias Model a =
     { a
         | page : Page
         , environments : List Environment
+        , pgCollection : PgCollection
         , sqlQuery : Editable String
         , pgComputation : Client.PGComputation
         , runnerRunning : Bool

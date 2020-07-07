@@ -21,7 +21,8 @@ import Uuid
 type alias Model a =
     { a
         | environments : List Environment
-  {-requestCollection : RequestCollection
+        , pgCollection : PgCollection
+    {-
         , displayedRequestNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int-}

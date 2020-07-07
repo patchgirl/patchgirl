@@ -36,6 +36,7 @@ type alias UserData =
     , requestCollection : RequestCollection
     , scenarioCollection : ScenarioCollection
     , environments : List Environment
+    , pgCollection : PgCollection
     }
 
 
@@ -62,7 +63,7 @@ type Msg
 
 
 init : UserData -> Url.Url -> Navigation.Key -> ( Model, Cmd Msg )
-init { session, requestCollection, environments, scenarioCollection } url navigationKey =
+init { session, requestCollection, environments, scenarioCollection, pgCollection } url navigationKey =
     let
         page =
             urlToPage url
@@ -106,6 +107,7 @@ init { session, requestCollection, environments, scenarioCollection } url naviga
             , whichModal = Nothing
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
+            , pgCollection = pgCollection
             , sqlQuery = NotEdited ""
             , pgComputation = Client.PGCommandOK
             , displayedRequestNodeMenuId = Nothing

@@ -53,6 +53,47 @@ convertRequestNodesFromBackToFront backRequestNodes =
 
 
 
+-- * pg Collection
+
+
+convertPgCollectionFromBackToFront : Back.PgCollection -> Front.PgCollection
+convertPgCollectionFromBackToFront backPgCollection =
+    let
+        (Back.PgCollection id backPgNodes) =
+            backPgCollection
+    in
+    Front.PgCollection id (convertPgNodesFromBackToFront backPgNodes)
+
+
+convertPgNodesFromBackToFront : List Back.PgNode -> List Front.PgNode
+convertPgNodesFromBackToFront backPgNodes =
+    let
+        convertPgNodeFromBackToFront : Back.PgNode -> Front.PgNode
+        convertPgNodeFromBackToFront backPgNode =
+            case backPgNode of
+                Back.PgFolder folder ->
+                    Front.PgFolder
+                        { id = folder.pgNodeId
+                        , name = NotEdited folder.pgNodeName
+                        , open = not <| List.isEmpty folder.pgNodeChildren
+                        , children = convertPgNodesFromBackToFront folder.pgNodeChildren
+                        }
+
+                Back.PgFile file ->
+                    Front.PgFile
+                        { id = file.pgNodeId
+                        , name = NotEdited file.pgNodeName
+                        , sql = NotEdited file.pgNodeSql
+--                        , pgComputationResult = Nothing
+--                        , showResponseView = False
+--                        , whichResponseView = BodyResponseView
+--                        , runPgIconAnimation = Animation.style []
+                        }
+    in
+    List.map convertPgNodeFromBackToFront backPgNodes
+
+
+
 -- * scenario collection
 
 

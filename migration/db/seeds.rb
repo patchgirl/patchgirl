@@ -50,6 +50,49 @@ def insert_request_file(id, request_node_parent_id, tag, name, http_url, http_me
 end
 
 
+# ** pg folder
+
+
+def insert_pg_folder(id, pg_node_parent_id, tag, name)
+  %{
+    INSERT INTO pg_node (
+      id,
+      pg_node_parent_id,
+      tag,
+      name
+    ) values (
+      '#{id}',
+      #{pg_node_parent_id.nil? ? 'NULL' : "'#{pg_node_parent_id}'"},
+      '#{tag}',
+      '#{name}'
+    );
+  }
+end
+
+
+# ** pg file
+
+
+def insert_pg_file(id, pg_node_parent_id, name, sql)
+
+  %{
+    INSERT INTO pg_node (
+      id,
+      pg_node_parent_id,
+      tag,
+      name,
+      sql
+    ) values (
+     '#{id}',
+      #{pg_node_parent_id.nil? ? 'NULL' : "'#{pg_node_parent_id}'"},
+      'PgFile',
+      '#{name}',
+      '#{sql}'
+    );
+  }
+end
+
+
 # ** scenario folder
 
 
@@ -273,6 +316,24 @@ request_nodes.each do |request_node_query|
 end
 
 
+# * pg node
+
+
+pg_nodes = [
+  insert_pg_folder('cb2c1df8-68f0-4a61-b7c7-f75194604976', nil, 'PgFolder', "users"),
+  insert_pg_file(  'e46ee2de-f1ce-4b13-b1ec-b529ae87da54', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "list users",  "select * from user_test;"),
+  insert_pg_file(  'aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "single user", "select * from user_test;"),
+  insert_pg_file(  '2b994bac-7fd8-4844-ba9d-e12c9e217271', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "create user", "select * from user_test;"),
+  insert_pg_file(  'd7a0887d-1c99-4655-aead-07cee57d0cc3', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "update user", "select * from user_test;"),
+  insert_pg_file(  '0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "delete user", "select * from user_test;"),
+]
+
+pg_nodes.each do |pg_node_query|
+  puts pg_node_query
+  ActiveRecord::Migration[5.2].execute pg_node_query
+end
+
+
 # * scene_node
 
 
@@ -321,6 +382,21 @@ ActiveRecord::Migration[5.2].execute %{
       request_collection_id,
       request_node_id
     ) values (1,'da0a3654-5e30-471f-ba03-f87760976981');
+  }
+
+
+# * pg collection
+
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO pg_collection (id, account_id) values ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97', '00000000-0000-1000-a000-000000000000');
+  }
+
+ActiveRecord::Migration[5.2].execute %{
+    INSERT INTO pg_collection_to_pg_node (
+      pg_collection_id,
+      pg_node_id
+    ) values ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','cb2c1df8-68f0-4a61-b7c7-f75194604976');
   }
 
 

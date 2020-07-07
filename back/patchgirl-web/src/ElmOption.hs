@@ -16,7 +16,7 @@ import           Data.Aeson
        = Foo String
        | Bar Int
 
-   This will not work:
+   ! This will not work !
      data Foo
        = Foo
        | Bar Int
