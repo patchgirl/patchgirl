@@ -488,17 +488,14 @@ jsonEncPGComputation  val =
 
 
 
-type Table  =
-    Table (List Column)
+type alias Table  = (List Column)
 
 jsonDecTable : Json.Decode.Decoder ( Table )
 jsonDecTable =
-    Json.Decode.lazy (\_ -> Json.Decode.map Table (Json.Decode.list (jsonDecColumn)))
-
+    Json.Decode.list (jsonDecColumn)
 
 jsonEncTable : Table -> Value
-jsonEncTable (Table v1) =
-    (Json.Encode.list jsonEncColumn) v1
+jsonEncTable  val = (Json.Encode.list jsonEncColumn) val
 
 
 

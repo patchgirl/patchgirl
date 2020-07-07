@@ -145,7 +145,7 @@ responseView model =
     case model.pgComputation of
         Client.PGError error -> text error
         Client.PGCommandOK -> text "PGCommandOK"
-        Client.PGTuplesOk (Client.Table columns) ->
+        Client.PGTuplesOk columns ->
             let
                 columnView : Client.Column -> Element Msg
                 columnView col =
