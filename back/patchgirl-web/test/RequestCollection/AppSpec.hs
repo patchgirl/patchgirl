@@ -7,17 +7,17 @@
 
 module RequestCollection.AppSpec where
 
-import qualified Network.HTTP.Types   as HTTP
+import qualified Network.HTTP.Types  as HTTP
 import           Servant
-import qualified Servant.Auth.Client  as Auth
-import           Servant.Auth.Server  (JWT)
+import qualified Servant.Auth.Client as Auth
+import           Servant.Auth.Server (JWT)
 import           Servant.Client
 import           Test.Hspec
 
+import           DBUtil
 import           Helper.App
 import           PatchGirl.Client
 import           PatchGirl.Server
-import           RequestCollection.DB
 
 
 -- * client
