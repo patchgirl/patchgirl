@@ -176,10 +176,10 @@ $$;
 
 
 --
--- Name: root_pg_nodes_as_json(integer); Type: FUNCTION; Schema: public; Owner: -
+-- Name: root_pg_nodes_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.root_pg_nodes_as_json(rc_id integer) RETURNS jsonb[]
+CREATE FUNCTION public.root_pg_nodes_as_json(rc_id uuid) RETURNS jsonb[]
     LANGUAGE plpgsql
     AS $$
 DECLARE result jsonb[];
@@ -474,7 +474,7 @@ ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 --
 
 CREATE TABLE public.pg_collection (
-    id uuid NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     account_id uuid
 );
 
@@ -498,7 +498,8 @@ CREATE TABLE public.pg_node (
     pg_node_parent_id uuid,
     tag public.pg_node_type NOT NULL,
     name text NOT NULL,
-    sql text NOT NULL
+    sql text,
+    CONSTRAINT pg_node_check CHECK ((((tag = 'PgFile'::public.pg_node_type) AND (sql IS NOT NULL)) OR ((tag = 'PgFolder'::public.pg_node_type) AND (sql IS NULL))))
 );
 
 

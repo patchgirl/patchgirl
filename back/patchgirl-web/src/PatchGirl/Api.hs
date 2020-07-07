@@ -5,6 +5,7 @@
 module PatchGirl.Api( WebApi
                     , webApiServer
                     , RequestCollectionApi
+                    , PgCollectionApi
                     , ScenarioCollectionApi
                     , EnvironmentApi
                     , ScenarioNodeApi
@@ -71,6 +72,7 @@ webApiServer cookieSettings jwtSettings =
 
 type RestApi auths =
   RequestCollectionApi auths :<|>
+  PgCollectionApi auths :<|>
   ScenarioCollectionApi auths :<|>
   EnvironmentApi auths :<|>
   ScenarioNodeApi auths :<|>
@@ -88,6 +90,7 @@ type RestApi auths =
 restApiServer :: CookieSettings -> JWTSettings -> ServerT (RestApi a) AppM
 restApiServer cookieSettings jwtSettings =
    requestCollectionApiServer
+  :<|> pgCollectionApiServer
   :<|> scenarioCollectionApiServer
   :<|> environmentApiServer
   :<|> scenarioNodeApiServer
@@ -114,7 +117,7 @@ requestCollectionApiServer =
   authorizeWithAccountId getRequestCollectionHandler
 
 
--- *  pg collection
+-- * pg collection
 
 
 type PgCollectionApi auths =

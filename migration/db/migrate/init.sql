@@ -66,7 +66,8 @@ CREATE TABLE pg_node(
   pg_node_parent_id UUID REFERENCES pg_node(id) ON DELETE CASCADE,
   tag pg_node_type NOT NULL,
   name TEXT NOT NULL,
-  sql TEXT NOT NULL
+  sql TEXT,
+  CHECK ((tag = 'PgFile' AND sql IS NOT NULL) OR (tag = 'PgFolder' AND sql IS NULL))
 );
 
 
@@ -74,7 +75,7 @@ CREATE TABLE pg_node(
 
 
 CREATE TABLE pg_collection(
-  id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id UUID REFERENCES account(id) ON DELETE CASCADE
 );
 
@@ -220,7 +221,7 @@ $$ LANGUAGE plpgsql;
 -- * pg node as json
 
 
-CREATE OR REPLACE FUNCTION root_pg_nodes_as_json(rc_id int) RETURNS jsonb[] AS $$
+CREATE OR REPLACE FUNCTION root_pg_nodes_as_json(rc_id uuid) RETURNS jsonb[] AS $$
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (

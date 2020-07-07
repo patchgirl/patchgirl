@@ -14,10 +14,10 @@ import           PgNode.Model
 
 selectPgNodesFromPgCollectionId :: UUID -> PG.Connection -> IO [PgNode]
 selectPgNodesFromPgCollectionId pgCollectionId connection = do
-    res :: [PG.Only PgNodeFromPG] <- PG.query connection selectPgNodeSql (PG.Only pgCollectionId)
+    res :: [PG.Only PgNodeFromPG] <- PG.query connection query (PG.Only pgCollectionId)
     return $ map (fromPgPgNodeToPgNode . (\(PG.Only r) -> r)) res
   where
-    selectPgNodeSql =
+    query =
       [sql|
           SELECT UNNEST(root_pg_nodes_as_json(?));
           |] :: PG.Query

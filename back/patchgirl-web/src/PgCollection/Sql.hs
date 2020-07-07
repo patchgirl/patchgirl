@@ -42,8 +42,8 @@ selectPgCollectionId accountId connection =
   where
     pgCollectionSql =
       [sql|
-          SELECT rc.id
-          FROM pg_collection rc
-          WHERE rc.account_id = ?
+          SELECT id
+          FROM pg_collection
+          WHERE account_id = ?
           LIMIT 1
           |]
