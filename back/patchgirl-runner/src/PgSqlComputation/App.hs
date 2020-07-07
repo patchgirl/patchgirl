@@ -25,7 +25,7 @@ runPgSqlComputationHandler
   => String
   -> m PGComputation
 runPgSqlComputationHandler rawSql = do
-  connection <- IO.liftIO $ getConnection
+  connection <- IO.liftIO getConnection
   mResult <- IO.liftIO $ LibPQ.exec connection (BSU.fromString rawSql)
   resultStatus <- IO.liftIO $
     case mResult of
@@ -39,7 +39,7 @@ runPgSqlComputationHandler rawSql = do
       return $ PGError "fatal error"
 
     (Just _, LibPQ.CommandOk) ->
-      return $ PGCommandOK
+      return PGCommandOK
 
     (Just result, LibPQ.TuplesOk) ->
       resultToTable result <&> PGTuplesOk
@@ -70,7 +70,7 @@ resultToTable result = do
 
     columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
     columnInfo result columnIndex = do
-      mName <- LibPQ.fname result columnIndex <&> (fmap BSU.toString)
+      mName <- LibPQ.fname result columnIndex <&> fmap BSU.toString
       oid <- LibPQ.ftype result columnIndex
       return (mName, oid)
 

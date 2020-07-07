@@ -26,7 +26,7 @@ instance Aeson.FromJSON PGComputation where
 -- * table
 
 
-data Table = Table [Column] deriving (Eq, Show, Read, Generic, Ord)
+newtype Table = Table [Column] deriving (Eq, Show, Read, Generic, Ord)
 
 instance Aeson.ToJSON Table where
   toJSON =
