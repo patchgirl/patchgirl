@@ -143,8 +143,10 @@ instance ToField UpdatePgNode where
 -- * new root pg file
 
 
-newtype NewRootPgFile =
-  NewRootPgFile { _newRootPgFileId           :: UUID
+data NewRootPgFile =
+  NewRootPgFile { _newRootPgFileId   :: UUID
+                , _newRootPgFileName :: String
+                , _newRootPgFileSql  :: String
                 } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootPgFile)
@@ -236,16 +238,3 @@ instance FromJSON UpdatePgFile where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 $(makeLenses ''UpdatePgFile)
-
-
--- * parent node id
-
-
-{-
-  a pg node (file or folder) can either be regular (meaning it has a folder as a parent)
-  or root (meaning it is at the top of a tree hierarchy so it doesn't have a parent)
--}
-data ParentNodeId
-  = PgCollectionId Int
-  | PGNodeId UUID
-  deriving (Eq, Show, Generic, FromJSON, ToJSON)

@@ -332,6 +332,7 @@ data NewFakePgFolder =
                   }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
+
 insertFakePgFolder :: NewFakePgFolder -> PG.Connection -> IO UUID
 insertFakePgFolder fakePgFolder connection = do
   [PG.Only id] <- PG.query connection rawQuery fakePgFolder
@@ -349,13 +350,11 @@ insertFakePgFolder fakePgFolder connection = do
 
 
 data NewFakePgFile =
-  NewFakePgFile { _newFakePgFileId              :: UUID
-                     , _newFakePgFileParentId   :: Maybe UUID
-                     , _newFakePgFileName       :: String
-                     , _newFakePgFileHttpUrl    :: String
-                     , _newFakePgFileHttpMethod :: String
-                     , _newFakePgFileHttpBody   :: String
-                     }
+  NewFakePgFile { _newFakePgFileId       :: UUID
+                , _newFakePgFileParentId :: Maybe UUID
+                , _newFakePgFileName     :: String
+                , _newFakePgFileSql      :: String
+                }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
 
@@ -371,11 +370,8 @@ insertFakePgFile newFakePgFile connection = do
             pg_node_parent_id,
             tag,
             name,
-            http_url,
-            http_method,
-            http_body,
-            http_headers
-          ) VALUES (?, ?, 'PgFile', ?,?,?,?, '{}')
+            sql
+          ) VALUES (?, ?, 'PgFile', ?,?)
           RETURNING id;
           |]
 
@@ -401,9 +397,9 @@ insertSamplePgCollection accountId connection = do
   n1Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n1 id) connection
   n2Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n2 id) connection
   n3Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n3 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 id n3Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 id n3Id) connection
+  n4Id <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 id n1Id) connection
+  n5Id <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 id n3Id) connection
+  n6Id <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 id n3Id) connection
   pgCollectionId <- insertFakePgCollection accountId connection
   let fakePgCollectionToPgNode1 =
         NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId = pgCollectionId
@@ -425,50 +421,45 @@ insertSamplePgCollection accountId connection = do
 -- *** level 1
 
     n1 id = NewFakePgFolder { _newFakePgFolderId = id
-                                 , _newFakePgFolderParentId = Nothing
-                                 , _newFakePgName           = "1/"
-                                 }
+                            , _newFakePgFolderParentId = Nothing
+                            , _newFakePgName           = "1/"
+                            }
 
     n2 id = NewFakePgFolder { _newFakePgFolderId = id
-                                 , _newFakePgFolderParentId = Nothing
-                                 , _newFakePgName           = "2/"
-                                 }
+                            , _newFakePgFolderParentId = Nothing
+                            , _newFakePgName           = "2/"
+                            }
 -- *** level 2
 
     n3 id parentId = NewFakePgFolder { _newFakePgFolderId = id
-                                          , _newFakePgFolderParentId = Just parentId
-                                          , _newFakePgName           = "3/"
-                                          }
+                                     , _newFakePgFolderParentId = Just parentId
+                                     , _newFakePgName           = "3/"
+                                     }
 
     n4 id parentId = NewFakePgFile { _newFakePgFileId = id
-                                        , _newFakePgFileParentId = Just parentId
-                                        , _newFakePgFileName       = "4"
-                                        , _newFakePgFileHttpUrl    = "http://4.com"
-                                        , _newFakePgFileHttpMethod = "Get"
-                                        , _newFakePgFileHttpBody   = ""
-                                        }
+                                   , _newFakePgFileParentId = Just parentId
+                                   , _newFakePgFileName       = "4"
+                                   , _newFakePgFileSql = ""
+                                   }
 
 -- *** level 3
 
     n5 id parentId = NewFakePgFile { _newFakePgFileId = id
-                                        , _newFakePgFileParentId = Just parentId
-                                        , _newFakePgFileName       = "5"
-                                        , _newFakePgFileHttpUrl    = "http://5.com"
-                                        , _newFakePgFileHttpMethod = "Get"
-                                        , _newFakePgFileHttpBody   = ""
-                                        }
+                                   , _newFakePgFileParentId = Just parentId
+                                   , _newFakePgFileName       = "5"
+                                   , _newFakePgFileSql = ""
+                                   }
 
     n6 id parentId = NewFakePgFile { _newFakePgFileId = id
-                                        , _newFakePgFileParentId = Just parentId
-                                        , _newFakePgFileName       = "6"
-                                        , _newFakePgFileHttpUrl    = "http://6.com"
-                                        , _newFakePgFileHttpMethod = "Get"
-                                        , _newFakePgFileHttpBody   = ""
-                                        }
-
+                                   , _newFakePgFileParentId = Just parentId
+                                   , _newFakePgFileName       = "6"
+                                   , _newFakePgFileSql = ""
+                                   }
 
 
 -- * request node
+
+
 -- ** select fake request file
 
 
@@ -556,6 +547,74 @@ selectRequestNodeExists id connection = do
           SELECT EXISTS (
             SELECT 1
             FROM request_node
+            WHERE id = ?
+          )
+          |]
+
+
+
+-- * pg node
+
+
+-- ** select fake pg file
+
+
+data FakePgFile =
+  FakePgFile { _fakePgFileParentId :: Maybe UUID
+             , _fakePgFileName     :: String
+             , _fakePgFileSql      :: String
+             }
+  deriving (Eq, Show, Read, Generic, PG.FromRow)
+
+selectFakePgFile :: UUID -> PG.Connection -> IO FakePgFile
+selectFakePgFile id connection = do
+  [fakePgFile] <- PG.query connection rawQuery (PG.Only id)
+  return fakePgFile
+  where
+    rawQuery =
+      [sql|
+          SELECT pg_node_parent_id, name, sql
+          FROM pg_node
+          where id = ?
+          |]
+
+
+-- ** select fake pg folder
+
+
+data FakePgFolder =
+  FakePgFolder { _fakePgFolderParentId :: Maybe UUID
+               , _fakePgFolderName     :: String
+               }
+  deriving (Eq, Show, Read, Generic, PG.FromRow)
+
+
+selectFakePgFolder :: UUID -> PG.Connection -> IO FakePgFolder
+selectFakePgFolder fakePgFolderId connection = do
+  [fakePgFolder] <- PG.query connection rawQuery (PG.Only fakePgFolderId)
+  return fakePgFolder
+  where
+    rawQuery =
+      [sql|
+          SELECT pg_node_parent_id, name
+          FROM pg_node
+          where id = ?
+          |]
+
+
+-- ** select pg node exist
+
+
+selectPgNodeExists :: UUID -> PG.Connection -> IO Bool
+selectPgNodeExists id connection = do
+  [PG.Only nodeExists] <- PG.query connection rawQuery (PG.Only id)
+  return nodeExists
+  where
+    rawQuery =
+      [sql|
+          SELECT EXISTS (
+            SELECT 1
+            FROM pg_node
             WHERE id = ?
           )
           |]
@@ -1071,3 +1130,25 @@ getFirstFile requestNodes =
       file@RequestFile {} -> Just file
       RequestFolder { _requestNodeChildren } ->
         getFirstFile _requestNodeChildren
+
+-- ** pg
+
+
+getFirstPgFolder :: [PgNode] -> Maybe PgNode
+getFirstPgFolder pgNodes =
+  Maybe.listToMaybe (Maybe.mapMaybe findFolder pgNodes)
+  where
+    findFolder :: PgNode -> Maybe PgNode
+    findFolder = \case
+      folder@PgFolder {} -> Just folder
+      _ -> Nothing
+
+getFirstPgFile :: [PgNode] -> Maybe PgNode
+getFirstPgFile pgNodes =
+  Maybe.listToMaybe (Maybe.mapMaybe findFile pgNodes)
+  where
+    findFile :: PgNode -> Maybe PgNode
+    findFile = \case
+      file@PgFile {} -> Just file
+      PgFolder { _pgNodeChildren } ->
+        getFirstPgFile _pgNodeChildren

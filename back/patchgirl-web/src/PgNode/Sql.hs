@@ -62,6 +62,8 @@ insertRootPgFile :: NewRootPgFile -> UUID -> PG.Connection -> IO ()
 insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootPgFileId
+                                   , _newRootPgFileName
+                                   , _newRootPgFileSql
                                    , pgCollectionId
                                    , _newRootPgFileId
                                    )
@@ -74,12 +76,9 @@ insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
               pg_node_parent_id,
               tag,
               name,
-              http_url,
-              http_method,
-              http_headers,
-              http_body
+              sql
             )
-            VALUES (?, NULL, 'PgFile', 'new pg', '', 'Get', '{}', '')
+            VALUES (?, NULL, 'PgFile', ?, ?)
           ) INSERT INTO pg_collection_to_pg_node (
               pg_collection_id,
               pg_node_id

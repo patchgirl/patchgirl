@@ -15,6 +15,9 @@ module PatchGirl.Api( WebApi
                     , RequestNodeApi
                     , RequestFileApi
                     , RequestFolderApi
+                    , PgNodeApi
+                    , PgFileApi
+                    , PgFolderApi
                     , SessionApi
                     , PSessionApi
                     , AccountApi

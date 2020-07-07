@@ -114,7 +114,7 @@ createRootPgFileHandler
 createRootPgFileHandler accountId pgCollectionId newRootPgFile = do
   connection <- getDBConnection
   IO.liftIO (selectPgCollectionId accountId connection) >>= \case
-    Just pgCollectionId' | pgCollectionId == pgCollectionId' ->
+    Just pgCollectionId' | pgCollectionId == pgCollectionId' -> do
       IO.liftIO $ insertRootPgFile newRootPgFile pgCollectionId connection
     _ ->
       Servant.throwError Servant.err404

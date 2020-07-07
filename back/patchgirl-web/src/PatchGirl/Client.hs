@@ -9,6 +9,7 @@ import           Http                     as Lib
 import           PatchGirl.Api            as Lib
 import           PatchGirl.Internal.Env   as Lib
 import           PgCollection.Model       as Lib
+import           PgNode.Model             as Lib
 import           RequestCollection.Model  as Lib
 import           RequestNode.Model        as Lib
 import           ScenarioCollection.Model as Lib
