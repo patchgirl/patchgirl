@@ -107,6 +107,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , whichModal = Nothing
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
+            , displayedPgNodeMenuId = Nothing
             , pgCollection = pgCollection
             , sqlQuery = NotEdited ""
             , pgComputation = Client.PGCommandOK
@@ -286,7 +287,7 @@ mainView model =
             ReqPage _ mFromScenarioId ->
                 appLayout <| map BuilderAppMsg (RequestBuilderApp.view model mFromScenarioId)
 
-            PGPage id ->
+            PgPage id ->
                 appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model id)
 
             EnvPage ->

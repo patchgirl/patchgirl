@@ -25,11 +25,11 @@ import Api.RunnerGeneratedClient as Client
 
 type alias Model a =
     { a
-        | page : Page
+        | pgCollection : PgCollection
+        , displayedPgNodeMenuId : Maybe Uuid
         , environments : List Environment
-        , pgCollection : PgCollection
-        , sqlQuery : Editable String
-        , pgComputation : Client.PGComputation
+        , selectedEnvironmentToRunIndex : Maybe Int
+        , page : Page
         , runnerRunning : Bool
     }
 
@@ -54,9 +54,9 @@ update msg model =
         BuilderMsg subMsg ->
             let
                 (newModel, newSubMsg) =
-                    PGBuilder.update subMsg { sqlQuery = model.sqlQuery, runnerRunning = model.runnerRunning, pgComputation = model.pgComputation }
+                    PGBuilder.update subMsg (Debug.todo "")
             in
-            ( { model | sqlQuery = newModel.sqlQuery, pgComputation = newModel.pgComputation }, Cmd.map BuilderMsg newSubMsg)
+            (model, Cmd.none)
 
         _ ->
             (model, Cmd.none)
@@ -69,7 +69,7 @@ update msg model =
 getSelectedBuilderId : Model a -> Maybe Uuid
 getSelectedBuilderId model =
     case model.page of
-        PGPage (Just id) ->
+        PgPage (Just id) ->
             Just id
 
         _ ->
@@ -125,7 +125,7 @@ builderView model mId =
                , width fill
                , height fill
                , alignTop
-               ] <| map BuilderMsg (PGBuilder.view { sqlQuery = model.sqlQuery, runnerRunning = model.runnerRunning, pgComputation = model.pgComputation })
+               ] <| map BuilderMsg (PGBuilder.view (Debug.todo ""))
 
         Nothing ->
             el [ width (fillPortion 9)

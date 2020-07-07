@@ -68,7 +68,6 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        -- ** toggle builder/menu/folder
         ToggleMenu id ->
             let
                 newDisplayedRequestNodeMenuIndex =
@@ -103,7 +102,6 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** mkdir
         GenerateRandomUUIDForFolder parentNodeId ->
             let
                 newMsg =
@@ -143,7 +141,6 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** touch
         GenerateRandomUUIDForFile parentNodeId ->
             let
                 newMsg =
@@ -182,7 +179,6 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** rename
         ShowRenameInput id ->
             let
                 (RequestCollection requestCollectionId requestNodes) =
@@ -244,7 +240,6 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** delete
         AskDelete id ->
             let
                 (RequestCollection requestCollectionId _) =
@@ -271,7 +266,6 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** root file
         GenerateRandomUUIDForRootFile ->
             let
                 newMsg =
@@ -308,7 +302,6 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** root folder
         GenerateRandomUUIDForRootFolder ->
             let
                 newMsg =
@@ -345,10 +338,8 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        -- ** other
         BuilderTreeServerError ->
             Debug.todo "error with builder tree"
-
 
 
 -- * util
