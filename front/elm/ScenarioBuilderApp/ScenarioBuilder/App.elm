@@ -529,22 +529,24 @@ view model =
         scenarioSettingView : Element Msg
         scenarioSettingView =
             column [ width fill, centerX, spacing 20 ]
-                [ row [ spacing 10]
-                      [ Input.button [ centerX
-                                     , Border.solid
-                                     , Border.color secondaryColor
-                                     , Border.width 1
-                                     , Border.rounded 5
-                                     , Background.color secondaryColor
-                                     , paddingXY 10 10
-                                     ]
-                          { onPress = Just AskRunScenario
-                          , label =
-                              row [ centerX, centerY ]
-                                  [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
-                                  ]
-                          }
-                      , saveScenarioView
+                [ row [ spacing 10, width fill ]
+                      [ el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue model.name) secondaryColor
+                      , el [ alignRight ] saveScenarioView
+                      , el [ alignRight ] <|
+                          Input.button [ centerX
+                                       , Border.solid
+                                       , Border.color secondaryColor
+                                       , Border.width 1
+                                       , Border.rounded 5
+                                       , Background.color secondaryColor
+                                       , paddingXY 10 10
+                                       ]
+                              { onPress = Just AskRunScenario
+                              , label =
+                                  row [ centerX, centerY ]
+                                      [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
+                                      ]
+                              }
                       ]
                 , envSelectionView
                 ]

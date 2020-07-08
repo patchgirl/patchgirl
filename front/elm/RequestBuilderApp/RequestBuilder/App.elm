@@ -513,9 +513,9 @@ titleView model =
         name =
             notEditedValue model.name
     in
-    row [ paddingXY 0 10, spacing 10 ]
+    row [ paddingXY 0 10, spacing 10, width fill ]
         [ el [] <| iconWithTextAndColor "label" name secondaryColor
-        , mainActionButtonsView model
+        , el [ alignRight ] (mainActionButtonsView model)
         ]
 
 
@@ -549,11 +549,7 @@ mainActionButtonsView model =
             iconWithTextAndColorAndAttr "send" "Run" primaryColor attrs
     in
     row rowParam
-        [ Input.button inputParam
-            { onPress = Just <| AskRun
-            , label = el [ centerY ] runIcon
-            }
-        , case isBuilderDirty model of
+        [ case isBuilderDirty model of
             True ->
                 Input.button inputParam
                     { onPress = Just <| AskSave
@@ -562,6 +558,10 @@ mainActionButtonsView model =
 
             False ->
                 none
+        , Input.button inputParam
+            { onPress = Just <| AskRun
+            , label = el [ centerY ] runIcon
+            }
         ]
 
 

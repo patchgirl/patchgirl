@@ -376,11 +376,11 @@ responseView model =
                             let
                                 (Col columnName pgValues) = col
                             in
-                                column [] <|
+                                column [ width fill ] <|
                                     (text columnName) :: List.map showPGValue pgValues
 
                     in
-                        row [] <|
+                        row [ width fill ] <|
                             List.map columnView columns
 
 
