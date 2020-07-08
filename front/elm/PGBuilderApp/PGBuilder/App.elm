@@ -53,6 +53,11 @@ type alias Model =
 
 type Msg
     = UpdateSqlQuery String
+    | UpdateHost String
+    | UpdatePort String
+    | UpdateUser String
+    | UpdatePassword String
+    | UpdateDbName String
     | AskRun
     | RemoteComputationDone PgComputation
     | RemoteComputationFailed
@@ -74,6 +79,41 @@ update msg model =
             in
             (newModel, Cmd.none)
 
+        UpdateHost newHost ->
+            let
+                newModel =
+                    { model | dbHost = changeEditedValue newHost model.dbHost }
+            in
+            (newModel, Cmd.none)
+
+        UpdatePort newPort ->
+            let
+                newModel =
+                    { model | dbPort = changeEditedValue newPort model.dbPort }
+            in
+            (newModel, Cmd.none)
+
+        UpdateUser newUser ->
+            let
+                newModel =
+                    { model | dbUser = changeEditedValue newUser model.dbUser }
+            in
+            (newModel, Cmd.none)
+
+        UpdatePassword newPassword ->
+            let
+                newModel =
+                    { model | dbPassword = changeEditedValue newPassword model.dbPassword }
+            in
+            (newModel, Cmd.none)
+
+        UpdateDbName newDbName ->
+            let
+                newModel =
+                    { model | dbName = changeEditedValue newDbName model.dbName }
+            in
+            (newModel, Cmd.none)
+
         AskRun ->
             let
                 payload =
@@ -87,11 +127,16 @@ update msg model =
                             |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                             |> Dict.fromList
                     , pgComputationInputPgConnection =
-                          { templatedPgConnectionHost = []
-                          , templatedPgConnectionPort = []
-                          , templatedPgConnectionUser = []
-                          , templatedPgConnectionPassword = []
-                          , templatedPgConnectionDbName = []
+                          { templatedPgConnectionHost =
+                                editedOrNotEditedValue model.dbHost |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+                          , templatedPgConnectionPort =
+                              editedOrNotEditedValue model.dbPort |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+                          , templatedPgConnectionUser =
+                              editedOrNotEditedValue model.dbUser |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+                          , templatedPgConnectionPassword =
+                              editedOrNotEditedValue model.dbPassword |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+                          , templatedPgConnectionDbName =
+                              editedOrNotEditedValue model.dbName |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
                           }
                     }
 
@@ -213,23 +258,61 @@ view model =
              , boxShadow
              , padding 20
              ] (builderView model)
-        , el [ width (fillPortion 1)
-             , Background.color white
-             , boxShadow
-             , alignTop
-             , padding 30
-             ] (responseView model)
+        , case model.showResponseView of
+              True ->
+                  el [ width (fillPortion 1)
+                     , Background.color white
+                     , boxShadow
+                     , alignTop
+                     , padding 30
+                     ] (responseView model)
+
+              False ->
+                  none
         ]
 
 builderView : Model -> Element Msg
 builderView model =
-    el [ alignLeft, width fill ] <|
-        Input.text [ Util.onEnter AskRun ]
+    column [ alignLeft, width fill, spacing 20 ]
+        [ row [ spacing 10 ]
+              [ Input.text []
+                    { onChange = UpdateHost
+                    , text = editedOrNotEditedValue model.dbHost
+                    , placeholder = Just <| Input.placeholder [] (text "localhost")
+                    , label = labelInputView "Host: "
+                    }
+              , Input.text []
+                  { onChange = UpdatePort
+                  , text = editedOrNotEditedValue model.dbPort
+                  , placeholder = Just <| Input.placeholder [] (text "5432")
+                  , label = labelInputView "Port: "
+                  }
+              , Input.text []
+                  { onChange = UpdateUser
+                  , text = editedOrNotEditedValue model.dbUser
+                  , placeholder = Just <| Input.placeholder [] (text "postgres")
+                  , label = labelInputView "User: "
+                  }
+              , Input.text []
+                  { onChange = UpdatePassword
+                  , text = editedOrNotEditedValue model.dbPassword
+                  , placeholder = Just <| Input.placeholder [] (text "password")
+                  , label = labelInputView "Password: "
+                  }
+              , Input.text []
+                  { onChange = UpdateDbName
+                  , text = editedOrNotEditedValue model.dbName
+                  , placeholder = Just <| Input.placeholder [] (text "database")
+                  , label = labelInputView "Database: "
+                  }
+              ]
+        , Input.text [ Util.onEnter AskRun ]
             { onChange = UpdateSqlQuery
             , text = editedOrNotEditedValue model.sqlQuery
             , placeholder = Just <| Input.placeholder [] (text "SELECT * FROM your_table;")
-            , label = labelInputView "Postgres SQL: "
+            , label = labelInputView "SQL: "
             }
+        ]
 
 responseView : Model -> Element Msg
 responseView model =

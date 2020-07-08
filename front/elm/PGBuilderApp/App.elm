@@ -212,7 +212,6 @@ builderView model mId =
     case getBuilder model of
         Just builder ->
             el [ width (fillPortion 9)
-               , width fill
                , height fill
                , alignTop
                ]
