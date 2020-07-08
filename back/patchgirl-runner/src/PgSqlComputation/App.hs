@@ -7,11 +7,12 @@ import qualified Data.ByteString           as BS
 import qualified Data.ByteString.UTF8      as BSU
 import           Data.Function             ((&))
 import           Data.Functor              ((<&>))
+import qualified Data.Map.Strict           as Map
 import qualified Data.Maybe                as Maybe
 import qualified Database.PostgreSQL.LibPQ as LibPQ
-import           Debug.Trace
 
 import           Env
+import           Interpolator
 import           PgSqlComputation.Model
 
 
@@ -22,12 +23,13 @@ runPgSqlComputationHandler
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      )
-  => String
+  => (StringTemplate, EnvironmentVars)
   -> m PgComputation
-runPgSqlComputationHandler rawSql = do
+runPgSqlComputationHandler (rawSql, environmentVars) = do
+  let sql = interpolate environmentVars Map.empty Map.empty rawSql
   (mResult, resultStatus) <- IO.liftIO $ do
     connection <- getConnection
-    mResult <- LibPQ.exec connection (BSU.fromString rawSql)
+    mResult <- LibPQ.exec connection (BSU.fromString sql)
     case mResult of
       Nothing ->
         return (mResult, LibPQ.FatalError)
@@ -94,7 +96,7 @@ convertPgRawValueToPgValue oid value =
       PgString value
 
     LibPQ.Oid oid ->
-      traceShow ("oid" ++ show oid) undefined
+      undefined
 
 
 -- * util

@@ -22,9 +22,6 @@ import           ScenarioComputation.App
 import           ScenarioComputation.Model
 
 
--- * runner
-
-
 type RunnerApi =
   RequestComputationApi :<|>
   ScenarioComputationApi :<|>
@@ -39,7 +36,7 @@ runnerApiServer =
   :<|> healthApiServer
 
 
--- ** request computation
+-- * request computation
 
 
 type RequestComputationApi =
@@ -52,7 +49,7 @@ requestComputationApiServer =
   runRequestComputationHandler
 
 
--- ** scenario computation
+-- * scenario computation
 
 
 type ScenarioComputationApi =
@@ -65,20 +62,20 @@ scenarioComputationApiServer =
   runScenarioComputationHandler
 
 
--- ** pg sql computation
+-- * pg sql computation
 
 
 type PgSqlComputationApi =
   "api" :> "runner" :> "pgSqlComputation" :> (
-    ReqBody '[JSON] String :> Post '[JSON] PgComputation
+    ReqBody '[JSON] (StringTemplate, EnvironmentVars) :> Post '[JSON] PgComputation
   )
 
-pgSqlComputationApiServer :: String -> AppM PgComputation
+pgSqlComputationApiServer :: (StringTemplate, EnvironmentVars) -> AppM PgComputation
 pgSqlComputationApiServer =
   runPgSqlComputationHandler
 
 
--- ** health
+-- * health
 
 
 type HealthApi =
