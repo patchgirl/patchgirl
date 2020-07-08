@@ -525,13 +525,13 @@ schemeToString scheme =
 type PgComputation
     = PgError String
     | PgCommandOK
-    | PgTuplesOk (List Column)
+    | PgTuplesOk (List Col)
 
 
 -- ** column
 
 
-type Column = Column String (List PgValue)
+type Col = Col String (List PgValue)
 
 
 -- ** pg Value

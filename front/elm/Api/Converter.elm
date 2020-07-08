@@ -431,12 +431,12 @@ convertPgComputationFromBackToFront backPgComputation =
 -- ** column
 
 
-convertPgTableFromBackToFront : Back.Column -> Front.Column
+convertPgTableFromBackToFront : Back.Column -> Front.Col
 convertPgTableFromBackToFront backColumn =
     let
         (Back.Column columnName pgValues) = backColumn
     in
-    Front.Column columnName (List.map convertPgValueFromBackToFront pgValues)
+    Front.Col columnName (List.map convertPgValueFromBackToFront pgValues)
 
 
 convertPgValueFromBackToFront : Back.PgValue -> Front.PgValue

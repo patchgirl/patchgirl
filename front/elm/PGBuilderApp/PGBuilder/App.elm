@@ -204,7 +204,7 @@ view model =
              , boxShadow
              , alignTop
              , padding 30
-             ] none
+             ] (responseView model)
         ]
 
 builderView : Model -> Element Msg
@@ -217,13 +217,38 @@ builderView model =
             , label = labelInputView "Postgres SQL: "
             }
 
-showPGValue : Client.PgValue -> Element Msg
+responseView : Model -> Element Msg
+responseView model =
+    case (model.showResponseView, model.pgComputation) of
+        (True, Just result) ->
+            case result of
+                PgError error -> text error
+                PgCommandOK -> text "Postgresql command Ok"
+                PgTuplesOk columns ->
+                    let
+                        columnView : Col -> Element Msg
+                        columnView col =
+                            let
+                                (Col columnName pgValues) = col
+                            in
+                                column [] <|
+                                    (text columnName) :: List.map showPGValue pgValues
+
+                    in
+                        row [] <|
+                            List.map columnView columns
+
+
+        _ ->
+            none
+
+showPGValue : PgValue -> Element Msg
 showPGValue pgValue =
     case pgValue of
-        Client.PgString str -> text str
-        Client.PgInt int -> text (String.fromInt int)
-        Client.PgBool bool -> text "true"
-        Client.PgNull -> text "NULL"
+        PgString str -> text str
+        PgInt int -> text (String.fromInt int)
+        PgBool bool -> text "true"
+        PgNull -> text "NULL"
 
 
 -- * util
