@@ -375,9 +375,21 @@ responseView model =
                         columnView col =
                             let
                                 (Col columnName pgValues) = col
+
+                                tableHeaderView : String -> Element Msg
+                                tableHeaderView name =
+                                    column [ width fill, spacing 10 ]
+                                        [ text name
+                                        , el [ width fill
+                                             , Border.solid
+                                             , Border.color black
+                                             , Border.width 1
+                                             ] none
+                                        ]
+
                             in
-                                column [ width fill ] <|
-                                    (text columnName) :: List.map showPGValue pgValues
+                                column [ width fill, spacing 10 ] <|
+                                    [ tableHeaderView columnName ] ++ (List.map showPGValue pgValues)
 
                     in
                         row [ width fill ] <|
