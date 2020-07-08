@@ -95,7 +95,7 @@ convertPgRawValueToPgValue oid value =
     LibPQ.Oid 2249 -> -- record
       PgString value
 
-    LibPQ.Oid oid ->
+    LibPQ.Oid _ ->
       undefined
 
 
