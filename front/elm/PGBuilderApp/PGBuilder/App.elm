@@ -25,6 +25,7 @@ import Uuid exposing (Uuid)
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import Runner
+import StringTemplate exposing(..)
 
 
 -- * model
@@ -35,6 +36,7 @@ type alias Model =
     , pgCollectionId : Uuid
     , name : Editable String
     , sqlQuery : Editable String
+    , keyValues : List (Storable NewKeyValue KeyValue)
     , pgComputation : Maybe PgComputation
     , showResponseView : Bool
     , runnerRunning : Bool
@@ -69,8 +71,18 @@ update msg model =
 
         AskRun ->
             let
+                payload =
+                    ( editedOrNotEditedValue model.sqlQuery
+                      |> stringToTemplate
+                      |> Client.convertStringTemplateFromFrontToBack
+                    , model.keyValues
+                      |> List.map latestValueOfStorable
+                      |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
+                      |> Dict.fromList
+                    )
+
                 newMsg =
-                    Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl (editedOrNotEditedValue model.sqlQuery) postPgSqlComputationResultToMsg
+                    Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl payload postPgSqlComputationResultToMsg
 
                 newModel =
                     { model

@@ -130,6 +130,7 @@ convertFromFileToBuilder : PgFileRecord -> Uuid -> List (Storable NewKeyValue Ke
 convertFromFileToBuilder file pgCollectionId keyValuesToRun model =
     { id = file.id
     , pgCollectionId = pgCollectionId
+    , keyValues = keyValuesToRun
     , name = file.name
     , sqlQuery = file.sql
     , pgComputation = file.pgComputation
