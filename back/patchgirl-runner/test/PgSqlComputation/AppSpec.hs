@@ -33,7 +33,7 @@ spec :: Spec
 spec = do
 
 
--- ** computation succeeded
+-- ** nominal cases
 
 
   withClient (mkApp defaultEnv) $ do
@@ -77,6 +77,10 @@ spec = do
                                         ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
+
+-- ** insert update delete
+
+
     describe "insert, update, delete" $ do
       it "inserts" $ \clientEnv -> do
         let input =
@@ -111,6 +115,59 @@ spec = do
               )
         let output = PgCommandOK
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+
+-- ** var substitution
+
+    describe "var substitution" $ do
+      it "sustitute one var" $ \clientEnv -> do
+        let input =
+              ( [ Sentence "select '"
+                , Key "name"
+                , Sentence "';"
+                ]
+              , Map.fromList [ ( "name", [ Sentence "John" ])
+                             ]
+              )
+        let output = PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
+                                        ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+      it "sustitute multiple vars" $ \clientEnv -> do
+        let input =
+              ( [ Sentence "select '"
+                , Key "firstname"
+                , Sentence "' , '"
+                , Key "lastname"
+                , Sentence "';"
+                ]
+              , Map.fromList [ ( "firstname", [ Sentence "John" ])
+                             , ( "lastname", [ Sentence "Doe" ])
+                             ]
+              )
+        let output = PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
+                                        , Column "?column?" [ PgString "Doe"  ]
+                                        ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+      it "works when var doesn't exist" $ \clientEnv -> do
+        let input =
+              ( [ Sentence "select '"
+                , Key "firstname"
+                , Sentence "' , '"
+                , Key "lastname"
+                , Sentence "';"
+                ]
+              , Map.fromList [ ( "firstname", [ Sentence "John" ])
+                             ]
+              )
+        let output = PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
+                                        , Column "?column?" [ PgString "{{lastname}}"  ]
+                                        ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+-- ** invalid query
+
 
     describe "invalid query" $ do
       it "fails on bad syntax" $ \clientEnv -> do
