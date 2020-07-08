@@ -147,4 +147,9 @@ spec =
     mkUpdatePgFile =
       UpdatePgFile { _updatePgFileName = "new name"
                    , _updatePgFileSql  = "new sql"
+                   , _updatePgFileHost  = "new host"
+                   , _updatePgFilePassword  = "new password"
+                   , _updatePgFilePort  = "new port"
+                   , _updatePgFileUser  = "new user"
+                   , _updatePgFileDbName  = "new dbname"
                    }

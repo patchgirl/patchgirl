@@ -242,8 +242,13 @@ instance FromJSON NewPgFolder where
 
 
 data UpdatePgFile
-  = UpdatePgFile { _updatePgFileName :: String
-                 , _updatePgFileSql  :: String
+  = UpdatePgFile { _updatePgFileName     :: String
+                 , _updatePgFileSql      :: String
+                 , _updatePgFileHost     :: String
+                 , _updatePgFilePassword :: String
+                 , _updatePgFilePort     :: String
+                 , _updatePgFileUser     :: String
+                 , _updatePgFileDbName   :: String
                  }
   deriving (Eq, Show, Generic)
 

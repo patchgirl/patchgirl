@@ -178,6 +178,11 @@ updatePgFileDB :: UUID -> UpdatePgFile -> PG.Connection -> IO ()
 updatePgFileDB pgNodeId UpdatePgFile{..} connection = do
   _ <- PG.execute connection updateQuery ( _updatePgFileName
                                          , _updatePgFileSql
+                                         , _updatePgFileHost
+                                         , _updatePgFilePassword
+                                         , _updatePgFilePort
+                                         , _updatePgFileUser
+                                         , _updatePgFileDbName
                                          , pgNodeId
                                          )
   return ()
@@ -187,6 +192,11 @@ updatePgFileDB pgNodeId UpdatePgFile{..} connection = do
           UPDATE pg_node
           SET
             name = ?,
-            sql = ?
+            sql = ?,
+            pg_host = ?,
+            pg_password = ?,
+            pg_port = ?,
+            pg_user = ?,
+            pg_dbname = ?
           WHERE id = ?
           |]
