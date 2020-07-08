@@ -158,6 +158,11 @@ update msg model =
                     , newPgFileParentNodeId = parentNodeId
                     , newPgFileName = "new pg file"
                     , newPgFileSql = ""
+                    , newPgFileHost = ""
+                    , newPgFilePassword = ""
+                    , newPgFilePort = ""
+                    , newPgFileUser = ""
+                    , newPgFileDbName = ""
                     }
 
                 newMsg =
@@ -284,6 +289,11 @@ update msg model =
                     { newRootPgFileId = newId
                     , newRootPgFileName = "new pg file"
                     , newRootPgFileSql = ""
+                    , newRootPgFileHost = ""
+                    , newRootPgFilePassword = ""
+                    , newRootPgFilePort = ""
+                    , newRootPgFileUser = ""
+                    , newRootPgFileDbName = ""
                     }
 
                 newMsg =

@@ -223,9 +223,9 @@ type alias PgFileRecord =
     { id : Uuid
     , name : Editable String
     , dbHost : Editable String
+    , dbPassword : Editable String
     , dbPort : Editable String
     , dbUser : Editable String
-    , dbPassword : Editable String
     , dbName : Editable String
     , sql : Editable String
     , pgComputation : Maybe PgComputation
