@@ -34,13 +34,14 @@ data PgNode
              , _pgNodeName     :: String
              , _pgNodeChildren :: [PgNode]
              }
-  | PgFile { _pgNodeId     :: UUID
-           , _pgNodeName   :: String
-           , _pgNodeSql    :: String
-           , _pgNodeHost   :: String
-           , _pgNodePort   :: String
-           , _pgNodeUser   :: String
-           , _pgNodeDbName :: String
+  | PgFile { _pgNodeId       :: UUID
+           , _pgNodeName     :: String
+           , _pgNodeSql      :: String
+           , _pgNodeHost     :: String
+           , _pgNodePassword :: String
+           , _pgNodePort     :: String
+           , _pgNodeUser     :: String
+           , _pgNodeDbName   :: String
            }
   deriving (Eq, Show, Generic)
 
@@ -91,6 +92,7 @@ instance FromJSON PgNodeFromPG where
         _pgNodeName <- o .: "name"
         _pgNodeSql <- o .: "sql"
         _pgNodeHost <- o .: "pg_host"
+        _pgNodePassword <- o .: "pg_password"
         _pgNodePort <- o .: "pg_port"
         _pgNodeUser <- o .: "pg_user"
         _pgNodeDbName <- o .: "pg_dbname"
