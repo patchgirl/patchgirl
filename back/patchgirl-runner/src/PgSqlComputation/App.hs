@@ -19,16 +19,18 @@ import           PgSqlComputation.Model
 -- * handler
 
 
-runPgSqlComputationHandler
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
-     )
-  => (StringTemplate, EnvironmentVars)
-  -> m PgComputation
-runPgSqlComputationHandler (rawSql, environmentVars) = do
-  let sql = interpolate environmentVars Map.empty Map.empty rawSql
+runPgSqlComputationHandler :: ( Reader.MonadReader Env m, IO.MonadIO m) => PgComputationInput -> m PgComputation
+runPgSqlComputationHandler PgComputationInput{..} = do
+  let
+    sql = substitute _pgComputationInputSql
+    pgConnection = PgConnection { _pgConnectionHost     = substitute (_pgConnectionHost _pgComputationInputPgConnection)
+                                , _pgConnectionPort     = substitute (_pgConnectionPort _pgComputationInputPgConnection)
+                                , _pgConnectionUser     = substitute (_pgConnectionUser _pgComputationInputPgConnection)
+                                , _pgConnectionPassword = substitute (_pgConnectionPassword _pgComputationInputPgConnection)
+                                , _pgConnectionDbName   = substitute (_pgConnectionDbName _pgComputationInputPgConnection)
+                                }
   (mResult, resultStatus) <- IO.liftIO $ do
-    connection <- getConnection
+    connection <- getConnection pgConnection
     mResult <- LibPQ.exec connection (BSU.fromString sql)
     case mResult of
       Nothing ->
@@ -36,18 +38,30 @@ runPgSqlComputationHandler (rawSql, environmentVars) = do
       Just result ->
         LibPQ.resultStatus result <&> \resultStatus -> (mResult, resultStatus)
 
-  IO.liftIO $ case (mResult, resultStatus) of
+  case (mResult, resultStatus) of
     (Nothing, _) ->
-      return $ PgError "fatal error"
+      IO.liftIO $ return $ PgError "fatal error"
 
     (Just _, LibPQ.CommandOk) ->
-      return PgCommandOK
+      IO.liftIO $ return PgCommandOK
 
     (Just result, LibPQ.TuplesOk) ->
-      resultToTable result <&> PgTuplesOk
+      IO.liftIO $ resultToTable result <&> PgTuplesOk
 
-    (_, error) ->
-      return $ PgError (show error)
+    (Just result, error) ->
+      IO.liftIO $
+        LibPQ.resultErrorField result LibPQ.DiagMessagePrimary
+          <&> fmap BSU.toString
+          <&> Maybe.fromMaybe ""
+          <&> \primaryMessage -> PgError (show error ++ " " ++ primaryMessage)
+  where
+    substitute :: StringTemplate -> String
+    substitute =
+      interpolate _pgComputationInputEnvironmentVars Map.empty Map.empty
+
+
+-- * to table
+
 
 resultToTable :: LibPQ.Result -> IO Table
 resultToTable result = do
@@ -96,20 +110,20 @@ convertPgRawValueToPgValue oid value =
       PgString value
 
     LibPQ.Oid _ ->
-      undefined
+      PgString value
 
 
 -- * util
 
 
-getConnection :: IO LibPQ.Connection
-getConnection =
+getConnection :: PgConnection String -> IO LibPQ.Connection
+getConnection PgConnection{..} =
   LibPQ.connectdb (BS.intercalate " " components)
   where
     components =
-      [ "host=" <> "localhost"
-      , "port=" <> "5433"
-      , "user=" <> "dev"
-      , "password=" <> ""
-      , "dbname=" <> "dev"
+      [ "host=" <> BSU.fromString _pgConnectionHost
+      , "port=" <> BSU.fromString _pgConnectionPort
+      , "user=" <> BSU.fromString _pgConnectionUser
+      , "dbname=" <> BSU.fromString _pgConnectionDbName
+      , "password=" <> BSU.fromString _pgConnectionPassword
       ]

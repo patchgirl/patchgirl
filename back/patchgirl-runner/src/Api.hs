@@ -67,10 +67,10 @@ scenarioComputationApiServer =
 
 type PgSqlComputationApi =
   "api" :> "runner" :> "pgSqlComputation" :> (
-    ReqBody '[JSON] (StringTemplate, EnvironmentVars) :> Post '[JSON] PgComputation
+    ReqBody '[JSON] PgComputationInput :> Post '[JSON] PgComputation
   )
 
-pgSqlComputationApiServer :: (StringTemplate, EnvironmentVars) -> AppM PgComputation
+pgSqlComputationApiServer :: PgComputationInput -> AppM PgComputation
 pgSqlComputationApiServer =
   runPgSqlComputationHandler
 
