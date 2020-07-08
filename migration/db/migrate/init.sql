@@ -67,7 +67,22 @@ CREATE TABLE pg_node(
   tag pg_node_type NOT NULL,
   name TEXT NOT NULL,
   sql TEXT,
-  CHECK ((tag = 'PgFile' AND sql IS NOT NULL) OR (tag = 'PgFolder' AND sql IS NULL))
+  pg_host TEXT,
+  pg_password TEXT,
+  pg_port TEXT,
+  pg_user TEXT,
+  pg_dbname TEXT,
+  CHECK (
+    (tag = 'PgFolder' AND sql IS NULL) OR
+    ( tag = 'PgFile' AND
+      sql IS NOT NULL AND
+      pg_host IS NOT NULL AND
+      pg_password IS NOT NULL AND
+      pg_port IS NOT NULL AND
+      pg_user IS NOT NULL AND
+      pg_dbname IS NOT NULL
+    )
+  )
 );
 
 
@@ -237,7 +252,12 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'sql', sql
+        'sql', sql,
+        'pg_host', pg_host,
+        'pg_password', pg_password,
+        'pg_port', pg_port,
+        'pg_user', pg_user,
+        'pg_dbname', pg_dbname
       )
     END
   ) INTO result
@@ -265,7 +285,12 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'sql', sql
+        'sql', sql,
+        'pg_host', pg_host,
+        'pg_password', pg_password,
+        'pg_port', pg_port,
+        'pg_user', pg_user,
+        'pg_dbname', pg_dbname
       )
     END
   ) INTO result

@@ -128,7 +128,12 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'sql', sql
+        'sql', sql,
+        'pg_host', pg_host,
+        'pg_password', pg_password,
+        'pg_port', pg_port,
+        'pg_user', pg_user,
+        'pg_dbname', pg_dbname
       )
     END
   ) INTO result
@@ -197,7 +202,12 @@ BEGIN
         'id', id,
         'name', name,
         'tag', tag,
-        'sql', sql
+        'sql', sql,
+        'pg_host', pg_host,
+        'pg_password', pg_password,
+        'pg_port', pg_port,
+        'pg_user', pg_user,
+        'pg_dbname', pg_dbname
       )
     END
   ) INTO result
@@ -499,7 +509,12 @@ CREATE TABLE public.pg_node (
     tag public.pg_node_type NOT NULL,
     name text NOT NULL,
     sql text,
-    CONSTRAINT pg_node_check CHECK ((((tag = 'PgFile'::public.pg_node_type) AND (sql IS NOT NULL)) OR ((tag = 'PgFolder'::public.pg_node_type) AND (sql IS NULL))))
+    pg_host text,
+    pg_password text,
+    pg_port text,
+    pg_user text,
+    pg_dbname text,
+    CONSTRAINT pg_node_check CHECK ((((tag = 'PgFolder'::public.pg_node_type) AND (sql IS NULL)) OR ((tag = 'PgFile'::public.pg_node_type) AND (sql IS NOT NULL) AND (pg_host IS NOT NULL) AND (pg_password IS NOT NULL) AND (pg_port IS NOT NULL) AND (pg_user IS NOT NULL) AND (pg_dbname IS NOT NULL))))
 );
 
 

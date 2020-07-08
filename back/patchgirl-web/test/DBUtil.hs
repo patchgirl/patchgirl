@@ -354,6 +354,11 @@ data NewFakePgFile =
                 , _newFakePgFileParentId :: Maybe UUID
                 , _newFakePgFileName     :: String
                 , _newFakePgFileSql      :: String
+                , _newFakePgFileHost     :: String
+                , _newFakePgFilePassword :: String
+                , _newFakePgFilePort     :: String
+                , _newFakePgFileUser     :: String
+                , _newFakePgFileDbName   :: String
                 }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
@@ -366,12 +371,17 @@ insertFakePgFile newFakePgFile connection = do
     rawQuery =
       [sql|
           INSERT INTO pg_node (
+            tag,
             id,
             pg_node_parent_id,
-            tag,
             name,
-            sql
-          ) VALUES (?, ?, 'PgFile', ?,?)
+            sql,
+            pg_host,
+            pg_password,
+            pg_port,
+            pg_user,
+            pg_dbname
+          ) VALUES ('PgFile', ?, ?, ?, ?, ?, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -409,7 +419,6 @@ insertSamplePgCollection accountId connection = do
         NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId = pgCollectionId
                                               , _fakePgCollectionToPgNodePgPgNodeId = n2Id
                                               }
-
   _ <- insertFakePgCollectionToPgNode fakePgCollectionToPgNode1 connection
   _ <- insertFakePgCollectionToPgNode fakePgCollectionToPgNode2 connection
   pgNodes <- selectPgNodesFromPgCollectionId pgCollectionId connection
@@ -438,8 +447,13 @@ insertSamplePgCollection accountId connection = do
 
     n4 id parentId = NewFakePgFile { _newFakePgFileId = id
                                    , _newFakePgFileParentId = Just parentId
-                                   , _newFakePgFileName       = "4"
+                                   , _newFakePgFileName = "4"
                                    , _newFakePgFileSql = ""
+                                   , _newFakePgFileHost = ""
+                                   , _newFakePgFilePassword = ""
+                                   , _newFakePgFilePort = ""
+                                   , _newFakePgFileUser = ""
+                                   , _newFakePgFileDbName = ""
                                    }
 
 -- *** level 3
@@ -448,12 +462,22 @@ insertSamplePgCollection accountId connection = do
                                    , _newFakePgFileParentId = Just parentId
                                    , _newFakePgFileName       = "5"
                                    , _newFakePgFileSql = ""
+                                   , _newFakePgFileHost = ""
+                                   , _newFakePgFilePassword = ""
+                                   , _newFakePgFilePort = ""
+                                   , _newFakePgFileUser = ""
+                                   , _newFakePgFileDbName = ""
                                    }
 
     n6 id parentId = NewFakePgFile { _newFakePgFileId = id
                                    , _newFakePgFileParentId = Just parentId
                                    , _newFakePgFileName       = "6"
                                    , _newFakePgFileSql = ""
+                                   , _newFakePgFileHost = ""
+                                   , _newFakePgFilePassword = ""
+                                   , _newFakePgFilePort = ""
+                                   , _newFakePgFileUser = ""
+                                   , _newFakePgFileDbName = ""
                                    }
 
 

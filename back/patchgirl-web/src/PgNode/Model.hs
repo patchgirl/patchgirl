@@ -34,9 +34,13 @@ data PgNode
              , _pgNodeName     :: String
              , _pgNodeChildren :: [PgNode]
              }
-  | PgFile { _pgNodeId   :: UUID
-           , _pgNodeName :: String
-           , _pgNodeSql  :: String
+  | PgFile { _pgNodeId     :: UUID
+           , _pgNodeName   :: String
+           , _pgNodeSql    :: String
+           , _pgNodeHost   :: String
+           , _pgNodePort   :: String
+           , _pgNodeUser   :: String
+           , _pgNodeDbName :: String
            }
   deriving (Eq, Show, Generic)
 
@@ -86,6 +90,10 @@ instance FromJSON PgNodeFromPG where
         _pgNodeId <- o .: "id"
         _pgNodeName <- o .: "name"
         _pgNodeSql <- o .: "sql"
+        _pgNodeHost <- o .: "pg_host"
+        _pgNodePort <- o .: "pg_port"
+        _pgNodeUser <- o .: "pg_user"
+        _pgNodeDbName <- o .: "pg_dbname"
         return $ PgNodeFromPG $ PgFile{..}
       PgFolderType -> do
         _pgNodeId <- o .: "id"
@@ -142,9 +150,14 @@ instance ToField UpdatePgNode where
 
 
 data NewRootPgFile =
-  NewRootPgFile { _newRootPgFileId   :: UUID
-                , _newRootPgFileName :: String
-                , _newRootPgFileSql  :: String
+  NewRootPgFile { _newRootPgFileId       :: UUID
+                , _newRootPgFileName     :: String
+                , _newRootPgFileSql      :: String
+                , _newRootPgFileHost     :: String
+                , _newRootPgFilePassword :: String
+                , _newRootPgFilePort     :: String
+                , _newRootPgFileUser     :: String
+                , _newRootPgFileDbName   :: String
                 } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootPgFile)
@@ -166,6 +179,11 @@ data NewPgFile =
             , _newPgFileParentNodeId :: UUID
             , _newPgFileName         :: String
             , _newPgFileSql          :: String
+            , _newPgFileHost         :: String
+            , _newPgFilePassword     :: String
+            , _newPgFilePort         :: String
+            , _newPgFileUser         :: String
+            , _newPgFileDbName       :: String
             } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewPgFile)

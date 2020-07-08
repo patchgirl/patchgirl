@@ -121,16 +121,26 @@ spec =
     mkNewPgFile :: UUID -> UUID -> NewPgFile
     mkNewPgFile id parentId =
       NewPgFile { _newPgFileId = id
-            , _newPgFileParentNodeId = parentId
-            , _newPgFileName = "name"
-            , _newPgFileSql = "sql"
-            }
+                , _newPgFileParentNodeId = parentId
+                , _newPgFileName = "name"
+                , _newPgFileSql = "sql"
+                , _newPgFileHost = "host"
+                , _newPgFilePassword = "password"
+                , _newPgFilePort = "port"
+                , _newPgFileUser = "user"
+                , _newPgFileDbName = "dbname"
+                }
 
     mkNewRootPgFile :: UUID -> NewRootPgFile
     mkNewRootPgFile id =
       NewRootPgFile { _newRootPgFileId = id
                     , _newRootPgFileName = "name"
                     , _newRootPgFileSql = "sql"
+                    , _newRootPgFileHost = "host"
+                    , _newRootPgFilePassword = "password"
+                    , _newRootPgFilePort = "port"
+                    , _newRootPgFileUser = "user"
+                    , _newRootPgFileDbName = "dbname"
                     }
 
     mkUpdatePgFile :: UpdatePgFile

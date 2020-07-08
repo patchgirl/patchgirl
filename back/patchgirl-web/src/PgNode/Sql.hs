@@ -64,6 +64,11 @@ insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
     PG.execute connection rawQuery ( _newRootPgFileId
                                    , _newRootPgFileName
                                    , _newRootPgFileSql
+                                   , _newRootPgFileHost
+                                   , _newRootPgFilePassword
+                                   , _newRootPgFilePort
+                                   , _newRootPgFileUser
+                                   , _newRootPgFileDbName
                                    , pgCollectionId
                                    , _newRootPgFileId
                                    )
@@ -72,13 +77,18 @@ insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
       [sql|
           WITH insert_root_pg_node AS (
             INSERT INTO pg_node (
-              id,
-              pg_node_parent_id,
               tag,
+              pg_node_parent_id,
+              id,
               name,
-              sql
+              sql,
+              pg_host,
+              pg_password,
+              pg_port,
+              pg_user,
+              pg_dbname
             )
-            VALUES (?, NULL, 'PgFile', ?, ?)
+            VALUES ('PgFile', NULL, ?, ?, ?, ?, ?, ?, ?, ?)
           ) INSERT INTO pg_collection_to_pg_node (
               pg_collection_id,
               pg_node_id
@@ -91,23 +101,24 @@ insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
 
 
 insertPgFile :: NewPgFile -> PG.Connection -> IO ()
-insertPgFile NewPgFile {..} connection =
-  Monad.void $ PG.execute connection rawQuery ( _newPgFileId
-                                              , _newPgFileParentNodeId
-                                              , _newPgFileName
-                                              , _newPgFileSql
-                                              )
+insertPgFile newPgFile connection =
+  Monad.void $ PG.execute connection rawQuery newPgFile
   where
     rawQuery =
       [sql|
           INSERT INTO pg_node (
+            tag,
             id,
             pg_node_parent_id,
-            tag,
             name,
-            sql
+            sql,
+            pg_host,
+            pg_password,
+            pg_port,
+            pg_user,
+            pg_dbname
           )
-          VALUES (?, ?, 'PgFile', ?, ?)
+          VALUES ('PgFile', ?, ?, ?, ?, ?, ?, ?, ?, ?)
           |]
 
 
