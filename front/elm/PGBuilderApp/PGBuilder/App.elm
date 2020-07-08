@@ -35,6 +35,11 @@ type alias Model =
     { id : Uuid
     , pgCollectionId : Uuid
     , name : Editable String
+    , dbHost : Editable String
+    , dbPort : Editable String
+    , dbUser : Editable String
+    , dbPassword : Editable String
+    , dbName : Editable String
     , sqlQuery : Editable String
     , keyValues : List (Storable NewKeyValue KeyValue)
     , pgComputation : Maybe PgComputation
@@ -72,14 +77,23 @@ update msg model =
         AskRun ->
             let
                 payload =
-                    ( editedOrNotEditedValue model.sqlQuery
-                      |> stringToTemplate
-                      |> Client.convertStringTemplateFromFrontToBack
-                    , model.keyValues
-                      |> List.map latestValueOfStorable
-                      |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
-                      |> Dict.fromList
-                    )
+                    { pgComputationInputSql =
+                          editedOrNotEditedValue model.sqlQuery
+                            |> stringToTemplate
+                            |> Client.convertStringTemplateFromFrontToBack
+                    , pgComputationInputEnvironmentVars =
+                        model.keyValues
+                            |> List.map latestValueOfStorable
+                            |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
+                            |> Dict.fromList
+                    , pgComputationInputPgConnection =
+                          { templatedPgConnectionHost = []
+                          , templatedPgConnectionPort = []
+                          , templatedPgConnectionUser = []
+                          , templatedPgConnectionPassword = []
+                          , templatedPgConnectionDbName = []
+                          }
+                    }
 
                 newMsg =
                     Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl payload postPgSqlComputationResultToMsg

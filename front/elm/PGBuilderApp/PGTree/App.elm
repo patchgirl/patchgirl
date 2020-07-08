@@ -562,6 +562,11 @@ mkDefaultFile id =
     PgFile
         { id = id
         , name = NotEdited "new pg file"
+        , dbHost = NotEdited ""
+        , dbPort = NotEdited ""
+        , dbUser = NotEdited ""
+        , dbPassword = NotEdited ""
+        , dbName = NotEdited ""
         , sql = NotEdited ""
         , pgComputation = Nothing
         , showResponseView = False

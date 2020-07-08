@@ -83,6 +83,11 @@ convertPgNodesFromBackToFront backPgNodes =
                     Front.PgFile
                         { id = file.pgNodeId
                         , name = NotEdited file.pgNodeName
+                        , dbHost = NotEdited ""
+                        , dbPort = NotEdited ""
+                        , dbUser = NotEdited ""
+                        , dbPassword = NotEdited ""
+                        , dbName = NotEdited ""
                         , sql = NotEdited file.pgNodeSql
                         , pgComputation = Nothing
                         , showResponseView = False
