@@ -169,7 +169,6 @@ runnerCustomCode = T.unlines
   , "  case either of"
   , "    Err err -> encoder1 err"
   , "    Ok ok -> encoder2 ok"
-  , ""
   ]
 
 
@@ -204,6 +203,8 @@ deriveElmDef deriveWithTaggedObject ''Runner.PgComputation
 deriveElmDef deriveWithTaggedObject ''Runner.Table
 deriveElmDef deriveWithTaggedObject ''Runner.Column
 deriveElmDef deriveWithTaggedObject ''Runner.PgValue
+deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
+deriveElmDef deriveWithTaggedObject ''Runner.TemplatedPgConnection
 
 
 -- ** web
@@ -368,6 +369,8 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.Table)
       , DefineElm (Proxy :: Proxy Runner.Column)
       , DefineElm (Proxy :: Proxy Runner.PgValue)
+      , DefineElm (Proxy :: Proxy Runner.PgComputationInput)
+      , DefineElm (Proxy :: Proxy Runner.TemplatedPgConnection)
       ]
     proxyApi =
       (Proxy :: Proxy Runner.RunnerApi)

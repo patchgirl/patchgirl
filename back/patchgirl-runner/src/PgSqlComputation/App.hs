@@ -23,11 +23,11 @@ runPgSqlComputationHandler :: ( Reader.MonadReader Env m, IO.MonadIO m) => PgCom
 runPgSqlComputationHandler PgComputationInput{..} = do
   let
     sql = substitute _pgComputationInputSql
-    pgConnection = PgConnection { _pgConnectionHost     = substitute (_pgConnectionHost _pgComputationInputPgConnection)
-                                , _pgConnectionPort     = substitute (_pgConnectionPort _pgComputationInputPgConnection)
-                                , _pgConnectionUser     = substitute (_pgConnectionUser _pgComputationInputPgConnection)
-                                , _pgConnectionPassword = substitute (_pgConnectionPassword _pgComputationInputPgConnection)
-                                , _pgConnectionDbName   = substitute (_pgConnectionDbName _pgComputationInputPgConnection)
+    pgConnection = PgConnection { _pgConnectionHost     = substitute (_templatedPgConnectionHost _pgComputationInputPgConnection)
+                                , _pgConnectionPort     = substitute (_templatedPgConnectionPort _pgComputationInputPgConnection)
+                                , _pgConnectionUser     = substitute (_templatedPgConnectionUser _pgComputationInputPgConnection)
+                                , _pgConnectionPassword = substitute (_templatedPgConnectionPassword _pgComputationInputPgConnection)
+                                , _pgConnectionDbName   = substitute (_templatedPgConnectionDbName _pgComputationInputPgConnection)
                                 }
   (mResult, resultStatus) <- IO.liftIO $ do
     connection <- getConnection pgConnection
@@ -116,7 +116,7 @@ convertPgRawValueToPgValue oid value =
 -- * util
 
 
-getConnection :: PgConnection String -> IO LibPQ.Connection
+getConnection :: PgConnection -> IO LibPQ.Connection
 getConnection PgConnection{..} =
   LibPQ.connectdb (BS.intercalate " " components)
   where
@@ -125,5 +125,8 @@ getConnection PgConnection{..} =
       , "port=" <> BSU.fromString _pgConnectionPort
       , "user=" <> BSU.fromString _pgConnectionUser
       , "dbname=" <> BSU.fromString _pgConnectionDbName
+      {- password needs to be the last because it can be empty
+         and an empty field will mess up the connection
+      -}
       , "password=" <> BSU.fromString _pgConnectionPassword
       ]

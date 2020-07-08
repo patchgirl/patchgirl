@@ -203,11 +203,11 @@ spec = do
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
   where
-    validPgConnection :: PgConnection StringTemplate
+    validPgConnection :: TemplatedPgConnection
     validPgConnection =
-      PgConnection { _pgConnectionHost     = [ Sentence "localhost" ]
-                   , _pgConnectionPort     = [ Sentence "5432" ]
-                   , _pgConnectionUser     = [ Sentence "postgres" ]
-                   , _pgConnectionPassword = [ Sentence "" ]
-                   , _pgConnectionDbName   = [ Sentence "test" ]
-                   }
+      TemplatedPgConnection { _templatedPgConnectionHost     = [ Sentence "localhost" ]
+                            , _templatedPgConnectionPort     = [ Sentence "5432" ]
+                            , _templatedPgConnectionUser     = [ Sentence "postgres" ]
+                            , _templatedPgConnectionPassword = [ Sentence "" ]
+                            , _templatedPgConnectionDbName   = [ Sentence "test" ]
+                            }

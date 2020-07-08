@@ -7,12 +7,14 @@ import           GHC.Generics (Generic)
 
 import           Interpolator
 
+
 -- * pg computation input
+
 
 data PgComputationInput
   = PgComputationInput { _pgComputationInputSql             :: StringTemplate
                        , _pgComputationInputEnvironmentVars :: EnvironmentVars
-                       , _pgComputationInputPgConnection    :: PgConnection StringTemplate
+                       , _pgComputationInputPgConnection    :: TemplatedPgConnection
                        } deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON PgComputationInput where
@@ -89,20 +91,31 @@ instance Aeson.FromJSON PgValue where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- * pg connection
+-- * templated pg connection
 
 
-data PgConnection a = PgConnection { _pgConnectionHost     :: a
-                                   , _pgConnectionPort     :: a
-                                   , _pgConnectionUser     :: a
-                                   , _pgConnectionPassword :: a
-                                   , _pgConnectionDbName   :: a
-                                   } deriving (Eq, Show, Generic)
+data TemplatedPgConnection = TemplatedPgConnection { _templatedPgConnectionHost     :: StringTemplate
+                                                   , _templatedPgConnectionPort     :: StringTemplate
+                                                   , _templatedPgConnectionUser     :: StringTemplate
+                                                   , _templatedPgConnectionPassword :: StringTemplate
+                                                   , _templatedPgConnectionDbName   :: StringTemplate
+                                                   } deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON (PgConnection StringTemplate) where
+instance Aeson.ToJSON TemplatedPgConnection where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON (PgConnection StringTemplate) where
+instance Aeson.FromJSON TemplatedPgConnection where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
+-- * pg connection
+
+
+data PgConnection = PgConnection { _pgConnectionHost     :: String
+                                 , _pgConnectionPort     :: String
+                                 , _pgConnectionUser     :: String
+                                 , _pgConnectionPassword :: String
+                                 , _pgConnectionDbName   :: String
+                                 } deriving (Eq, Show)
