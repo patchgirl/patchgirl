@@ -157,6 +157,11 @@ update msg model =
                 payload =
                     { updatePgFileName = editedOrNotEditedValue model.name
                     , updatePgFileSql = editedOrNotEditedValue model.sqlQuery
+                    , updatePgFileHost = editedOrNotEditedValue model.dbHost
+                    , updatePgFilePort = editedOrNotEditedValue model.dbPort
+                    , updatePgFileUser = editedOrNotEditedValue model.dbUser
+                    , updatePgFileDbName = editedOrNotEditedValue model.dbName
+                    , updatePgFilePassword = editedOrNotEditedValue model.dbPassword
                     }
 
                 newMsg =
@@ -170,6 +175,11 @@ update msg model =
                     { model
                         | name = NotEdited (editedOrNotEditedValue model.name)
                         , sqlQuery = NotEdited (editedOrNotEditedValue model.sqlQuery)
+                        , dbHost = NotEdited (editedOrNotEditedValue model.dbHost)
+                        , dbPort = NotEdited (editedOrNotEditedValue model.dbPort)
+                        , dbUser = NotEdited (editedOrNotEditedValue model.dbUser)
+                        , dbName = NotEdited (editedOrNotEditedValue model.dbName)
+                        , dbPassword = NotEdited (editedOrNotEditedValue model.dbPassword)
                     }
             in
             ( newModel, Cmd.none )
@@ -212,7 +222,15 @@ postPgSqlComputationResultToMsg result =
 
 isBuilderDirty : Model -> Bool
 isBuilderDirty model =
-    isDirty model.sqlQuery
+    List.any isDirty
+        [ model.dbHost
+        , model.dbPort
+        , model.dbUser
+        , model.dbPassword
+        , model.dbName
+        , model.sqlQuery
+        ]
+
 
 updatePgFileResultToMsg : Result Http.Error () -> Msg
 updatePgFileResultToMsg result =
@@ -274,7 +292,37 @@ view model =
 builderView : Model -> Element Msg
 builderView model =
     column [ alignLeft, width fill, spacing 20 ]
-        [ row [ spacing 10 ]
+        [ row [ spacing 10, width fill ]
+              [ el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue model.name) secondaryColor
+              , case isBuilderDirty model of
+                    True ->
+                        Input.button [ alignRight ]
+                            { onPress = Just <| AskSave
+                            , label =
+                                el [ Border.solid
+                                   , Border.color secondaryColor
+                                   , Border.width 1
+                                   , Border.rounded 5
+                                   , Background.color secondaryColor
+                                   , paddingXY 10 10
+                                   ] (iconWithTextAndColorAndAttr "save" "Save" primaryColor [] )
+                            }
+
+                    False ->
+                        none
+              , Input.button [ alignRight ]
+                    { onPress = Just <| AskRun
+                    , label =
+                        el [ Border.solid
+                           , Border.color secondaryColor
+                           , Border.width 1
+                           , Border.rounded 5
+                           , Background.color secondaryColor
+                           , paddingXY 10 10
+                           ] (iconWithTextAndColorAndAttr "send" "Run" primaryColor [] )
+                    }
+              ]
+        , row [ spacing 10 ]
               [ Input.text []
                     { onChange = UpdateHost
                     , text = editedOrNotEditedValue model.dbHost
