@@ -89,7 +89,7 @@ convertPgNodesFromBackToFront backPgNodes =
                         , dbPassword = NotEdited file.pgNodePassword
                         , dbName = NotEdited file.pgNodeDbName
                         , sql = NotEdited file.pgNodeSql
-                        , pgComputation = Nothing
+                        , pgComputationOutput = Nothing
                         , showResponseView = False
                         }
     in
@@ -417,15 +417,27 @@ convertSchemeFromFrontToBack scheme =
             Back.Https
 
 
--- * pg computation
+-- * pg computation output
+
+
+
+
+convertPgComputationOutputFromBackToFront : Back.PgComputationOutput -> Front.PgComputationOutput
+convertPgComputationOutputFromBackToFront backPgComputationOutput =
+    case backPgComputationOutput of
+        Err error ->
+            Err error
+
+        Ok backPgComputation ->
+            Ok (convertPgComputationFromBackToFront backPgComputation)
+
+
+-- ** pg computation
 
 
 convertPgComputationFromBackToFront : Back.PgComputation -> Front.PgComputation
 convertPgComputationFromBackToFront backPgComputation =
     case backPgComputation of
-        Back.PgError string ->
-            Front.PgError string
-
         Back.PgCommandOK ->
             Front.PgCommandOK
 

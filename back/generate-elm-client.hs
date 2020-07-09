@@ -206,6 +206,8 @@ deriveElmDef deriveWithTaggedObject ''Runner.PgValue
 deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
 deriveElmDef deriveWithTaggedObject ''Runner.TemplatedPgConnection
 deriveElmDef deriveWithTaggedObject ''Runner.Scene
+deriveElmDef deriveWithTaggedObject ''Runner.PgError
+deriveElmDef deriveWithSingleFieldObject ''Runner.PgComputationOutput
 
 
 -- ** web
@@ -373,6 +375,8 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.PgComputationInput)
       , DefineElm (Proxy :: Proxy Runner.TemplatedPgConnection)
       , DefineElm (Proxy :: Proxy Runner.Scene)
+      , DefineElm (Proxy :: Proxy Runner.PgError)
+      , DefineElm (Proxy :: Proxy Runner.PgComputationOutput)
       ]
     proxyApi =
       (Proxy :: Proxy Runner.RunnerApi)

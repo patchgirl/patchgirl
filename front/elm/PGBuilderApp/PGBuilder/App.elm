@@ -42,7 +42,7 @@ type alias Model =
     , dbName : Editable String
     , sqlQuery : Editable String
     , keyValues : List (Storable NewKeyValue KeyValue)
-    , pgComputation : Maybe PgComputation
+    , pgComputationOutput : Maybe PgComputationOutput
     , showResponseView : Bool
     , runnerRunning : Bool
     }
@@ -59,7 +59,7 @@ type Msg
     | UpdatePassword String
     | UpdateDbName String
     | AskRun
-    | RemoteComputationDone PgComputation
+    | RemoteComputationDone PgComputationOutput
     | RemoteComputationFailed
     | ServerError
     | AskSave
@@ -146,7 +146,7 @@ update msg model =
                 newModel =
                     { model
                         | showResponseView = False
-                        , pgComputation = Nothing
+                        , pgComputationOutput = Nothing
                     }
             in
                 (newModel, newMsg)
@@ -184,12 +184,12 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        RemoteComputationDone remoteComputationResult ->
+        RemoteComputationDone pgComputationOutput ->
             let
                 newModel =
                     { model
                         | showResponseView = True
-                        , pgComputation = Just remoteComputationResult
+                        , pgComputationOutput = Just pgComputationOutput
                     }
             in
             ( newModel, Cmd.none )
@@ -198,7 +198,7 @@ update msg model =
             let
                 newModel =
                     { model
-                        | pgComputation = Nothing
+                        | pgComputationOutput = Nothing
                     }
             in
             ( newModel, Cmd.none )
@@ -211,11 +211,11 @@ update msg model =
 
 
 
-postPgSqlComputationResultToMsg : Result Http.Error Client.PgComputation -> Msg
+postPgSqlComputationResultToMsg : Result Http.Error (Result Client.PgError Client.PgComputation) -> Msg
 postPgSqlComputationResultToMsg result =
     case result of
-        Ok pgComputation ->
-            RemoteComputationDone (Client.convertPgComputationFromBackToFront pgComputation)
+        Ok pgComputationOutput ->
+            RemoteComputationDone (Client.convertPgComputationOutputFromBackToFront pgComputationOutput)
 
         Err error ->
             ServerError
@@ -283,7 +283,12 @@ view model =
                      , boxShadow
                      , alignTop
                      , padding 30
-                     ] (responseView model)
+                     ] <| case (model.pgComputationOutput, model.showResponseView) of
+                           (Just pgComputationOutput, True) ->
+                               responseView model pgComputationOutput
+
+                           _ ->
+                               none
 
               False ->
                   none
@@ -362,13 +367,17 @@ builderView model =
             }
         ]
 
-responseView : Model -> Element Msg
-responseView model =
-    case (model.showResponseView, model.pgComputation) of
-        (True, Just result) ->
-            case result of
-                PgError error -> text error
-                PgCommandOK -> text "Postgresql command Ok"
+responseView : Model -> PgComputationOutput -> Element Msg
+responseView model pgComputationOutput =
+    case pgComputationOutput of
+        Err error ->
+            text error
+
+        Ok pgComputation ->
+            case pgComputation of
+                PgCommandOK ->
+                    text "Postgresql command Ok"
+
                 PgTuplesOk columns ->
                     let
                         columnView : Col -> Element Msg
@@ -394,10 +403,6 @@ responseView model =
                     in
                         row [ width fill ] <|
                             List.map columnView columns
-
-
-        _ ->
-            none
 
 showPGValue : PgValue -> Element Msg
 showPGValue pgValue =

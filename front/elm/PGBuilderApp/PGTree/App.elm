@@ -578,7 +578,7 @@ mkDefaultFile id =
         , dbPassword = NotEdited ""
         , dbName = NotEdited ""
         , sql = NotEdited ""
-        , pgComputation = Nothing
+        , pgComputationOutput = Nothing
         , showResponseView = False
         }
 

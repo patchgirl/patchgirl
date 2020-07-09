@@ -228,7 +228,7 @@ type alias PgFileRecord =
     , dbUser : Editable String
     , dbName : Editable String
     , sql : Editable String
-    , pgComputation : Maybe PgComputation
+    , pgComputationOutput : Maybe PgComputationOutput
     , showResponseView : Bool
     }
 
@@ -314,7 +314,8 @@ type alias Builder =
 -- ** request computation result
 
 
-type alias RequestComputationResult = Result HttpException RequestComputationOutput
+type alias RequestComputationResult
+    = Result HttpException RequestComputationOutput
 
 
 -- ** http exception
@@ -524,12 +525,18 @@ schemeToString scheme =
 -- * pg computation
 
 
--- ** pg computation result
+-- ** pg computation output
+
+
+type alias PgComputationOutput
+    = Result String PgComputation
+
+
+-- ** pg computation
 
 
 type PgComputation
-    = PgError String
-    | PgCommandOK
+    = PgCommandOK
     | PgTuplesOk (List Col)
 
 

@@ -138,7 +138,7 @@ convertFromFileToBuilder file pgCollectionId keyValuesToRun model =
     , dbUser = file.dbUser
     , dbPassword = file.dbPassword
     , dbName = file.dbName
-    , pgComputation = file.pgComputation
+    , pgComputationOutput = file.pgComputationOutput
     , showResponseView = file.showResponseView
     , runnerRunning = model.runnerRunning
     }
@@ -153,7 +153,7 @@ convertFromBuilderToFile builder =
     , dbPassword = builder.dbPassword
     , dbName = builder.dbName
     , sql = builder.sqlQuery
-    , pgComputation = builder.pgComputation
+    , pgComputationOutput = builder.pgComputationOutput
     , showResponseView = builder.showResponseView
     }
 
