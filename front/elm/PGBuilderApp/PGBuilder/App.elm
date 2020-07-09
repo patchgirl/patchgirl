@@ -117,16 +117,15 @@ update msg model =
         AskRun ->
             let
                 payload =
-                    { pgComputationInputSql =
-                          editedOrNotEditedValue model.sqlQuery
-                            |> stringToTemplate
-                            |> Client.convertStringTemplateFromFrontToBack
-                    , pgComputationInputEnvironmentVars =
-                        model.keyValues
+                    ( model.keyValues
                             |> List.map latestValueOfStorable
                             |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                             |> Dict.fromList
-                    , pgComputationInputPgConnection =
+                    , { pgComputationInputSql =
+                          editedOrNotEditedValue model.sqlQuery
+                              |> stringToTemplate
+                              |> Client.convertStringTemplateFromFrontToBack
+                      , pgComputationInputPgConnection =
                           { templatedPgConnectionHost =
                                 editedOrNotEditedValue model.dbHost |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
                           , templatedPgConnectionPort =
@@ -138,7 +137,8 @@ update msg model =
                           , templatedPgConnectionDbName =
                               editedOrNotEditedValue model.dbName |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
                           }
-                    }
+                      }
+                    )
 
                 newMsg =
                     Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl payload postPgSqlComputationResultToMsg

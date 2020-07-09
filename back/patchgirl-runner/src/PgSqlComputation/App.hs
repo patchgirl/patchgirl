@@ -19,8 +19,29 @@ import           PgSqlComputation.Model
 -- * handler
 
 
-runPgSqlComputationHandler :: ( Reader.MonadReader Env m, IO.MonadIO m) => PgComputationInput -> m PgComputation
-runPgSqlComputationHandler PgComputationInput{..} = do
+runPgSqlComputationHandler
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     )
+  => (EnvironmentVars, PgComputationInput)
+  -> m PgComputation
+runPgSqlComputationHandler (environmentVars, pgComputationInput) =
+  runPgComputationWithScenarioContext pgComputationInput environmentVars Map.empty Map.empty
+
+
+-- * run pg computation with scenario context
+
+
+runPgComputationWithScenarioContext
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     )
+  => PgComputationInput
+  -> EnvironmentVars
+  -> ScenarioVars
+  -> ScenarioVars
+  -> m PgComputation
+runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars = do
   let
     sql = substitute _pgComputationInputSql
     pgConnection = PgConnection { _pgConnectionHost     = substitute (_templatedPgConnectionHost _pgComputationInputPgConnection)
@@ -57,7 +78,8 @@ runPgSqlComputationHandler PgComputationInput{..} = do
   where
     substitute :: StringTemplate -> String
     substitute =
-      interpolate _pgComputationInputEnvironmentVars Map.empty Map.empty
+      interpolate environmentVars scenarioGlobalVars scenarioLocalVars
+
 
 
 -- * to table

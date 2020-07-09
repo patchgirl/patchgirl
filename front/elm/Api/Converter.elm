@@ -131,7 +131,7 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                     Front.ScenarioFile
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
-                        , scenes = List.map convertSceneFromBackToFront file.scenarioNodeScenes
+                        , scenes = List.map convertSceneNodeFromBackToFront file.scenarioNodeScenes
                         , showDetailedSceneView = Nothing
                         , whichResponseView = BodyResponseView
                         , environmentId = NotEdited file.scenarioNodeEnvironmentId
@@ -144,8 +144,8 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 -- ** scene
 
 
-convertSceneFromBackToFront : Back.Scene -> Front.Scene
-convertSceneFromBackToFront { sceneId, sceneRequestFileNodeId, scenePrescript, scenePostscript } =
+convertSceneNodeFromBackToFront : Back.SceneNode -> Front.SceneNode
+convertSceneNodeFromBackToFront { sceneId, sceneRequestFileNodeId, scenePrescript, scenePostscript } =
     { id = sceneId
     , requestFileNodeId = sceneRequestFileNodeId
     , sceneComputation = Nothing

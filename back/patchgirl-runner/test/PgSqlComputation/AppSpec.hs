@@ -21,7 +21,7 @@ import           Server
 -- * client
 
 
-runPgSqlComputation :: PgComputationInput -> Servant.ClientM PgComputation
+runPgSqlComputation :: (EnvironmentVars, PgComputationInput) -> Servant.ClientM PgComputation
 runPgSqlComputation =
   Servant.client (Proxy :: Proxy PgSqlComputationApi)
 
@@ -41,10 +41,11 @@ spec = do
       it "returns string" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [Sentence "select \'coucou\' as \"string\", 1 as \"integer\", null as \"null\";"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select \'coucou\' as \"string\", 1 as \"integer\", null as \"null\";"]
+                validPgConnection
+            )
 
         let output = PgTuplesOk $ Table [ Column "string" [ PgString "coucou" ]
                                         , Column "integer" [ PgInt 1 ]
@@ -55,10 +56,11 @@ spec = do
       it "returns bool" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [Sentence "select True as \"bool\";"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select True as \"bool\";"]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "bool" [ PgBool True ]
                                         ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
@@ -66,10 +68,11 @@ spec = do
       it "returns tables" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [Sentence "select * from (values(1,2), (3,4)) as foo(a,b);"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select * from (values(1,2), (3,4)) as foo(a,b);"]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "a" [ PgInt 1, PgInt 3 ]
                                         , Column "b" [ PgInt 2, PgInt 4 ]
                                         ]
@@ -78,10 +81,11 @@ spec = do
       it "returns tuples as string" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [Sentence "select (1,2);"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select (1,2);"]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "row" [ PgString "(1,2)" ]
                                         ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
@@ -94,20 +98,22 @@ spec = do
       it "inserts" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [Sentence "insert into user_test (firstname, lastname) values ('a', 'b');"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "insert into user_test (firstname, lastname) values ('a', 'b');"]
+                validPgConnection
+            )
         let output = PgCommandOK
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "inserts and return table" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "insert into user_test (firstname, lastname) values ('a', 'b') RETURNING firstname, lastname;"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [ Sentence "insert into user_test (firstname, lastname) values ('a', 'b') RETURNING firstname, lastname;"]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "firstname" [ PgString "a" ]
                                         , Column "lastname" [ PgString "b" ]
                                         ]
@@ -116,20 +122,22 @@ spec = do
       it "updates" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "update user_test set firstname = '' where id = 0;"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [ Sentence "update user_test set firstname = '' where id = 0;"]
+                validPgConnection
+            )
         let output = PgCommandOK
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "deletes" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "delete from user_test where id = 0;"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [ Sentence "delete from user_test where id = 0;"]
+                validPgConnection
+            )
         let output = PgCommandOK
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
@@ -140,13 +148,14 @@ spec = do
       it "sustitute one var" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "select '"
-              , Key "name"
-              , Sentence "';"
-              ]
-              (Map.fromList [ ( "name", [ Sentence "John" ]) ])
-              validPgConnection
+            ( Map.fromList [ ( "name", [ Sentence "John" ]) ]
+            , PgComputationInput
+                [ Sentence "select '"
+                , Key "name"
+                , Sentence "';"
+                ]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
                                         ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
@@ -154,17 +163,18 @@ spec = do
       it "sustitute multiple vars" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "select '"
-              , Key "firstname"
-              , Sentence "' , '"
-              , Key "lastname"
-              , Sentence "';"
-              ]
-              (Map.fromList [ ( "firstname", [ Sentence "John" ])
-                            , ( "lastname", [ Sentence "Doe" ])
-                            ])
-              validPgConnection
+            ( Map.fromList [ ( "firstname", [ Sentence "John" ])
+                           , ( "lastname", [ Sentence "Doe" ])
+                           ]
+            , PgComputationInput
+                [ Sentence "select '"
+                , Key "firstname"
+                , Sentence "' , '"
+                , Key "lastname"
+                , Sentence "';"
+                ]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
                                         , Column "?column?" [ PgString "Doe"  ]
                                         ]
@@ -173,16 +183,17 @@ spec = do
       it "works when var doesn't exist" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "select '"
-              , Key "firstname"
-              , Sentence "' , '"
-              , Key "lastname"
-              , Sentence "';"
-              ]
-              (Map.fromList [ ( "firstname", [ Sentence "John" ])
-                            ])
-              validPgConnection
+            ( Map.fromList [ ( "firstname", [ Sentence "John" ])
+                           ]
+            , PgComputationInput
+                [ Sentence "select '"
+                , Key "firstname"
+                , Sentence "' , '"
+                , Key "lastname"
+                , Sentence "';"
+                ]
+                validPgConnection
+            )
         let output = PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
                                         , Column "?column?" [ PgString "{{lastname}}"  ]
                                         ]
@@ -195,10 +206,11 @@ spec = do
       it "fails on bad syntax" $ \clientEnv -> do
         let
           input =
-            PgComputationInput
-              [ Sentence "selec t;"]
-              Map.empty
-              validPgConnection
+            ( Map.empty
+            , PgComputationInput
+                [ Sentence "selec t;"]
+                validPgConnection
+            )
         let output = PgError "FatalError syntax error at or near \"selec\""
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 

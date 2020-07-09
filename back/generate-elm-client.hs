@@ -205,6 +205,7 @@ deriveElmDef deriveWithTaggedObject ''Runner.Column
 deriveElmDef deriveWithTaggedObject ''Runner.PgValue
 deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
 deriveElmDef deriveWithTaggedObject ''Runner.TemplatedPgConnection
+deriveElmDef deriveWithTaggedObject ''Runner.Scene
 
 
 -- ** web
@@ -238,7 +239,7 @@ deriveElmDef deriveWithTaggedObject ''Web.NewRootScenarioFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootScenarioFolder
 deriveElmDef deriveWithTaggedObject ''Web.ScenarioCollection
 deriveElmDef deriveWithTaggedObject ''Web.ScenarioNode
-deriveElmDef deriveWithTaggedObject ''Web.Scene
+deriveElmDef deriveWithTaggedObject ''Web.SceneNode
 deriveElmDef deriveWithTaggedObject ''Web.NewScene
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScenarioFile
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScene
@@ -307,7 +308,7 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewRootScenarioFile)
       , DefineElm (Proxy :: Proxy Web.ScenarioCollection)
       , DefineElm (Proxy :: Proxy Web.ScenarioNode)
-      , DefineElm (Proxy :: Proxy Web.Scene)
+      , DefineElm (Proxy :: Proxy Web.SceneNode)
       , DefineElm (Proxy :: Proxy Web.NewScene)
       , DefineElm (Proxy :: Proxy Web.UpdateScenarioFile)
       , DefineElm (Proxy :: Proxy Web.UpdateScene)
@@ -371,6 +372,7 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.PgValue)
       , DefineElm (Proxy :: Proxy Runner.PgComputationInput)
       , DefineElm (Proxy :: Proxy Runner.TemplatedPgConnection)
+      , DefineElm (Proxy :: Proxy Runner.Scene)
       ]
     proxyApi =
       (Proxy :: Proxy Runner.RunnerApi)

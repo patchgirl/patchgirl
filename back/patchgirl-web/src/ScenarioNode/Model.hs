@@ -52,21 +52,21 @@ instance FromJSON NewScene where
 -- * scene
 
 
-data Scene
-  = Scene { _sceneId                :: UUID
+data SceneNode
+  = SceneNode { _sceneId            :: UUID
           , _sceneRequestFileNodeId :: UUID
           , _scenePrescript         :: String
           , _scenePostscript        :: String
           }
   deriving (Eq, Show, Generic)
 
-$(makeLenses ''Scene)
+$(makeLenses ''SceneNode)
 
-instance ToJSON Scene where
+instance ToJSON SceneNode where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-instance FromJSON Scene where
+instance FromJSON SceneNode where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
@@ -94,7 +94,7 @@ instance FromJSON UpdateScene where
 -- * scene from pg
 
 
-newtype SceneFromPG = SceneFromPG Scene
+newtype SceneFromPG = SceneFromPG SceneNode
 
 instance FromJSON SceneFromPG where
   parseJSON = withObject "SceneFromPG" $ \o -> do
@@ -102,9 +102,9 @@ instance FromJSON SceneFromPG where
     _sceneRequestFileNodeId <- o .: "request_node_id"
     _scenePrescript <- o .: "prescript"
     _scenePostscript <- o .: "postscript"
-    return $ SceneFromPG $ Scene{..}
+    return $ SceneFromPG $ SceneNode{..}
 
-fromSceneFromPGTOScene :: SceneFromPG -> Scene
+fromSceneFromPGTOScene :: SceneFromPG -> SceneNode
 fromSceneFromPGTOScene (SceneFromPG scene) = scene
 
 
@@ -119,7 +119,7 @@ data ScenarioNode
   | ScenarioFile { _scenarioNodeId            :: UUID
                  , _scenarioNodeName          :: String
                  , _scenarioNodeEnvironmentId :: Maybe Int
-                 , _scenarioNodeScenes        :: [Scene]
+                 , _scenarioNodeScenes        :: [SceneNode]
                  }
   deriving (Eq, Show, Generic)
 

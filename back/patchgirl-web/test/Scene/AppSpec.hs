@@ -32,7 +32,7 @@ updateSceneHandler :: Auth.Token -> UUID -> UUID -> UpdateScene -> ClientM ()
 createSceneHandler
   :<|> deleteSceneHandler
   :<|> updateSceneHandler =
-  client (Proxy :: Proxy (SceneApi '[Auth.JWT]))
+  client (Proxy :: Proxy (SceneNodeApi '[Auth.JWT]))
 
 
 -- * spec

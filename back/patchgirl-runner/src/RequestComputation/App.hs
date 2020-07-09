@@ -37,13 +37,8 @@ runRequestComputationHandler
      )
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationResult
-runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
-  runner <- Reader.ask <&> _envHttpRequest
-  result <- IO.liftIO $
-    Exception.try (
-      buildRequest templatedRequestComputationInput environmentVars Map.empty Map.empty >>= runner
-    )
-  responseToComputationResult result
+runRequestComputationHandler (templatedRequestComputationInput, environmentVars) =
+  runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
 
 
 -- * run request computation with scenario context

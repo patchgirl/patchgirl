@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module ScenarioComputation.Model  ( SceneInput(..)
+                                  , Scene(..)
                                   , ScenarioInput(..)
                                   , SceneOutput(..)
                                   , ScenarioOutput(..)
@@ -14,19 +15,19 @@ import           Data.UUID                (UUID)
 import           GHC.Generics             (Generic)
 
 import           Interpolator
+import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           TangoScript
-
 
 -- * scene input
 
 
 data SceneInput
-  = SceneInput { _sceneInputId                      :: UUID
-               , _sceneInputRequestFileNodeId       :: UUID
-               , _sceneInputPrescript               :: TangoAst
-               , _sceneInputPostscript              :: TangoAst
-               , _sceneInputTemplatedRequestComputationInput :: TemplatedRequestComputationInput
+  = SceneInput { _sceneInputId         :: UUID
+               , _sceneInputFileId     :: UUID
+               , _sceneInputPrescript  :: TangoAst
+               , _sceneInputPostscript :: TangoAst
+               , _sceneInputScene      :: Scene
                }
   deriving (Eq, Show, Generic)
 
@@ -35,6 +36,23 @@ instance Aeson.ToJSON SceneInput where
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 instance Aeson.FromJSON SceneInput where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
+-- * scene
+
+
+data Scene
+  = HttpScene TemplatedRequestComputationInput
+  | PgScene PgComputationInput
+  deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON Scene where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON Scene where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 

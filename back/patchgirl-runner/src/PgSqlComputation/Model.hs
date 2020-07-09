@@ -13,7 +13,6 @@ import           Interpolator
 
 data PgComputationInput
   = PgComputationInput { _pgComputationInputSql             :: StringTemplate
-                       , _pgComputationInputEnvironmentVars :: EnvironmentVars
                        , _pgComputationInputPgConnection    :: TemplatedPgConnection
                        } deriving (Eq, Show, Generic)
 

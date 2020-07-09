@@ -12,13 +12,13 @@ import qualified Data.Map.Strict           as Map
 
 import           Env
 import           Interpolator
+import           PgSqlComputation.App
 import           RequestComputation.App
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           TangoScript
 
-
--- * run scenario computation handler
+-- * handler
 
 
 runScenarioComputationHandler
@@ -52,7 +52,15 @@ runScenarioComputationHandler ScenarioInput{..} =
 -- ** run scene
 
 
-runScene :: (Reader.MonadReader Env m, IO.MonadIO m) => Bool -> EnvironmentVars -> ScenarioVars -> SceneInput -> m (SceneOutput, ScenarioVars)
+runScene
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     )
+  => Bool
+  -> EnvironmentVars
+  -> ScenarioVars
+  -> SceneInput
+  -> m (SceneOutput, ScenarioVars)
 runScene lastSceneWasSuccessful environmentVars scenarioGlobalVars sceneInput =
   case lastSceneWasSuccessful of
     True ->
@@ -63,8 +71,12 @@ runScene lastSceneWasSuccessful environmentVars scenarioGlobalVars sceneInput =
                  )
 
         Right (scenarioGlobalVarsAfterPrescript, scenariolocalVarsAfterPrescript) -> do
-          requestComputationResult <-
-            runRequestComputationWithScenarioContext (_sceneInputTemplatedRequestComputationInput sceneInput) environmentVars scenarioGlobalVarsAfterPrescript scenariolocalVarsAfterPrescript
+          requestComputationResult <- case _sceneInputScene sceneInput of
+            HttpScene scene ->
+              runRequestComputationWithScenarioContext scene environmentVars scenarioGlobalVarsAfterPrescript scenariolocalVarsAfterPrescript
+            PgScene scene ->
+              undefined
+              --runPgComputationWithScenarioContext scene environmentVars scenarioGlobalVarsAfterPrescript scenariolocalVarsAfterPrescript
           case requestComputationResult of
             Left httpException ->
               return ( buildSceneOutput sceneInput (RequestFailed httpException)
@@ -247,6 +259,6 @@ runPrescriptExpr scenarioGlobalVars scenarioLocalVars = \case
 buildSceneOutput :: SceneInput -> SceneComputation -> SceneOutput
 buildSceneOutput SceneInput{..} sceneComputation =
   SceneOutput { _outputSceneId = _sceneInputId
-              , _outputSceneRequestFileNodeId = _sceneInputRequestFileNodeId
+              , _outputSceneRequestFileNodeId = _sceneInputFileId
               , _outputSceneComputation = sceneComputation
               }

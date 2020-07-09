@@ -392,10 +392,10 @@ spec = do
 buildSceneInputWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> SceneInput
 buildSceneInputWithScript method url prescript postscript =
   SceneInput { _sceneInputId = UUID.nil
-             , _sceneInputRequestFileNodeId = UUID.nil
+             , _sceneInputFileId = UUID.nil
              , _sceneInputPrescript = prescript
              , _sceneInputPostscript = postscript
-             , _sceneInputTemplatedRequestComputationInput =
+             , _sceneInputScene = HttpScene $
                defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
                                               , _templatedRequestComputationInputUrl = url
                                               }

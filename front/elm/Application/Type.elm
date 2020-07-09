@@ -268,7 +268,7 @@ type alias ScenarioFileRecord =
     { id : Uuid
     , environmentId : Editable (Maybe Int)
     , name : Editable String
-    , scenes : List Scene
+    , scenes : List SceneNode
     , showDetailedSceneView : Maybe Uuid
     , whichResponseView : HttpResponseView
     }
@@ -278,7 +278,7 @@ type alias ScenarioFileRecord =
 -- ** scene
 
 
-type alias Scene =
+type alias SceneNode =
     { id : Uuid
     , requestFileNodeId : Uuid
     , sceneComputation : Maybe SceneComputation
