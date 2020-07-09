@@ -25,12 +25,33 @@ instance Aeson.FromJSON PgComputationInput where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
+-- * pg computation output
+
+
+type PgComputationOutput
+  = Either PgError PgComputation
+
+
+-- * pg error
+
+
+newtype PgError = PgError String deriving (Eq, Show, Generic)
+
+
+instance Aeson.ToJSON PgError where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON PgError where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
 -- * pg computation
 
 
 data PgComputation
-  = PgError String
-  | PgCommandOK
+  = PgCommandOK
   | PgTuplesOk Table
   deriving (Eq, Show, Generic)
 

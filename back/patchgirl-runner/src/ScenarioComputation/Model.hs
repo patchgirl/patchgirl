@@ -40,6 +40,48 @@ instance Aeson.FromJSON SceneInput where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
+-- * http scene input
+
+
+data HttpSceneInput
+  = HttpSceneInput { _httpSceneInputId         :: UUID
+                   , _httpSceneInputFileId     :: UUID
+                   , _httpSceneInputPrescript  :: TangoAst
+                   , _httpSceneInputPostscript :: TangoAst
+                   , _httpSceneInputScene      :: Scene
+                   }
+  deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON HttpSceneInput where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON HttpSceneInput where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
+-- * pg scene input
+
+
+data PgSceneInput
+  = PgSceneInput { _pgSceneInputId         :: UUID
+                 , _pgSceneInputFileId     :: UUID
+                 , _pgSceneInputPrescript  :: TangoAst
+                 , _pgSceneInputPostscript :: TangoAst
+                 , _pgSceneInputScene      :: Scene
+                 }
+  deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON PgSceneInput where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON PgSceneInput where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
 -- * scene
 
 

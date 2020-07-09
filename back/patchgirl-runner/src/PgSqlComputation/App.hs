@@ -24,7 +24,7 @@ runPgSqlComputationHandler
      , IO.MonadIO m
      )
   => (EnvironmentVars, PgComputationInput)
-  -> m PgComputation
+  -> m PgComputationOutput
 runPgSqlComputationHandler (environmentVars, pgComputationInput) =
   runPgComputationWithScenarioContext pgComputationInput environmentVars Map.empty Map.empty
 
@@ -40,7 +40,7 @@ runPgComputationWithScenarioContext
   -> EnvironmentVars
   -> ScenarioVars
   -> ScenarioVars
-  -> m PgComputation
+  -> m PgComputationOutput
 runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars = do
   let
     sql = substitute _pgComputationInputSql
@@ -61,20 +61,20 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
 
   case (mResult, resultStatus) of
     (Nothing, _) ->
-      IO.liftIO $ return $ PgError "fatal error"
+      IO.liftIO $ return $ Left $ PgError "fatal error"
 
     (Just _, LibPQ.CommandOk) ->
-      IO.liftIO $ return PgCommandOK
+      IO.liftIO $ return $ Right PgCommandOK
 
     (Just result, LibPQ.TuplesOk) ->
-      IO.liftIO $ resultToTable result <&> PgTuplesOk
+      IO.liftIO $ resultToTable result <&> Right . PgTuplesOk
 
     (Just result, error) ->
       IO.liftIO $
         LibPQ.resultErrorField result LibPQ.DiagMessagePrimary
           <&> fmap BSU.toString
           <&> Maybe.fromMaybe ""
-          <&> \primaryMessage -> PgError (show error ++ " " ++ primaryMessage)
+          <&> \primaryMessage -> (Left $ PgError (show error ++ " " ++ primaryMessage))
   where
     substitute :: StringTemplate -> String
     substitute =
