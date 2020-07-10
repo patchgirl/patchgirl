@@ -49,7 +49,7 @@ instance FromJSON NewScene where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
--- * scene
+-- * scene node
 
 
 data SceneNode

@@ -38,6 +38,7 @@ type alias Model =
     , whichModal : Maybe Modal
     , id : Uuid.Uuid
     , requestCollection : RequestCollection
+    , pgCollection : PgCollection
     , scenarioCollectionId : Uuid
     , scenes : List SceneNode
     , keyValues : List (Storable NewKeyValue KeyValue)
@@ -104,25 +105,25 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        GenerateRandomUUIDForScene sceneParentId requestFileNodeId ->
+        GenerateRandomUUIDForScene sceneParentId fileNodeId ->
             let
                 newMsg =
-                    Random.generate (AskCreateScene sceneParentId requestFileNodeId) Uuid.uuidGenerator
+                    Random.generate (AskCreateScene sceneParentId fileNodeId) Uuid.uuidGenerator
             in
             ( model, newMsg )
 
-        AskCreateScene sceneParentId requestFileNodeId newSceneId ->
+        AskCreateScene sceneParentId fileNodeId newSceneId ->
             let
                 payload =
                     { newSceneId = newSceneId
                     , newSceneSceneNodeParentId = sceneParentId
-                    , newSceneRequestFileNodeId = requestFileNodeId
+                    , newSceneRequestFileNodeId = fileNodeId
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
 
                 newMsg =
-                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId requestFileNodeId newSceneId)
+                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId)
             in
             ( model, newMsg )
 
@@ -879,17 +880,29 @@ labelInputView labelText =
 -- * modal
 
 
-selectHttpRequestModal : Maybe Uuid -> RequestCollection -> Modal.Config Msg
-selectHttpRequestModal sceneParentId requestCollection =
+selectHttpRequestModal : Maybe Uuid -> RequestCollection -> PgCollection -> Modal.Config Msg
+selectHttpRequestModal sceneParentId requestCollection pgCollection =
     let
         (RequestCollection _ requestNodes) =
             requestCollection
 
-        treeView =
-            column [ spacing 10 ] (nodeView requestNodes)
+        (PgCollection _ pgNodes) =
+            pgCollection
 
-        nodeView : List RequestNode -> List (Element Msg)
-        nodeView nodes =
+        treeView =
+            row [ width fill ]
+                [ column [ spacing 30, width (fillPortion 1) ]
+                      [ el [ centerX, Font.size 23 ] (text "Http request")
+                      , column [ spacing 10] (httpNodeView requestNodes)
+                      ]
+                , column [ spacing 30, width (fillPortion 1), alignTop ]
+                      [ el [ centerX, Font.size 23 ] (text "Postgres query")
+                      , column [ spacing 10] (pgNodeView pgNodes)
+                      ]
+                ]
+
+        httpNodeView : List RequestNode -> List (Element Msg)
+        httpNodeView nodes =
             case nodes of
                 [] ->
                     []
@@ -899,20 +912,20 @@ selectHttpRequestModal sceneParentId requestCollection =
                         RequestFolder { id, name, open, children } ->
                             let
                                 folderChildrenView =
-                                    nodeView children
+                                    httpNodeView children
 
                                 tailView =
-                                    nodeView tail
+                                    httpNodeView tail
 
                                 currentFolderView =
-                                    folderView id name folderChildrenView open
+                                    httpFolderView id name folderChildrenView open
                             in
                             currentFolderView :: tailView
 
                         RequestFile requestFileRecord ->
                             let
                                 tailView =
-                                    nodeView tail
+                                    httpNodeView tail
 
                                 currentFileView =
                                     Input.button []
@@ -922,8 +935,63 @@ selectHttpRequestModal sceneParentId requestCollection =
                             in
                             currentFileView :: tailView
 
-        folderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
-        folderView id name folderChildrenView open =
+        httpFolderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+        httpFolderView id name folderChildrenView open =
+            let
+                folderIcon =
+                    case open of
+                        False ->
+                            "keyboard_arrow_right"
+
+                        True ->
+                            "keyboard_arrow_down"
+            in
+            column []
+                [ iconWithText folderIcon (notEditedValue name)
+                , case open of
+                    True ->
+                        column [ spacing 10, paddingXY 20 10 ] folderChildrenView
+
+                    False ->
+                        none
+                ]
+
+        pgNodeView : List PgNode -> List (Element Msg)
+        pgNodeView nodes =
+            case nodes of
+                [] ->
+                    []
+
+                node :: tail ->
+                    case node of
+                        PgFolder { id, name, open, children } ->
+                            let
+                                folderChildrenView =
+                                    pgNodeView children
+
+                                tailView =
+                                    pgNodeView tail
+
+                                currentFolderView =
+                                    pgFolderView id name folderChildrenView open
+                            in
+                            currentFolderView :: tailView
+
+                        PgFile requestFileRecord ->
+                            let
+                                tailView =
+                                    pgNodeView tail
+
+                                currentFileView =
+                                    Input.button []
+                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id)
+                                        , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
+                                        }
+                            in
+                            currentFileView :: tailView
+
+        pgFolderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+        pgFolderView id name folderChildrenView open =
             let
                 folderIcon =
                     case open of
@@ -944,11 +1012,10 @@ selectHttpRequestModal sceneParentId requestCollection =
                 ]
     in
     { closeMessage = CloseModal
-    , header = text "Select an http request"
+    , header = text "Add either an http request or a postgres query"
     , body = Just treeView
     , footer = Nothing
     }
-
 
 confirmDeleteFolderModal : Modal.Config Msg
 confirmDeleteFolderModal =

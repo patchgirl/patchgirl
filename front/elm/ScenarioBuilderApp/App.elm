@@ -28,6 +28,7 @@ type alias Model a =
         , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection
         , requestCollection : RequestCollection
+        , pgCollection : PgCollection
         , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
@@ -136,6 +137,7 @@ convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =
     , id = file.id
     , scenarioCollectionId = scenarioCollectionId
     , requestCollection = model.requestCollection
+    , pgCollection = model.pgCollection
     , scenes = file.scenes
     , keyValues = keyValuesToRun
     , name = file.name

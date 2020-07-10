@@ -419,7 +419,7 @@ modalView model =
             let
                 scenarioModal =
                     \(SelectHttpRequestModal withSceneParent) ->
-                        Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection))
+                        Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectHttpRequestModal withSceneParent model.requestCollection model.pgCollection))
             in
             Maybe.andThen scenarioModal model.whichModal
 
