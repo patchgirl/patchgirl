@@ -45,9 +45,9 @@ runScenarioComputationHandler ScenarioInput{..} =
     lastSceneWasSuccessful = \case
       [] -> True
       [x] -> case _outputSceneComputation x of
-        SceneRun (ScenePgComputation (Right _))   -> True
-        SceneRun (SceneHttpComputation (Right _)) -> True
-        _                                         -> False
+        HttpSceneOk _ -> True
+        PgSceneOk _   -> True
+        _             -> False
       (_:xs) -> lastSceneWasSuccessful xs
 
 
@@ -73,50 +73,59 @@ runScene lastSceneWasSuccessful environmentVars scenarioGlobalVars scene =
                  , scenarioGlobalVars
                  )
 
-        Right (scenarioGlobalVarsAfterPrescript, scenariolocalVarsAfterPrescript) -> do
-          computationResult <- case scene of
-            HttpScene { _sceneHttpInput } ->
-              fmap SceneHttpComputation $ runRequestComputationWithScenarioContext _sceneHttpInput environmentVars scenarioGlobalVarsAfterPrescript scenariolocalVarsAfterPrescript
-            PgScene { _scenePgInput } ->
-              fmap ScenePgComputation $ runPgComputationWithScenarioContext _scenePgInput environmentVars scenarioGlobalVarsAfterPrescript scenariolocalVarsAfterPrescript
-          case computationResult of
-            SceneHttpComputation error@(Left _) ->
-              return ( buildSceneOutput scene (SceneRun (SceneHttpComputation error))
-                     , scenarioGlobalVars
-                     )
+        Right (scenarioGlobalVarsAfterPrescript, scenarioLocalVarsAfterPrescript) -> do
+          computeScene scene environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript >>= \case
+            SceneHttpComputation (Left error) ->
+              return (buildSceneOutput scene (HttpSceneFailed error), scenarioGlobalVars)
 
-            ScenePgComputation error@(Left _) ->
-              return ( buildSceneOutput scene (SceneRun (ScenePgComputation error))
-                     , scenarioGlobalVars
-                     )
+            ScenePgComputation (Left error) ->
+              return (buildSceneOutput scene (PgSceneFailed error), scenarioGlobalVars)
 
-            SceneHttpComputation computation@(Right httpComputation) ->
+            SceneHttpComputation (Right httpComputation) ->
               let
                 successfulSceneComputation = SuccesfulHttpSceneComputation httpComputation
               in
               case runPostscript scenarioGlobalVarsAfterPrescript Map.empty scene successfulSceneComputation of
                 Left scriptException ->
-                  return ( buildSceneOutput scene (PostscriptFailed successfulSceneComputation scriptException)
+                  return ( buildSceneOutput scene (HttpPostscriptFailed httpComputation scriptException)
                          , scenarioGlobalVarsAfterPrescript
                          )
 
                 Right scenarioGlobalVarsAfterPostscript ->
-                  return (buildSceneOutput scene (SceneRun $ SceneHttpComputation computation), scenarioGlobalVarsAfterPostscript)
+                  return (buildSceneOutput scene (HttpSceneOk httpComputation), scenarioGlobalVarsAfterPostscript)
 
-            ScenePgComputation computation@(Right pgComputation) ->
+            ScenePgComputation (Right pgComputation) ->
               let
                 successfulSceneComputation = SuccesfulPgSceneComputation pgComputation
               in
               case runPostscript scenarioGlobalVarsAfterPrescript Map.empty scene successfulSceneComputation of
                 Left scriptException ->
-                  return ( buildSceneOutput scene (PostscriptFailed successfulSceneComputation scriptException)
+                  return ( buildSceneOutput scene (PgPostscriptFailed pgComputation scriptException)
                          , scenarioGlobalVarsAfterPrescript
                          )
 
                 Right scenarioGlobalVarsAfterPostscript ->
-                  return (buildSceneOutput scene (SceneRun $ ScenePgComputation computation), scenarioGlobalVarsAfterPostscript)
+                  return (buildSceneOutput scene (PgSceneOk pgComputation), scenarioGlobalVarsAfterPostscript)
 
 
+-- ** compute scene
+
+
+computeScene
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     )
+  => Scene
+  -> EnvironmentVars
+  -> ScenarioVars
+  -> ScenarioVars
+  -> m SceneComputationOutput
+computeScene scene environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript =
+  case scene of
+    HttpScene { _sceneHttpInput } ->
+      SceneHttpComputation <$> runRequestComputationWithScenarioContext _sceneHttpInput environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript
+    PgScene { _scenePgInput } ->
+      ScenePgComputation <$> runPgComputationWithScenarioContext _scenePgInput environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript
 
 
 -- ** pre script
@@ -262,7 +271,7 @@ runPostscriptExpr succesfulSceneComputation scenarioGlobalVars scenarioLocalVars
         HttpResponseStatus       -> Just (LInt _requestComputationStatusCode)
         expr                     -> Just expr
 
-    SuccesfulPgSceneComputation pgComputation ->
+    SuccesfulPgSceneComputation _ ->
       case expr of
         Var var                  -> Map.lookup var scenarioLocalVars
         Fetch var                -> Map.lookup var scenarioGlobalVars
@@ -285,7 +294,7 @@ runPrescriptExpr scenarioGlobalVars scenarioLocalVars = \case
 -- ** scene
 
 
-buildSceneOutput :: Scene -> SceneComputationOutput -> SceneOutput
+buildSceneOutput :: Scene -> SceneComputation -> SceneOutput
 buildSceneOutput scene sceneComputationOutput =
   SceneOutput { _outputSceneId = _sceneId scene
               , _outputSceneRequestFileNodeId = _sceneFileId scene

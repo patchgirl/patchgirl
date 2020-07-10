@@ -75,7 +75,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            [ buildSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -102,8 +102,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
-            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Left $ InvalidUrlException "" ""
+            [ buildSceneOutput $ HttpSceneOk requestComputation
+            , buildSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
             ]
           )
 
@@ -130,7 +130,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Left $ InvalidUrlException "" ""
+            [ buildSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
             , buildSceneOutput SceneNotRun
             ]
           )
@@ -203,11 +203,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
+            [ buildSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -233,8 +229,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
-            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            [ buildSceneOutput $ HttpSceneOk requestComputation
+            , buildSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -259,7 +255,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right $ requestComputation { _requestComputationBody = "foo" }
+            [ buildSceneOutput $ HttpSceneOk $ requestComputation { _requestComputationBody = "foo" }
             ]
           )
 
@@ -284,7 +280,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PostscriptFailed (SuccesfulHttpSceneComputation (requestComputation { _requestComputationBody = "foo" })) (AssertEqualFailed (LString "foo") (LString "bar"))
+            [ buildSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertEqualFailed (LString "foo") (LString "bar"))
             ]
           )
 
@@ -310,8 +306,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
-            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            [ buildSceneOutput $ HttpSceneOk requestComputation
+            , buildSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -337,8 +333,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
-            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            [ buildSceneOutput $ HttpSceneOk requestComputation
+            , buildSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -372,7 +368,7 @@ buildScene method url =
 -- ** build output scene
 
 
-buildSceneOutput :: SceneComputationOutput -> SceneOutput
+buildSceneOutput :: SceneComputation -> SceneOutput
 buildSceneOutput sceneComputationOutput =
   SceneOutput { _outputSceneId = UUID.nil
               , _outputSceneRequestFileNodeId = UUID.nil

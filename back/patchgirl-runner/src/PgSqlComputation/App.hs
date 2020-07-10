@@ -74,7 +74,7 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
         LibPQ.resultErrorField result LibPQ.DiagMessagePrimary
           <&> fmap BSU.toString
           <&> Maybe.fromMaybe ""
-          <&> \primaryMessage -> (Left $ PgError (show error ++ " " ++ primaryMessage))
+          <&> \primaryMessage -> Left $ PgError (show error ++ " " ++ primaryMessage)
   where
     substitute :: StringTemplate -> String
     substitute =

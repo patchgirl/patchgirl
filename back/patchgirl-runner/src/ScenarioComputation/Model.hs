@@ -84,7 +84,7 @@ instance Aeson.FromJSON ScenarioOutput where
 data SceneOutput
   = SceneOutput { _outputSceneId                :: UUID
                 , _outputSceneRequestFileNodeId :: UUID
-                , _outputSceneComputation       :: SceneComputationOutput
+                , _outputSceneComputation       :: SceneComputation
                 }
   deriving (Eq, Show, Generic)
 
@@ -100,20 +100,24 @@ instance Aeson.FromJSON SceneOutput where
 -- * scene computation output
 
 
-data SceneComputationOutput
+data SceneComputation
   = SceneNotRun
   | PrescriptFailed ScriptException
-  | SceneRun SceneComputation
-  | PostscriptFailed SuccesfulSceneComputation ScriptException
+  | HttpSceneOk RequestComputation
+  | HttpSceneFailed HttpException
+  | PgSceneOk PgComputation
+  | PgSceneFailed PgError
+  | PgPostscriptFailed PgComputation ScriptException
+  | HttpPostscriptFailed RequestComputation ScriptException
   deriving (Eq, Show, Generic)
 
-instance Aeson.ToJSON SceneComputationOutput where
+instance Aeson.ToJSON SceneComputation where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
                                              , Aeson.sumEncoding = Aeson.ObjectWithSingleField
                                              }
 
-instance Aeson.FromJSON SceneComputationOutput where
+instance Aeson.FromJSON SceneComputation where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
                                                 , Aeson.sumEncoding = Aeson.ObjectWithSingleField
@@ -123,18 +127,10 @@ instance Aeson.FromJSON SceneComputationOutput where
 -- * scene computation
 
 
-data SceneComputation
+data SceneComputationOutput
   = ScenePgComputation PgComputationOutput
   | SceneHttpComputation RequestComputationOutput
   deriving (Eq, Show, Generic)
-
-instance Aeson.ToJSON SceneComputation where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON SceneComputation where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
 -- * succesful scene computation
