@@ -126,7 +126,7 @@ data SceneComputation
   | PrescriptFailed ScriptException
   | RequestFailed HttpException
   | PostscriptFailed ScriptException
-  | SceneSucceeded RequestComputationOutput
+  | SceneSucceeded RequestComputation
   deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON SceneComputation where

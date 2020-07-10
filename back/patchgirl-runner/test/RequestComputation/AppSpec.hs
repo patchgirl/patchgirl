@@ -104,9 +104,9 @@ spec = do
                                          , _templatedRequestComputationInputUrl = [ Sentence "http://foo.com" ]
                                          , _templatedRequestComputationInputBody = [ Sentence "" ]
                                          }
-      , Right (RequestComputationOutput { _requestComputationOutputStatusCode = 200
-                                        , _requestComputationOutputHeaders    = []
-                                        , _requestComputationOutputBody       = ""
+      , Right (RequestComputation { _requestComputationStatusCode = 200
+                                        , _requestComputationHeaders    = []
+                                        , _requestComputationBody       = ""
                                         })
       )
 
@@ -131,9 +131,9 @@ spec = do
                                          , _templatedRequestComputationInputUrl = [ Key "host" ]
                                          , _templatedRequestComputationInputBody = [ Sentence "" ]
                                          }
-      , Right (RequestComputationOutput { _requestComputationOutputStatusCode = 200
-                                        , _requestComputationOutputHeaders    = []
-                                        , _requestComputationOutputBody       = ""
+      , Right (RequestComputation { _requestComputationStatusCode = 200
+                                        , _requestComputationHeaders    = []
+                                        , _requestComputationBody       = ""
                                         })
       )
 

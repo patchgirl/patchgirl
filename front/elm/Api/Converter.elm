@@ -244,7 +244,7 @@ convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -
 convertRequestComputationResultFromBackToFront backRequestComputationResult =
     case backRequestComputationResult of
         Ok requestComputationOutput ->
-            Ok (convertRequestComputationOutputFromBackToFront requestComputationOutput)
+            Ok (convertRequestComputationFromBackToFront requestComputationOutput)
 
         Err httpException ->
             Err (convertHttpExceptionFromBackToFront httpException)
@@ -253,13 +253,14 @@ convertRequestComputationResultFromBackToFront backRequestComputationResult =
 -- ** request computation output
 
 
-convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
-convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
-    { statusCode = backRequestComputationOutput.requestComputationOutputStatusCode
+convertRequestComputationFromBackToFront : Back.RequestComputation -> Front.RequestComputation
+convertRequestComputationFromBackToFront backRequestComputation =
+    { statusCode = backRequestComputation.requestComputationStatusCode
     , statusText = ""
-    , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) backRequestComputationOutput.requestComputationOutputHeaders
-    , body = backRequestComputationOutput.requestComputationOutputBody
+    , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) backRequestComputation.requestComputationHeaders
+    , body = backRequestComputation.requestComputationBody
     }
+
 
 -- ** http exception
 
@@ -520,7 +521,7 @@ convertScenarioOutputFromBackToFront scenesOutput =
                    Front.PostscriptFailed (convertScriptExceptionFromBackToFront scriptException)
 
                Back.SceneSucceeded requestComputationOutput ->
-                   Front.SceneSucceeded (convertRequestComputationOutputFromBackToFront requestComputationOutput)
+                   Front.SceneSucceeded (convertRequestComputationFromBackToFront requestComputationOutput)
 
     in
     List.map convertSceneOutputFromBackToFront scenesOutput

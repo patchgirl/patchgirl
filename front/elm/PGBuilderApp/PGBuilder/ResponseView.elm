@@ -19,7 +19,7 @@ import Json.Print as Json
 -- * status
 
 
-statusResponseView : RequestComputationOutput -> Element a
+statusResponseView : RequestComputation -> Element a
 statusResponseView requestComputationOutput =
     let
         statusText =
@@ -46,7 +46,7 @@ statusResponseView requestComputationOutput =
 -- * body response text
 
 
-bodyResponseView : RequestComputationOutput -> (String -> a) -> Element a
+bodyResponseView : RequestComputation -> (String -> a) -> Element a
 bodyResponseView requestComputationOutput msg =
     Input.multiline [ scrollbars, width fill, height fill ]
         { onChange = msg
@@ -59,7 +59,7 @@ bodyResponseView requestComputationOutput msg =
 -- * header response view
 
 
-headersResponseView : RequestComputationOutput -> (String -> a) -> Element a
+headersResponseView : RequestComputation -> (String -> a) -> Element a
 headersResponseView requestComputationOutput msg =
     let
         headers =

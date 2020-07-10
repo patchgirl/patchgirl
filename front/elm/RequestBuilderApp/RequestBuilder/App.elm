@@ -226,12 +226,12 @@ update msg model =
             case model.requestComputationResult of
                 Just (Ok response) ->
                     let
-                        newRequestComputationOutput =
+                        newRequestComputation =
                             { response | body = newBody }
 
                         newModel =
                             { model
-                                | requestComputationResult = Just (Ok newRequestComputationOutput)
+                                | requestComputationResult = Just (Ok newRequestComputation)
                             }
                     in
                     ( newModel, Cmd.none )

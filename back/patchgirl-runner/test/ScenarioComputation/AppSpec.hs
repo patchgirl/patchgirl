@@ -75,10 +75,10 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
             ]
           )
@@ -106,10 +106,10 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
             , buildSceneOutput $ RequestFailed $ InvalidUrlException "" ""
             ]
@@ -211,10 +211,10 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
             ]
           )
@@ -241,15 +241,15 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
-            , buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            , buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
             ]
           )
@@ -275,10 +275,10 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = "foo"
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = "foo"
                 }
             ]
           )
@@ -330,15 +330,15 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
-            , buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            , buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
             ]
           )
@@ -365,15 +365,15 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
-            , buildSceneOutput $ SceneSucceeded $ RequestComputationOutput
-                { _requestComputationOutputStatusCode = 200
-                , _requestComputationOutputHeaders    = []
-                , _requestComputationOutputBody       = ""
+            , buildSceneOutput $ SceneSucceeded $ RequestComputation
+                { _requestComputationStatusCode = 200
+                , _requestComputationHeaders    = []
+                , _requestComputationBody       = ""
                 }
             ]
           )

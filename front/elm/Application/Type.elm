@@ -315,7 +315,7 @@ type alias Builder =
 
 
 type alias RequestComputationResult
-    = Result HttpException RequestComputationOutput
+    = Result HttpException RequestComputation
 
 
 -- ** http exception
@@ -432,7 +432,7 @@ type alias RequestComputationInput =
 -- ** request computation output
 
 
-type alias RequestComputationOutput =
+type alias RequestComputation =
     { statusCode : Int
     , statusText : String
     , headers : Dict.Dict String String
@@ -582,7 +582,7 @@ type SceneComputation
   | PrescriptFailed ScriptException
   | RequestFailed HttpException
   | PostscriptFailed ScriptException
-  | SceneSucceeded RequestComputationOutput
+  | SceneSucceeded RequestComputation
 
 
 type ScriptException

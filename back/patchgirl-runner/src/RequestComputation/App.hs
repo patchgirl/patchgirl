@@ -124,14 +124,14 @@ responseToComputationResult
      , IO.MonadIO m
      )
   => Either Http.HttpException (HttpResponse BSU.ByteString)
-  -> m (Either HttpException RequestComputationOutput)
+  -> m (Either HttpException RequestComputation)
 responseToComputationResult either = do
   case either of
     Right response ->
       return . Right $
-        RequestComputationOutput { _requestComputationOutputStatusCode = Http.statusCode $ httpResponseStatus response
-                                 , _requestComputationOutputHeaders    = parseResponseHeaders response
-                                 , _requestComputationOutputBody       = BSU.toString $ httpResponseBody response
+        RequestComputation { _requestComputationStatusCode = Http.statusCode $ httpResponseStatus response
+                                 , _requestComputationHeaders    = parseResponseHeaders response
+                                 , _requestComputationBody       = BSU.toString $ httpResponseBody response
                                  }
 
     Left ex@(Http.InvalidUrlException url reason) -> do

@@ -2,7 +2,7 @@
 
 module RequestComputation.Model ( RequestComputationInput(..)
                                 , TemplatedRequestComputationInput(..)
-                                , RequestComputationOutput(..)
+                                , RequestComputation(..)
                                 , RequestComputationResult
                                 , HttpResponse(..)
                                 , fromResponseToHttpResponse
@@ -76,21 +76,21 @@ instance Aeson.FromJSON RequestComputationInput where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- * request computation output
+-- * request computation
 
 
-data RequestComputationOutput
-  = RequestComputationOutput { _requestComputationOutputStatusCode :: Int
-                             , _requestComputationOutputHeaders    :: [(String, String)]
-                             , _requestComputationOutputBody       :: String
-                             }
+data RequestComputation
+  = RequestComputation { _requestComputationStatusCode :: Int
+                       , _requestComputationHeaders    :: [(String, String)]
+                       , _requestComputationBody       :: String
+                       }
   deriving (Eq, Show, Read, Generic)
 
-instance Aeson.ToJSON RequestComputationOutput where
+instance Aeson.ToJSON RequestComputation where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON RequestComputationOutput where
+instance Aeson.FromJSON RequestComputation where
   parseJSON = Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
@@ -98,7 +98,7 @@ instance Aeson.FromJSON RequestComputationOutput where
 
 
 type RequestComputationResult
-  = Either HttpException RequestComputationOutput
+  = Either HttpException RequestComputation
 
 
 -- * http exception

@@ -123,7 +123,7 @@ runPostscript
   :: ScenarioVars
   -> ScenarioVars
   -> SceneInput
-  -> RequestComputationOutput
+  -> RequestComputation
   -> Either ScriptException ScenarioVars
 runPostscript scenarioGlobalVars scenarioLocalVars SceneInput{..} requestComputationOutput =
   foldl f (Right (scenarioGlobalVars, scenarioLocalVars)) _sceneInputPostscript <&> fst
@@ -140,7 +140,7 @@ runPostscript scenarioGlobalVars scenarioLocalVars SceneInput{..} requestComputa
 
 
 runPostscriptProc
-  :: RequestComputationOutput
+  :: RequestComputation
   -> (ScenarioVars, ScenarioVars)
   -> Proc
   -> Either ScriptException (ScenarioVars, ScenarioVars)
@@ -229,16 +229,16 @@ runPrescriptProc (scenarioGlobalVars, scenarioLocalVars) = \case
 
 
 runPostscriptExpr
-  :: RequestComputationOutput
+  :: RequestComputation
   -> ScenarioVars
   -> ScenarioVars
   -> Expr
   -> Maybe Expr
-runPostscriptExpr RequestComputationOutput{..} scenarioGlobalVars scenarioLocalVars = \case
+runPostscriptExpr RequestComputation{..} scenarioGlobalVars scenarioLocalVars = \case
   Var var -> Map.lookup var scenarioLocalVars
   Fetch var -> Map.lookup var scenarioGlobalVars
-  HttpResponseBodyAsString -> Just (LString _requestComputationOutputBody)
-  HttpResponseStatus -> Just (LInt _requestComputationOutputStatusCode)
+  HttpResponseBodyAsString -> Just (LString _requestComputationBody)
+  HttpResponseStatus -> Just (LInt _requestComputationStatusCode)
   expr -> Just expr
 
 
