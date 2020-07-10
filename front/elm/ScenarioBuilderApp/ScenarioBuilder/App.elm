@@ -225,22 +225,22 @@ update msg model =
 
         AskRunScenario ->
             let
-                sceneToSceneInput : SceneNode -> Maybe Client.SceneInput
+                sceneToSceneInput : SceneNode -> Maybe Client.Scene
                 sceneToSceneInput scene =
                     case (scene.prescriptAst, scene.postscriptAst) of
                         (Ok prescript, Ok postscript) ->
                             findFileRecord model scene.requestFileNodeId
                                 |> Maybe.map buildRequestComputationInput
                                 |> Maybe.map (\requestComputationInput ->
-                                                  { sceneInputId = scene.id
-                                                  , sceneInputFileId = scene.requestFileNodeId
-                                                  , sceneInputScene =
-                                                      Client.HttpScene (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
-                                                  , sceneInputPrescript =
-                                                      Client.convertTangoscriptFromFrontToBack prescript
-                                                  , sceneInputPostscript =
-                                                      Client.convertTangoscriptFromFrontToBack postscript
-                                                  })
+                                                  Client.HttpScene { sceneId = scene.id
+                                                                   , sceneFileId = scene.requestFileNodeId
+                                                                   , sceneHttpInput =
+                                                                         (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
+                                                                   , scenePrescript =
+                                                                         Client.convertTangoscriptFromFrontToBack prescript
+                                                                   , scenePostscript =
+                                                                       Client.convertTangoscriptFromFrontToBack postscript
+                                                                   })
 
                         _ -> Nothing
 
@@ -254,7 +254,7 @@ update msg model =
                         |> List.map (\{key, value} -> (key, Client.convertStringTemplateFromFrontToBack value))
                         |> Dict.fromList
 
-                mScenes : Maybe (List Client.SceneInput)
+                mScenes : Maybe (List Client.Scene)
                 mScenes =
                     model.scenes
                         |> List.map sceneToSceneInput
@@ -623,7 +623,10 @@ sceneView model { id, requestFileNodeId, sceneComputation } =
                 Nothing ->
                     [ Border.color white ]
 
-                Just (SceneSucceeded _) ->
+                Just (HttpSceneOk _) ->
+                    [ borderSuccess, backgroundSuccess ]
+
+                Just (PgSceneOk _) ->
                     [ borderSuccess, backgroundSuccess ]
 
                 Just _ ->
@@ -759,13 +762,19 @@ detailedSceneView model scene requestFileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                RequestFailed httpException ->
+                HttpSceneFailed httpException ->
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
-                PostscriptFailed scriptException ->
+                PgSceneFailed error ->
+                    text <| "This postgresql query failed because of: " ++ error
+
+                HttpPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                SceneSucceeded requestComputationOutput ->
+                PgPostscriptFailed _ scriptException ->
+                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+
+                HttpSceneOk requestComputationOutput ->
                     column [ width fill ]
                         [ statusResponseView requestComputationOutput
                         , whichResponseButtonView
@@ -779,6 +788,12 @@ detailedSceneView model scene requestFileRecord =
                               HeaderResponseView ->
                                   headersResponseView requestComputationOutput (always DoNothing)
                         ]
+
+                PgSceneOk pgComputation ->
+                    column [ width fill ]
+                        []
+
+
     in
     column [ width fill
            , height fill

@@ -578,12 +578,14 @@ type alias SceneOutput =
 
 
 type SceneComputation
-  = SceneNotRun
-  | PrescriptFailed ScriptException
-  | RequestFailed HttpException
-  | PostscriptFailed ScriptException
-  | SceneSucceeded RequestComputation
-
+    = SceneNotRun
+    | PrescriptFailed ScriptException
+    | HttpSceneOk RequestComputation
+    | HttpSceneFailed HttpException
+    | PgSceneOk PgComputation
+    | PgSceneFailed String
+    | PgPostscriptFailed PgComputation ScriptException
+    | HttpPostscriptFailed RequestComputation ScriptException
 
 type ScriptException
   = UnknownVariable Expr

@@ -514,14 +514,23 @@ convertScenarioOutputFromBackToFront scenesOutput =
                Back.PrescriptFailed scriptException ->
                    Front.PrescriptFailed (convertScriptExceptionFromBackToFront scriptException)
 
-               Back.RequestFailed httpException ->
-                   Front.RequestFailed (convertHttpExceptionFromBackToFront httpException)
+               Back.HttpSceneFailed httpException ->
+                   Front.HttpSceneFailed (convertHttpExceptionFromBackToFront httpException)
 
-               Back.PostscriptFailed scriptException ->
-                   Front.PostscriptFailed (convertScriptExceptionFromBackToFront scriptException)
+               Back.PgSceneFailed error ->
+                   Front.PgSceneFailed error
 
-               Back.SceneSucceeded requestComputationOutput ->
-                   Front.SceneSucceeded (convertRequestComputationFromBackToFront requestComputationOutput)
+               Back.HttpPostscriptFailed httpComputation scriptException ->
+                   Front.HttpPostscriptFailed (convertRequestComputationFromBackToFront httpComputation) (convertScriptExceptionFromBackToFront scriptException)
+
+               Back.PgPostscriptFailed pgComputation scriptException ->
+                   Front.PgPostscriptFailed (Debug.todo "") (convertScriptExceptionFromBackToFront scriptException)
+
+               Back.HttpSceneOk requestComputation ->
+                   Front.HttpSceneOk (convertRequestComputationFromBackToFront requestComputation)
+
+               Back.PgSceneOk pgComputation ->
+                   Front.PgSceneOk (Debug.todo "")
 
     in
     List.map convertSceneOutputFromBackToFront scenesOutput

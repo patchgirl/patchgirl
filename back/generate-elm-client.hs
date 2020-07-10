@@ -190,7 +190,6 @@ deriveElmDef deriveWithSingleFieldObject ''Runner.SceneComputation
 deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioInput
 deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioOutput
 deriveElmDef deriveWithSingleFieldObject ''Runner.SceneOutput
-deriveElmDef deriveWithSingleFieldObject ''Runner.SceneInput
 deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioVars
 deriveElmDef deriveWithTaggedObject ''Runner.Template
 deriveElmDef deriveWithSingleFieldObject ''Runner.TemplatedRequestComputationInput
@@ -362,7 +361,6 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.ScenarioOutput)
       , DefineElm (Proxy :: Proxy Runner.ScenarioInput)
       , DefineElm (Proxy :: Proxy Runner.SceneOutput)
-      , DefineElm (Proxy :: Proxy Runner.SceneInput)
       , DefineElm (Proxy :: Proxy Runner.Expr)
       , DefineElm (Proxy :: Proxy Runner.TangoAst)
       , DefineElm (Proxy :: Proxy Runner.Proc)
