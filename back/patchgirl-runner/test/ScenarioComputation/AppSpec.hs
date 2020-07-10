@@ -71,15 +71,11 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "http://foo.com"] ]
+            , _scenarioInputScenes = [ buildScene Get [Sentence "http://foo.com"] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
             ]
           )
 
@@ -100,18 +96,14 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "http://foo.com"]
-                                     , buildSceneInput Post [Sentence "http://foo.com"]
+            , _scenarioInputScenes = [ buildScene Get [Sentence "http://foo.com"]
+                                     , buildScene Post [Sentence "http://foo.com"]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
-            , buildSceneOutput $ RequestFailed $ InvalidUrlException "" ""
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Left $ InvalidUrlException "" ""
             ]
           )
 
@@ -132,13 +124,13 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInput Get [Sentence "http://foo.com"]
-                                     , buildSceneInput Post [Sentence "http://foo.com"]
+            , _scenarioInputScenes = [ buildScene Get [Sentence "http://foo.com"]
+                                     , buildScene Post [Sentence "http://foo.com"]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ RequestFailed $ InvalidUrlException "" ""
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Left $ InvalidUrlException "" ""
             , buildSceneOutput SceneNotRun
             ]
           )
@@ -159,7 +151,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [ AssertEqual (LString "a") (LString "b") ] [] ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "foo.com"] [ AssertEqual (LString "a") (LString "b") ] [] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
@@ -183,7 +175,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "foo.com"] [ Let "myVar" (Fetch "unknownVariable") ] [] ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "foo.com"] [ Let "myVar" (Fetch "unknownVariable") ] [] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
@@ -207,11 +199,11 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [ AssertEqual (LString "a") (LString "a") ] [] ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (LString "a") (LString "a") ] [] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right $ RequestComputation
                 { _requestComputationStatusCode = 200
                 , _requestComputationHeaders    = []
                 , _requestComputationBody       = ""
@@ -235,22 +227,14 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildSceneInputWithScript Get [Sentence "http://foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
-            , buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
             ]
           )
 
@@ -270,16 +254,12 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = "foo"
-                }
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right $ requestComputation { _requestComputationBody = "foo" }
             ]
           )
 
@@ -299,12 +279,12 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PostscriptFailed $ AssertEqualFailed (LString "foo") (LString "bar")
+            [ buildSceneOutput $ PostscriptFailed (SuccesfulHttpSceneComputation (requestComputation { _requestComputationBody = "foo" })) (AssertEqualFailed (LString "foo") (LString "bar"))
             ]
           )
 
@@ -324,22 +304,14 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ Set "a" (LInt 1) ]
-                                     , buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ Set "a" (LInt 1) ]
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
-            , buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
             ]
           )
 
@@ -359,22 +331,14 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildSceneInputWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildSceneInputWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
-            , buildSceneOutput $ SceneSucceeded $ RequestComputation
-                { _requestComputationStatusCode = 200
-                , _requestComputationHeaders    = []
-                , _requestComputationBody       = ""
-                }
+            [ buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
+            , buildSceneOutput $ SceneRun $ SceneHttpComputation $ Right requestComputation
             ]
           )
 
@@ -389,31 +353,30 @@ spec = do
 -- ** build input scene
 
 
-buildSceneInputWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> SceneInput
-buildSceneInputWithScript method url prescript postscript =
-  SceneInput { _sceneInputId = UUID.nil
-             , _sceneInputFileId = UUID.nil
-             , _sceneInputPrescript = prescript
-             , _sceneInputPostscript = postscript
-             , _sceneInputScene = HttpScene $
-               defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
-                                              , _templatedRequestComputationInputUrl = url
-                                              }
-             }
+buildHttpSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> Scene
+buildHttpSceneWithScript method url prescript postscript =
+  HttpScene { _sceneId = UUID.nil
+            , _sceneFileId = UUID.nil
+            , _scenePrescript = prescript
+            , _scenePostscript = postscript
+            , _sceneHttpInput = defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
+                                                               , _templatedRequestComputationInputUrl = url
+                                                               }
+            }
 
-buildSceneInput :: Method -> StringTemplate -> SceneInput
-buildSceneInput method url =
-  buildSceneInputWithScript method url [] []
+buildScene :: Method -> StringTemplate -> Scene
+buildScene method url =
+  buildHttpSceneWithScript method url [] []
 
 
 -- ** build output scene
 
 
-buildSceneOutput :: SceneComputation -> SceneOutput
-buildSceneOutput sceneComputation =
+buildSceneOutput :: SceneComputationOutput -> SceneOutput
+buildSceneOutput sceneComputationOutput =
   SceneOutput { _outputSceneId = UUID.nil
               , _outputSceneRequestFileNodeId = UUID.nil
-              , _outputSceneComputation = sceneComputation
+              , _outputSceneComputation = sceneComputationOutput
               }
 
 
@@ -428,3 +391,10 @@ buildResponse =
                , httpResponseHeaders = []
                , httpResponseBody = BSU.fromString ""
                }
+
+requestComputation :: RequestComputation
+requestComputation =
+  RequestComputation { _requestComputationStatusCode = 200
+                     , _requestComputationHeaders    = []
+                     , _requestComputationBody       = ""
+                     }

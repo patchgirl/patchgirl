@@ -94,7 +94,7 @@ instance Aeson.FromJSON RequestComputation where
   parseJSON = Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- * request computation result
+-- * request computation output
 
 
 type RequestComputationOutput

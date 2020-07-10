@@ -25,6 +25,25 @@ instance Aeson.FromJSON PgComputationInput where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
+-- * templated pg connection
+
+
+data TemplatedPgConnection = TemplatedPgConnection { _templatedPgConnectionHost     :: StringTemplate
+                                                   , _templatedPgConnectionPort     :: StringTemplate
+                                                   , _templatedPgConnectionUser     :: StringTemplate
+                                                   , _templatedPgConnectionPassword :: StringTemplate
+                                                   , _templatedPgConnectionDbName   :: StringTemplate
+                                                   } deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON TemplatedPgConnection where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON TemplatedPgConnection where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
 -- * pg computation output
 
 
@@ -107,25 +126,6 @@ instance Aeson.ToJSON PgValue where
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 instance Aeson.FromJSON PgValue where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-
--- * templated pg connection
-
-
-data TemplatedPgConnection = TemplatedPgConnection { _templatedPgConnectionHost     :: StringTemplate
-                                                   , _templatedPgConnectionPort     :: StringTemplate
-                                                   , _templatedPgConnectionUser     :: StringTemplate
-                                                   , _templatedPgConnectionPassword :: StringTemplate
-                                                   , _templatedPgConnectionDbName   :: StringTemplate
-                                                   } deriving (Eq, Show, Generic)
-
-instance Aeson.ToJSON TemplatedPgConnection where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON TemplatedPgConnection where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
