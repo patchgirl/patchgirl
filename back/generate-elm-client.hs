@@ -183,7 +183,7 @@ deriveElmDef deriveWithTaggedObject ''Servant.NoContent
 
 deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationInput
 deriveElmDef deriveWithTaggedObject ''Runner.RequestComputation
-deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationResult
+deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationOutput
 deriveElmDef deriveWithTaggedObject ''Runner.ScriptException
 deriveElmDef deriveWithSingleFieldObject ''Runner.HttpException
 deriveElmDef deriveWithSingleFieldObject ''Runner.SceneComputation
@@ -353,7 +353,7 @@ runnerElmModule =
     elmDefinitions =
       [ DefineElm (Proxy :: Proxy Runner.RequestComputationInput)
       , DefineElm (Proxy :: Proxy Runner.RequestComputation)
-      , DefineElm (Proxy :: Proxy Runner.RequestComputationResult)
+      , DefineElm (Proxy :: Proxy Runner.RequestComputationOutput)
       , DefineElm (Proxy :: Proxy Runner.ScriptException)
       , DefineElm (Proxy :: Proxy Runner.HttpException)
       , DefineElm (Proxy :: Proxy Runner.Template)

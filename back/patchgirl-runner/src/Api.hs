@@ -41,10 +41,10 @@ runnerApiServer =
 
 type RequestComputationApi =
   "api" :> "runner" :> "requestComputation" :> (
-    ReqBody '[JSON] (TemplatedRequestComputationInput, EnvironmentVars) :> Post '[JSON] RequestComputationResult
+    ReqBody '[JSON] (TemplatedRequestComputationInput, EnvironmentVars) :> Post '[JSON] RequestComputationOutput
   )
 
-requestComputationApiServer :: (TemplatedRequestComputationInput, EnvironmentVars) -> AppM RequestComputationResult
+requestComputationApiServer :: (TemplatedRequestComputationInput, EnvironmentVars) -> AppM RequestComputationOutput
 requestComputationApiServer =
   runRequestComputationHandler
 

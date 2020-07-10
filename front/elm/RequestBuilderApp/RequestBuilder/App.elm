@@ -40,7 +40,7 @@ type alias Model =
     , httpMethod : Editable HttpMethod
     , httpHeaders : Editable (List ( String, String ))
     , httpBody : Editable String
-    , requestComputationResult : Maybe RequestComputationResult
+    , requestComputationResult : Maybe RequestComputationOutput
     , showResponseView : Bool
     , whichResponseView : HttpResponseView
     , runRequestIconAnimation : Animation.State
@@ -63,7 +63,7 @@ type Msg
     | DeleteHeader Int
     | AskRun
     | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
-    | RemoteComputationDone RequestComputationResult -- request ran from the server
+    | RemoteComputationDone RequestComputationOutput -- request ran from the server
     | RemoteComputationFailed
     | ServerError
     | AskSave
@@ -319,12 +319,12 @@ updateRequestFileResultToMsg result =
             ServerError
 
 
-remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationResult -> Msg
+remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationOutput -> Msg
 remoteComputationDoneToMsg result =
     case result of
-        Ok backRequestComputationResult ->
+        Ok backRequestComputationOutput ->
             RemoteComputationDone <|
-                Client.convertRequestComputationResultFromBackToFront backRequestComputationResult
+                Client.convertRequestComputationOutputFromBackToFront backRequestComputationOutput
 
         Err error ->
             RemoteComputationFailed
@@ -394,7 +394,7 @@ convertResponseStringToResult httpResponse =
             Ok ( metadata, body )
 
 
-convertResultToResponse : Result DetailedError ( Http.Metadata, String ) -> RequestComputationResult
+convertResultToResponse : Result DetailedError ( Http.Metadata, String ) -> RequestComputationOutput
 convertResultToResponse result =
     case result of
         Err (BadUrl url) ->

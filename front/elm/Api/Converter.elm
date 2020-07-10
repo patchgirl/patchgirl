@@ -240,9 +240,9 @@ convertSessionFromBackToFront backSession =
 -- * request computation
 
 
-convertRequestComputationResultFromBackToFront : Back.RequestComputationResult -> Front.RequestComputationResult
-convertRequestComputationResultFromBackToFront backRequestComputationResult =
-    case backRequestComputationResult of
+convertRequestComputationOutputFromBackToFront : Back.RequestComputationOutput -> Front.RequestComputationOutput
+convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
+    case backRequestComputationOutput of
         Ok requestComputationOutput ->
             Ok (convertRequestComputationFromBackToFront requestComputationOutput)
 

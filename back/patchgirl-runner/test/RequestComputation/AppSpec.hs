@@ -27,7 +27,7 @@ import           RequestComputation.Model
 -- * client
 
 
-runRequestComputation :: (TemplatedRequestComputationInput, EnvironmentVars) -> Servant.ClientM RequestComputationResult
+runRequestComputation :: (TemplatedRequestComputationInput, EnvironmentVars) -> Servant.ClientM RequestComputationOutput
 runRequestComputation =
   Servant.client (Proxy :: Proxy RequestComputationApi)
 

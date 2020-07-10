@@ -3,7 +3,7 @@
 module RequestComputation.Model ( RequestComputationInput(..)
                                 , TemplatedRequestComputationInput(..)
                                 , RequestComputation(..)
-                                , RequestComputationResult
+                                , RequestComputationOutput
                                 , HttpResponse(..)
                                 , fromResponseToHttpResponse
                                 , HttpException(..)
@@ -97,7 +97,7 @@ instance Aeson.FromJSON RequestComputation where
 -- * request computation result
 
 
-type RequestComputationResult
+type RequestComputationOutput
   = Either HttpException RequestComputation
 
 

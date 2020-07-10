@@ -172,7 +172,7 @@ type alias RequestFileRecord =
     , httpMethod : Editable HttpMethod
     , httpHeaders : Editable (List ( String, String ))
     , httpBody : Editable String
-    , requestComputationResult : Maybe RequestComputationResult
+    , requestComputationResult : Maybe RequestComputationOutput
     , showResponseView : Bool
     , whichResponseView : HttpResponseView
     , runRequestIconAnimation : Animation.State
@@ -300,7 +300,7 @@ type alias Builder =
     , httpMethod : Editable HttpMethod
     , httpHeaders : Editable (List ( String, String ))
     , httpBody : Editable String
-    , requestComputationResult : Maybe RequestComputationResult
+    , requestComputationResult : Maybe RequestComputationOutput
     , showResponseView : Bool
     , whichResponseView : HttpResponseView
     , requestPending : Bool
@@ -314,7 +314,7 @@ type alias Builder =
 -- ** request computation result
 
 
-type alias RequestComputationResult
+type alias RequestComputationOutput
     = Result HttpException RequestComputation
 
 

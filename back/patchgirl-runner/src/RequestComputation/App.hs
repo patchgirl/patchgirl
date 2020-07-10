@@ -36,7 +36,7 @@ runRequestComputationHandler
      , IO.MonadIO m
      )
   => (TemplatedRequestComputationInput, EnvironmentVars)
-  -> m RequestComputationResult
+  -> m RequestComputationOutput
 runRequestComputationHandler (templatedRequestComputationInput, environmentVars) =
   runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
 
@@ -52,7 +52,7 @@ runRequestComputationWithScenarioContext
   -> EnvironmentVars
   -> ScenarioVars
   -> ScenarioVars
-  -> m RequestComputationResult
+  -> m RequestComputationOutput
 runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
   runner <- Reader.ask <&> _envHttpRequest
   result <- IO.liftIO $
