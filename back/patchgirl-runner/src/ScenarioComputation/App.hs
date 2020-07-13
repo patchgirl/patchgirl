@@ -35,7 +35,7 @@ runScenarioComputationHandler ScenarioInput{..} =
       :: (Reader.MonadReader Env m, IO.MonadIO m)
       => EnvironmentVars
       -> (ScenarioVars, [SceneOutput])
-      -> Scene
+      -> SceneFile
       -> m (ScenarioVars, [SceneOutput])
     buildScenes environmentVars (scenarioGlobalVars, scenes) inputScene = do
       (scene, newGlobalEnvironment) <- runScene (lastSceneWasSuccessful scenes) environmentVars scenarioGlobalVars inputScene
@@ -61,7 +61,7 @@ runScene
   => Bool
   -> EnvironmentVars
   -> ScenarioVars
-  -> Scene
+  -> SceneFile
   -> m (SceneOutput, ScenarioVars)
 runScene lastSceneWasSuccessful environmentVars scenarioGlobalVars scene =
   case lastSceneWasSuccessful of
@@ -115,23 +115,23 @@ computeScene
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
      )
-  => Scene
+  => SceneFile
   -> EnvironmentVars
   -> ScenarioVars
   -> ScenarioVars
   -> m SceneComputationOutput
 computeScene scene environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript =
   case scene of
-    HttpScene { _sceneHttpInput } ->
+    HttpSceneFile { _sceneHttpInput } ->
       SceneHttpComputation <$> runRequestComputationWithScenarioContext _sceneHttpInput environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript
-    PgScene { _scenePgInput } ->
+    PgSceneFile { _scenePgInput } ->
       ScenePgComputation <$> runPgComputationWithScenarioContext _scenePgInput environmentVars scenarioGlobalVarsAfterPrescript scenarioLocalVarsAfterPrescript
 
 
 -- ** pre script
 
 
-runPrescript :: ScenarioVars -> ScenarioVars -> Scene -> Either ScriptException (ScenarioVars, ScenarioVars)
+runPrescript :: ScenarioVars -> ScenarioVars -> SceneFile -> Either ScriptException (ScenarioVars, ScenarioVars)
 runPrescript scenarioGlobalVars scenarioLocalVars scene =
   foldl f (Right (scenarioGlobalVars, scenarioLocalVars)) (_scenePrescript scene)
   where
@@ -149,7 +149,7 @@ runPrescript scenarioGlobalVars scenarioLocalVars scene =
 runPostscript
   :: ScenarioVars
   -> ScenarioVars
-  -> Scene
+  -> SceneFile
   -> SuccesfulSceneComputation
   -> Either ScriptException ScenarioVars
 runPostscript scenarioGlobalVars scenarioLocalVars scene successfulSceneComputation =
@@ -294,7 +294,7 @@ runPrescriptExpr scenarioGlobalVars scenarioLocalVars = \case
 -- ** scene
 
 
-buildSceneOutput :: Scene -> SceneComputation -> SceneOutput
+buildSceneOutput :: SceneFile -> SceneComputation -> SceneOutput
 buildSceneOutput scene sceneComputationOutput =
   SceneOutput { _outputSceneId = _sceneId scene
               , _outputSceneRequestFileNodeId = _sceneFileId scene

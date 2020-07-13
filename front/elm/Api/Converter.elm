@@ -144,17 +144,40 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 -- ** scene
 
 
-convertSceneNodeFromBackToFront : Back.SceneNode -> Front.SceneNode
-convertSceneNodeFromBackToFront { sceneId, sceneRequestFileNodeId, scenePrescript, scenePostscript } =
-    { id = sceneId
-    , requestFileNodeId = sceneRequestFileNodeId
-    , sceneComputation = Nothing
-    , prescriptStr = NotEdited scenePrescript
-    , prescriptAst = Ok []
-    , postscriptStr = NotEdited scenePostscript
-    , postscriptAst = Ok []
-    }
+convertSceneNodeFromBackToFront : Back.SceneNode -> Front.Scene
+convertSceneNodeFromBackToFront sceneNode =
+    case sceneNode of
+        Back.HttpSceneNode s ->
+            { id = s.sceneId
+            , nodeId = s.sceneNodeId
+            , sceneType = Front.HttpScene
+            , sceneComputation = Nothing
+            , prescriptStr = NotEdited s.scenePrescript
+            , prescriptAst = Ok []
+            , postscriptStr = NotEdited s.scenePostscript
+            , postscriptAst = Ok []
+            }
 
+        Back.PgSceneNode s ->
+            { id = s.sceneId
+            , nodeId = s.sceneNodeId
+            , sceneType = Front.PgScene
+            , sceneComputation = Nothing
+            , prescriptStr = NotEdited s.scenePrescript
+            , prescriptAst = Ok []
+            , postscriptStr = NotEdited s.scenePostscript
+            , postscriptAst = Ok []
+            }
+
+
+convertSceneTypeFromFrontToBack : Front.SceneType -> Back.SceneType
+convertSceneTypeFromFrontToBack sceneType =
+    case sceneType of
+        Front.HttpScene ->
+            Back.HttpScene
+
+        Front.PgScene ->
+            Back.PgScene
 
 
 -- * environment

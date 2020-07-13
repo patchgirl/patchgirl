@@ -19,7 +19,7 @@ import           TangoScript
 
 data ScenarioInput
   = ScenarioInput { _scenarioInputId      :: UUID
-                  , _scenarioInputScenes  :: [Scene]
+                  , _scenarioInputScenes  :: [SceneFile]
                   , _scenarioInputEnvVars :: EnvironmentVars
                   }
   deriving (Eq, Show, Generic)
@@ -36,28 +36,28 @@ instance Aeson.FromJSON ScenarioInput where
 -- * scene
 
 
-data Scene
-  = HttpScene { _sceneId         :: UUID
-              , _sceneFileId     :: UUID
-              , _scenePrescript  :: TangoAst
-              , _scenePostscript :: TangoAst
-              , _sceneHttpInput  :: TemplatedRequestComputationInput
-              }
-  | PgScene { _sceneId         :: UUID
-            , _sceneFileId     :: UUID
-            , _scenePrescript  :: TangoAst
-            , _scenePostscript :: TangoAst
-            , _scenePgInput    :: PgComputationInput
-            }
+data SceneFile
+  = HttpSceneFile { _sceneId         :: UUID
+                  , _sceneFileId     :: UUID
+                  , _scenePrescript  :: TangoAst
+                  , _scenePostscript :: TangoAst
+                  , _sceneHttpInput  :: TemplatedRequestComputationInput
+                  }
+  | PgSceneFile { _sceneId         :: UUID
+                , _sceneFileId     :: UUID
+                , _scenePrescript  :: TangoAst
+                , _scenePostscript :: TangoAst
+                , _scenePgInput    :: PgComputationInput
+                }
   deriving (Eq, Show, Generic)
 
-$(makeLenses ''Scene)
+$(makeLenses ''SceneFile)
 
-instance Aeson.ToJSON Scene where
+instance Aeson.ToJSON SceneFile where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON Scene where
+instance Aeson.FromJSON SceneFile where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 

@@ -349,18 +349,18 @@ spec = do
 -- ** build input scene
 
 
-buildHttpSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> Scene
+buildHttpSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> SceneFile
 buildHttpSceneWithScript method url prescript postscript =
-  HttpScene { _sceneId = UUID.nil
-            , _sceneFileId = UUID.nil
-            , _scenePrescript = prescript
-            , _scenePostscript = postscript
-            , _sceneHttpInput = defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
-                                                               , _templatedRequestComputationInputUrl = url
-                                                               }
-            }
+  HttpSceneFile { _sceneId = UUID.nil
+                , _sceneFileId = UUID.nil
+                , _scenePrescript = prescript
+                , _scenePostscript = postscript
+                , _sceneHttpInput = defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
+                                                                   , _templatedRequestComputationInputUrl = url
+                                                                   }
+                }
 
-buildScene :: Method -> StringTemplate -> Scene
+buildScene :: Method -> StringTemplate -> SceneFile
 buildScene method url =
   buildHttpSceneWithScript method url [] []
 

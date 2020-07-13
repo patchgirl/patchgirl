@@ -65,7 +65,6 @@ getSessionId session =
             id
 
 
-
 -- * environment
 
 
@@ -138,7 +137,6 @@ templatedStringAsString templatedStrings =
 
 type RequestCollection
     = RequestCollection Int (List RequestNode)
-
 
 
 -- ** request node
@@ -268,7 +266,7 @@ type alias ScenarioFileRecord =
     { id : Uuid
     , environmentId : Editable (Maybe Int)
     , name : Editable String
-    , scenes : List SceneNode
+    , scenes : List Scene
     , showDetailedSceneView : Maybe Uuid
     , whichResponseView : HttpResponseView
     }
@@ -278,16 +276,20 @@ type alias ScenarioFileRecord =
 -- ** scene
 
 
-type alias SceneNode =
-    { id : Uuid
-    , requestFileNodeId : Uuid
-    , sceneComputation : Maybe SceneComputation
-    , prescriptStr : Editable String
-    , prescriptAst : Result (List DeadEnd) TangoAst
-    , postscriptStr : Editable String
-    , postscriptAst : Result (List DeadEnd) TangoAst
-    }
+type alias Scene
+    = { id : Uuid
+      , nodeId : Uuid
+      , sceneType : SceneType
+      , sceneComputation : Maybe SceneComputation
+      , prescriptStr : Editable String
+      , prescriptAst : Result (List DeadEnd) TangoAst
+      , postscriptStr : Editable String
+      , postscriptAst : Result (List DeadEnd) TangoAst
+      }
 
+type SceneType
+    = HttpScene
+    | PgScene
 
 
 -- * builder

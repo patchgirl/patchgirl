@@ -40,7 +40,7 @@ type alias Model =
     , requestCollection : RequestCollection
     , pgCollection : PgCollection
     , scenarioCollectionId : Uuid
-    , scenes : List SceneNode
+    , scenes : List Scene
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
     , showDetailedSceneView : Maybe Uuid
@@ -67,8 +67,8 @@ type
     | DeleteScene Uuid
     | ServerError
       -- update scene
-    | UpdateScene SceneNode
-    | SceneUpdated SceneNode
+    | UpdateScene Scene
+    | SceneUpdated Scene
       -- scenario
     | AskSaveScenario (Maybe Int)
     | UpdateScenarioFile (Maybe Int)
@@ -80,8 +80,8 @@ type
     | ShowBodyResponseView
     | ShowHeaderResponseView
     -- script
-    | SetPrescript SceneNode String
-    | SetPostscript SceneNode String
+    | SetPrescript Scene String
+    | SetPostscript Scene String
       -- other
     | SetEnvironmentId (Maybe Int)
     | DoNothing
@@ -117,7 +117,8 @@ update msg model =
                 payload =
                     { newSceneId = newSceneId
                     , newSceneSceneNodeParentId = sceneParentId
-                    , newSceneRequestFileNodeId = fileNodeId
+                    , newSceneNodeId = fileNodeId
+                    , newSceneSceneType = Client.convertSceneTypeFromFrontToBack HttpScene
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
@@ -127,10 +128,10 @@ update msg model =
             in
             ( model, newMsg )
 
-        SelectRequestFile sceneParentId requestFileNodeId newSceneId ->
+        SelectRequestFile sceneParentId nodeId newSceneId ->
             let
                 newScene =
-                    mkDefaultScene newSceneId requestFileNodeId
+                    mkDefaultScene newSceneId nodeId HttpScene
 
                 newScenes =
                     case sceneParentId of
@@ -226,22 +227,22 @@ update msg model =
 
         AskRunScenario ->
             let
-                sceneToSceneInput : SceneNode -> Maybe Client.Scene
+                sceneToSceneInput : Scene -> Maybe Client.SceneFile
                 sceneToSceneInput scene =
                     case (scene.prescriptAst, scene.postscriptAst) of
                         (Ok prescript, Ok postscript) ->
-                            findFileRecord model scene.requestFileNodeId
+                            findFileRecord model scene.nodeId
                                 |> Maybe.map buildRequestComputationInput
                                 |> Maybe.map (\requestComputationInput ->
-                                                  Client.HttpScene { sceneId = scene.id
-                                                                   , sceneFileId = scene.requestFileNodeId
-                                                                   , sceneHttpInput =
-                                                                         (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
-                                                                   , scenePrescript =
-                                                                         Client.convertTangoscriptFromFrontToBack prescript
-                                                                   , scenePostscript =
-                                                                       Client.convertTangoscriptFromFrontToBack postscript
-                                                                   })
+                                                  Client.HttpSceneFile { sceneId = scene.id
+                                                                       , sceneFileId = scene.nodeId
+                                                                       , sceneHttpInput =
+                                                                             (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
+                                                                       , scenePrescript =
+                                                                           Client.convertTangoscriptFromFrontToBack prescript
+                                                                       , scenePostscript =
+                                                                           Client.convertTangoscriptFromFrontToBack postscript
+                                                                       })
 
                         _ -> Nothing
 
@@ -255,7 +256,7 @@ update msg model =
                         |> List.map (\{key, value} -> (key, Client.convertStringTemplateFromFrontToBack value))
                         |> Dict.fromList
 
-                mScenes : Maybe (List Client.Scene)
+                mScenes : Maybe (List Client.SceneFile)
                 mScenes =
                     model.scenes
                         |> List.map sceneToSceneInput
@@ -291,7 +292,7 @@ update msg model =
 
         ScenarioProcessed scenarioOutput ->
             let
-                mergeSceneComputationOutputResult : SceneNode -> SceneNode
+                mergeSceneComputationOutputResult : Scene -> Scene
                 mergeSceneComputationOutputResult scene =
                     let
                         newSceneComputation =
@@ -405,10 +406,11 @@ update msg model =
 -- * util
 
 
-mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> SceneNode
-mkDefaultScene id requestFileNodeId =
+mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> SceneType -> Scene
+mkDefaultScene id nodeId sceneType =
     { id = id
-    , requestFileNodeId = requestFileNodeId
+    , nodeId = nodeId
+    , sceneType = sceneType
     , sceneComputation = Nothing
     , prescriptStr = NotEdited ""
     , prescriptAst = Ok []
@@ -446,7 +448,7 @@ createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
         Err error ->
             Debug.todo "server error" ServerError
 
-updateSceneResultToMsg : SceneNode -> Result Http.Error () -> Msg
+updateSceneResultToMsg : Scene -> Result Http.Error () -> Msg
 updateSceneResultToMsg scene result =
     case result of
         Ok () ->
@@ -552,7 +554,7 @@ view model =
                 , envSelectionView
                 ]
 
-        sceneAndFileRecordDetailToShow : Maybe (SceneNode, RequestFileRecord)
+        sceneAndFileRecordDetailToShow : Maybe (Scene, RequestFileRecord)
         sceneAndFileRecordDetailToShow =
             let
                 mScene =
@@ -560,7 +562,7 @@ view model =
                                    List.find (\scene -> scene.id == sceneToShowId) model.scenes) model.showDetailedSceneView
 
                 mFileRecord =
-                    Maybe.andThen (\scene -> findFileRecord model scene.requestFileNodeId) mScene
+                    Maybe.andThen (\scene -> findFileRecord model scene.nodeId) mScene
 
             in
             case (mScene, mFileRecord) of
@@ -610,14 +612,14 @@ addNewSceneView =
 -- ** scene view
 
 
-sceneView : Model -> SceneNode -> Element Msg
-sceneView model { id, requestFileNodeId, sceneComputation } =
+sceneView : Model -> Scene -> Element Msg
+sceneView model { id, nodeId, sceneComputation } =
     let
         (RequestCollection _ requestNodes) =
             model.requestCollection
 
         mRequestFileRecord =
-            RequestTree.findFile requestNodes requestFileNodeId
+            RequestTree.findFile requestNodes nodeId
 
         sceneComputationAttrs =
             case sceneComputation of
@@ -688,7 +690,7 @@ arrowView id =
 -- ** detailed scene view
 
 
-detailedSceneView : Model -> SceneNode -> RequestFileRecord -> Element Msg
+detailedSceneView : Model -> Scene -> RequestFileRecord -> Element Msg
 detailedSceneView model scene requestFileRecord =
     let
         { method, headers, url, body } =
@@ -724,7 +726,7 @@ detailedSceneView model scene requestFileRecord =
             column [ spacing 10 ]
               [ row [ spacing 10 ]
                     [ link []
-                          { url = href <| ReqPage (Just scene.requestFileNodeId) (Just model.id)
+                          { url = href <| ReqPage (Just scene.nodeId) (Just model.id)
                           , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
                                     secondaryColor
                           }
@@ -834,7 +836,7 @@ scriptValidityView result =
         Err err ->
             text ("Error in script: " ++ showErrors err)
 
-prescriptView : SceneNode -> Element Msg
+prescriptView : Scene -> Element Msg
 prescriptView scene =
     column [ width fill, spacing 10 ]
         [ el [] <| scriptValidityView scene.prescriptAst
@@ -848,7 +850,7 @@ prescriptView scene =
         ]
 
 
-postscriptView : SceneNode -> Element Msg
+postscriptView : Scene -> Element Msg
 postscriptView scene =
     column [ width fill, spacing 10 ]
         [ el [] <| scriptValidityView scene.postscriptAst

@@ -204,7 +204,7 @@ deriveElmDef deriveWithTaggedObject ''Runner.Column
 deriveElmDef deriveWithTaggedObject ''Runner.PgValue
 deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
 deriveElmDef deriveWithTaggedObject ''Runner.TemplatedPgConnection
-deriveElmDef deriveWithTaggedObject ''Runner.Scene
+deriveElmDef deriveWithTaggedObject ''Runner.SceneFile
 deriveElmDef deriveWithTaggedObject ''Runner.PgError
 deriveElmDef deriveWithSingleFieldObject ''Runner.PgComputationOutput
 
@@ -252,6 +252,7 @@ deriveElmDef deriveWithTaggedObject ''Web.UpdatePgFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.NewPgFolder
+deriveElmDef deriveWithTaggedObject ''Web.SceneType
 
 
 -- * main
@@ -321,6 +322,7 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewRootPgFile)
       , DefineElm (Proxy :: Proxy Web.NewRootPgFolder)
       , DefineElm (Proxy :: Proxy Web.NewPgFolder)
+      , DefineElm (Proxy :: Proxy Web.SceneType)
       ]
     proxyApi =
       (Proxy :: Proxy (Web.RestApi '[Cookie]))
@@ -372,7 +374,7 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.PgValue)
       , DefineElm (Proxy :: Proxy Runner.PgComputationInput)
       , DefineElm (Proxy :: Proxy Runner.TemplatedPgConnection)
-      , DefineElm (Proxy :: Proxy Runner.Scene)
+      , DefineElm (Proxy :: Proxy Runner.SceneFile)
       , DefineElm (Proxy :: Proxy Runner.PgError)
       , DefineElm (Proxy :: Proxy Runner.PgComputationOutput)
       ]
