@@ -178,7 +178,7 @@ spec =
     mkNewScene id parentId requestFileId prescript postscript =
       NewScene { _newSceneId = id
                , _newSceneSceneNodeParentId = parentId
-               , _newSceneRequestFileNodeId = requestFileId
+               , _newSceneFileNodeId = requestFileId
                , _newScenePrescript = prescript
                , _newScenePostscript = postscript
                }

@@ -32,7 +32,7 @@ import           GHC.Generics
 data NewScene
   = NewScene { _newSceneId                :: UUID
              , _newSceneSceneNodeParentId :: Maybe UUID
-             , _newSceneRequestFileNodeId :: UUID
+             , _newSceneFileNodeId        :: UUID
              , _newScenePrescript         :: String
              , _newScenePostscript        :: String
              }

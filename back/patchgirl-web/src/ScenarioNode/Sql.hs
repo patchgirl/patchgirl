@@ -204,7 +204,7 @@ insertScene scenarioNodeId NewScene {..} connection =
   case _newSceneSceneNodeParentId of
     Nothing ->
       PG.execute connection insertRootSceneRawQuery ( _newSceneId
-                                                    , _newSceneRequestFileNodeId
+                                                    , _newSceneFileNodeId
                                                     , _newScenePrescript
                                                     , _newScenePostscript
                                                     , scenarioNodeId
@@ -212,7 +212,7 @@ insertScene scenarioNodeId NewScene {..} connection =
     Just sceneNodeParentId ->
       PG.execute connection insertSceneRawQuery ( _newSceneId
                                                 , sceneNodeParentId
-                                                , _newSceneRequestFileNodeId
+                                                , _newSceneFileNodeId
                                                 , _newScenePrescript
                                                 , _newScenePostscript
                                                 )

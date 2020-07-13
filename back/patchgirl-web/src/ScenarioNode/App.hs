@@ -241,7 +241,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
         Nothing -> pure False
         Just collectionId -> do
           requestNodes <- selectRequestNodesFromRequestCollectionId collectionId connection
-          pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneRequestFileNodeId) requestNodes
+          pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneFileNodeId) requestNodes
 
     sceneAuthorized :: Bool
     sceneAuthorized =
