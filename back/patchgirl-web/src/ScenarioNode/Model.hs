@@ -19,11 +19,41 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        genericToJSON,
                                                        parseEither, withObject,
                                                        (.:))
+import qualified Data.ByteString.Char8                as B
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
+import qualified Database.PostgreSQL.Simple.FromField as PG
+import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
 
+
+-- * scene type
+
+
+data SceneType
+  = HttpScene
+  | PgScene
+  deriving (Eq, Show, Generic)
+
+instance PG.ToField SceneType where
+  toField = PG.toField . show
+
+instance PG.FromField SceneType where
+   fromField f mdata =
+     case B.unpack `fmap` mdata of
+       Nothing          -> PG.returnError PG.UnexpectedNull f ""
+       Just "HttpScene" -> return HttpScene
+       Just "PgScene"   -> return PgScene
+       _                -> PG.returnError PG.Incompatible f ""
+
+instance ToJSON SceneType where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON SceneType where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
 -- * new scene
@@ -32,7 +62,8 @@ import           GHC.Generics
 data NewScene
   = NewScene { _newSceneId                :: UUID
              , _newSceneSceneNodeParentId :: Maybe UUID
-             , _newSceneFileNodeId        :: UUID
+             , _newSceneNodeId            :: UUID
+             , _newSceneSceneType         :: SceneType
              , _newScenePrescript         :: String
              , _newScenePostscript        :: String
              }
@@ -53,11 +84,16 @@ instance FromJSON NewScene where
 
 
 data SceneNode
-  = SceneNode { _sceneId            :: UUID
-          , _sceneRequestFileNodeId :: UUID
-          , _scenePrescript         :: String
-          , _scenePostscript        :: String
-          }
+  = HttpSceneNode { _sceneId         :: UUID
+                  , _sceneNodeId     :: UUID
+                  , _scenePrescript  :: String
+                  , _scenePostscript :: String
+                  }
+  | PgSceneNode { _sceneId         :: UUID
+                , _sceneNodeId     :: UUID
+                , _scenePrescript  :: String
+                , _scenePostscript :: String
+                }
   deriving (Eq, Show, Generic)
 
 $(makeLenses ''SceneNode)
@@ -98,11 +134,20 @@ newtype SceneFromPG = SceneFromPG SceneNode
 
 instance FromJSON SceneFromPG where
   parseJSON = withObject "SceneFromPG" $ \o -> do
-    _sceneId <- o .: "id"
-    _sceneRequestFileNodeId <- o .: "request_node_id"
-    _scenePrescript <- o .: "prescript"
-    _scenePostscript <- o .: "postscript"
-    return $ SceneFromPG $ SceneNode{..}
+    sceneType <- o .: "scene_type" :: Parser SceneType
+    SceneFromPG <$> case sceneType of
+      HttpScene -> do
+        _sceneId <- o .: "id"
+        _sceneNodeId <- o .: "http_node_id"
+        _scenePrescript <- o .: "prescript"
+        _scenePostscript <- o .: "postscript"
+        return HttpSceneNode{..}
+      PgScene -> do
+        _sceneId <- o .: "id"
+        _sceneNodeId <- o .: "pg_node_id"
+        _scenePrescript <- o .: "prescript"
+        _scenePostscript <- o .: "postscript"
+        return PgSceneNode{..}
 
 fromSceneFromPGTOScene :: SceneFromPG -> SceneNode
 fromSceneFromPGTOScene (SceneFromPG scene) = scene

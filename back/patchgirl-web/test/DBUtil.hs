@@ -771,12 +771,12 @@ insertSampleScenarioCollection accountId connection = do
   envId <- insertNewFakeEnvironment newFakeEnvironment connection
   let requestFileId = (Maybe.fromJust . getFirstFile) requestNodes ^. requestNodeId
   let newFakeScene =
-        NewFakeScene { _newFakeSceneParentId = Nothing
-                     , _newFakeSceneRequestId = requestFileId
-                     , _newFakeScenePrescript = ""
-                     , _newFakeScenePostscript = ""
-                     }
-  scene1Id <- insertFakeScene newFakeScene connection
+        NewFakeHttpScene { _newFakeSceneParentId = Nothing
+                         , _newFakeSceneRequestId = requestFileId
+                         , _newFakeScenePrescript = ""
+                         , _newFakeScenePostscript = ""
+                         }
+  scene1Id <- insertFakeHttpScene newFakeScene connection
 
 
 -- *** insert scenario collection
@@ -924,20 +924,20 @@ selectScenarioNodeExists id connection = do
 
 -- * scene
 
--- ** insert fake scene
+-- ** insert fake http scene
 
 
-data NewFakeScene =
-  NewFakeScene { _newFakeSceneParentId   :: Maybe UUID
-               , _newFakeSceneRequestId  :: UUID
-               , _newFakeScenePrescript  :: String
-               , _newFakeScenePostscript :: String
-               }
+data NewFakeHttpScene =
+  NewFakeHttpScene { _newFakeSceneParentId   :: Maybe UUID
+                   , _newFakeSceneRequestId  :: UUID
+                   , _newFakeScenePrescript  :: String
+                   , _newFakeScenePostscript :: String
+                   }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
 
-insertFakeScene :: NewFakeScene -> PG.Connection -> IO UUID
-insertFakeScene newFakeScene connection = do
+insertFakeHttpScene :: NewFakeHttpScene -> PG.Connection -> IO UUID
+insertFakeHttpScene newFakeScene connection = do
   [PG.Only id] <- PG.query connection rawQuery newFakeScene
   return id
   where
@@ -945,11 +945,13 @@ insertFakeScene newFakeScene connection = do
       [sql|
           INSERT INTO scene_node(
             id,
+            scene_type,
+            pg_node_id,
             scene_node_parent_id,
-            request_node_id,
+            http_node_id,
             prescript,
             postscript
-          ) VALUES (gen_random_uuid(), ?, ?, ?, ?)
+          ) VALUES (gen_random_uuid(), 'HttpScene', NULL, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -959,11 +961,12 @@ insertFakeScene newFakeScene connection = do
 
 data FakeScene =
   FakeScene { _fakeSceneParentId   :: Maybe UUID
-            , _fakeSceneRequestId  :: UUID
+            , _fakeSceneType       :: SceneType
+            , _fakeSceneId         :: UUID
             , _fakeScenePrescript  :: String
             , _fakeScenePostscript :: String
             }
-  deriving (Eq, Show, Read, Generic, PG.FromRow)
+  deriving (Eq, Show, Generic, PG.FromRow)
 
 selectFakeScene :: UUID -> PG.Connection -> IO (Maybe FakeScene)
 selectFakeScene id connection =
@@ -971,7 +974,17 @@ selectFakeScene id connection =
   where
     rawQuery =
       [sql|
-          SELECT scene_node_parent_id, request_node_id, prescript, postscript
+          SELECT
+            scene_node_parent_id,
+            scene_type,
+            (CASE
+              WHEN scene_type = 'HttpScene' THEN http_node_id
+              WHEN scene_type = 'PgScene' THEN pg_node_id
+              ELSE NULL
+              END
+            ),
+            prescript,
+            postscript
           FROM scene_node
           WHERE id = ?
           |]
@@ -982,7 +995,17 @@ selectFakeSceneWithParentId parentId connection =
   where
     rawQuery =
       [sql|
-          SELECT scene_node_parent_id, request_node_id, prescript, postscript
+          SELECT
+            scene_node_parent_id,
+            scene_type request_node_id,
+            (CASE
+              WHEN scene_type = 'HttpScene' THEN http_node_id
+              WHEN scene_type = 'PgScene' THEN pg_node_id
+              ELSE NULL
+              END
+            ),
+            prescript,
+            postscript
           FROM scene_node
           WHERE scene_node_parent_id = ?
           |]

@@ -200,34 +200,48 @@ insertScenarioFolder NewScenarioFolder {..} connection =
 
 
 insertScene :: UUID -> NewScene -> PG.Connection -> IO Int.Int64
-insertScene scenarioNodeId NewScene {..} connection =
+insertScene scenarioNodeId NewScene{..} connection = do
+  let (httpSceneId, pgSceneId) = case _newSceneSceneType of
+        HttpScene ->
+          (Just _newSceneNodeId, Nothing)
+
+        PgScene ->
+          (Nothing, Just _newSceneNodeId)
+
   case _newSceneSceneNodeParentId of
     Nothing ->
-      PG.execute connection insertRootSceneRawQuery ( _newSceneId
-                                                    , _newSceneFileNodeId
+      PG.execute connection insertRootSceneRawQuery ( _newSceneSceneNodeParentId
+                                                    , _newSceneId
                                                     , _newScenePrescript
                                                     , _newScenePostscript
+                                                    , _newSceneSceneType
+                                                    , httpSceneId
+                                                    , pgSceneId
                                                     , scenarioNodeId
                                                     )
     Just sceneNodeParentId ->
-      PG.execute connection insertSceneRawQuery ( _newSceneId
-                                                , sceneNodeParentId
-                                                , _newSceneFileNodeId
+      PG.execute connection insertSceneRawQuery ( sceneNodeParentId
+                                                , _newSceneId
                                                 , _newScenePrescript
                                                 , _newScenePostscript
+                                                , _newSceneSceneType
+                                                , httpSceneId
+                                                , pgSceneId
                                                 )
   where
     insertRootSceneRawQuery =
       [sql|
           WITH new_scene AS (
             INSERT INTO scene_node (
-              id,
               scene_node_parent_id,
-              request_node_id,
+              id,
               prescript,
-              postscript
+              postscript,
+              scene_type,
+              http_node_id,
+              pg_node_id
              )
-             VALUES (?, NULL, ?, ?, ?)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
              RETURNING id
           ), current_scenario_node AS(
             SELECT id, scene_node_id
@@ -246,13 +260,15 @@ insertScene scenarioNodeId NewScene {..} connection =
       [sql|
           WITH new_scene AS (
             INSERT INTO scene_node (
-              id,
               scene_node_parent_id,
-              request_node_id,
+              id,
               prescript,
-              postscript
+              postscript,
+              scene_type,
+              http_node_id,
+              pg_node_id
              )
-             VALUES (?, ?, ?, ?, ?)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
              RETURNING id, scene_node_parent_id
           ) UPDATE scene_node
             SET scene_node_parent_id = (SELECT id FROM new_scene)

@@ -17,6 +17,9 @@ import qualified Servant
 
 import           DB
 import           PatchGirl
+import           PgCollection.Sql
+import           PgNode.App
+import           PgNode.Sql
 import           RequestCollection.Sql
 import           RequestNode.App
 import           RequestNode.Sql
@@ -240,8 +243,16 @@ createSceneHandler accountId scenarioNodeId newScene = do
       selectRequestCollectionId accountId connection >>= \case
         Nothing -> pure False
         Just collectionId -> do
-          requestNodes <- selectRequestNodesFromRequestCollectionId collectionId connection
-          pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneFileNodeId) requestNodes
+          nodes <- selectRequestNodesFromRequestCollectionId collectionId connection
+          pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneNodeId) nodes
+
+    pgAuthorized :: IO Bool
+    pgAuthorized = IO.liftIO $
+      selectPgCollectionId accountId connection >>= \case
+        Nothing -> pure False
+        Just collectionId -> do
+          nodes <- selectPgNodesFromPgCollectionId collectionId connection
+          pure $ Maybe.isJust $ findNodeInPgNodes (newScene ^. newSceneNodeId) nodes
 
     sceneAuthorized :: Bool
     sceneAuthorized =
@@ -254,7 +265,9 @@ createSceneHandler accountId scenarioNodeId newScene = do
               True
         _ -> False
 
-  authorized <- IO.liftIO $ Loops.andM [ requestAuthorized, pure sceneAuthorized ]
+  authorized <- IO.liftIO $ Loops.andM [ Loops.orM [ requestAuthorized, pgAuthorized ]
+                                       , pure sceneAuthorized
+                                       ]
   case authorized of
     False ->
       Servant.throwError Servant.err404

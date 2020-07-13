@@ -104,12 +104,20 @@ CREATE TABLE pg_collection_to_pg_node(
 -- * scene node
 
 
+CREATE TYPE scene_type AS ENUM ('HttpScene', 'PgScene');
+
 CREATE TABLE scene_node(
   id UUID PRIMARY KEY,
   scene_node_parent_id UUID REFERENCES scene_node(id),
-  request_node_id UUID REFERENCES request_node(id),
+  scene_type scene_type NOT NULL,
+  http_node_id UUID REFERENCES request_node(id),
+  pg_node_id UUID REFERENCES request_node(id),
   prescript TEXT NOT NULL,
-  postscript TEXT NOT NULL
+  postscript TEXT NOT NULL,
+  CHECK (
+    (scene_type = 'HttpScene' AND http_node_id IS NOT NULL AND pg_node_id IS NULL) OR
+    (scene_type = 'PgScene' AND pg_node_id IS NOT NULL AND http_node_id IS NULL)
+  )
 );
 
 
@@ -371,7 +379,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'request_node_id', request_node_id,
+        'scene_type', scene_type,
+        'http_node_id', http_node_id,
+        'pg_node_id', pg_node_id,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -392,7 +402,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'request_node_id', request_node_id,
+        'scene_type', scene_type,
+        'http_node_id', http_node_id,
+        'pg_node_id', pg_node_id,
         'prescript', prescript,
         'postscript', postscript
       )

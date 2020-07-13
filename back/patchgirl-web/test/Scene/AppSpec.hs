@@ -87,13 +87,15 @@ spec =
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Nothing
-                                                     , _fakeSceneRequestId = requestFileId
+                                                     , _fakeSceneId = requestFileId
+                                                     , _fakeSceneType = HttpScene
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
           newSon <- selectFakeSceneWithParentId UUID.nil connection
           newSon `shouldBe` Just (FakeScene { _fakeSceneParentId = Just UUID.nil
-                                            , _fakeSceneRequestId = scenarioFirstScene ^. sceneRequestFileNodeId
+                                            , _fakeSceneId = scenarioFirstScene ^. sceneNodeId
+                                            , _fakeSceneType = HttpScene
                                             , _fakeScenePrescript = ""
                                             , _fakeScenePostscript = ""
                                             })
@@ -109,7 +111,8 @@ spec =
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene ^. sceneId
-                                                     , _fakeSceneRequestId = requestFileId
+                                                     , _fakeSceneId = requestFileId
+                                                     , _fakeSceneType = HttpScene
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
@@ -178,7 +181,8 @@ spec =
     mkNewScene id parentId requestFileId prescript postscript =
       NewScene { _newSceneId = id
                , _newSceneSceneNodeParentId = parentId
-               , _newSceneFileNodeId = requestFileId
+               , _newSceneSceneType = HttpScene
+               , _newSceneNodeId = requestFileId
                , _newScenePrescript = prescript
                , _newScenePostscript = postscript
                }

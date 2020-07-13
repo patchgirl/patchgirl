@@ -153,25 +153,47 @@ end
 # ** scene node
 
 
-def insert_scene_node(id, scene_node_parent_id, request_node_id, prescript, postscript)
+def insert_http_scene_node(id, scene_node_parent_id, scene_node_id, prescript, postscript)
 
   %{
     INSERT INTO scene_node (
+      scene_type,
       id,
       scene_node_parent_id,
-      request_node_id,
+      http_node_id,
       prescript,
       postscript
     ) values (
+     'HttpScene',
      '#{id}',
       #{scene_node_parent_id.nil? ? 'NULL' : "'#{scene_node_parent_id}'"},
-     '#{request_node_id}',
+     '#{scene_node_id}',
      '#{prescript}',
      '#{postscript}'
     );
   }
 end
 
+def insert_pg_scene_node(id, scene_node_parent_id, scene_node_id, prescript, postscript)
+
+  %{
+    INSERT INTO scene_node (
+      scene_type,
+      id,
+      scene_node_parent_id,
+      pg_node_id,
+      prescript,
+      postscript
+    ) values (
+     'PgScene',
+     '#{id}',
+      #{scene_node_parent_id.nil? ? 'NULL' : "'#{scene_node_parent_id}'"},
+     '#{scene_node_id}',
+     '#{prescript}',
+     '#{postscript}'
+    );
+  }
+end
 
 # ** delete visitor data
 
@@ -348,9 +370,9 @@ end
 
 
 scene_nodes = [
-  insert_scene_node('782358aa-e293-4976-b754-6d8db4762dd1', nil, '913d508c-fef3-4034-98da-9e328debb196', '', ''),
-  insert_scene_node('1932b624-ab1e-48b9-b779-1a3d1fe774c9', '782358aa-e293-4976-b754-6d8db4762dd1', 'e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '', ''),
-  insert_scene_node('ef6ed855-81f9-4a6c-9cd5-75fd3b819c91', '1932b624-ab1e-48b9-b779-1a3d1fe774c9', 'b3b24406-a7c0-4c68-bdcc-279e843340a0', '', '')
+  insert_http_scene_node('782358aa-e293-4976-b754-6d8db4762dd1', nil, '913d508c-fef3-4034-98da-9e328debb196', '', ''),
+  insert_http_scene_node('1932b624-ab1e-48b9-b779-1a3d1fe774c9', '782358aa-e293-4976-b754-6d8db4762dd1', 'e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '', ''),
+  insert_http_scene_node('ef6ed855-81f9-4a6c-9cd5-75fd3b819c91', '1932b624-ab1e-48b9-b779-1a3d1fe774c9', 'b3b24406-a7c0-4c68-bdcc-279e843340a0', '', '')
 ]
 
 scene_nodes.each do |scene_node_query|

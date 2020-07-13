@@ -107,6 +107,16 @@ CREATE TYPE public.scenario_node_type AS ENUM (
 
 
 --
+-- Name: scene_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.scene_type AS ENUM (
+    'HttpScene',
+    'PgScene'
+);
+
+
+--
 -- Name: pg_nodes_as_json(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -305,7 +315,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'request_node_id', request_node_id,
+        'scene_type', scene_type,
+        'http_node_id', http_node_id,
+        'pg_node_id', pg_node_id,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -366,7 +378,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'request_node_id', request_node_id,
+        'scene_type', scene_type,
+        'http_node_id', http_node_id,
+        'pg_node_id', pg_node_id,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -617,9 +631,12 @@ CREATE TABLE public.scenario_node (
 CREATE TABLE public.scene_node (
     id uuid NOT NULL,
     scene_node_parent_id uuid,
-    request_node_id uuid,
+    scene_type public.scene_type NOT NULL,
+    http_node_id uuid,
+    pg_node_id uuid,
     prescript text NOT NULL,
-    postscript text NOT NULL
+    postscript text NOT NULL,
+    CONSTRAINT scene_node_check CHECK ((((scene_type = 'HttpScene'::public.scene_type) AND (http_node_id IS NOT NULL) AND (pg_node_id IS NULL)) OR ((scene_type = 'PgScene'::public.scene_type) AND (pg_node_id IS NOT NULL) AND (http_node_id IS NULL))))
 );
 
 
@@ -980,11 +997,19 @@ ALTER TABLE ONLY public.scenario_node
 
 
 --
--- Name: scene_node scene_node_request_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: scene_node scene_node_http_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.scene_node
-    ADD CONSTRAINT scene_node_request_node_id_fkey FOREIGN KEY (request_node_id) REFERENCES public.request_node(id);
+    ADD CONSTRAINT scene_node_http_node_id_fkey FOREIGN KEY (http_node_id) REFERENCES public.request_node(id);
+
+
+--
+-- Name: scene_node scene_node_pg_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scene_node
+    ADD CONSTRAINT scene_node_pg_node_id_fkey FOREIGN KEY (pg_node_id) REFERENCES public.request_node(id);
 
 
 --
