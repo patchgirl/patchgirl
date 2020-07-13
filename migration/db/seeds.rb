@@ -353,11 +353,8 @@ end
 
 pg_nodes = [
   insert_pg_folder('cb2c1df8-68f0-4a61-b7c7-f75194604976', nil, 'PgFolder', "users"),
-  insert_pg_file(  'e46ee2de-f1ce-4b13-b1ec-b529ae87da54', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "list users",  "select * from user_test;", "", "", "", "", ""),
+  insert_pg_file(  '0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "select users",  "select * from user_test;", "", "", "", "", ""),
   insert_pg_file(  'aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "single user", "select * from user_test;", "", "", "", "", ""),
-  insert_pg_file(  '2b994bac-7fd8-4844-ba9d-e12c9e217271', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "create user", "select * from user_test;", "", "", "", "", ""),
-  insert_pg_file(  'd7a0887d-1c99-4655-aead-07cee57d0cc3', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "update user", "select * from user_test;", "", "", "", "", ""),
-  insert_pg_file(  '0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "delete user", "select * from user_test;", "", "", "", "", ""),
 ]
 
 pg_nodes.each do |pg_node_query|

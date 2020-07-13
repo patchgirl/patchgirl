@@ -15,7 +15,7 @@ import Uuid exposing (Uuid)
 
 
 type Modal
-    = SelectHttpRequestModal (Maybe Uuid)
+    = SelectNewSceneModal (Maybe Uuid)
 
 
 

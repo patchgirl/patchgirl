@@ -111,7 +111,7 @@ CREATE TABLE scene_node(
   scene_node_parent_id UUID REFERENCES scene_node(id),
   scene_type scene_type NOT NULL,
   http_node_id UUID REFERENCES request_node(id),
-  pg_node_id UUID REFERENCES request_node(id),
+  pg_node_id UUID REFERENCES pg_node(id),
   prescript TEXT NOT NULL,
   postscript TEXT NOT NULL,
   CHECK (

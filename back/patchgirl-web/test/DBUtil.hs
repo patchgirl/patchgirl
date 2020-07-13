@@ -779,6 +779,24 @@ insertSampleScenarioCollection accountId connection = do
   scene1Id <- insertFakeHttpScene newFakeScene connection
 
 
+-- *** insert pg collection
+
+
+  pgCollection@(PgCollection _ pgNodes) <- insertSamplePgCollection accountId connection
+  let newFakeEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
+                                             , _newFakeEnvironmentName      = "env1"
+                                             }
+  envId <- insertNewFakeEnvironment newFakeEnvironment connection
+  let pgFileId = (Maybe.fromJust . getFirstPgFile) pgNodes ^. pgNodeId
+  let newFakeScene =
+        NewFakePgScene { _newFakePgSceneParentId = Nothing
+                       , _newFakePgSceneNodeId = pgFileId
+                       , _newFakePgScenePrescript = ""
+                       , _newFakePgScenePostscript = ""
+                       }
+  scene2Id <- insertFakePgScene newFakeScene connection
+
+
 -- *** insert scenario collection
 
 
@@ -786,7 +804,7 @@ insertSampleScenarioCollection accountId connection = do
   n2Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n2 id) connection
   n3Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n3 id n1Id) connection
   _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 id n3Id (Just scene1Id) envId) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id Nothing envId) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id (Just scene2Id) envId) connection
   scenarioCollectionId <- insertFakeScenarioCollection accountId connection
   let fakeScenarioCollectionToScenarioNode1 =
         NewFakeScenarioCollectionToScenarioNode { _fakeScenarioCollectionToScenarioNodeScenarioCollectionId = scenarioCollectionId
@@ -834,8 +852,6 @@ insertSampleScenarioCollection accountId connection = do
 
 
     n5 id parentId sceneId environmentId =
-
-
       NewFakeScenarioFile { _newFakeScenarioFileId = id
                           , _newFakeScenarioFileParentId = Just parentId
                           , _newFakeScenarioFileName = "5"
@@ -952,6 +968,38 @@ insertFakeHttpScene newFakeScene connection = do
             prescript,
             postscript
           ) VALUES (gen_random_uuid(), 'HttpScene', NULL, ?, ?, ?, ?)
+          RETURNING id;
+          |]
+
+
+-- ** insert fake pg scene
+
+
+data NewFakePgScene =
+  NewFakePgScene { _newFakePgSceneParentId   :: Maybe UUID
+                 , _newFakePgSceneNodeId     :: UUID
+                 , _newFakePgScenePrescript  :: String
+                 , _newFakePgScenePostscript :: String
+                 }
+  deriving (Eq, Show, Read, Generic, PG.ToRow)
+
+
+insertFakePgScene :: NewFakePgScene -> PG.Connection -> IO UUID
+insertFakePgScene newFakeScene connection = do
+  [PG.Only id] <- PG.query connection rawQuery newFakeScene
+  return id
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO scene_node(
+            id,
+            scene_type,
+            http_node_id,
+            scene_node_parent_id,
+            pg_node_id,
+            prescript,
+            postscript
+          ) VALUES (gen_random_uuid(), 'PgScene', NULL, ?, ?, ?, ?)
           RETURNING id;
           |]
 

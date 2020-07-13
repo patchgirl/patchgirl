@@ -57,10 +57,11 @@ type alias Model =
 type
     Msg
     -- create scene
-    = ShowHttpRequestSelectionModal (Maybe Uuid)
-    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid
-    | SelectRequestFile (Maybe Uuid) Uuid Uuid
-    | AskCreateScene (Maybe Uuid) Uuid Uuid
+    = ShowSceneSelectionModal (Maybe Uuid)
+    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid SceneType
+    | SelectHttpFile (Maybe Uuid) Uuid Uuid
+    | SelectPgFile (Maybe Uuid) Uuid Uuid
+    | AskCreateScene (Maybe Uuid) Uuid SceneType Uuid
     | CloseModal
       -- delete scene
     | AskDeleteScene Uuid
@@ -98,40 +99,61 @@ update msg model =
 -- ** create scene
 
 
-        ShowHttpRequestSelectionModal sceneParentId ->
+        ShowSceneSelectionModal sceneParentId ->
             let
                 newModel =
-                    { model | whichModal = Just (SelectHttpRequestModal sceneParentId) }
+                    { model | whichModal = Just (SelectNewSceneModal sceneParentId) }
             in
             ( newModel, Cmd.none )
 
-        GenerateRandomUUIDForScene sceneParentId fileNodeId ->
+        GenerateRandomUUIDForScene sceneParentId fileNodeId sceneType ->
             let
                 newMsg =
-                    Random.generate (AskCreateScene sceneParentId fileNodeId) Uuid.uuidGenerator
+                    Random.generate (AskCreateScene sceneParentId fileNodeId sceneType) Uuid.uuidGenerator
             in
             ( model, newMsg )
 
-        AskCreateScene sceneParentId fileNodeId newSceneId ->
+        AskCreateScene sceneParentId fileNodeId sceneType newSceneId ->
             let
                 payload =
                     { newSceneId = newSceneId
                     , newSceneSceneNodeParentId = sceneParentId
                     , newSceneNodeId = fileNodeId
-                    , newSceneSceneType = Client.convertSceneTypeFromFrontToBack HttpScene
+                    , newSceneSceneType = Client.convertSceneTypeFromFrontToBack sceneType
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
 
                 newMsg =
-                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId)
+                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId sceneType)
             in
             ( model, newMsg )
 
-        SelectRequestFile sceneParentId nodeId newSceneId ->
+        SelectHttpFile sceneParentId nodeId newSceneId ->
             let
                 newScene =
                     mkDefaultScene newSceneId nodeId HttpScene
+
+                newScenes =
+                    case sceneParentId of
+                        Nothing ->
+                            model.scenes ++ [ newScene ]
+
+                        Just parentId ->
+                            addToListAfterPredicate model.scenes (\scene -> scene.id == parentId) newScene
+
+                newModel =
+                    { model
+                        | whichModal = Nothing
+                        , scenes = newScenes
+                    }
+            in
+            ( newModel, Cmd.none )
+
+        SelectPgFile sceneParentId nodeId newSceneId ->
+            let
+                newScene =
+                    mkDefaultScene newSceneId nodeId PgScene
 
                 newScenes =
                     case sceneParentId of
@@ -439,11 +461,16 @@ deleteSceneResultToMsg sceneId result =
             Debug.todo "server error" ServerError
 
 
-createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> Result Http.Error () -> Msg
-createSceneResultToMsg sceneParentId requestFileNodeId newSceneId result =
+createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> SceneType -> Result Http.Error () -> Msg
+createSceneResultToMsg sceneParentId nodeId newSceneId sceneType result =
     case result of
         Ok () ->
-            SelectRequestFile sceneParentId requestFileNodeId newSceneId
+            case sceneType of
+                HttpScene ->
+                    SelectHttpFile sceneParentId nodeId newSceneId
+
+                PgScene ->
+                    SelectPgFile sceneParentId nodeId newSceneId
 
         Err error ->
             Debug.todo "server error" ServerError
@@ -598,7 +625,7 @@ addNewSceneView : Element Msg
 addNewSceneView =
     el [ width fill, centerX ]
         (Input.button [ centerX ]
-            { onPress = Just (ShowHttpRequestSelectionModal Nothing)
+            { onPress = Just (ShowSceneSelectionModal Nothing)
             , label =
                 row [ centerX, centerY ]
                     [ addIcon
@@ -674,7 +701,7 @@ arrowView id =
     let
         addSceneBtn =
             Input.button []
-                { onPress = Just (ShowHttpRequestSelectionModal (Just id))
+                { onPress = Just (ShowSceneSelectionModal (Just id))
                 , label = row [] [ addIcon
                                  , text " add request"
                                  ]
@@ -882,8 +909,8 @@ labelInputView labelText =
 -- * modal
 
 
-selectHttpRequestModal : Maybe Uuid -> RequestCollection -> PgCollection -> Modal.Config Msg
-selectHttpRequestModal sceneParentId requestCollection pgCollection =
+selectSceneModal : Maybe Uuid -> RequestCollection -> PgCollection -> Modal.Config Msg
+selectSceneModal sceneParentId requestCollection pgCollection =
     let
         (RequestCollection _ requestNodes) =
             requestCollection
@@ -931,7 +958,7 @@ selectHttpRequestModal sceneParentId requestCollection pgCollection =
 
                                 currentFileView =
                                     Input.button []
-                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id)
+                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id HttpScene)
                                         , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                         }
                             in
@@ -986,7 +1013,7 @@ selectHttpRequestModal sceneParentId requestCollection pgCollection =
 
                                 currentFileView =
                                     Input.button []
-                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id)
+                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id PgScene)
                                         , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                         }
                             in

@@ -1009,7 +1009,7 @@ ALTER TABLE ONLY public.scene_node
 --
 
 ALTER TABLE ONLY public.scene_node
-    ADD CONSTRAINT scene_node_pg_node_id_fkey FOREIGN KEY (pg_node_id) REFERENCES public.request_node(id);
+    ADD CONSTRAINT scene_node_pg_node_id_fkey FOREIGN KEY (pg_node_id) REFERENCES public.pg_node(id);
 
 
 --

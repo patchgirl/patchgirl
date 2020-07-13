@@ -100,7 +100,24 @@ spec =
                                             , _fakeScenePostscript = ""
                                             })
 
-      it "creates a scene" $ \clientEnv ->
+      it "creates an http scene" $ \clientEnv ->
+        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+          (RequestCollection _ requestNodes, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
+          let requestFileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
+          let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
+          let scenarioFileId = scenarioFile ^. scenarioNodeId
+          let scenarioFirstScene = head $ scenarioFile ^. scenarioNodeScenes
+          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene ^. sceneId) requestFileId "" ""
+          try clientEnv (createSceneHandler token scenarioFileId newScene)
+          newCreatedScene <- selectFakeScene UUID.nil connection
+          newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene ^. sceneId
+                                                     , _fakeSceneId = requestFileId
+                                                     , _fakeSceneType = HttpScene
+                                                     , _fakeScenePrescript = ""
+                                                     , _fakeScenePostscript = ""
+                                                     })
+
+      it "creates a pg scene" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           (RequestCollection _ requestNodes, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let requestFileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
