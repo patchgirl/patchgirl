@@ -27,6 +27,7 @@ import Page exposing(..)
 import StringTemplate exposing (..)
 import Dict exposing (Dict)
 import Runner
+import PGBuilderApp.PGTree.Util as PgTree
 
 
 -- * model
@@ -335,10 +336,10 @@ update msg model =
 -- ** detailed view
 
 
-        ShowDetailedView id ->
+        ShowDetailedView sceneId ->
             let
                 newModel =
-                    { model | showDetailedSceneView = Just id }
+                    { model | showDetailedSceneView = Just sceneId }
             in
             (newModel, Cmd.none)
 
@@ -498,6 +499,9 @@ findFileRecord model id =
     let
         (RequestCollection _ requestNodes) =
             model.requestCollection
+
+        (PgCollection _ pgNodes) =
+            model.pgCollection
     in
     RequestTree.findFile requestNodes id
 
@@ -580,39 +584,20 @@ view model =
                       ]
                 , envSelectionView
                 ]
-
-        sceneAndFileRecordDetailToShow : Maybe (Scene, RequestFileRecord)
-        sceneAndFileRecordDetailToShow =
-            let
-                mScene =
-                    Maybe.andThen (\sceneToShowId ->
-                                   List.find (\scene -> scene.id == sceneToShowId) model.scenes) model.showDetailedSceneView
-
-                mFileRecord =
-                    Maybe.andThen (\scene -> findFileRecord model scene.nodeId) mScene
-
-            in
-            case (mScene, mFileRecord) of
-                (Just scene, Just fileRecord) ->
-                    Just (scene, fileRecord)
-
-                _ ->
-                    Nothing
-
     in
-    case sceneAndFileRecordDetailToShow of
+    case model.showDetailedSceneView of
         Nothing ->
             wrappedRow [ height fill, width fill, spacing 20 ]
                 [ el [ alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
                 , el [] scenesView
                 ]
 
-        Just (scene, requestFileRecord) ->
+        Just sceneId ->
             wrappedRow [ height fill, width fill, spacing 20 ]
                 [ el [ width <| fillPortion 1, alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
                 , row [ width <| fillPortion 9, spacing 20 ]
                     [ el [ width <| fillPortion 2, height fill ] scenesView
-                    , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model scene requestFileRecord)
+                    , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model sceneId)
                     ]
                 ]
 
@@ -640,16 +625,22 @@ addNewSceneView =
 
 
 sceneView : Model -> Scene -> Element Msg
-sceneView model { id, nodeId, sceneComputation } =
+sceneView model scene =
     let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
+        (RequestCollection _ requestNodes) = model.requestCollection
+        (PgCollection _ pgNodes) = model.pgCollection
 
-        mRequestFileRecord =
-            RequestTree.findFile requestNodes nodeId
+        mFileRecord : Maybe FileRecord
+        mFileRecord =
+            case scene.sceneType of
+                HttpScene ->
+                    RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+
+                PgScene ->
+                    PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
         sceneComputationAttrs =
-            case sceneComputation of
+            case scene.sceneComputation of
                 Nothing ->
                     [ Border.color white ]
 
@@ -662,8 +653,14 @@ sceneView model { id, nodeId, sceneComputation } =
                 Just _ ->
                     [ borderError, backgroundError ]
     in
-    case mRequestFileRecord of
-        Just { name } ->
+    case mFileRecord of
+        Just fileRecord ->
+            let
+                { id, name } =
+                    case fileRecord of
+                        HttpRecord r -> { id = r.id, name = r.name }
+                        PgRecord r -> { id = r.id, name = r.name }
+            in
             column [ centerX, spacing 10 ]
                 [ Input.button
                     ( [ Border.solid
@@ -675,7 +672,7 @@ sceneView model { id, nodeId, sceneComputation } =
                       , centerX
                       ] ++ sceneComputationAttrs
                     )
-                    { onPress = Just (ShowDetailedView id)
+                    { onPress = Just (ShowDetailedView scene.id)
                     , label =
                         row [ spacing 20, centerX ]
                             [ el [] (text (notEditedValue name))
@@ -717,11 +714,59 @@ arrowView id =
 -- ** detailed scene view
 
 
-detailedSceneView : Model -> Scene -> RequestFileRecord -> Element Msg
-detailedSceneView model scene requestFileRecord =
+detailedSceneView : Model -> Uuid -> Element Msg
+detailedSceneView model sceneId =
+    let
+        findRecord : Scene -> Maybe FileRecord
+        findRecord scene =
+            let
+                (RequestCollection _ requestNodes) =
+                    model.requestCollection
+
+                (PgCollection _ pgNodes) =
+                    model.pgCollection
+            in
+            case scene.sceneType of
+                HttpScene ->
+                    RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+
+                PgScene ->
+                    PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
+
+        mSceneAndRecord =
+            List.find (\scene -> scene.id == sceneId) model.scenes
+                |> Maybe.andThen (\scene -> (findRecord scene) |> Maybe.map (\record -> (scene, record)))
+    in
+    case mSceneAndRecord of
+        Nothing ->
+            none
+
+        Just (scene, fileRecord) ->
+            column [ width fill
+               , height fill
+               , centerX
+               , alignTop
+               , spacing 40
+               , padding 20
+               , boxShadow
+               , Background.color white
+               ] <|
+                case fileRecord of
+                    HttpRecord record ->
+                        httpDetailedSceneView model scene record
+
+                    PgRecord record ->
+                        pgDetailedSceneView model scene record
+
+
+-- *** http detailed scene view
+
+
+httpDetailedSceneView : Model -> Scene -> RequestFileRecord -> List (Element Msg)
+httpDetailedSceneView model scene fileRecord =
     let
         { method, headers, url, body } =
-            buildRequestComputationInput requestFileRecord
+            buildRequestComputationInput fileRecord
 
         methodAndUrl =
             (methodToString method)
@@ -754,7 +799,7 @@ detailedSceneView model scene requestFileRecord =
               [ row [ spacing 10 ]
                     [ link []
                           { url = href <| ReqPage (Just scene.nodeId) (Just model.id)
-                          , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue requestFileRecord.name)
+                          , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue fileRecord.name)
                                     secondaryColor
                           }
                     , saveSceneButton
@@ -825,30 +870,104 @@ detailedSceneView model scene requestFileRecord =
 
 
     in
-    column [ width fill
-           , height fill
-           , centerX
-           , alignTop
-           , spacing 40
-           , padding 20
-           , boxShadow
-           , Background.color white
-           ]
-        <| case scene.sceneComputation of
-              Nothing ->
-                  [ sceneInputDetailView
-                  , prescriptView scene
-                  , postscriptView scene
-                  ]
+    case scene.sceneComputation of
+        Nothing ->
+            [ sceneInputDetailView
+            , prescriptView scene
+            , postscriptView scene
+            ]
 
-              Just sceneComputation ->
-                  [ sceneInputDetailView
-                  , prescriptView scene
-                  , postscriptView scene
-                  , hr [] "response"
-                  , outputSceneDetailView sceneComputation
-                  ]
+        Just sceneComputation ->
+            [ sceneInputDetailView
+            , prescriptView scene
+            , postscriptView scene
+            , hr [] "response"
+            , outputSceneDetailView sceneComputation
+            ]
 
+
+-- *** pg detailed scene view
+
+
+pgDetailedSceneView : Model -> Scene -> PgFileRecord -> List (Element Msg)
+pgDetailedSceneView model scene fileRecord =
+    let
+        sceneInputDetailView =
+            column [ spacing 10 ]
+              [ row [ spacing 10 ]
+                    [ link []
+                          { url = href <| PgPage (Just fileRecord.id)
+                          , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue fileRecord.name)
+                                    secondaryColor
+                          }
+                    ]
+              ]
+
+        whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
+        whichResponseButtonView tabs =
+            let
+                buttonView (label, isActive, msg) =
+                    Input.button [ centerX, centerY
+                                 , height fill
+                                 ]
+                        { onPress = Just msg
+                        , label =
+                            el ( [ centerY, centerX
+                                 , height fill
+                                 ] ++ (selectiveButtonAttrs isActive)
+                               ) <| el [ centerY ] (text label)
+                        }
+            in
+            row [ width fill, height (px 50)
+                , centerX, centerY
+                , spacing 20
+                , paddingXY 0 0
+                ] <| List.map buttonView tabs
+
+        outputSceneDetailView : SceneComputation -> Element Msg
+        outputSceneDetailView sceneComputation =
+            case sceneComputation of
+                SceneNotRun ->
+                    text <| "This request hasn't been run"
+
+                PrescriptFailed scriptException ->
+                    text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
+
+                HttpSceneFailed httpException ->
+                    text <| "This request failed because of: " ++ httpExceptionToString httpException
+
+                PgSceneFailed error ->
+                    text <| "This postgresql query failed because of: " ++ error
+
+                HttpPostscriptFailed _ scriptException ->
+                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+
+                PgPostscriptFailed _ scriptException ->
+                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+
+                HttpSceneOk requestComputationOutput ->
+                    none
+
+                PgSceneOk pgComputation ->
+                    column [ width fill ]
+                        []
+
+
+    in
+    case scene.sceneComputation of
+        Nothing ->
+            [ sceneInputDetailView
+            , prescriptView scene
+            , postscriptView scene
+            ]
+
+        Just sceneComputation ->
+            [ sceneInputDetailView
+            , prescriptView scene
+            , postscriptView scene
+            , hr [] "response"
+            , outputSceneDetailView sceneComputation
+            ]
 
 
 -- ** script view

@@ -291,6 +291,10 @@ type SceneType
     = HttpScene
     | PgScene
 
+type FileRecord
+    = HttpRecord RequestFileRecord
+    | PgRecord PgFileRecord
+
 
 -- * builder
 

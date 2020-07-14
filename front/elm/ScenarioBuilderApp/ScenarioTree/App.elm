@@ -451,7 +451,6 @@ getScenarioNodeId scenarioNode =
         ScenarioFile { id } ->
             id
 
-
 findFile : List ScenarioNode -> Uuid.Uuid -> Maybe ScenarioFileRecord
 findFile scenarioNodes id =
     case findNode scenarioNodes id of
@@ -460,7 +459,6 @@ findFile scenarioNodes id =
 
         _ ->
             Nothing
-
 
 findNode : List ScenarioNode -> Uuid.Uuid -> Maybe ScenarioNode
 findNode scenarioNodes id =
