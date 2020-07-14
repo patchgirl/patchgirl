@@ -515,7 +515,14 @@ view model =
         scenesView =
             case model.scenes of
                 [] ->
-                    addNewSceneView
+                    Input.button [ centerY, centerX ]
+                        { onPress = Just (ShowSceneSelectionModal Nothing)
+                        , label =
+                            row [ centerX, centerY ]
+                                [ addIcon
+                                , el [] (text "Add a scene to your scenario")
+                                ]
+                        }
 
                 scenes ->
                     column [ centerX, spacing 10 ] (List.map (sceneView model) scenes)
@@ -589,36 +596,17 @@ view model =
         Nothing ->
             wrappedRow [ height fill, width fill, spacing 20 ]
                 [ el [ alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
-                , el [] scenesView
+                , el [ alignTop, height fill ] scenesView
                 ]
 
         Just sceneId ->
             wrappedRow [ height fill, width fill, spacing 20 ]
                 [ el [ width <| fillPortion 1, alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
-                , row [ width <| fillPortion 9, spacing 20 ]
+                , row [ width <| fillPortion 9, alignTop, spacing 20 ]
                     [ el [ width <| fillPortion 2, height fill ] scenesView
                     , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model sceneId)
                     ]
                 ]
-
-
-
--- ** add new scene view
-
-
-addNewSceneView : Element Msg
-addNewSceneView =
-    el [ width fill, centerX ]
-        (Input.button [ centerX ]
-            { onPress = Just (ShowSceneSelectionModal Nothing)
-            , label =
-                row [ centerX, centerY ]
-                    [ addIcon
-                    , el [] (text "Add a scene to your scenario")
-                    ]
-            }
-        )
-
 
 
 -- ** scene view
