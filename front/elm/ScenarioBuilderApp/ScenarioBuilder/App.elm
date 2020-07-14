@@ -688,7 +688,7 @@ arrowView id =
             Input.button []
                 { onPress = Just (ShowSceneSelectionModal (Just id))
                 , label = row [] [ addIcon
-                                 , text " add request"
+                                 , text " add new scene"
                                  ]
                 }
     in

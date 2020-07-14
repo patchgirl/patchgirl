@@ -94,7 +94,7 @@ spec =
                                                      })
           newSon <- selectFakeSceneWithParentId UUID.nil connection
           newSon `shouldBe` Just (FakeScene { _fakeSceneParentId = Just UUID.nil
-                                            , _fakeSceneId = scenarioFirstScene ^. sceneNodeId
+                                            , _fakeSceneId = scenarioFirstScene ^. sceneActorId
                                             , _fakeSceneType = HttpScene
                                             , _fakeScenePrescript = ""
                                             , _fakeScenePostscript = ""
@@ -199,7 +199,7 @@ spec =
       NewScene { _newSceneId = id
                , _newSceneSceneNodeParentId = parentId
                , _newSceneSceneType = HttpScene
-               , _newSceneNodeId = requestFileId
+               , _newSceneActorId = requestFileId
                , _newScenePrescript = prescript
                , _newScenePostscript = postscript
                }

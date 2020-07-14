@@ -203,10 +203,10 @@ insertScene :: UUID -> NewScene -> PG.Connection -> IO Int.Int64
 insertScene scenarioNodeId NewScene{..} connection = do
   let (httpSceneId, pgSceneId) = case _newSceneSceneType of
         HttpScene ->
-          (Just _newSceneNodeId, Nothing)
+          (Just _newSceneActorId, Nothing)
 
         PgScene ->
-          (Nothing, Just _newSceneNodeId)
+          (Nothing, Just _newSceneActorId)
 
   case _newSceneSceneNodeParentId of
     Nothing ->

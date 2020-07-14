@@ -62,7 +62,7 @@ instance FromJSON SceneType where
 data NewScene
   = NewScene { _newSceneId                :: UUID
              , _newSceneSceneNodeParentId :: Maybe UUID
-             , _newSceneNodeId            :: UUID
+             , _newSceneActorId            :: UUID
              , _newSceneSceneType         :: SceneType
              , _newScenePrescript         :: String
              , _newScenePostscript        :: String
@@ -85,12 +85,12 @@ instance FromJSON NewScene where
 
 data SceneNode
   = HttpSceneNode { _sceneId         :: UUID
-                  , _sceneNodeId     :: UUID
+                  , _sceneActorId     :: UUID
                   , _scenePrescript  :: String
                   , _scenePostscript :: String
                   }
   | PgSceneNode { _sceneId         :: UUID
-                , _sceneNodeId     :: UUID
+                , _sceneActorId     :: UUID
                 , _scenePrescript  :: String
                 , _scenePostscript :: String
                 }
@@ -138,13 +138,13 @@ instance FromJSON SceneFromPG where
     SceneFromPG <$> case sceneType of
       HttpScene -> do
         _sceneId <- o .: "id"
-        _sceneNodeId <- o .: "http_node_id"
+        _sceneActorId <- o .: "http_node_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return HttpSceneNode{..}
       PgScene -> do
         _sceneId <- o .: "id"
-        _sceneNodeId <- o .: "pg_node_id"
+        _sceneActorId <- o .: "pg_node_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return PgSceneNode{..}
