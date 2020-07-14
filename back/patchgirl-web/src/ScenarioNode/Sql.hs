@@ -201,7 +201,7 @@ insertScenarioFolder NewScenarioFolder {..} connection =
 
 insertScene :: UUID -> NewScene -> PG.Connection -> IO Int.Int64
 insertScene scenarioNodeId NewScene{..} connection = do
-  let (httpSceneId, pgSceneId) = case _newSceneSceneType of
+  let (httpSceneId, pgSceneId) = case _newSceneActorType of
         HttpScene ->
           (Just _newSceneActorId, Nothing)
 
@@ -214,7 +214,7 @@ insertScene scenarioNodeId NewScene{..} connection = do
                                                     , _newSceneId
                                                     , _newScenePrescript
                                                     , _newScenePostscript
-                                                    , _newSceneSceneType
+                                                    , _newSceneActorType
                                                     , httpSceneId
                                                     , pgSceneId
                                                     , scenarioNodeId
@@ -224,7 +224,7 @@ insertScene scenarioNodeId NewScene{..} connection = do
                                                 , _newSceneId
                                                 , _newScenePrescript
                                                 , _newScenePostscript
-                                                , _newSceneSceneType
+                                                , _newSceneActorType
                                                 , httpSceneId
                                                 , pgSceneId
                                                 )
@@ -237,9 +237,9 @@ insertScene scenarioNodeId NewScene{..} connection = do
               id,
               prescript,
               postscript,
-              scene_type,
-              http_node_id,
-              pg_node_id
+              actor_type,
+              http_actor_id,
+              pg_actor_id
              )
              VALUES (?, ?, ?, ?, ?, ?, ?)
              RETURNING id
@@ -264,9 +264,9 @@ insertScene scenarioNodeId NewScene{..} connection = do
               id,
               prescript,
               postscript,
-              scene_type,
-              http_node_id,
-              pg_node_id
+              actor_type,
+              http_actor_id,
+              pg_actor_id
              )
              VALUES (?, ?, ?, ?, ?, ?, ?)
              RETURNING id, scene_node_parent_id

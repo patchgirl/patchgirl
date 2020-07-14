@@ -279,7 +279,7 @@ type alias ScenarioFileRecord =
 type alias Scene
     = { id : Uuid
       , nodeId : Uuid
-      , sceneType : SceneType
+      , actorType : ActorType
       , sceneComputation : Maybe SceneComputation
       , prescriptStr : Editable String
       , prescriptAst : Result (List DeadEnd) TangoAst
@@ -287,7 +287,7 @@ type alias Scene
       , postscriptAst : Result (List DeadEnd) TangoAst
       }
 
-type SceneType
+type ActorType
     = HttpScene
     | PgScene
 

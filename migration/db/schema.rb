@@ -222,7 +222,7 @@ BEGIN
     END
   ) INTO result
   FROM pg_node rn
-  INNER JOIN pg_collection_to_pg_node rcrn ON rcrn.pg_node_id = rn.id
+  INNER JOIN pg_collection_to_pg_node rcrn ON rcrn.pg_actor_id = rn.id
   WHERE rcrn.pg_collection_id = rc_id;
   RETURN result;
 END;
@@ -315,9 +315,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'scene_type', scene_type,
-        'http_node_id', http_node_id,
-        'pg_node_id', pg_node_id,
+        'actor_type', actor_type,
+        'http_actor_id', http_actor_id,
+        'pg_actor_id', pg_actor_id,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -378,9 +378,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'scene_type', scene_type,
-        'http_node_id', http_node_id,
-        'pg_node_id', pg_node_id,
+        'actor_type', actor_type,
+        'http_actor_id', http_actor_id,
+        'pg_actor_id', pg_actor_id,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -509,7 +509,7 @@ CREATE TABLE public.pg_collection (
 
 CREATE TABLE public.pg_collection_to_pg_node (
     pg_collection_id uuid NOT NULL,
-    pg_node_id uuid NOT NULL
+    pg_actor_id uuid NOT NULL
 );
 
 
@@ -631,12 +631,12 @@ CREATE TABLE public.scenario_node (
 CREATE TABLE public.scene_node (
     id uuid NOT NULL,
     scene_node_parent_id uuid,
-    scene_type public.scene_type NOT NULL,
-    http_node_id uuid,
-    pg_node_id uuid,
+    actor_type public.scene_type NOT NULL,
+    http_actor_id uuid,
+    pg_actor_id uuid,
     prescript text NOT NULL,
     postscript text NOT NULL,
-    CONSTRAINT scene_node_check CHECK ((((scene_type = 'HttpScene'::public.scene_type) AND (http_node_id IS NOT NULL) AND (pg_node_id IS NULL)) OR ((scene_type = 'PgScene'::public.scene_type) AND (pg_node_id IS NOT NULL) AND (http_node_id IS NULL))))
+    CONSTRAINT scene_node_check CHECK ((((actor_type = 'HttpScene'::public.scene_type) AND (http_actor_id IS NOT NULL) AND (pg_actor_id IS NULL)) OR ((actor_type = 'PgScene'::public.scene_type) AND (pg_actor_id IS NOT NULL) AND (http_actor_id IS NULL))))
 );
 
 
@@ -777,7 +777,7 @@ ALTER TABLE ONLY public.pg_collection
 --
 
 ALTER TABLE ONLY public.pg_collection_to_pg_node
-    ADD CONSTRAINT pg_collection_to_pg_node_pkey PRIMARY KEY (pg_collection_id, pg_node_id);
+    ADD CONSTRAINT pg_collection_to_pg_node_pkey PRIMARY KEY (pg_collection_id, pg_actor_id);
 
 
 --
@@ -893,19 +893,19 @@ ALTER TABLE ONLY public.pg_collection
 
 
 --
+-- Name: pg_collection_to_pg_node pg_collection_to_pg_node_pg_actor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pg_collection_to_pg_node
+    ADD CONSTRAINT pg_collection_to_pg_node_pg_actor_id_fkey FOREIGN KEY (pg_actor_id) REFERENCES public.pg_node(id) ON DELETE CASCADE;
+
+
+--
 -- Name: pg_collection_to_pg_node pg_collection_to_pg_node_pg_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pg_collection_to_pg_node
     ADD CONSTRAINT pg_collection_to_pg_node_pg_collection_id_fkey FOREIGN KEY (pg_collection_id) REFERENCES public.pg_collection(id) ON DELETE CASCADE;
-
-
---
--- Name: pg_collection_to_pg_node pg_collection_to_pg_node_pg_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pg_collection_to_pg_node
-    ADD CONSTRAINT pg_collection_to_pg_node_pg_node_id_fkey FOREIGN KEY (pg_node_id) REFERENCES public.pg_node(id) ON DELETE CASCADE;
 
 
 --
@@ -997,19 +997,19 @@ ALTER TABLE ONLY public.scenario_node
 
 
 --
--- Name: scene_node scene_node_http_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: scene_node scene_node_http_actor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.scene_node
-    ADD CONSTRAINT scene_node_http_node_id_fkey FOREIGN KEY (http_node_id) REFERENCES public.request_node(id);
+    ADD CONSTRAINT scene_node_http_actor_id_fkey FOREIGN KEY (http_actor_id) REFERENCES public.request_node(id);
 
 
 --
--- Name: scene_node scene_node_pg_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: scene_node scene_node_pg_actor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.scene_node
-    ADD CONSTRAINT scene_node_pg_node_id_fkey FOREIGN KEY (pg_node_id) REFERENCES public.pg_node(id);
+    ADD CONSTRAINT scene_node_pg_actor_id_fkey FOREIGN KEY (pg_actor_id) REFERENCES public.pg_node(id);
 
 
 --

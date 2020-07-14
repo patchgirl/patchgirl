@@ -28,18 +28,18 @@ import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
 
 
--- * scene type
+-- * actor type
 
 
-data SceneType
+data ActorType
   = HttpScene
   | PgScene
   deriving (Eq, Show, Generic)
 
-instance PG.ToField SceneType where
+instance PG.ToField ActorType where
   toField = PG.toField . show
 
-instance PG.FromField SceneType where
+instance PG.FromField ActorType where
    fromField f mdata =
      case B.unpack `fmap` mdata of
        Nothing          -> PG.returnError PG.UnexpectedNull f ""
@@ -47,11 +47,11 @@ instance PG.FromField SceneType where
        Just "PgScene"   -> return PgScene
        _                -> PG.returnError PG.Incompatible f ""
 
-instance ToJSON SceneType where
+instance ToJSON ActorType where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-instance FromJSON SceneType where
+instance FromJSON ActorType where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
@@ -62,8 +62,8 @@ instance FromJSON SceneType where
 data NewScene
   = NewScene { _newSceneId                :: UUID
              , _newSceneSceneNodeParentId :: Maybe UUID
-             , _newSceneActorId            :: UUID
-             , _newSceneSceneType         :: SceneType
+             , _newSceneActorId           :: UUID
+             , _newSceneActorType         :: ActorType
              , _newScenePrescript         :: String
              , _newScenePostscript        :: String
              }
@@ -85,12 +85,12 @@ instance FromJSON NewScene where
 
 data SceneNode
   = HttpSceneNode { _sceneId         :: UUID
-                  , _sceneActorId     :: UUID
+                  , _sceneActorId    :: UUID
                   , _scenePrescript  :: String
                   , _scenePostscript :: String
                   }
   | PgSceneNode { _sceneId         :: UUID
-                , _sceneActorId     :: UUID
+                , _sceneActorId    :: UUID
                 , _scenePrescript  :: String
                 , _scenePostscript :: String
                 }
@@ -134,17 +134,17 @@ newtype SceneFromPG = SceneFromPG SceneNode
 
 instance FromJSON SceneFromPG where
   parseJSON = withObject "SceneFromPG" $ \o -> do
-    sceneType <- o .: "scene_type" :: Parser SceneType
-    SceneFromPG <$> case sceneType of
+    actorType <- o .: "actor_type" :: Parser ActorType
+    SceneFromPG <$> case actorType of
       HttpScene -> do
         _sceneId <- o .: "id"
-        _sceneActorId <- o .: "http_node_id"
+        _sceneActorId <- o .: "http_actor_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return HttpSceneNode{..}
       PgScene -> do
         _sceneId <- o .: "id"
-        _sceneActorId <- o .: "pg_node_id"
+        _sceneActorId <- o .: "pg_actor_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return PgSceneNode{..}

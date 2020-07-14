@@ -91,7 +91,7 @@ insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
             VALUES ('PgFile', NULL, ?, ?, ?, ?, ?, ?, ?, ?)
           ) INSERT INTO pg_collection_to_pg_node (
               pg_collection_id,
-              pg_node_id
+              pg_actor_id
             )
             VALUES (?, ?)
           |]
@@ -146,7 +146,7 @@ insertRootPgFolder NewRootPgFolder{..} pgCollectionId connection =
             VALUES (?, NULL, 'PgFolder', ?)
           ) INSERT INTO pg_collection_to_pg_node (
               pg_collection_id,
-              pg_node_id
+              pg_actor_id
             )
             VALUES (?, ?)
           |]

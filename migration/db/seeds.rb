@@ -157,10 +157,10 @@ def insert_http_scene_node(id, scene_node_parent_id, scene_node_id, prescript, p
 
   %{
     INSERT INTO scene_node (
-      scene_type,
+      actor_type,
       id,
       scene_node_parent_id,
-      http_node_id,
+      http_actor_id,
       prescript,
       postscript
     ) values (
@@ -178,10 +178,10 @@ def insert_pg_scene_node(id, scene_node_parent_id, scene_node_id, prescript, pos
 
   %{
     INSERT INTO scene_node (
-      scene_type,
+      actor_type,
       id,
       scene_node_parent_id,
-      pg_node_id,
+      pg_actor_id,
       prescript,
       postscript
     ) values (
@@ -424,7 +424,7 @@ ActiveRecord::Migration[5.2].execute %{
 ActiveRecord::Migration[5.2].execute %{
     INSERT INTO pg_collection_to_pg_node (
       pg_collection_id,
-      pg_node_id
+      pg_actor_id
     ) values ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','cb2c1df8-68f0-4a61-b7c7-f75194604976');
   }
 

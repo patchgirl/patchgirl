@@ -317,7 +317,7 @@ insertFakePgCollectionToPgNode fakePgCollectionToPgNode connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_node_id)
+          INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_actor_id)
           VALUES (?, ?)
           |]
 
@@ -961,10 +961,10 @@ insertFakeHttpScene newFakeScene connection = do
       [sql|
           INSERT INTO scene_node(
             id,
-            scene_type,
-            pg_node_id,
+            actor_type,
+            pg_actor_id,
             scene_node_parent_id,
-            http_node_id,
+            http_actor_id,
             prescript,
             postscript
           ) VALUES (gen_random_uuid(), 'HttpScene', NULL, ?, ?, ?, ?)
@@ -993,10 +993,10 @@ insertFakePgScene newFakeScene connection = do
       [sql|
           INSERT INTO scene_node(
             id,
-            scene_type,
-            http_node_id,
+            actor_type,
+            http_actor_id,
             scene_node_parent_id,
-            pg_node_id,
+            pg_actor_id,
             prescript,
             postscript
           ) VALUES (gen_random_uuid(), 'PgScene', NULL, ?, ?, ?, ?)
@@ -1009,7 +1009,7 @@ insertFakePgScene newFakeScene connection = do
 
 data FakeScene =
   FakeScene { _fakeSceneParentId   :: Maybe UUID
-            , _fakeSceneType       :: SceneType
+            , _fakeActorType       :: ActorType
             , _fakeSceneId         :: UUID
             , _fakeScenePrescript  :: String
             , _fakeScenePostscript :: String
@@ -1024,10 +1024,10 @@ selectFakeScene id connection =
       [sql|
           SELECT
             scene_node_parent_id,
-            scene_type,
+            actor_type,
             (CASE
-              WHEN scene_type = 'HttpScene' THEN http_node_id
-              WHEN scene_type = 'PgScene' THEN pg_node_id
+              WHEN actor_type = 'HttpScene' THEN http_actor_id
+              WHEN actor_type = 'PgScene' THEN pg_actor_id
               ELSE NULL
               END
             ),
@@ -1045,10 +1045,10 @@ selectFakeSceneWithParentId parentId connection =
       [sql|
           SELECT
             scene_node_parent_id,
-            scene_type request_node_id,
+            actor_type request_node_id,
             (CASE
-              WHEN scene_type = 'HttpScene' THEN http_node_id
-              WHEN scene_type = 'PgScene' THEN pg_node_id
+              WHEN actor_type = 'HttpScene' THEN http_actor_id
+              WHEN actor_type = 'PgScene' THEN pg_actor_id
               ELSE NULL
               END
             ),

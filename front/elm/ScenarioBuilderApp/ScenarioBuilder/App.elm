@@ -59,10 +59,10 @@ type
     Msg
     -- create scene
     = ShowSceneSelectionModal (Maybe Uuid)
-    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid SceneType
+    | GenerateRandomUUIDForScene (Maybe Uuid) Uuid ActorType
     | SelectHttpFile (Maybe Uuid) Uuid Uuid
     | SelectPgFile (Maybe Uuid) Uuid Uuid
-    | AskCreateScene (Maybe Uuid) Uuid SceneType Uuid
+    | AskCreateScene (Maybe Uuid) Uuid ActorType Uuid
     | CloseModal
       -- delete scene
     | AskDeleteScene Uuid
@@ -107,26 +107,26 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        GenerateRandomUUIDForScene sceneParentId fileNodeId sceneType ->
+        GenerateRandomUUIDForScene sceneParentId fileNodeId actorType ->
             let
                 newMsg =
-                    Random.generate (AskCreateScene sceneParentId fileNodeId sceneType) Uuid.uuidGenerator
+                    Random.generate (AskCreateScene sceneParentId fileNodeId actorType) Uuid.uuidGenerator
             in
             ( model, newMsg )
 
-        AskCreateScene sceneParentId fileNodeId sceneType newSceneId ->
+        AskCreateScene sceneParentId fileNodeId actorType newSceneId ->
             let
                 payload =
                     { newSceneId = newSceneId
                     , newSceneSceneNodeParentId = sceneParentId
-                    , newSceneNodeId = fileNodeId
-                    , newSceneSceneType = Client.convertSceneTypeFromFrontToBack sceneType
+                    , newSceneActorId = fileNodeId
+                    , newSceneActorType = Client.convertActorTypeFromFrontToBack actorType
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
 
                 newMsg =
-                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId sceneType)
+                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId actorType)
             in
             ( model, newMsg )
 
@@ -429,11 +429,11 @@ update msg model =
 -- * util
 
 
-mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> SceneType -> Scene
-mkDefaultScene id nodeId sceneType =
+mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> ActorType -> Scene
+mkDefaultScene id nodeId actorType =
     { id = id
     , nodeId = nodeId
-    , sceneType = sceneType
+    , actorType = actorType
     , sceneComputation = Nothing
     , prescriptStr = NotEdited ""
     , prescriptAst = Ok []
@@ -462,11 +462,11 @@ deleteSceneResultToMsg sceneId result =
             Debug.todo "server error" ServerError
 
 
-createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> SceneType -> Result Http.Error () -> Msg
-createSceneResultToMsg sceneParentId nodeId newSceneId sceneType result =
+createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> ActorType -> Result Http.Error () -> Msg
+createSceneResultToMsg sceneParentId nodeId newSceneId actorType result =
     case result of
         Ok () ->
-            case sceneType of
+            case actorType of
                 HttpScene ->
                     SelectHttpFile sceneParentId nodeId newSceneId
 
@@ -620,7 +620,7 @@ sceneView model scene =
 
         mFileRecord : Maybe FileRecord
         mFileRecord =
-            case scene.sceneType of
+            case scene.actorType of
                 HttpScene ->
                     RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
 
@@ -714,7 +714,7 @@ detailedSceneView model sceneId =
                 (PgCollection _ pgNodes) =
                     model.pgCollection
             in
-            case scene.sceneType of
+            case scene.actorType of
                 HttpScene ->
                     RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
 

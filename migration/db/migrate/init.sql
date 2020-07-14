@@ -96,8 +96,8 @@ CREATE TABLE pg_collection(
 
 CREATE TABLE pg_collection_to_pg_node(
   pg_collection_id UUID REFERENCES pg_collection(id) ON DELETE CASCADE,
-  pg_node_id UUID REFERENCES pg_node(id) ON DELETE CASCADE,
-  PRIMARY KEY (pg_collection_id, pg_node_id)
+  pg_actor_id UUID REFERENCES pg_node(id) ON DELETE CASCADE,
+  PRIMARY KEY (pg_collection_id, pg_actor_id)
 );
 
 
@@ -109,14 +109,14 @@ CREATE TYPE scene_type AS ENUM ('HttpScene', 'PgScene');
 CREATE TABLE scene_node(
   id UUID PRIMARY KEY,
   scene_node_parent_id UUID REFERENCES scene_node(id),
-  scene_type scene_type NOT NULL,
-  http_node_id UUID REFERENCES request_node(id),
-  pg_node_id UUID REFERENCES pg_node(id),
+  actor_type scene_type NOT NULL,
+  http_actor_id UUID REFERENCES request_node(id),
+  pg_actor_id UUID REFERENCES pg_node(id),
   prescript TEXT NOT NULL,
   postscript TEXT NOT NULL,
   CHECK (
-    (scene_type = 'HttpScene' AND http_node_id IS NOT NULL AND pg_node_id IS NULL) OR
-    (scene_type = 'PgScene' AND pg_node_id IS NOT NULL AND http_node_id IS NULL)
+    (actor_type = 'HttpScene' AND http_actor_id IS NOT NULL AND pg_actor_id IS NULL) OR
+    (actor_type = 'PgScene' AND pg_actor_id IS NOT NULL AND http_actor_id IS NULL)
   )
 );
 
@@ -270,7 +270,7 @@ BEGIN
     END
   ) INTO result
   FROM pg_node rn
-  INNER JOIN pg_collection_to_pg_node rcrn ON rcrn.pg_node_id = rn.id
+  INNER JOIN pg_collection_to_pg_node rcrn ON rcrn.pg_actor_id = rn.id
   WHERE rcrn.pg_collection_id = rc_id;
   RETURN result;
 END;
@@ -379,9 +379,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'scene_type', scene_type,
-        'http_node_id', http_node_id,
-        'pg_node_id', pg_node_id,
+        'actor_type', actor_type,
+        'http_actor_id', http_actor_id,
+        'pg_actor_id', pg_actor_id,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -402,9 +402,9 @@ BEGIN
       jsonb_build_object(
         'id', id,
         'scene_node_parent_id', scene_node_parent_id,
-        'scene_type', scene_type,
-        'http_node_id', http_node_id,
-        'pg_node_id', pg_node_id,
+        'actor_type', actor_type,
+        'http_actor_id', http_actor_id,
+        'pg_actor_id', pg_actor_id,
         'prescript', prescript,
         'postscript', postscript
       )

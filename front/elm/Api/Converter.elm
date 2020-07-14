@@ -149,8 +149,8 @@ convertSceneNodeFromBackToFront sceneNode =
     case sceneNode of
         Back.HttpSceneNode s ->
             { id = s.sceneId
-            , nodeId = s.sceneNodeId
-            , sceneType = Front.HttpScene
+            , nodeId = s.sceneActorId
+            , actorType = Front.HttpScene
             , sceneComputation = Nothing
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = Ok []
@@ -160,8 +160,8 @@ convertSceneNodeFromBackToFront sceneNode =
 
         Back.PgSceneNode s ->
             { id = s.sceneId
-            , nodeId = s.sceneNodeId
-            , sceneType = Front.PgScene
+            , nodeId = s.sceneActorId
+            , actorType = Front.PgScene
             , sceneComputation = Nothing
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = Ok []
@@ -170,9 +170,9 @@ convertSceneNodeFromBackToFront sceneNode =
             }
 
 
-convertSceneTypeFromFrontToBack : Front.SceneType -> Back.SceneType
-convertSceneTypeFromFrontToBack sceneType =
-    case sceneType of
+convertActorTypeFromFrontToBack : Front.ActorType -> Back.ActorType
+convertActorTypeFromFrontToBack actorType =
+    case actorType of
         Front.HttpScene ->
             Back.HttpScene
 

@@ -88,14 +88,14 @@ spec =
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Nothing
                                                      , _fakeSceneId = requestFileId
-                                                     , _fakeSceneType = HttpScene
+                                                     , _fakeActorType = HttpScene
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
           newSon <- selectFakeSceneWithParentId UUID.nil connection
           newSon `shouldBe` Just (FakeScene { _fakeSceneParentId = Just UUID.nil
                                             , _fakeSceneId = scenarioFirstScene ^. sceneActorId
-                                            , _fakeSceneType = HttpScene
+                                            , _fakeActorType = HttpScene
                                             , _fakeScenePrescript = ""
                                             , _fakeScenePostscript = ""
                                             })
@@ -112,7 +112,7 @@ spec =
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene ^. sceneId
                                                      , _fakeSceneId = requestFileId
-                                                     , _fakeSceneType = HttpScene
+                                                     , _fakeActorType = HttpScene
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
@@ -129,7 +129,7 @@ spec =
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene ^. sceneId
                                                      , _fakeSceneId = requestFileId
-                                                     , _fakeSceneType = HttpScene
+                                                     , _fakeActorType = HttpScene
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
@@ -198,7 +198,7 @@ spec =
     mkNewScene id parentId requestFileId prescript postscript =
       NewScene { _newSceneId = id
                , _newSceneSceneNodeParentId = parentId
-               , _newSceneSceneType = HttpScene
+               , _newSceneActorType = HttpScene
                , _newSceneActorId = requestFileId
                , _newScenePrescript = prescript
                , _newScenePostscript = postscript
