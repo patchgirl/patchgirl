@@ -8,6 +8,7 @@ import qualified Control.Monad.Except       as Except (MonadError)
 import qualified Control.Monad.IO.Class     as IO
 import qualified Control.Monad.Loops        as Loops
 import qualified Control.Monad.Reader       as Reader
+import           Data.Function              ((&))
 import           Data.Functor               ((<&>))
 import qualified Data.List                  as List
 import qualified Data.Maybe                 as Maybe
@@ -243,26 +244,28 @@ createSceneHandler accountId scenarioNodeId newScene = do
       selectRequestCollectionId accountId connection >>= \case
         Nothing -> pure False
         Just collectionId -> do
-          nodes <- selectRequestNodesFromRequestCollectionId collectionId connection
-          pure $ Maybe.isJust $ findNodeInRequestNodes (newScene ^. newSceneNodeId) nodes
+          selectRequestNodesFromRequestCollectionId collectionId connection
+            <&> findNodeInRequestNodes (newScene ^. newSceneNodeId)
+            <&> Maybe.isJust
 
     pgAuthorized :: IO Bool
     pgAuthorized = IO.liftIO $
       selectPgCollectionId accountId connection >>= \case
         Nothing -> pure False
         Just collectionId -> do
-          nodes <- selectPgNodesFromPgCollectionId collectionId connection
-          pure $ Maybe.isJust $ findNodeInPgNodes (newScene ^. newSceneNodeId) nodes
+          selectPgNodesFromPgCollectionId collectionId connection
+            <&> findNodeInPgNodes (newScene ^. newSceneNodeId)
+            <&> Maybe.isJust
 
     sceneAuthorized :: Bool
     sceneAuthorized =
       case mScenarioNode of
         Just ScenarioFile { _scenarioNodeScenes } ->
           case newScene ^. newSceneSceneNodeParentId of
-            Just sceneNodeParentId ->
-              Maybe.isJust $ List.find (\scene -> sceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
-            Nothing ->
-              True
+            Just sceneNodeParentId -> do
+              List.find (\scene -> sceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
+                & Maybe.isJust
+            Nothing -> True
         _ -> False
 
   authorized <- IO.liftIO $ Loops.andM [ Loops.orM [ requestAuthorized, pgAuthorized ]

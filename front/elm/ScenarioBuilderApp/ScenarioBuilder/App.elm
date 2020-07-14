@@ -682,7 +682,7 @@ sceneView model scene =
                                 }
                             ]
                     }
-                , arrowView id
+                , arrowView scene.id
                 ]
 
         _ ->
