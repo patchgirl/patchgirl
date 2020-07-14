@@ -111,8 +111,8 @@ CREATE TYPE public.scenario_node_type AS ENUM (
 --
 
 CREATE TYPE public.scene_type AS ENUM (
-    'HttpScene',
-    'PgScene'
+    'HttpActor',
+    'PgActor'
 );
 
 
@@ -636,7 +636,7 @@ CREATE TABLE public.scene_node (
     pg_actor_id uuid,
     prescript text NOT NULL,
     postscript text NOT NULL,
-    CONSTRAINT scene_node_check CHECK ((((actor_type = 'HttpScene'::public.scene_type) AND (http_actor_id IS NOT NULL) AND (pg_actor_id IS NULL)) OR ((actor_type = 'PgScene'::public.scene_type) AND (pg_actor_id IS NOT NULL) AND (http_actor_id IS NULL))))
+    CONSTRAINT scene_node_check CHECK ((((actor_type = 'HttpActor'::public.scene_type) AND (http_actor_id IS NOT NULL) AND (pg_actor_id IS NULL)) OR ((actor_type = 'PgActor'::public.scene_type) AND (pg_actor_id IS NOT NULL) AND (http_actor_id IS NULL))))
 );
 
 

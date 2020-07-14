@@ -967,7 +967,7 @@ insertFakeHttpScene newFakeScene connection = do
             http_actor_id,
             prescript,
             postscript
-          ) VALUES (gen_random_uuid(), 'HttpScene', NULL, ?, ?, ?, ?)
+          ) VALUES (gen_random_uuid(), 'HttpActor', NULL, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -999,7 +999,7 @@ insertFakePgScene newFakeScene connection = do
             pg_actor_id,
             prescript,
             postscript
-          ) VALUES (gen_random_uuid(), 'PgScene', NULL, ?, ?, ?, ?)
+          ) VALUES (gen_random_uuid(), 'PgActor', NULL, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -1026,8 +1026,8 @@ selectFakeScene id connection =
             scene_node_parent_id,
             actor_type,
             (CASE
-              WHEN actor_type = 'HttpScene' THEN http_actor_id
-              WHEN actor_type = 'PgScene' THEN pg_actor_id
+              WHEN actor_type = 'HttpActor' THEN http_actor_id
+              WHEN actor_type = 'PgActor' THEN pg_actor_id
               ELSE NULL
               END
             ),
@@ -1047,8 +1047,8 @@ selectFakeSceneWithParentId parentId connection =
             scene_node_parent_id,
             actor_type request_node_id,
             (CASE
-              WHEN actor_type = 'HttpScene' THEN http_actor_id
-              WHEN actor_type = 'PgScene' THEN pg_actor_id
+              WHEN actor_type = 'HttpActor' THEN http_actor_id
+              WHEN actor_type = 'PgActor' THEN pg_actor_id
               ELSE NULL
               END
             ),

@@ -104,7 +104,7 @@ CREATE TABLE pg_collection_to_pg_node(
 -- * scene node
 
 
-CREATE TYPE scene_type AS ENUM ('HttpScene', 'PgScene');
+CREATE TYPE scene_type AS ENUM ('HttpActor', 'PgActor');
 
 CREATE TABLE scene_node(
   id UUID PRIMARY KEY,
@@ -115,8 +115,8 @@ CREATE TABLE scene_node(
   prescript TEXT NOT NULL,
   postscript TEXT NOT NULL,
   CHECK (
-    (actor_type = 'HttpScene' AND http_actor_id IS NOT NULL AND pg_actor_id IS NULL) OR
-    (actor_type = 'PgScene' AND pg_actor_id IS NOT NULL AND http_actor_id IS NULL)
+    (actor_type = 'HttpActor' AND http_actor_id IS NOT NULL AND pg_actor_id IS NULL) OR
+    (actor_type = 'PgActor' AND pg_actor_id IS NOT NULL AND http_actor_id IS NULL)
   )
 );
 

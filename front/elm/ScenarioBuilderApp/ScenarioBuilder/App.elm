@@ -133,7 +133,7 @@ update msg model =
         SelectHttpFile sceneParentId nodeId newSceneId ->
             let
                 newScene =
-                    mkDefaultScene newSceneId nodeId HttpScene
+                    mkDefaultScene newSceneId nodeId HttpActor
 
                 newScenes =
                     case sceneParentId of
@@ -154,7 +154,7 @@ update msg model =
         SelectPgFile sceneParentId nodeId newSceneId ->
             let
                 newScene =
-                    mkDefaultScene newSceneId nodeId PgScene
+                    mkDefaultScene newSceneId nodeId PgActor
 
                 newScenes =
                     case sceneParentId of
@@ -257,7 +257,7 @@ update msg model =
                             findFileRecord model scene.nodeId
                                 |> Maybe.map buildRequestComputationInput
                                 |> Maybe.map (\requestComputationInput ->
-                                                  Client.HttpSceneFile { sceneId = scene.id
+                                                  Client.HttpActorFile { sceneId = scene.id
                                                                        , sceneFileId = scene.nodeId
                                                                        , sceneHttpInput =
                                                                              (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
@@ -467,10 +467,10 @@ createSceneResultToMsg sceneParentId nodeId newSceneId actorType result =
     case result of
         Ok () ->
             case actorType of
-                HttpScene ->
+                HttpActor ->
                     SelectHttpFile sceneParentId nodeId newSceneId
 
-                PgScene ->
+                PgActor ->
                     SelectPgFile sceneParentId nodeId newSceneId
 
         Err error ->
@@ -621,10 +621,10 @@ sceneView model scene =
         mFileRecord : Maybe FileRecord
         mFileRecord =
             case scene.actorType of
-                HttpScene ->
+                HttpActor ->
                     RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
 
-                PgScene ->
+                PgActor ->
                     PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
         sceneComputationAttrs =
@@ -632,10 +632,10 @@ sceneView model scene =
                 Nothing ->
                     [ Border.color white ]
 
-                Just (HttpSceneOk _) ->
+                Just (HttpActorOk _) ->
                     [ borderSuccess, backgroundSuccess ]
 
-                Just (PgSceneOk _) ->
+                Just (PgActorOk _) ->
                     [ borderSuccess, backgroundSuccess ]
 
                 Just _ ->
@@ -715,10 +715,10 @@ detailedSceneView model sceneId =
                     model.pgCollection
             in
             case scene.actorType of
-                HttpScene ->
+                HttpActor ->
                     RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
 
-                PgScene ->
+                PgActor ->
                     PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
         mSceneAndRecord =
@@ -825,10 +825,10 @@ httpDetailedSceneView model scene fileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneFailed httpException ->
+                HttpActorFailed httpException ->
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
-                PgSceneFailed error ->
+                PgActorFailed error ->
                     text <| "This postgresql query failed because of: " ++ error
 
                 HttpPostscriptFailed _ scriptException ->
@@ -837,7 +837,7 @@ httpDetailedSceneView model scene fileRecord =
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneOk requestComputationOutput ->
+                HttpActorOk requestComputationOutput ->
                     column [ width fill ]
                         [ statusResponseView requestComputationOutput
                         , whichResponseButtonView
@@ -852,7 +852,7 @@ httpDetailedSceneView model scene fileRecord =
                                   headersResponseView requestComputationOutput (always DoNothing)
                         ]
 
-                PgSceneOk pgComputation ->
+                PgActorOk pgComputation ->
                     column [ width fill ]
                         []
 
@@ -921,10 +921,10 @@ pgDetailedSceneView model scene fileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneFailed httpException ->
+                HttpActorFailed httpException ->
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
-                PgSceneFailed error ->
+                PgActorFailed error ->
                     text <| "This postgresql query failed because of: " ++ error
 
                 HttpPostscriptFailed _ scriptException ->
@@ -933,10 +933,10 @@ pgDetailedSceneView model scene fileRecord =
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneOk requestComputationOutput ->
+                HttpActorOk requestComputationOutput ->
                     none
 
-                PgSceneOk pgComputation ->
+                PgActorOk pgComputation ->
                     column [ width fill ]
                         []
 
@@ -1065,7 +1065,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
 
                                 currentFileView =
                                     Input.button []
-                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id HttpScene)
+                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id HttpActor)
                                         , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                         }
                             in
@@ -1120,7 +1120,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
 
                                 currentFileView =
                                     Input.button []
-                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id PgScene)
+                                        { onPress = Just (GenerateRandomUUIDForScene sceneParentId requestFileRecord.id PgActor)
                                         , label = el [] <| iconWithTextAndColor "label" (notEditedValue requestFileRecord.name) secondaryColor
                                         }
                             in

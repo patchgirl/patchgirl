@@ -164,7 +164,7 @@ def insert_http_scene_node(id, scene_node_parent_id, scene_node_id, prescript, p
       prescript,
       postscript
     ) values (
-     'HttpScene',
+     'HttpActor',
      '#{id}',
       #{scene_node_parent_id.nil? ? 'NULL' : "'#{scene_node_parent_id}'"},
      '#{scene_node_id}',
@@ -185,7 +185,7 @@ def insert_pg_scene_node(id, scene_node_parent_id, scene_node_id, prescript, pos
       prescript,
       postscript
     ) values (
-     'PgScene',
+     'PgActor',
      '#{id}',
       #{scene_node_parent_id.nil? ? 'NULL' : "'#{scene_node_parent_id}'"},
      '#{scene_node_id}',

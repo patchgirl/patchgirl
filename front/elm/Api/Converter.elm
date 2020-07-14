@@ -147,10 +147,10 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 convertSceneNodeFromBackToFront : Back.SceneNode -> Front.Scene
 convertSceneNodeFromBackToFront sceneNode =
     case sceneNode of
-        Back.HttpSceneNode s ->
+        Back.HttpActorNode s ->
             { id = s.sceneId
             , nodeId = s.sceneActorId
-            , actorType = Front.HttpScene
+            , actorType = Front.HttpActor
             , sceneComputation = Nothing
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = Ok []
@@ -158,10 +158,10 @@ convertSceneNodeFromBackToFront sceneNode =
             , postscriptAst = Ok []
             }
 
-        Back.PgSceneNode s ->
+        Back.PgActorNode s ->
             { id = s.sceneId
             , nodeId = s.sceneActorId
-            , actorType = Front.PgScene
+            , actorType = Front.PgActor
             , sceneComputation = Nothing
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = Ok []
@@ -173,11 +173,11 @@ convertSceneNodeFromBackToFront sceneNode =
 convertActorTypeFromFrontToBack : Front.ActorType -> Back.ActorType
 convertActorTypeFromFrontToBack actorType =
     case actorType of
-        Front.HttpScene ->
-            Back.HttpScene
+        Front.HttpActor ->
+            Back.HttpActor
 
-        Front.PgScene ->
-            Back.PgScene
+        Front.PgActor ->
+            Back.PgActor
 
 
 -- * environment
@@ -537,11 +537,11 @@ convertScenarioOutputFromBackToFront scenesOutput =
                Back.PrescriptFailed scriptException ->
                    Front.PrescriptFailed (convertScriptExceptionFromBackToFront scriptException)
 
-               Back.HttpSceneFailed httpException ->
-                   Front.HttpSceneFailed (convertHttpExceptionFromBackToFront httpException)
+               Back.HttpActorFailed httpException ->
+                   Front.HttpActorFailed (convertHttpExceptionFromBackToFront httpException)
 
-               Back.PgSceneFailed error ->
-                   Front.PgSceneFailed error
+               Back.PgActorFailed error ->
+                   Front.PgActorFailed error
 
                Back.HttpPostscriptFailed httpComputation scriptException ->
                    Front.HttpPostscriptFailed (convertRequestComputationFromBackToFront httpComputation) (convertScriptExceptionFromBackToFront scriptException)
@@ -549,11 +549,11 @@ convertScenarioOutputFromBackToFront scenesOutput =
                Back.PgPostscriptFailed pgComputation scriptException ->
                    Front.PgPostscriptFailed (Debug.todo "") (convertScriptExceptionFromBackToFront scriptException)
 
-               Back.HttpSceneOk requestComputation ->
-                   Front.HttpSceneOk (convertRequestComputationFromBackToFront requestComputation)
+               Back.HttpActorOk requestComputation ->
+                   Front.HttpActorOk (convertRequestComputationFromBackToFront requestComputation)
 
-               Back.PgSceneOk pgComputation ->
-                   Front.PgSceneOk (Debug.todo "")
+               Back.PgActorOk pgComputation ->
+                   Front.PgActorOk (Debug.todo "")
 
     in
     List.map convertSceneOutputFromBackToFront scenesOutput

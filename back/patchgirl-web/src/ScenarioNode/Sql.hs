@@ -1,5 +1,3 @@
-
-
 module ScenarioNode.Sql where
 
 import           Control.Lens.Getter              ((^.))
@@ -202,10 +200,10 @@ insertScenarioFolder NewScenarioFolder {..} connection =
 insertScene :: UUID -> NewScene -> PG.Connection -> IO Int.Int64
 insertScene scenarioNodeId NewScene{..} connection = do
   let (httpSceneId, pgSceneId) = case _newSceneActorType of
-        HttpScene ->
+        HttpActor ->
           (Just _newSceneActorId, Nothing)
 
-        PgScene ->
+        PgActor ->
           (Nothing, Just _newSceneActorId)
 
   case _newSceneSceneNodeParentId of

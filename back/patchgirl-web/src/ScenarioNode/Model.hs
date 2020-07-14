@@ -32,8 +32,8 @@ import           GHC.Generics
 
 
 data ActorType
-  = HttpScene
-  | PgScene
+  = HttpActor
+  | PgActor
   deriving (Eq, Show, Generic)
 
 instance PG.ToField ActorType where
@@ -43,8 +43,8 @@ instance PG.FromField ActorType where
    fromField f mdata =
      case B.unpack `fmap` mdata of
        Nothing          -> PG.returnError PG.UnexpectedNull f ""
-       Just "HttpScene" -> return HttpScene
-       Just "PgScene"   -> return PgScene
+       Just "HttpActor" -> return HttpActor
+       Just "PgActor"   -> return PgActor
        _                -> PG.returnError PG.Incompatible f ""
 
 instance ToJSON ActorType where
@@ -136,13 +136,13 @@ instance FromJSON SceneFromPG where
   parseJSON = withObject "SceneFromPG" $ \o -> do
     actorType <- o .: "actor_type" :: Parser ActorType
     SceneFromPG <$> case actorType of
-      HttpScene -> do
+      HttpActor -> do
         _sceneId <- o .: "id"
         _sceneActorId <- o .: "http_actor_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return HttpSceneNode{..}
-      PgScene -> do
+      PgActor -> do
         _sceneId <- o .: "id"
         _sceneActorId <- o .: "pg_actor_id"
         _scenePrescript <- o .: "prescript"

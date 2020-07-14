@@ -288,8 +288,8 @@ type alias Scene
       }
 
 type ActorType
-    = HttpScene
-    | PgScene
+    = HttpActor
+    | PgActor
 
 type FileRecord
     = HttpRecord RequestFileRecord
@@ -586,10 +586,10 @@ type alias SceneOutput =
 type SceneComputation
     = SceneNotRun
     | PrescriptFailed ScriptException
-    | HttpSceneOk RequestComputation
-    | HttpSceneFailed HttpException
-    | PgSceneOk PgComputation
-    | PgSceneFailed String
+    | HttpActorOk RequestComputation
+    | HttpActorFailed HttpException
+    | PgActorOk PgComputation
+    | PgActorFailed String
     | PgPostscriptFailed PgComputation ScriptException
     | HttpPostscriptFailed RequestComputation ScriptException
 
