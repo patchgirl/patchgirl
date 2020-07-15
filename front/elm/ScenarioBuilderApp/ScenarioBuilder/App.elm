@@ -779,8 +779,7 @@ httpDetailedSceneView model scene fileRecord =
                     none
 
                 True ->
-                    Input.button [ centerX
-                                 , Border.solid
+                    Input.button [ Border.solid
                                  , Border.color secondaryColor
                                  , Border.width 1
                                  , Border.rounded 5
@@ -795,14 +794,22 @@ httpDetailedSceneView model scene fileRecord =
                         }
 
         sceneInputDetailView =
-            column [ spacing 10 ]
-              [ row [ spacing 10 ]
-                    [ link []
+            column [ width fill, spacing 10 ]
+              [ row [ spacing 10, width fill ]
+                    [ link [ alignLeft ]
                           { url = href <| ReqPage (Just scene.nodeId) (Just model.id)
-                          , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue fileRecord.name)
-                                    secondaryColor
+                          , label = el [ Font.underline, Font.size 25 ] <|
+                                    iconWithAttr { defaultIconAttribute
+                                                     | icon = "public"
+                                                     , title = (editedOrNotEditedValue fileRecord.name)
+                                                     , primIconColor = Just primaryColor
+                                                 }
                           }
                     , saveSceneButton
+                    , Input.button [ alignRight ]
+                        { onPress = Just HideDetailedView
+                        , label = el [ alignRight ] clearIcon
+                        }
                     ]
               , el [ ] (text methodAndUrl)
               ]
@@ -893,13 +900,21 @@ pgDetailedSceneView : Model -> Scene -> PgFileRecord -> List (Element Msg)
 pgDetailedSceneView model scene fileRecord =
     let
         sceneInputDetailView =
-            column [ spacing 10 ]
-              [ row [ spacing 10 ]
-                    [ link []
+            column [ width fill, spacing 10 ]
+              [ row [ width fill ]
+                    [ link [ alignLeft ]
                           { url = href <| PgPage (Just fileRecord.id)
-                          , label = el [ Font.underline ] <| iconWithTextAndColor "label" (editedOrNotEditedValue fileRecord.name)
-                                    secondaryColor
+                          , label = el [ Font.underline, Font.size 25 ] <|
+                                    iconWithAttr { defaultIconAttribute
+                                                     | icon = "storage"
+                                                     , title = (editedOrNotEditedValue fileRecord.name)
+                                                     , primIconColor = Just primaryColor
+                                                 }
                           }
+                    , Input.button [ alignRight ]
+                        { onPress = Just HideDetailedView
+                        , label = el [ alignRight ] clearIcon
+                        }
                     ]
               ]
 

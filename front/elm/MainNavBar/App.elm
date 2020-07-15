@@ -256,7 +256,7 @@ runnerStatusView model =
                                case model.runnerRunning of
                                    True -> runnerIcon
                                    False -> runnerIcon
-                             , iconSize = "33px"
+                             , iconSize = Just "33px"
                              , primIconColor = Just iconColor
                          }
     in
@@ -370,7 +370,7 @@ centerView model =
     let
         menuIconAttributes =
             { defaultIconAttribute
-                | iconSize = "25px"
+                | iconSize = Just "25px"
                 , iconVerticalAlign = Just "text-top"
             }
 
