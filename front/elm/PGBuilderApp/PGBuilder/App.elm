@@ -293,7 +293,7 @@ view model =
                      , padding 30
                      ] <| case (model.pgComputationOutput, model.showResponseView) of
                            (Just pgComputationOutput, True) ->
-                               responseView model pgComputationOutput
+                               responseView pgComputationOutput
 
                            _ ->
                                none
@@ -375,8 +375,8 @@ builderView model =
             }
         ]
 
-responseView : Model -> PgComputationOutput -> Element Msg
-responseView model pgComputationOutput =
+responseView : PgComputationOutput -> Element a
+responseView pgComputationOutput =
     case pgComputationOutput of
         Err error ->
             text error
@@ -388,12 +388,12 @@ responseView model pgComputationOutput =
 
                 PgTuplesOk columns ->
                     let
-                        columnView : Col -> Element Msg
+                        columnView : Col -> Element a
                         columnView col =
                             let
                                 (Col columnName pgValues) = col
 
-                                tableHeaderView : String -> Element Msg
+                                tableHeaderView : String -> Element a
                                 tableHeaderView name =
                                     column [ width fill, spacing 10 ]
                                         [ text name
@@ -412,7 +412,7 @@ responseView model pgComputationOutput =
                         row [ width fill ] <|
                             List.map columnView columns
 
-showPGValue : PgValue -> Element Msg
+showPGValue : PgValue -> Element a
 showPGValue pgValue =
     case pgValue of
         PgString str -> text str

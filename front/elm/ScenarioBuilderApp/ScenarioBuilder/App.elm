@@ -925,27 +925,6 @@ pgDetailedSceneView model scene fileRecord =
                     ]
               ]
 
-        whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
-        whichResponseButtonView tabs =
-            let
-                buttonView (label, isActive, msg) =
-                    Input.button [ centerX, centerY
-                                 , height fill
-                                 ]
-                        { onPress = Just msg
-                        , label =
-                            el ( [ centerY, centerX
-                                 , height fill
-                                 ] ++ (selectiveButtonAttrs isActive)
-                               ) <| el [ centerY ] (text label)
-                        }
-            in
-            row [ width fill, height (px 50)
-                , centerX, centerY
-                , spacing 20
-                , paddingXY 0 0
-                ] <| List.map buttonView tabs
-
         outputSceneDetailView : SceneComputation -> Element Msg
         outputSceneDetailView sceneComputation =
             case sceneComputation of
@@ -959,7 +938,7 @@ pgDetailedSceneView model scene fileRecord =
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
                 PgSceneFailed error ->
-                    text <| "This postgresql query failed because of: " ++ error
+                    PgBuilder.responseView (Err error)
 
                 HttpPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
@@ -972,7 +951,8 @@ pgDetailedSceneView model scene fileRecord =
 
                 PgSceneOk pgComputation ->
                     column [ width fill ]
-                        []
+                        [ PgBuilder.responseView (Ok pgComputation)
+                        ]
 
 
     in
