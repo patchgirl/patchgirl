@@ -102,6 +102,7 @@ type alias IconAttribute =
     { title : String
     , icon : String
     , iconSize : String
+    , iconVerticalAlign : Maybe String
     , primIconColor : Maybe Color
     }
 
@@ -110,6 +111,7 @@ defaultIconAttribute =
     { title = "title"
     , iconSize = "20px"
     , icon = "icon"
+    , iconVerticalAlign = Just "bottom"
     , primIconColor = Nothing
     }
 
@@ -119,7 +121,9 @@ iconWithAttr attr =
         Html.span []
             [ Html.i
                 [ Html.class "material-icons"
-                , Html.style "vertical-align" "text-top"
+                , attr.iconVerticalAlign
+                  |> Maybe.map (\verticalAlign -> Html.style "vertical-align" verticalAlign)
+                  |> Maybe.withDefault (Html.style "" "")
                 , Html.style "font-size" attr.iconSize
                 , attr.primIconColor
                   |> Maybe.map (\iconColor -> Html.style "color" (colorToString iconColor))

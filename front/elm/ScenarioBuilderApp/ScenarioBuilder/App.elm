@@ -648,6 +648,14 @@ sceneView model scene =
                     case fileRecord of
                         HttpRecord r -> { id = r.id, name = r.name }
                         PgRecord r -> { id = r.id, name = r.name }
+
+                sceneIcon =
+                    case scene.actorType of
+                        HttpActor ->
+                            "public"
+
+                        PgActor ->
+                            "storage"
             in
             column [ centerX, spacing 10 ]
                 [ Input.button
@@ -663,10 +671,14 @@ sceneView model scene =
                     { onPress = Just (ShowDetailedView scene.id)
                     , label =
                         row [ spacing 20, centerX ]
-                            [ el [] (text (notEditedValue name))
+                            [ row []
+                                  [ iconWithAttr { defaultIconAttribute | icon = sceneIcon, title = "" }
+                                  , text (notEditedValue name)
+                                  ]
                             , Input.button []
                                 { onPress = Just (AskDeleteScene scene.id)
                                 , label = el [ alignRight ] clearIcon
+
                                 }
                             ]
                     }

@@ -371,6 +371,7 @@ centerView model =
         menuIconAttributes =
             { defaultIconAttribute
                 | iconSize = "25px"
+                , iconVerticalAlign = Just "text-top"
             }
 
         currentDisplayedBuilderId : Maybe Uuid.Uuid
