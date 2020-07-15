@@ -627,6 +627,13 @@ sceneView model scene =
                 PgActor ->
                     PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
+        selectedSceneAttrs =
+            case model.showDetailedSceneView == Just scene.id of
+                True ->
+                    Border.color black
+                False ->
+                    Border.color white
+
         sceneComputationAttrs =
             case scene.sceneComputation of
                 Nothing ->
@@ -663,10 +670,11 @@ sceneView model scene =
                       , Border.width 1
                       , Border.rounded 5
                       , Background.color white
+                      , Border.color black
                       , padding 20
                       , boxShadow
                       , centerX
-                      ] ++ sceneComputationAttrs
+                      ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
                     )
                     { onPress = Just (ShowDetailedView scene.id)
                     , label =
@@ -678,7 +686,6 @@ sceneView model scene =
                             , Input.button []
                                 { onPress = Just (AskDeleteScene scene.id)
                                 , label = el [ alignRight ] clearIcon
-
                                 }
                             ]
                     }
