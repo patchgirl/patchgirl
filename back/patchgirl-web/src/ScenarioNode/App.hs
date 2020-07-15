@@ -300,11 +300,9 @@ deleteSceneHandler accountId scenarioNodeId sceneId' = do
       scenarioNodes <- IO.liftIO $ selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
       let
         sceneAuthorized =
-          findNodeInScenarioNodes scenarioNodeId scenarioNodes >>= \case
-            ScenarioFile { _scenarioNodeScenes } ->
+          findNodeInScenarioNodes scenarioNodeId scenarioNodes <&>
+            \ScenarioFile { _scenarioNodeScenes } ->
               List.find (\scene -> scene ^. sceneId == sceneId') _scenarioNodeScenes
-            _ ->
-              Nothing
 
       case sceneAuthorized of
         Nothing ->

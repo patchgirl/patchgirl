@@ -665,7 +665,7 @@ sceneView model scene =
                         row [ spacing 20, centerX ]
                             [ el [] (text (notEditedValue name))
                             , Input.button []
-                                { onPress = Just (AskDeleteScene id)
+                                { onPress = Just (AskDeleteScene scene.id)
                                 , label = el [ alignRight ] clearIcon
                                 }
                             ]
