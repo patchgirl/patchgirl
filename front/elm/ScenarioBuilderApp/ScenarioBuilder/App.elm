@@ -18,6 +18,8 @@ import List.Extra as List
 import Modal exposing (Modal(..))
 import Random
 import RequestBuilderApp.RequestTree.Util as RequestTree
+import PGBuilderApp.App as PgBuilderApp
+import PGBuilderApp.PGBuilder.App as PgBuilder
 import RequestComputation exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
@@ -252,20 +254,38 @@ update msg model =
             let
                 sceneToSceneInput : Scene -> Maybe Client.SceneFile
                 sceneToSceneInput scene =
-                    case (scene.prescriptAst, scene.postscriptAst) of
-                        (Ok prescript, Ok postscript) ->
-                            findFileRecord model scene.nodeId
-                                |> Maybe.map buildRequestComputationInput
-                                |> Maybe.map (\requestComputationInput ->
-                                                  Client.HttpSceneFile { sceneId = scene.id
-                                                                       , sceneFileId = scene.nodeId
-                                                                       , sceneHttpInput =
-                                                                             (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
-                                                                       , scenePrescript =
-                                                                           Client.convertTangoscriptFromFrontToBack prescript
-                                                                       , scenePostscript =
-                                                                           Client.convertTangoscriptFromFrontToBack postscript
-                                                                       })
+                    case (scene.prescriptAst, scene.postscriptAst, findRecord model scene) of
+                        (Ok prescript, Ok postscript, Just record) ->
+                            case record of
+                                HttpRecord httpRecord ->
+                                    buildRequestComputationInput httpRecord
+                                        |> \requestComputationInput ->
+                                            Just <| Client.HttpSceneFile { sceneId = scene.id
+                                                                         , sceneFileId = scene.nodeId
+                                                                         , sceneHttpInput =
+                                                                               (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
+                                                                         , scenePrescript =
+                                                                               Client.convertTangoscriptFromFrontToBack prescript
+                                                                         , scenePostscript =
+                                                                             Client.convertTangoscriptFromFrontToBack postscript
+                                                                         }
+
+                                PgRecord pgRecord ->
+                                    let
+                                        (PgCollection collectionId _) =
+                                            model.pgCollection
+                                    in
+                                    PgBuilderApp.convertFromFileToBuilder pgRecord collectionId model.keyValues
+                                        |> PgBuilder.buildPgComputationPayload
+                                        |> \(_, pgComputationInput) ->
+                                           Just <| Client.PgSceneFile { sceneId = scene.id
+                                                                      , sceneFileId = scene.nodeId
+                                                                      , scenePrescript =
+                                                                          Client.convertTangoscriptFromFrontToBack prescript
+                                                                      , scenePostscript =
+                                                                          Client.convertTangoscriptFromFrontToBack postscript
+                                                                      , scenePgInput = pgComputationInput
+                                                                      }
 
                         _ -> Nothing
 
@@ -281,9 +301,12 @@ update msg model =
 
                 mScenes : Maybe (List Client.SceneFile)
                 mScenes =
-                    model.scenes
-                        |> List.map sceneToSceneInput
-                        |> traverseListMaybe
+                    let
+                        a =
+                            Debug.log "scenes" model.scenes
+                                |> List.map sceneToSceneInput
+                    in
+                        Debug.log "a" a |> traverseListMaybe
 
                 mPayload =
                     mScenes
@@ -505,6 +528,22 @@ findFileRecord model id =
     in
     RequestTree.findFile requestNodes id
 
+findRecord : Model -> Scene -> Maybe FileRecord
+findRecord model scene =
+    let
+        (RequestCollection _ requestNodes) =
+            model.requestCollection
+
+        (PgCollection _ pgNodes) =
+            model.pgCollection
+    in
+    case scene.actorType of
+        HttpActor ->
+            RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+
+        PgActor ->
+            PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
+
 
 -- * view
 
@@ -724,25 +763,9 @@ arrowView id =
 detailedSceneView : Model -> Uuid -> Element Msg
 detailedSceneView model sceneId =
     let
-        findRecord : Scene -> Maybe FileRecord
-        findRecord scene =
-            let
-                (RequestCollection _ requestNodes) =
-                    model.requestCollection
-
-                (PgCollection _ pgNodes) =
-                    model.pgCollection
-            in
-            case scene.actorType of
-                HttpActor ->
-                    RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
-
-                PgActor ->
-                    PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
-
         mSceneAndRecord =
             List.find (\scene -> scene.id == sceneId) model.scenes
-                |> Maybe.andThen (\scene -> (findRecord scene) |> Maybe.map (\record -> (scene, record)))
+                |> Maybe.andThen (\scene -> (findRecord model scene) |> Maybe.map (\record -> (scene, record)))
     in
     case mSceneAndRecord of
         Nothing ->

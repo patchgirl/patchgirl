@@ -5,7 +5,7 @@ import Api.Converter as Client
 import Api.WebGeneratedClient as Client
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
-import Dict
+import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -44,7 +44,6 @@ type alias Model =
     , keyValues : List (Storable NewKeyValue KeyValue)
     , pgComputationOutput : Maybe PgComputationOutput
     , showResponseView : Bool
-    , runnerRunning : Bool
     }
 
 
@@ -117,28 +116,7 @@ update msg model =
         AskRun ->
             let
                 payload =
-                    ( model.keyValues
-                            |> List.map latestValueOfStorable
-                            |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
-                            |> Dict.fromList
-                    , { pgComputationInputSql =
-                          editedOrNotEditedValue model.sqlQuery
-                              |> stringToTemplate
-                              |> Client.convertStringTemplateFromFrontToBack
-                      , pgComputationInputPgConnection =
-                          { templatedPgConnectionHost =
-                                editedOrNotEditedValue model.dbHost |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
-                          , templatedPgConnectionPort =
-                              editedOrNotEditedValue model.dbPort |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
-                          , templatedPgConnectionUser =
-                              editedOrNotEditedValue model.dbUser |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
-                          , templatedPgConnectionPassword =
-                              editedOrNotEditedValue model.dbPassword |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
-                          , templatedPgConnectionDbName =
-                              editedOrNotEditedValue model.dbName |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
-                          }
-                      }
-                    )
+                    buildPgComputationPayload model
 
                 newMsg =
                     Client.postApiRunnerPgSqlComputation Runner.desktopRunnerUrl payload postPgSqlComputationResultToMsg
@@ -209,6 +187,36 @@ update msg model =
 
 -- * util
 
+
+buildPgComputationPayload : Model -> (Dict String (List Client.Template), Client.PgComputationInput)
+buildPgComputationPayload model =
+    let
+        keyValuesInput =
+            model.keyValues
+                |> List.map latestValueOfStorable
+                |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
+                |> Dict.fromList
+
+        pgComputationInput =
+           { pgComputationInputSql =
+               editedOrNotEditedValue model.sqlQuery
+                   |> stringToTemplate
+                   |> Client.convertStringTemplateFromFrontToBack
+           , pgComputationInputPgConnection =
+               { templatedPgConnectionHost =
+                   editedOrNotEditedValue model.dbHost |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+               , templatedPgConnectionPort =
+                   editedOrNotEditedValue model.dbPort |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+               , templatedPgConnectionUser =
+                   editedOrNotEditedValue model.dbUser |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+               , templatedPgConnectionPassword =
+                   editedOrNotEditedValue model.dbPassword |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+               , templatedPgConnectionDbName =
+                   editedOrNotEditedValue model.dbName |> stringToTemplate |> Client.convertStringTemplateFromFrontToBack
+               }
+           }
+    in
+    (keyValuesInput, pgComputationInput)
 
 
 postPgSqlComputationResultToMsg : Result Http.Error (Result Client.PgError Client.PgComputation) -> Msg

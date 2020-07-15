@@ -120,14 +120,14 @@ getBuilder model =
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
             in
-            Just (convertFromFileToBuilder file pgCollectionId keyValuesToRun model)
+            Just (convertFromFileToBuilder file pgCollectionId keyValuesToRun)
 
         _ ->
             Nothing
 
 
-convertFromFileToBuilder : PgFileRecord -> Uuid -> List (Storable NewKeyValue KeyValue) -> Model a -> PGBuilder.Model
-convertFromFileToBuilder file pgCollectionId keyValuesToRun model =
+convertFromFileToBuilder : PgFileRecord -> Uuid -> List (Storable NewKeyValue KeyValue) -> PGBuilder.Model
+convertFromFileToBuilder file pgCollectionId keyValuesToRun =
     { id = file.id
     , pgCollectionId = pgCollectionId
     , keyValues = keyValuesToRun
@@ -140,7 +140,6 @@ convertFromFileToBuilder file pgCollectionId keyValuesToRun model =
     , dbName = file.dbName
     , pgComputationOutput = file.pgComputationOutput
     , showResponseView = file.showResponseView
-    , runnerRunning = model.runnerRunning
     }
 
 convertFromBuilderToFile : PGBuilder.Model -> PgFileRecord
