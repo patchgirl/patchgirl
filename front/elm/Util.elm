@@ -102,10 +102,7 @@ type alias IconAttribute =
     { title : String
     , icon : String
     , iconSize : String
-    , primTextColor : Color
-    , secTextColor : Color
-    , primIconColor : Color
-    , secIconColor : Color
+    , primIconColor : Maybe Color
     }
 
 defaultIconAttribute : IconAttribute
@@ -113,10 +110,7 @@ defaultIconAttribute =
     { title = "title"
     , iconSize = "20px"
     , icon = "icon"
-    , primTextColor = black
-    , secTextColor = black
-    , primIconColor = black
-    , secIconColor = black
+    , primIconColor = Nothing
     }
 
 iconWithAttr : IconAttribute -> Element a
@@ -125,9 +119,11 @@ iconWithAttr attr =
         Html.span []
             [ Html.i
                 [ Html.class "material-icons"
-                , Html.style "vertical-align" "middle"
+                , Html.style "vertical-align" "text-top"
                 , Html.style "font-size" attr.iconSize
-                , Html.style "color" (colorToString attr.primIconColor)
+                , attr.primIconColor
+                  |> Maybe.map (\iconColor -> Html.style "color" (colorToString iconColor))
+                  |> Maybe.withDefault (Html.style "" "")
                 ]
                 [ Html.text attr.icon ]
             , Html.text attr.title

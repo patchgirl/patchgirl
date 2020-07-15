@@ -257,7 +257,7 @@ runnerStatusView model =
                                    True -> runnerIcon
                                    False -> runnerIcon
                              , iconSize = "33px"
-                             , primIconColor = iconColor
+                             , primIconColor = Just iconColor
                          }
     in
     el [ Events.onMouseEnter (ShowMainMenuName RunnerStatusMenu)
@@ -368,6 +368,11 @@ githubLinkView model =
 centerView : Model a -> Element Msg
 centerView model =
     let
+        menuIconAttributes =
+            { defaultIconAttribute
+                | iconSize = "25px"
+            }
+
         currentDisplayedBuilderId : Maybe Uuid.Uuid
         currentDisplayedBuilderId =
             case model.page of
@@ -380,25 +385,25 @@ centerView model =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
         [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
             { url = href (ScenarioPage Nothing)
-            , label = el [] (text "Scenario")
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = "Scenario" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
             { url = href (ReqPage Nothing Nothing)
-            , label = el [] (text "Http Request")
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = "Request" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
             { url = href (PgPage Nothing)
-            , label = el [] (text "Postgres Request")
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = "Postgres" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
             { url = href EnvPage
-            , label = el [] (text "Environment")
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = "Environment" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
             { url = href (DocumentationPage RequestDoc)
-            , label = el [] (text "Documentation")
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = "Documentation" })
             }
         ]
 
