@@ -11,7 +11,7 @@ module PatchGirl.Api( WebApi
                     , ScenarioNodeApi
                     , ScenarioFileApi
                     , ScenarioFolderApi
-                    , SceneNodeApi
+                    , SceneActorApi
                     , RequestNodeApi
                     , RequestFileApi
                     , RequestFolderApi
@@ -83,7 +83,7 @@ type RestApi auths =
   ScenarioNodeApi auths :<|>
   ScenarioFileApi auths :<|>
   ScenarioFolderApi auths :<|>
-  SceneNodeApi auths :<|>
+  SceneActorApi auths :<|>
   RequestNodeApi auths :<|>
   RequestFileApi auths :<|>
   RequestFolderApi auths :<|>
@@ -254,7 +254,7 @@ scenarioFolderApiServer =
 -- * scene
 
 
-type SceneNodeApi auths =
+type SceneActorApi auths =
   Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
     "scene" :> (
       -- create scene

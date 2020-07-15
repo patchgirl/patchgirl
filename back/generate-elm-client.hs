@@ -240,7 +240,7 @@ deriveElmDef deriveWithTaggedObject ''Web.NewRootScenarioFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootScenarioFolder
 deriveElmDef deriveWithTaggedObject ''Web.ScenarioCollection
 deriveElmDef deriveWithTaggedObject ''Web.ScenarioNode
-deriveElmDef deriveWithTaggedObject ''Web.SceneNode
+deriveElmDef deriveWithTaggedObject ''Web.SceneActor
 deriveElmDef deriveWithTaggedObject ''Web.NewScene
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScenarioFile
 deriveElmDef deriveWithTaggedObject ''Web.UpdateScene
@@ -310,7 +310,7 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewRootScenarioFile)
       , DefineElm (Proxy :: Proxy Web.ScenarioCollection)
       , DefineElm (Proxy :: Proxy Web.ScenarioNode)
-      , DefineElm (Proxy :: Proxy Web.SceneNode)
+      , DefineElm (Proxy :: Proxy Web.SceneActor)
       , DefineElm (Proxy :: Proxy Web.NewScene)
       , DefineElm (Proxy :: Proxy Web.UpdateScenarioFile)
       , DefineElm (Proxy :: Proxy Web.UpdateScene)

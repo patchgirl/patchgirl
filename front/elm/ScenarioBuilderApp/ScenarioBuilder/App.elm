@@ -114,11 +114,11 @@ update msg model =
             in
             ( model, newMsg )
 
-        AskCreateScene sceneParentId fileNodeId actorType newSceneId ->
+        AskCreateScene sceneActorParentId fileNodeId actorType newSceneId ->
             let
                 payload =
                     { newSceneId = newSceneId
-                    , newSceneSceneNodeParentId = sceneParentId
+                    , newSceneSceneActorParentId = sceneActorParentId
                     , newSceneActorId = fileNodeId
                     , newSceneActorType = Client.convertActorTypeFromFrontToBack actorType
                     , newScenePrescript = ""
@@ -126,7 +126,7 @@ update msg model =
                     }
 
                 newMsg =
-                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId actorType)
+                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) model.id payload (createSceneResultToMsg sceneActorParentId fileNodeId newSceneId actorType)
             in
             ( model, newMsg )
 
@@ -257,7 +257,7 @@ update msg model =
                             findFileRecord model scene.nodeId
                                 |> Maybe.map buildRequestComputationInput
                                 |> Maybe.map (\requestComputationInput ->
-                                                  Client.HttpActorFile { sceneId = scene.id
+                                                  Client.HttpSceneFile { sceneId = scene.id
                                                                        , sceneFileId = scene.nodeId
                                                                        , sceneHttpInput =
                                                                              (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
@@ -632,10 +632,10 @@ sceneView model scene =
                 Nothing ->
                     [ Border.color white ]
 
-                Just (HttpActorOk _) ->
+                Just (HttpSceneOk _) ->
                     [ borderSuccess, backgroundSuccess ]
 
-                Just (PgActorOk _) ->
+                Just (PgSceneOk _) ->
                     [ borderSuccess, backgroundSuccess ]
 
                 Just _ ->
@@ -825,10 +825,10 @@ httpDetailedSceneView model scene fileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpActorFailed httpException ->
+                HttpSceneFailed httpException ->
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
-                PgActorFailed error ->
+                PgSceneFailed error ->
                     text <| "This postgresql query failed because of: " ++ error
 
                 HttpPostscriptFailed _ scriptException ->
@@ -837,7 +837,7 @@ httpDetailedSceneView model scene fileRecord =
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpActorOk requestComputationOutput ->
+                HttpSceneOk requestComputationOutput ->
                     column [ width fill ]
                         [ statusResponseView requestComputationOutput
                         , whichResponseButtonView
@@ -852,7 +852,7 @@ httpDetailedSceneView model scene fileRecord =
                                   headersResponseView requestComputationOutput (always DoNothing)
                         ]
 
-                PgActorOk pgComputation ->
+                PgSceneOk pgComputation ->
                     column [ width fill ]
                         []
 
@@ -921,10 +921,10 @@ pgDetailedSceneView model scene fileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpActorFailed httpException ->
+                HttpSceneFailed httpException ->
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
-                PgActorFailed error ->
+                PgSceneFailed error ->
                     text <| "This postgresql query failed because of: " ++ error
 
                 HttpPostscriptFailed _ scriptException ->
@@ -933,10 +933,10 @@ pgDetailedSceneView model scene fileRecord =
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpActorOk requestComputationOutput ->
+                HttpSceneOk requestComputationOutput ->
                     none
 
-                PgActorOk pgComputation ->
+                PgSceneOk pgComputation ->
                     column [ width fill ]
                         []
 

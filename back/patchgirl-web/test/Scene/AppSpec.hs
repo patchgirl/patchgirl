@@ -32,7 +32,7 @@ updateSceneHandler :: Auth.Token -> UUID -> UUID -> UpdateScene -> ClientM ()
 createSceneHandler
   :<|> deleteSceneHandler
   :<|> updateSceneHandler =
-  client (Proxy :: Proxy (SceneNodeApi '[Auth.JWT]))
+  client (Proxy :: Proxy (SceneActorApi '[Auth.JWT]))
 
 
 -- * spec
@@ -197,7 +197,7 @@ spec =
     mkNewScene :: UUID -> Maybe UUID -> UUID -> String -> String -> NewScene
     mkNewScene id parentId requestFileId prescript postscript =
       NewScene { _newSceneId = id
-               , _newSceneSceneNodeParentId = parentId
+               , _newSceneSceneActorParentId = parentId
                , _newSceneActorType = HttpActor
                , _newSceneActorId = requestFileId
                , _newScenePrescript = prescript

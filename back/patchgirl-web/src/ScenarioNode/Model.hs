@@ -61,7 +61,7 @@ instance FromJSON ActorType where
 
 data NewScene
   = NewScene { _newSceneId                :: UUID
-             , _newSceneSceneNodeParentId :: Maybe UUID
+             , _newSceneSceneActorParentId :: Maybe UUID
              , _newSceneActorId           :: UUID
              , _newSceneActorType         :: ActorType
              , _newScenePrescript         :: String
@@ -80,29 +80,29 @@ instance FromJSON NewScene where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
--- * scene node
+-- * scene actor
 
 
-data SceneNode
-  = HttpSceneNode { _sceneId         :: UUID
-                  , _sceneActorId    :: UUID
-                  , _scenePrescript  :: String
-                  , _scenePostscript :: String
-                  }
-  | PgSceneNode { _sceneId         :: UUID
-                , _sceneActorId    :: UUID
-                , _scenePrescript  :: String
-                , _scenePostscript :: String
-                }
+data SceneActor
+  = HttpSceneActor { _sceneId         :: UUID
+                   , _sceneActorId    :: UUID
+                   , _scenePrescript  :: String
+                   , _scenePostscript :: String
+                   }
+  | PgSceneActor { _sceneId         :: UUID
+                 , _sceneActorId    :: UUID
+                 , _scenePrescript  :: String
+                 , _scenePostscript :: String
+                 }
   deriving (Eq, Show, Generic)
 
-$(makeLenses ''SceneNode)
+$(makeLenses ''SceneActor)
 
-instance ToJSON SceneNode where
+instance ToJSON SceneActor where
   toJSON =
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-instance FromJSON SceneNode where
+instance FromJSON SceneActor where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
@@ -130,7 +130,7 @@ instance FromJSON UpdateScene where
 -- * scene from pg
 
 
-newtype SceneFromPG = SceneFromPG SceneNode
+newtype SceneFromPG = SceneFromPG SceneActor
 
 instance FromJSON SceneFromPG where
   parseJSON = withObject "SceneFromPG" $ \o -> do
@@ -141,15 +141,15 @@ instance FromJSON SceneFromPG where
         _sceneActorId <- o .: "http_actor_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
-        return HttpSceneNode{..}
+        return HttpSceneActor{..}
       PgActor -> do
         _sceneId <- o .: "id"
         _sceneActorId <- o .: "pg_actor_id"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
-        return PgSceneNode{..}
+        return PgSceneActor{..}
 
-fromSceneFromPGTOScene :: SceneFromPG -> SceneNode
+fromSceneFromPGTOScene :: SceneFromPG -> SceneActor
 fromSceneFromPGTOScene (SceneFromPG scene) = scene
 
 
@@ -164,7 +164,7 @@ data ScenarioNode
   | ScenarioFile { _scenarioNodeId            :: UUID
                  , _scenarioNodeName          :: String
                  , _scenarioNodeEnvironmentId :: Maybe Int
-                 , _scenarioNodeScenes        :: [SceneNode]
+                 , _scenarioNodeScenes        :: [SceneActor]
                  }
   deriving (Eq, Show, Generic)
 

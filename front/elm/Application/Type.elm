@@ -586,10 +586,10 @@ type alias SceneOutput =
 type SceneComputation
     = SceneNotRun
     | PrescriptFailed ScriptException
-    | HttpActorOk RequestComputation
-    | HttpActorFailed HttpException
-    | PgActorOk PgComputation
-    | PgActorFailed String
+    | HttpSceneOk RequestComputation
+    | HttpSceneFailed HttpException
+    | PgSceneOk PgComputation
+    | PgSceneFailed String
     | PgPostscriptFailed PgComputation ScriptException
     | HttpPostscriptFailed RequestComputation ScriptException
 

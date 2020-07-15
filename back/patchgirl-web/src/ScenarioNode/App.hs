@@ -261,7 +261,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
     sceneAuthorized =
       case mScenarioNode of
         Just ScenarioFile { _scenarioNodeScenes } ->
-          case newScene ^. newSceneSceneNodeParentId of
+          case newScene ^. newSceneSceneActorParentId of
             Just sceneNodeParentId -> do
               List.find (\scene -> sceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
                 & Maybe.isJust

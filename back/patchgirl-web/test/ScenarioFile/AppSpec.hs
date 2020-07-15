@@ -75,7 +75,7 @@ spec =
           fakeScenarioFile <- selectFakeScenarioFile UUID.nil connection
           fakeScenarioFile `shouldBe`  FakeScenarioFile { _fakeScenarioFileParentId    = Just folderId
                                                         , _fakeScenarioFileName        = "new scenario"
-                                                        , _fakeScenarioFileSceneNodeId = Nothing
+                                                        , _fakeScenarioFileSceneActorId = Nothing
                                                         , _fakeScenarioFileEnvironmentId = Just environmentId
                                                         }
 
@@ -155,7 +155,7 @@ spec =
           fakeScenarioFile <- selectFakeScenarioFile UUID.nil connection
           fakeScenarioFile `shouldBe` FakeScenarioFile { _fakeScenarioFileParentId = Nothing
                                                        , _fakeScenarioFileName = "new scenario"
-                                                       , _fakeScenarioFileSceneNodeId = Nothing
+                                                       , _fakeScenarioFileSceneActorId = Nothing
                                                        , _fakeScenarioFileEnvironmentId = Just environmentId
                                                        }
 
