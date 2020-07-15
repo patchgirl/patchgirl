@@ -21,6 +21,7 @@ type Page
 type Documentation
     = ScenarioDoc
     | RequestDoc
+    | PostgresDoc
     | EnvironmentDoc
     | PatchGirlRunnerAppDoc
 
@@ -32,6 +33,9 @@ documentationToString documentation =
 
         RequestDoc ->
             "request"
+
+        PostgresDoc ->
+            "postgres"
 
         EnvironmentDoc ->
             "environment"
@@ -55,6 +59,9 @@ documentationParser =
             case s of
                 "request" ->
                     Just RequestDoc
+
+                "postgres" ->
+                    Just PostgresDoc
 
                 "scenario" ->
                     Just ScenarioDoc

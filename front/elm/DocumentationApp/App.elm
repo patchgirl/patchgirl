@@ -39,6 +39,7 @@ navView documentation =
            , alignTop
            ]
         [ documentationLink documentation RequestDoc "Request"
+        , documentationLink documentation PostgresDoc "Postgresql"
         , documentationLink documentation ScenarioDoc "Scenario"
         , documentationLink documentation EnvironmentDoc "Environment"
         , documentationLink documentation PatchGirlRunnerAppDoc "PatchGirl Runner App"
@@ -83,6 +84,9 @@ contentView documentation =
         case documentation of
             RequestDoc ->
                 doc requestView
+
+            PostgresDoc ->
+                doc postgresqlView
 
             ScenarioDoc ->
                 doc scenarioView
@@ -142,7 +146,39 @@ If you have variable `userId` set in your environment you can use it in any text
 
 Due to browser restrictions (cf: [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) and [same origin policy](https://developer.mozilla.org/docs/Web/Security/Same_origin_policy_for_JavaScript)), PatchGirl cannot run from your computer.
 Instead, every requests you make are being sent from our servers which means that you can't by default query local hosts (i.e: `127.0.0.1`) or use your personnal VPN/Proxy.
-To overcome this issue, you need to download and run the **PatchGirl Desktop App** (only available for Linux at the time) which runs on your computer and allows you to run requests from your device.
+To overcome this issue, you need to download and run the [**PatchGirl Desktop App**](https://github.com/patchgirl/patchgirl/releases) (only available for Linux at the time) which runs on your computer and allows you to run requests from your device.
+The PatchGirl desktop app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the desktop app instead of our servers.
+    """
+
+
+-- ** postgresql
+
+
+postgresqlView : String
+postgresqlView =
+    """
+# Postgres
+
+The "Postgres" menu allows you to create and run Postgres SQL queries .
+
+## Use environment variable
+
+Variables are available through the mustache syntax.
+
+If you have variable `userId` set in your environment you can use it in any text input with `{{userId}}`.
+For example, you might want to put your postgres connection info into some environment variables to save you from constantly re typing your credentials.
+
+## Warning
+
+Any saved postgresql request will be saved in clear on our servers. This means that your credentials won't be encrypted!
+
+PatchGirl is a tool that aims to help testing your local/staging environment and you should **NEVER** store any critical information in it!
+
+## Limitations
+
+Due to browser restrictions (cf: [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) and [same origin policy](https://developer.mozilla.org/docs/Web/Security/Same_origin_policy_for_JavaScript)), PatchGirl cannot run from your computer.
+Instead, every requests you make are being sent from our servers which means that you can't by default query local hosts (i.e: `127.0.0.1`) or use your personnal VPN/Proxy.
+To overcome this issue, you need to download and run the [**PatchGirl Desktop App**](https://github.com/patchgirl/patchgirl/releases) (only available for Linux at the time) which runs on your computer and allows you to run requests from your device.
 The PatchGirl desktop app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the desktop app instead of our servers.
     """
 
@@ -155,11 +191,11 @@ scenarioView =
     """
 # Scenario
 
-The "Scenario" menu allows you to play HTTP requests sequentially.
+The "Scenario" menu allows you to play HTTP and postgres SQL requests sequentially.
 
-## Http Requests
+## Requests
 
-Only existing http requests can be added to a scenario.
+Only existing http or postgres requests can be added to a scenario.
 
 ## [Pre|Post] Script
 
@@ -195,6 +231,9 @@ When you run a scenario, you can make assertions in a script with the `assertEqu
 
 If both parameter are of the same type and same value, then the script succeeds.
 When an assertion fails, every following scenes of a scenario won't be ran.
+
+
+#### Http assertion
 
 In a post script, some utilities are available:
 - **`httpResponseBodyAsString`** returns the response body as a string
