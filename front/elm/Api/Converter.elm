@@ -553,7 +553,7 @@ convertScenarioOutputFromBackToFront scenesOutput =
                    Front.HttpSceneOk (convertRequestComputationFromBackToFront requestComputation)
 
                Back.PgSceneOk pgComputation ->
-                   Front.PgSceneOk (Debug.todo "")
+                   Front.PgSceneOk (convertPgComputationFromBackToFront pgComputation)
 
     in
     List.map convertSceneOutputFromBackToFront scenesOutput

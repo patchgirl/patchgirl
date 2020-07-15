@@ -517,17 +517,6 @@ updateScenarioResultToMsg newEnvironmentId result =
         Err error ->
             Debug.todo "server error" ServerError
 
-findFileRecord : Model -> Uuid -> Maybe RequestFileRecord
-findFileRecord model id =
-    let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
-
-        (PgCollection _ pgNodes) =
-            model.pgCollection
-    in
-    RequestTree.findFile requestNodes id
-
 findRecord : Model -> Scene -> Maybe FileRecord
 findRecord model scene =
     let
@@ -654,18 +643,6 @@ view model =
 sceneView : Model -> Scene -> Element Msg
 sceneView model scene =
     let
-        (RequestCollection _ requestNodes) = model.requestCollection
-        (PgCollection _ pgNodes) = model.pgCollection
-
-        mFileRecord : Maybe FileRecord
-        mFileRecord =
-            case scene.actorType of
-                HttpActor ->
-                    RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
-
-                PgActor ->
-                    PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
-
         selectedSceneAttrs =
             case model.showDetailedSceneView == Just scene.id of
                 True ->
@@ -687,7 +664,7 @@ sceneView model scene =
                 Just _ ->
                     [ borderError, backgroundError ]
     in
-    case mFileRecord of
+    case findRecord model scene of
         Just fileRecord ->
             let
                 { id, name } =
