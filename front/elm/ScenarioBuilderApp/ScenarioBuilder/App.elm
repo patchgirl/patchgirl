@@ -959,14 +959,14 @@ pgDetailedSceneView model scene fileRecord =
     case scene.sceneComputation of
         Nothing ->
             [ sceneInputDetailView
-            , prescriptView scene
-            , postscriptView scene
+--            , prescriptView scene
+--            , postscriptView scene
             ]
 
         Just sceneComputation ->
             [ sceneInputDetailView
-            , prescriptView scene
-            , postscriptView scene
+--            , prescriptView scene
+--            , postscriptView scene
             , hr [] "response"
             , outputSceneDetailView sceneComputation
             ]
