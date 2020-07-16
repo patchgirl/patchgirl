@@ -417,6 +417,7 @@ showPGValue pgValue =
     case pgValue of
         PgString str -> text str
         PgInt int -> text (String.fromInt int)
+        PgFloat float -> text (String.fromFloat float)
         PgBool bool -> text "true"
         PgNull -> text "NULL"
 

@@ -117,6 +117,7 @@ instance Aeson.FromJSON Column where
 data PgValue
   = PgString String
   | PgInt Int
+  | PgFloat Float
   | PgBool Bool
   | PgNull
   deriving (Eq, Show, Read, Generic, Ord)

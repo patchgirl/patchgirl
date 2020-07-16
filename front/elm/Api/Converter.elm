@@ -489,6 +489,9 @@ convertPgValueFromBackToFront backPgValue =
         Back.PgInt int ->
             Front.PgInt int
 
+        Back.PgFloat float ->
+            Front.PgFloat float
+
         Back.PgBool bool ->
             Front.PgBool bool
 

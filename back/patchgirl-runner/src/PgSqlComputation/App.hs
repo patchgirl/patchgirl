@@ -61,7 +61,7 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
 
   case (mResult, resultStatus) of
     (Nothing, _) ->
-      IO.liftIO $ return $ Left $ PgError "fatal error"
+      IO.liftIO $ return $ Left $ PgError "FatalError: check the pg database connection"
 
     (Just _, LibPQ.CommandOk) ->
       IO.liftIO $ return $ Right PgCommandOK
@@ -113,6 +113,7 @@ resultToTable result = do
       return (mName, oid)
 
 -- https://github.com/rwinlib/libpq/blob/0b054b90cf6ec76f48accd2299bb90395dac7e29/include/postgresql/server/catalog/pg_type_d.h
+-- select pg_typeof('whatever'::text) to see the real value type
 convertPgRawValueToPgValue :: LibPQ.Oid -> String -> PgValue
 convertPgRawValueToPgValue oid value =
   case oid of
@@ -120,12 +121,30 @@ convertPgRawValueToPgValue oid value =
       case value of
         "t" -> PgBool True
         "f" -> PgBool False
-        _   -> undefined
+        _   -> PgString value
 
-    LibPQ.Oid 23 ->
+    LibPQ.Oid 20 -> -- smallint
       PgInt $ read @Int value
 
-    LibPQ.Oid 25 ->
+    LibPQ.Oid 21 -> -- integer
+      PgInt $ read @Int value
+
+    LibPQ.Oid 23 -> -- bigint
+      PgInt $ read @Int value
+
+    LibPQ.Oid 700 -> -- real
+      PgFloat $ read @Float value
+
+    LibPQ.Oid 1700 -> -- numeric
+      PgFloat $ read @Float value
+
+    LibPQ.Oid 701 -> -- double precision
+      PgFloat $ read @Float value
+
+    LibPQ.Oid 25 -> -- text
+      PgString value
+
+    LibPQ.Oid 1043 -> -- varchar
       PgString value
 
     LibPQ.Oid 2249 -> -- record

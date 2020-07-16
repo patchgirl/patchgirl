@@ -558,6 +558,7 @@ type Col = Col String (List PgValue)
 type PgValue
     = PgString String
     | PgInt Int
+    | PgFloat Float
     | PgBool Bool
     | PgNull
 

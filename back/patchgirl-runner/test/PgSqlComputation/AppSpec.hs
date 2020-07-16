@@ -38,19 +38,64 @@ spec = do
 
   withClient (mkApp defaultEnv) $ do
     describe "valid select query" $ do
-      it "returns string" $ \clientEnv -> do
+
+      it "returns different integers size" $ \clientEnv -> do
         let
           input =
             ( Map.empty
             , PgComputationInput
-                [Sentence "select \'coucou\' as \"string\", 1 as \"integer\", null as \"null\";"]
+                [Sentence "select 1::smallint as \"a\", 1::integer as \"b\", 1::bigint as \"c\";"]
                 validPgConnection
             )
-
         let output =
-              Right $ PgTuplesOk $ Table [ Column "string" [ PgString "coucou" ]
-                                         , Column "integer" [ PgInt 1 ]
-                                         , Column "null" [ PgNull ]
+              Right $ PgTuplesOk $ Table [ Column "a" [ PgInt 1 ]
+                                         , Column "b" [ PgInt 1 ]
+                                         , Column "c" [ PgInt 1 ]
+                                         ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+      it "returns reals" $ \clientEnv -> do
+        let
+          input =
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select 12.345 as \"a\", 12.345::real as \"b\", 12.345::double precision as \"c\", 12.345::decimal as \"d\";"]
+                validPgConnection
+            )
+        let output =
+              Right $ PgTuplesOk $ Table [ Column "a" [ PgFloat 12.345 ]
+                                         , Column "b" [ PgFloat 12.345 ]
+                                         , Column "c" [ PgFloat 12.345 ]
+                                         , Column "d" [ PgFloat 12.345 ]
+                                         ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+
+      it "returns strings" $ \clientEnv -> do
+        let
+          input =
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select \'coucou\' as \"a\", 'coucou'::text as \"b\", 'coucou'::varchar as \"c\";"]
+                validPgConnection
+            )
+        let output =
+              Right $ PgTuplesOk $ Table [ Column "a" [ PgString "coucou" ]
+                                         , Column "b" [ PgString "coucou" ]
+                                         , Column "c" [ PgString "coucou" ]
+                                         ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+      it "returns null" $ \clientEnv -> do
+        let
+          input =
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select null as \"null\";"]
+                validPgConnection
+            )
+        let output =
+              Right $ PgTuplesOk $ Table [ Column "null" [ PgNull ]
                                          ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
@@ -78,6 +123,17 @@ spec = do
               Right $ PgTuplesOk $ Table [ Column "a" [ PgInt 1, PgInt 3 ]
                                          , Column "b" [ PgInt 2, PgInt 4 ]
                                          ]
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+      it "returns array as string" $ \clientEnv -> do
+        let
+          input =
+            ( Map.empty
+            , PgComputationInput
+                [Sentence "select ARRAY[1,2]::integer array;"]
+                validPgConnection
+            )
+        let output = Right $ PgTuplesOk $ Table [ Column "array" [ PgString "{1,2}" ] ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns tuples as string" $ \clientEnv -> do
@@ -216,6 +272,27 @@ spec = do
                 validPgConnection
             )
         let output = Left $ PgError "FatalError syntax error at or near \"selec\""
+        try clientEnv (runPgSqlComputation input) `shouldReturn` output
+
+
+-- ** invalid connection
+
+
+    describe "invalid connection" $ do
+      it "fails on invalid connection" $ \clientEnv -> do
+        let
+          input =
+            ( Map.empty
+            , PgComputationInput
+                [ Sentence "select 1;"]
+                TemplatedPgConnection { _templatedPgConnectionHost     = [ Sentence "localhosti" ]
+                                      , _templatedPgConnectionPort     = [ Sentence "5432" ]
+                                      , _templatedPgConnectionUser     = [ Sentence "postgres" ]
+                                      , _templatedPgConnectionPassword = [ Sentence "" ]
+                                      , _templatedPgConnectionDbName   = [ Sentence "test" ]
+                                      }
+            )
+        let output = Left $ PgError "FatalError: check the pg database connection"
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
   where
