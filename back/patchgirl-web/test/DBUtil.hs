@@ -768,7 +768,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                                              , _newFakeEnvironmentName      = "env1"
                                              }
-  envId <- insertNewFakeEnvironment newFakeEnvironment connection
+  _ <- insertNewFakeEnvironment newFakeEnvironment connection
   let requestFileId = (Maybe.fromJust . getFirstFile) requestNodes ^. requestNodeId
   let newFakeScene =
         NewFakeHttpScene { _newFakeSceneParentId = Nothing
@@ -782,7 +782,7 @@ insertSampleScenarioCollection accountId connection = do
 -- *** insert pg collection
 
 
-  pgCollection@(PgCollection _ pgNodes) <- insertSamplePgCollection accountId connection
+  PgCollection _ pgNodes <- insertSamplePgCollection accountId connection
   let newFakeEnvironment = NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                                              , _newFakeEnvironmentName      = "env1"
                                              }
@@ -877,7 +877,7 @@ insertSampleScenarioCollection accountId connection = do
 data FakeScenarioFile =
   FakeScenarioFile { _fakeScenarioFileParentId      :: Maybe UUID
                    , _fakeScenarioFileName          :: String
-                   , _fakeScenarioFileSceneActorId   :: Maybe UUID
+                   , _fakeScenarioFileSceneActorId  :: Maybe UUID
                    , _fakeScenarioFileEnvironmentId :: Maybe Int
                    }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
@@ -977,7 +977,7 @@ insertFakeHttpScene newFakeScene connection = do
 
 data NewFakePgScene =
   NewFakePgScene { _newFakePgSceneParentId   :: Maybe UUID
-                 , _newFakePgSceneActorId     :: UUID
+                 , _newFakePgSceneActorId    :: UUID
                  , _newFakePgScenePrescript  :: String
                  , _newFakePgScenePostscript :: String
                  }
