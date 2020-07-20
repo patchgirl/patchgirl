@@ -115,14 +115,16 @@ This is quite useful if you need to:
 
 As of today, the PatchGirl runner app is only available on Linux. We plan to make it available on MacOS and Windows as well soon enough.
 
-## How to install
+## How to use
 
-Installation is quite easy because the PatchGirl runner app is a standalone executable. After downloading it, you only need to make it executable and run it:
+Installation is quite easy because the PatchGirl runner app is a standalone executable. After downloading it, you only need to run it:
 
 **`chmod +x ./linux-x86-64-patchgirl-runner-exe`**
 
 **`./linux-x86-64-patchgirl-runner-exe`**
 
+Once it is running you should see 2 green arrows appearing in the [UI](https://patchgirl.io/#app/scenario) in the top right hand corner.
+This means that PatchGirl Runner is enabled and that you can play all kinds of requests (http, postgres, scenarios...).
     """
 
 

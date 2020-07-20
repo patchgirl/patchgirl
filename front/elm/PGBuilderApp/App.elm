@@ -3,6 +3,7 @@ module PGBuilderApp.App exposing (..)
 import Application.Model as Application
 import Application.Type exposing (..)
 import Element exposing (..)
+import Element.Font as Font
 import Element.Background as Background
 import Html as Html
 import Html.Attributes as Html
@@ -171,24 +172,42 @@ changeFileBuilder builder node =
 
 view : Model a -> Maybe Uuid -> Element Msg
 view model mId =
-    wrappedRow
-        [ width fill
-        , paddingXY 10 0
-        , spacing 10
-        ]
-        [ column
-            [ alignTop
-            , spacing 20
-            , centerX
-            , padding 20
-            , width (fillPortion 1)
-            , Background.color white
-            , boxShadow
-            ]
-            [ el [] <| envSelectionView <| List.map .name model.environments
-            , el [ paddingXY 10 0 ] <| map TreeMsg (PgTree.view model)
-            ]
-        , builderView model mId
+    let
+        enableRunnerBanner =
+            row [ width fill
+              , paddingXY 0 10
+              , centerY, centerX
+              , Background.color secondaryColor
+              , Font.color primaryColor
+              , Font.center
+              ]
+              [ el [ centerX ] (text "Offline mode - Run the ")
+              , link [ centerX ] { label = el [ Font.underline ] (text "Patchgirl Runner App")
+                                 , url = "https://patchgirl.io/#app/documentation/patchGirlRunnerApp"
+                                 }
+              , el [ centerX ] (text " to enable postgres requests!")
+              ]
+    in
+    column [ width fill, spacing 10 ]
+        [ if not model.runnerRunning then enableRunnerBanner else none
+        , wrappedRow
+              [ width fill
+              , paddingXY 10 0
+              , spacing 10
+              ]
+              [ column [ alignTop
+                       , spacing 20
+                       , centerX
+                       , padding 20
+                       , width (fillPortion 1)
+                       , Background.color white
+                       , boxShadow
+                       ]
+                    [ el [] <| envSelectionView <| List.map .name model.environments
+                    , el [ paddingXY 10 0 ] <| map TreeMsg (PgTree.view model)
+                    ]
+              , builderView model mId
+              ]
         ]
 
 

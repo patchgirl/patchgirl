@@ -271,7 +271,7 @@ mainView model =
             column [ width fill
                    , height fill
                    , centerY
-                   , spacing 30
+                   , spacing 10
                    ] [ map MainNavBarMsg (MainNavBar.view model)
                      , el [ width fill ] appView
                      ]

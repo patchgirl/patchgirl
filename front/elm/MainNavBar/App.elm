@@ -145,7 +145,7 @@ deleteSessionSignOutResultToMsg result =
 
 view : Model a -> Element Msg
 view model =
-    column [ width fill, spacing 20 ]
+    column [ width fill, spacing 10 ]
         [ row [ width fill, Background.color primaryColor, height (px 50) ]
               [ el [ alignLeft, paddingXY 20 0 ] leftView
               , el [ centerX, centerY, height fill ] (centerView model)
