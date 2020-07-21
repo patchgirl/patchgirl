@@ -45,7 +45,7 @@ spec =
 -- ** handles user resource
 
 
-    fdescribe "user test ressource" $ do
+    describe "user test ressource" $ do
       it "creates a user" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test {} -> do
           UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
