@@ -41,7 +41,7 @@ cp web.dhall.dist web.dhall
 ```
 
 You'll need to setup some reverse proxy. This is what I use for development with Nginx:
-```json
+```nginx
 server {
 	server_name dev.patchgirl.io;
 	listen 80;
