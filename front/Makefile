@@ -4,7 +4,7 @@ client: ../back/generate-elm-client.hs
 	clear; echo "building front/client"; cd ../back/; stack runhaskell --package patchgirl-web --package patchgirl-runner generate-elm-client.hs
 
 app:
-	clear; echo "building front/app"; elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js
+	clear; echo "building front/app"; npx elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js
 
 watch-test:
 	clear; npx elm-test --watch

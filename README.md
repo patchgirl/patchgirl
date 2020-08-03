@@ -66,6 +66,10 @@ Install a desktop app (Only Linux at the moment) so you can use PatchGirl locall
 - Need to play any request that is not HTTP (i.e: Postgresql, MySQL,...)
 - want faster request execution (no round trips to a remote server, everything is done on your computer)
 
+## How to build
+
+Please refer to the [documentation](/documentation) if you need to build and run PatchGirl locally.
+
 ## Architecture
 
 ![architecture](architecture_schema.svg)
@@ -74,3 +78,4 @@ PatchGirl is only built with functional programing languages:
 - **NixOS** for the operating system
 - **Haskell** for the backend API
 - **Elm** for the front end single page app
+- **Dhall** for everything related to configuration
