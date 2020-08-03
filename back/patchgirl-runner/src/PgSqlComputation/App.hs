@@ -9,7 +9,9 @@ import           Data.Function             ((&))
 import           Data.Functor              ((<&>))
 import qualified Data.Map.Strict           as Map
 import qualified Data.Maybe                as Maybe
+import qualified Data.Traversable          as Traversable
 import qualified Database.PostgreSQL.LibPQ as LibPQ
+import qualified Text.Read                 as Text
 
 import           Env
 import           Interpolator
@@ -67,7 +69,10 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
       IO.liftIO $ return $ Right PgCommandOK
 
     (Just result, LibPQ.TuplesOk) ->
-      IO.liftIO $ resultToTable result <&> Right . PgTuplesOk
+      IO.liftIO $ resultToTable result <&> \case
+        Left pgError -> Left pgError
+        Right pgTable -> Right $ PgTuplesOk pgTable
+      --Right . PgTuplesOk
 
     (Just result, error) ->
       IO.liftIO $
@@ -85,25 +90,27 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
 -- * to table
 
 
-resultToTable :: LibPQ.Result -> IO Table
+resultToTable :: LibPQ.Result -> IO (Either PgError Table)
 resultToTable result = do
   columnSize <- LibPQ.nfields result <&> \c -> c - 1
   rowSize <- LibPQ.ntuples result <&> \r -> r - 1
-  columns <- Monad.forM [0..columnSize] (buildColumn rowSize)
-  return $ Table columns
+  eColumns :: Either PgError [Column] <- Monad.forM [0..columnSize] (buildColumn rowSize) <&> Traversable.sequence
+  return $ eColumns <&> Table
   where
-    buildColumn :: LibPQ.Row -> LibPQ.Column -> IO Column
+    buildColumn :: LibPQ.Row -> LibPQ.Column -> IO (Either PgError Column)
     buildColumn rowSize columnIndex = do
       (mColumName, oid) <- columnInfo result columnIndex
       let columnName = Maybe.fromMaybe "" mColumName
-      rows <- Monad.forM [0..rowSize] (buildRow oid columnIndex)
-      return $ Column columnName rows
+      rows :: Either PgError [PgValue] <- Traversable.forM [0..rowSize] (buildRow oid columnIndex) <&> Traversable.sequence
+      case rows of
+        Left error     -> return $ Left error
+        Right pgValues -> return $ Right $ Column columnName pgValues
 
-    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO PgValue
+    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO (Either PgError PgValue)
     buildRow oid columnIndex rowIndex = do
       mValue <- LibPQ.getvalue result rowIndex columnIndex
       case mValue of
-        Nothing -> return PgNull
+        Nothing -> return $ Right PgNull
         Just bs -> return $ BSU.toString bs & convertPgRawValueToPgValue oid
 
     columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
@@ -114,44 +121,50 @@ resultToTable result = do
 
 -- https://github.com/rwinlib/libpq/blob/0b054b90cf6ec76f48accd2299bb90395dac7e29/include/postgresql/server/catalog/pg_type_d.h
 -- select pg_typeof('whatever'::text) to see the real value type
-convertPgRawValueToPgValue :: LibPQ.Oid -> String -> PgValue
+convertPgRawValueToPgValue :: LibPQ.Oid -> String -> Either PgError PgValue
 convertPgRawValueToPgValue oid value =
-  case oid of
-    LibPQ.Oid 16 ->
-      case value of
-        "t" -> PgBool True
-        "f" -> PgBool False
-        _   -> PgString value
+  let
+    conversion :: Either String PgValue
+    conversion = case oid of
+      LibPQ.Oid 16 ->
+        Right $ case value of
+          "t" -> PgBool True
+          "f" -> PgBool False
+          _   -> PgString value
 
-    LibPQ.Oid 20 -> -- smallint
-      PgInt $ read @Int value
+      LibPQ.Oid 20 -> -- smallint
+        Text.readEither @Int value <&> PgInt
 
-    LibPQ.Oid 21 -> -- integer
-      PgInt $ read @Int value
+      LibPQ.Oid 21 -> -- integer
+        Text.readEither @Int value <&> PgInt
 
-    LibPQ.Oid 23 -> -- bigint
-      PgInt $ read @Int value
+      LibPQ.Oid 23 -> -- bigint
+        Text.readEither @Int value <&> PgInt
 
-    LibPQ.Oid 700 -> -- real
-      PgFloat $ read @Float value
+      LibPQ.Oid 700 -> -- real
+        Text.readEither @Float value <&> PgFloat
 
-    LibPQ.Oid 1700 -> -- numeric
-      PgFloat $ read @Float value
+      LibPQ.Oid 1700 -> -- numeric
+        Text.readEither @Float value <&> PgFloat
 
-    LibPQ.Oid 701 -> -- double precision
-      PgFloat $ read @Float value
+      LibPQ.Oid 701 -> -- double precision
+        Text.readEither @Float value <&> PgFloat
 
-    LibPQ.Oid 25 -> -- text
-      PgString value
+      LibPQ.Oid 25 -> -- text
+        Right $ PgString value
 
-    LibPQ.Oid 1043 -> -- varchar
-      PgString value
+      LibPQ.Oid 1043 -> -- varchar
+        Right $ PgString value
 
-    LibPQ.Oid 2249 -> -- record
-      PgString value
+      LibPQ.Oid 2249 -> -- record
+        Right $ PgString value
 
-    LibPQ.Oid _ ->
-      PgString value
+      LibPQ.Oid _ ->
+        Right $ PgString value
+  in
+    case conversion of
+      Right x  -> Right x
+      Left str -> Left $ PgError str
 
 
 -- * util
