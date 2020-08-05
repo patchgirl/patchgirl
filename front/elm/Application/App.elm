@@ -8,6 +8,7 @@ import Browser.Navigation as Navigation
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
+import Element.Border as Border
 import EnvironmentEdition.App as EnvironmentEdition
 import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
@@ -324,7 +325,7 @@ homeView =
                         { src = "public/images/logo.png"
                         , description = "logo"
                         }
-                  , paragraph [ centerX, centerY, Font.size 25, Font.center ] [ text "Play scenarios of http requests online" ]
+                  , paragraph [ centerX, centerY, Font.size 25, Font.center ] [ text "Http and Postgres client to ease DB seeding" ]
                   ]
             ]
 
@@ -340,6 +341,55 @@ homeView =
                     , description = imageDescription
                     }
                 , el [ height (px 10) ] none
+                ]
+
+        mkScene : String -> Element Msg -> Element Msg -> Element Msg
+        mkScene title arrow description =
+            column [ centerX, spacing 10 ]
+                [ el [ Border.solid
+                     , Border.width 1
+                     , Border.rounded 5
+                     , Background.color white
+                     , Border.color white
+                     , padding 20
+                     , boxShadow
+                     , centerX
+                     , onRight (el [ centerY, paddingXY 20 0 ] description )
+                     ] (el [] (text title))
+                , el [ centerX ] arrow
+                ]
+
+        mkDescription : Element Msg -> Element Msg
+        mkDescription description =
+            el [ Font.family [ Font.typeface "Roboto mono"
+                             ]
+               , Font.size 18
+               ] description
+
+        feature2 : Element Msg
+        feature2 =
+            column [ width fill, centerX, spacing 40 ]
+                [ column [ width fill, centerX, spacing 10, Font.size 24 ]
+                      [ el [ width fill, Font.center ] (text "Combine and play HTTP and SQL queries to")
+                      , el [ width fill, Font.center ] (text "easily populate your Database")
+                      ]
+                , column [ width fill, centerX, spacing 15 ]
+                    [ el [ width fill, Font.center, Font.size 22, Font.underline ] (text "Scenario - Create a new invoice")
+                    , column [ width fill, spacing 5, Font.center ]
+                        [ mkScene "Remove all user" arrowDownwardIcon (mkDescription (text "// DELETE * FROM users;"))
+                        , mkScene "Remove all invoices" arrowDownwardIcon (mkDescription (text "// DELETE * FROM invoices;"))
+                        , mkScene "POST new user" arrowDownwardIcon (mkDescription <|
+                                                                         column [ spacing 5 ]
+                                                                         [ el [] (text "// POST https://your.api/user")
+                                                                         , el [] (text "{ \"user\": { \"name\": \"john\" } }")
+                                                                         ])
+                        , mkScene "POST new invoice" none (mkDescription <|
+                                                               column [ spacing 5 ]
+                                                               [ el [] (text "// POST https://your.api/invoice")
+                                                               , el [] (text "{ \"invoice\": { \"amount\": 100, \"userId\": {{userId}} }}")
+                                                               ])
+                        ]
+                    ]
                 ]
 
         features : Element Msg
@@ -398,7 +448,7 @@ homeView =
     column [ width fill, height fill ]
         [ column [ width fill, height fill, spacing 50 ]
               [ banner
-              , features
+              , feature2
               , tryIt
               ]
         , footer
