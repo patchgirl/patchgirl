@@ -8,7 +8,6 @@
 module Account.AppSpec where
 
 import           Data.Function          ((&))
-import           Data.Functor           ((<&>))
 import qualified Data.Maybe             as Maybe
 import           Data.UUID              (UUID)
 import qualified Data.UUID              as UUID
