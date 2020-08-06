@@ -7,13 +7,13 @@
 
 module Account.AppSpec where
 
-import           Data.Function         ((&))
-import           Data.Functor          ((<&>))
-import qualified Data.Maybe            as Maybe
-import           Data.UUID             (UUID)
-import qualified Data.UUID             as UUID
+import           Data.Function          ((&))
+import           Data.Functor           ((<&>))
+import qualified Data.Maybe             as Maybe
+import           Data.UUID              (UUID)
+import qualified Data.UUID              as UUID
 import           Servant
-import           Servant.Client        (ClientM, client)
+import           Servant.Client         (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
@@ -22,6 +22,7 @@ import           PatchGirl.Client
 import           PatchGirl.Server
 import           PgCollection.Sql
 import           RequestCollection.Sql
+import           ScenarioCollection.Sql
 
 
 -- * client
@@ -59,7 +60,12 @@ spec =
             Just requestCollectionId ->
               selectRequestCollectionAvailable defaultAccountId requestCollectionId connection >>= (`shouldBe` True)
 
-          selectPgCollectionId defaultAccountId connection  >>= \case
+          selectPgCollectionId defaultAccountId connection >>= \case
             Nothing -> expectationFailure "Pg collection were not reset for the visitor account "
             Just pgCollectionId ->
               selectPgCollectionAvailable defaultAccountId pgCollectionId connection >>= (`shouldBe` True)
+
+          selectScenarioCollectionId defaultAccountId connection >>= \case
+            Nothing -> expectationFailure "Scenario collection were not reset for the visitor account "
+            Just scenarioCollectionId ->
+              doesScenarioCollectionBelongsToAccount defaultAccountId scenarioCollectionId connection >>= (`shouldBe` True)

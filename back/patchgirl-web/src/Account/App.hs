@@ -35,11 +35,7 @@ resetVisitorAccountHandler = do
 
 resetVisitorSql :: PG.Connection -> IO Int.Int64
 resetVisitorSql connection = do
-  numberRowsAffected <- PG.execute_ connection resetVisitorQuery
-  return numberRowsAffected
-  where
-    resetVisitorQuery =
-      [sql|
+  PG.execute_ connection [sql|
 
 
 -- ** delete former visitor data
@@ -47,6 +43,24 @@ resetVisitorSql connection = do
 
           -- delete visitor account
           DELETE FROM account WHERE id = '00000000-0000-1000-a000-000000000000';
+
+          -- delete orphan scenario_node
+          DELETE FROM scenario_node
+          WHERE id IN (
+            SELECT id
+            FROM scenario_node
+            LEFT JOIN scenario_collection_to_scenario_node ON id = scenario_node_id
+            WHERE scenario_node_id IS NULL
+          );
+
+          -- delete orphan scene_node
+          DELETE FROM scene_node
+          WHERE id IN (
+            SELECT scene_node.id
+            FROM scene_node
+            LEFT JOIN scenario_node ON scene_node.id = scene_node_id
+            WHERE scenario_node.id IS NULL
+          );
 
           -- delete orphan environment
           DELETE FROM environment
@@ -165,6 +179,13 @@ resetVisitorSql connection = do
 
           INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_actor_id)
           VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','cb2c1df8-68f0-4a61-b7c7-f75194604976');
+
+
+-- ** scenario
+
+
+          INSERT INTO scenario_collection (account_id, id)
+          VALUES ('00000000-0000-1000-a000-000000000000', 'a9e3fbc2-de07-40a5-afd8-2460ef1e202c');
 
 
 -- ** environment
