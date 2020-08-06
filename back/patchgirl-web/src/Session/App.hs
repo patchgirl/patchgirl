@@ -60,7 +60,9 @@ whoAmIHandler
 whoAmIHandler cookieSettings jwtSettings = \case
   Authenticated SignedUserCookie {..} -> do
     csrfToken <- liftIO $ createCsrfToken cookieSettings
-    let (CaseInsensitive email) = _cookieGithubEmail
+    let email = case _cookieGithubEmail of
+          Just (CaseInsensitive email) -> Just email
+          Nothing                      -> Nothing
     return . noHeader . noHeader $
       SignedUserSession { _sessionAccountId = _cookieAccountId
                         , _sessionGithubEmail = email
@@ -90,22 +92,25 @@ signInOnGithubHandler
 signInOnGithubHandler cookieSettings jwtSettings SignInWithGithub{..} = do
   githubConfig <- Reader.ask <&> _envGithub
   (liftIO . runMaybeT . getGithubProfile) (mkGithubOAuthCredentials githubConfig) >>= \case
-    Nothing ->
+    Nothing -> do
       createVisitorSession cookieSettings jwtSettings
 
     Just githubProfile@GithubProfile {..} -> do
       connection <- getDBConnection
       mAccountId <- liftIO $ selectAccountFromGithubId _githubProfileId connection
       case mAccountId of
-        Just accountId ->
+        Just accountId -> do
           createSignedUserSession cookieSettings jwtSettings githubProfile accountId
 
         Nothing -> do
           accountId <- liftIO $ insertAccount _githubProfileId connection
           createSignedUserSession cookieSettings jwtSettings githubProfile accountId
   where
+    getGithubProfile :: GithubOAuthCredentials -> MaybeT IO GithubProfile
     getGithubProfile =
       Maybe.MaybeT . getGithubAccessTokenClient >=> Maybe.MaybeT . getGithubProfileClient
+
+    mkGithubOAuthCredentials :: GithubConfig -> GithubOAuthCredentials
     mkGithubOAuthCredentials GithubConfig {..} =
       GithubOAuthCredentials { _githubOAuthCredentialsClientId = T.unpack _githubConfigClientId
                              , _githubOAuthCredentialsClientSecret = T.unpack _githubConfigClientSecret
@@ -182,7 +187,7 @@ createSignedUserSession
 createSignedUserSession cookieSettings jwtSettings GithubProfile {..} accountId = do
   let cookieSession =
         SignedUserCookie { _cookieAccountId = accountId
-                         , _cookieGithubEmail = CaseInsensitive _githubProfileEmail
+                         , _cookieGithubEmail = _githubProfileEmail <&> CaseInsensitive
                          , _cookieGithubAvatarUrl = _githubProfileAvatarUrl
                          }
   csrfToken <- liftIO $ createCsrfToken cookieSettings
