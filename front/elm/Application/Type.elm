@@ -40,7 +40,7 @@ type alias VisitorSession =
 type alias SignedUserSession =
     { id : Uuid
     , csrfToken : String
-    , email : String
+    , email : Maybe String
     , avatarUrl : String
     }
 

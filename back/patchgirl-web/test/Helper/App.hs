@@ -70,7 +70,7 @@ signedUserToken1 = do
     id = Maybe.fromJust $ UUID.fromString "b644ca57-7181-4f0e-a253-39ce45f5364e"
     cookieSession =
         SignedUserCookie { _cookieAccountId    = id
-                         , _cookieGithubEmail = CaseInsensitive "foo@mail.com"
+                         , _cookieGithubEmail = Just $ CaseInsensitive "foo@mail.com"
                          , _cookieGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
                          }
   mkToken cookieSession Nothing <&> \token -> (token, id)
@@ -79,7 +79,7 @@ signedUserToken :: UUID -> IO Auth.Token
 signedUserToken id = do
   let cookieSession =
         SignedUserCookie { _cookieAccountId    = id
-                         , _cookieGithubEmail = CaseInsensitive "foo@mail.com"
+                         , _cookieGithubEmail = Just $ CaseInsensitive "foo@mail.com"
                          , _cookieGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
                          }
   mkToken cookieSession Nothing

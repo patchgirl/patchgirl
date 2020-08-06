@@ -9,7 +9,6 @@ import           Data.Aeson              (FromJSON (..), ToJSON (..),
                                           parseJSON)
 import qualified Data.Aeson              as Aeson
 import           Data.Aeson.Types        ((.:), (.=))
-import           Data.Functor            ((<&>))
 import           GHC.Generics            (Generic)
 import qualified Network.HTTP.Client     as HTTP
 import qualified Network.HTTP.Client.TLS as TLS
@@ -93,7 +92,8 @@ getGithubAccessTokenClient githubOAuthCredentials = do
       putStrLn $ "error while trying to fetch gh access token: " <> show err
       return Nothing
 
-    Right GithubAccessToken {..} ->
+    Right GithubAccessToken {..} -> do
+      putStrLn $ "github access token fetched" <> _githubAccessTokenAccessToken
       return $ Just _githubAccessTokenAccessToken
   where
     baseUrl =
@@ -117,7 +117,7 @@ getGithubAccessTokenClient githubOAuthCredentials = do
 data GithubProfile
   = GithubProfile { _githubProfileId        :: Int
                   , _githubProfileAvatarUrl :: String
-                  , _githubProfileEmail     :: String
+                  , _githubProfileEmail     :: Maybe String
                   } deriving (Show)
 
 instance FromJSON GithubProfile where
@@ -140,12 +140,19 @@ type GithubProfileApi =
 -- ** handler
 
 
+{-
+  curl -H "Authorization: token theFetchedAccessToken}" https://api.github.com/user -H 'Accept: application/json' -v
+-}
 getGithubProfileClient :: String -> IO (Maybe GithubProfile)
 getGithubProfileClient accessToken = do
   manager <- HTTP.newManager TLS.tlsManagerSettings
-  Client.runClientM githubProfileClient (clientEnv manager) <&> \case
-    Left _ ->  Nothing
-    Right profile -> Just profile
+  putStrLn "getGithubProfileClient entered"
+  Client.runClientM githubProfileClient (clientEnv manager) >>= \case
+    Left e ->  do
+      putStrLn $ "no profile fetched: " <> show e
+      return Nothing
+    Right profile ->
+      return $ Just profile
   where
     baseUrl =
       Client.BaseUrl { baseUrlScheme = Client.Https
