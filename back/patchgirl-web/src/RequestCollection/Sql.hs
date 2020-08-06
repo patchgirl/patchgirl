@@ -1,6 +1,6 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE DeriveAnyClass   #-}
+{-# LANGUAGE DeriveGeneric    #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 
 module RequestCollection.Sql where
@@ -14,7 +14,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 -- * select request collection available
 
 
-selectRequestCollectionAvailable :: Int -> Int -> Connection -> IO Bool
+selectRequestCollectionAvailable :: UUID -> Int -> Connection -> IO Bool
 selectRequestCollectionAvailable accountId requestCollectionId connection =
   query connection collectionExistsSql (requestCollectionId, accountId) >>= \case
     [Only True] -> return True
@@ -42,8 +42,8 @@ selectRequestCollectionId accountId connection =
   where
     requestCollectionSql =
       [sql|
-          SELECT rc.id
-          FROM request_collection rc
-          WHERE rc.account_id = ?
+          SELECT id
+          FROM request_collection
+          WHERE account_id = ?
           LIMIT 1
           |]

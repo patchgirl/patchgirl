@@ -74,10 +74,8 @@ insertFakeAccountWithoutPassword newFakeAccount connection = do
 
 
 data FakeAccount =
-  FakeAccount { _fakeAccountId          :: UUID
-              , _fakeAccountEmail       :: CaseInsensitive
-              , _fakeAccountPassword    :: Maybe String
-              , _fakeAccountSignupToken :: String
+  FakeAccount { _fakeAccountId    :: UUID
+              , _fakeAccountEmail :: Maybe CaseInsensitive
               }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
@@ -89,7 +87,7 @@ selectFakeAccount id connection =
   where
     rawQuery =
       [sql|
-          SELECT id, email, password, signup_token
+          SELECT id, email
           FROM account
           where id = ?
           |]

@@ -6,16 +6,18 @@
 
 module Account.App where
 
+import qualified Control.Monad                    as Monad
 import           Control.Monad.IO.Class           (MonadIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Control.Monad.Trans              (liftIO)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           DB
+import qualified GHC.Int                          as Int
 import           PatchGirl
 
 
--- * reset visitor account
+-- * handler
 
 
 resetVisitorAccountHandler
@@ -25,12 +27,16 @@ resetVisitorAccountHandler
   => m ()
 resetVisitorAccountHandler = do
   connection <- getDBConnection
-  liftIO $ resetVisitorSql connection
+  liftIO $ Monad.void $ resetVisitorSql connection
 
-resetVisitorSql :: PG.Connection -> IO ()
+
+-- * sql
+
+
+resetVisitorSql :: PG.Connection -> IO Int.Int64
 resetVisitorSql connection = do
-  _ <- PG.execute_ connection resetVisitorQuery
-  return ()
+  numberRowsAffected <- PG.execute_ connection resetVisitorQuery
+  return numberRowsAffected
   where
     resetVisitorQuery =
       [sql|
@@ -57,6 +63,15 @@ resetVisitorSql connection = do
             FROM request_node
             LEFT JOIN request_collection_to_request_node ON id = request_node_id
             WHERE request_node_id IS NULL
+          );
+
+          -- delete orphan pg_node
+          DELETE FROM pg_node
+          WHERE id IN (
+            SELECT id
+            FROM pg_node
+            LEFT JOIN pg_collection_to_pg_node ON id = pg_actor_id
+            WHERE pg_actor_id IS NULL
           );
 
 
@@ -102,6 +117,7 @@ resetVisitorSql connection = do
 
 -- *** session/
 
+
           INSERT INTO request_node (id, request_node_parent_id, tag, name)
           VALUES ('da0a3654-5e30-471f-ba03-f87760976981', NULL, 'RequestFolder', 'session');
 
@@ -115,6 +131,19 @@ resetVisitorSql connection = do
           VALUES ('6a55626d-d1ec-4255-851d-2b8e18f4bdc4', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login unsuccessful', 'https://{{host}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 
+-- ** pg
+
+
+          INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
+          VALUES ('cb2c1df8-68f0-4a61-b7c7-f75194604976', NULL, 'PgFolder', 'users');
+
+          INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
+          VALUES ('0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'all users',  'SELECT * FROM user_test;', 'localhost', '', '5432', '', '');
+
+          INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
+          VALUES ('aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'single users',  'SELECT * FROM user_test where id = 1 ;', 'localhost', '', '5432', '', '');
+
+
 -- ** request collection
 
 
@@ -126,6 +155,16 @@ resetVisitorSql connection = do
 
           INSERT INTO request_collection_to_request_node (request_collection_id, request_node_id)
           VALUES (1,'da0a3654-5e30-471f-ba03-f87760976981');
+
+
+-- ** pg collection
+
+
+          INSERT INTO pg_collection (id, account_id)
+          VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97', '00000000-0000-1000-a000-000000000000');
+
+          INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_actor_id)
+          VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','cb2c1df8-68f0-4a61-b7c7-f75194604976');
 
 
 -- ** environment

@@ -14,7 +14,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 -- * select pg collection available
 
 
-selectPgCollectionAvailable :: Int -> UUID -> Connection -> IO Bool
+selectPgCollectionAvailable :: UUID -> UUID -> Connection -> IO Bool
 selectPgCollectionAvailable accountId pgCollectionId connection =
   query connection collectionExistsSql (pgCollectionId, accountId) >>= \case
     [Only True] -> return True
