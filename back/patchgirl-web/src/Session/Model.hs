@@ -26,7 +26,7 @@ data Session
                    }
   | SignedUserSession { _sessionAccountId       :: UUID
                       , _sessionCsrfToken       :: Text
-                      , _sessionGithubEmail     :: String
+                      , _sessionGithubEmail     :: Maybe String
                       , _sessionGithubAvatarUrl :: String
                       }
   deriving (Eq, Show, Read, Generic)
@@ -54,7 +54,7 @@ data CookieSession
   = VisitorCookie { _cookieAccountId :: UUID
                   }
   | SignedUserCookie { _cookieAccountId       :: UUID
-                     , _cookieGithubEmail     :: CaseInsensitive
+                     , _cookieGithubEmail     :: Maybe CaseInsensitive
                      , _cookieGithubAvatarUrl :: String
                      }
   deriving (Eq, Show, Read, Generic)
