@@ -54,7 +54,6 @@ jobs:
           tagRegex: "v(.*)"
           tagRegexGroup: 1
 
-
       - uses: actions/setup-haskell@v1.1
         name: Setup Haskell Stack
         with:
@@ -71,7 +70,7 @@ jobs:
         run: |
           cd back
           mkdir dist
-          stack install patchgirl-runner --local-bin-path dist
+          stack install patchgirl-runner --no-nix --local-bin-path dist
 
       - if: matrix.os == 'windows-latest'
         name: Set extension to .exe on Windows
