@@ -35,11 +35,11 @@ jobs:
 
     - name: Build
       run: |
-        cd back; stack build patchgirl-web --system-ghc --test --bench --no-run-tests --no-run-benchmarks
+        cd back; stack build patchgirl-web --no-nix --system-ghc --test --bench --no-run-tests --no-run-benchmarks
 
     - name: Test
       run: |
-        cd back; stack test --system-ghc
+        cd back; stack test --no-nix --system-ghc
 
   hlint:
     name: hlint
