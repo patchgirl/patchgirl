@@ -78,13 +78,11 @@ jobs:
         run: echo "::set-env name=EXT::.exe"
 
       - name: Set binary path name
-        run: echo "::set-env name=BINARY_PATH::./dist/patchgirl-runner${{ env.EXT }}"
+        run: echo "::set-env name=BINARY_PATH::./dist/patchgirl-runner-exe${{ env.EXT }}"
 
       - name: foo
         run: |
-          ls .
           ls dist/
-          ls back
 
       - name: Compress binary
         uses: svenstaro/upx-action@2.0.1
