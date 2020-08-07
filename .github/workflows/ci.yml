@@ -37,10 +37,6 @@ jobs:
       run: |
         cd back; stack build patchgirl-web --no-nix --system-ghc --test --bench --no-run-tests --no-run-benchmarks
 
-    - name: Test
-      run: |
-        cd back; stack test --no-nix --system-ghc
-
   hlint:
     name: hlint
     runs-on: ubuntu-latest
