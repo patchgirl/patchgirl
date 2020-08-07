@@ -71,6 +71,7 @@ jobs:
           mkdir dist
           cd back
           stack install patchgirl-runner --no-nix --local-bin-path ../dist
+          cd ..
 
       - if: matrix.os == 'windows-latest'
         name: Set extension to .exe on Windows
