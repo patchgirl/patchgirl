@@ -10,7 +10,7 @@ on:
 jobs:
   stack:
     name: ${{ matrix.os }} / ghc ${{ matrix.ghc }}
-    runs-on: runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
