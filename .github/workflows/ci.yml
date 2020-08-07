@@ -51,4 +51,7 @@ jobs:
 
     - name: Run HLint
       run: |
+        pwd
+        echo $(pwd)
+        ls
         cd back; curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s back/
