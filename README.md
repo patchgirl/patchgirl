@@ -1,6 +1,7 @@
 # PatchGirl
 
 [![Build Status](https://travis-ci.com/patchgirl/patchgirl.svg?branch=master)](https://travis-ci.com/patchgirl/patchgirl)
+[![GitHub CI](https://github.com/patchgirl/patchgirl/workflows/CI/badge.svg)](https://github.com/patchgirl/patchgirl/actions)
 
 A postman/postwoman like, web app to test your APIs !
 
