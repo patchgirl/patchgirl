@@ -55,5 +55,4 @@ jobs:
 
     - name: Run HLint
       run: |
-        curl https://raw.githubusercontent.com/kowainik/relude/v0.7.0.0/.hlint.yaml -o .hlint-relude.yaml
-        curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s src/ test/ -h .hlint-relude.yaml
+        curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s back/
