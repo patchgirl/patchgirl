@@ -74,8 +74,11 @@ cors =
     allowedRequestHeaders =
       [ "content-type"
       , "x-xsrf-token"
+      -- Safari needs headers to be allowed
+      , "accept"
+      , "accept-language"
+      , "content-language"
       ] <&> CI.mk
-
 
 
 -- * mk app
