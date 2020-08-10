@@ -698,7 +698,10 @@ type Proc
     | Set String Expr
 
 type Expr
-    = LBool Bool
+    = EPrim Prim
+    | EList (List Expr)
+    | EAccess Expr Expr
+    | LBool Bool
     | LInt Int
     | LString String
     | Var String
@@ -707,6 +710,10 @@ type Expr
     | Add Expr Expr
     | HttpResponseBodyAsString
     | HttpResponseStatus
+
+type Prim
+    = PBool Bool
+    | PInt Int
 
 
 exprToString : Expr -> String
@@ -724,3 +731,13 @@ exprToString expr =
         Add e1 e2 -> "Add " ++ (exprToString e1) ++ " " ++ (exprToString e2)
         HttpResponseBodyAsString -> "HttpResponseBodyAsString"
         HttpResponseStatus -> "HttpResponseStatus"
+        EPrim (PBool x) ->
+            case x of
+                True -> "PBool true"
+                False -> "PBool false"
+        EPrim (PInt x) ->
+            "EPrim (PInt " ++ String.fromInt(x) ++ ")"
+        EList xs ->
+            "EList"
+        EAccess _ _ ->
+            "EAccess"

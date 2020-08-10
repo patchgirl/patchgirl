@@ -622,3 +622,6 @@ convertExpressionFromFrontToBack frontExpr =
         Front.HttpResponseBodyAsString -> Back.HttpResponseBodyAsString
         Front.Add a b -> Back.Add (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
         Front.HttpResponseStatus -> Back.HttpResponseStatus
+        Front.EPrim _ -> Debug.todo "prim"
+        Front.EList _ -> Debug.todo "list"
+        Front.EAccess _ _ -> Debug.todo "list get at"

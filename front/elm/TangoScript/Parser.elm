@@ -117,6 +117,7 @@ exprParser =
            , lIntParser
            , httpResponseBodyAsStringParser
            , httpResponseStatusParser
+           , listParser
            , varParser
            , getParser
            , lStringParser
@@ -126,13 +127,13 @@ exprParser =
 
 lIntParser : Parser Expr
 lIntParser =
-    P.int |> P.map LInt
+    P.int |> P.map (\int -> (EPrim (PInt int)))
 
 lBoolParser : Parser Expr
 lBoolParser =
-    P.succeed LBool
-        |= P.oneOf [ P.map (always True) (P.keyword "true")
-                   , P.map (always False) (P.keyword "false")
+    P.succeed EPrim
+        |= P.oneOf [ P.map (always (PBool True)) (P.keyword "true")
+                   , P.map (always (PBool False)) (P.keyword "false")
                    ]
 
 lStringParser : Parser Expr
@@ -158,13 +159,62 @@ getParser =
         |. P.spaces
         |. P.symbol ")"
 
+-- ** list
+
+
+listParser : Parser Expr
+listParser =
+    P.sequence
+        { start = "["
+        , separator = ","
+        , end = "]"
+        , spaces = P.spaces
+        , item = P.lazy (\_ -> exprParser)
+        , trailing = P.Forbidden
+        }
+        |> P.map EList
+        |> P.andThen eListGetAtParser
+
+
+-- ** list - get at index
+
+
+eListGetAtParser : Expr -> Parser Expr
+eListGetAtParser expr =
+    let
+        listIndex : Parser Expr
+        listIndex =
+            P.succeed identity
+                |. P.symbol "["
+                |. P.spaces
+                |= P.lazy (\_ -> exprParser)
+                |. P.spaces
+                |. P.symbol "]"
+
+        maybeListIndex : P.Parser (Maybe Expr)
+        maybeListIndex =
+            P.oneOf [ listIndex |> P.map Just
+                    , P.succeed Nothing
+                    ]
+
+        variableOrListGetAt : Expr -> Maybe Expr -> Expr
+        variableOrListGetAt var mExpr =
+            case mExpr of
+                Just e -> EAccess var e
+                Nothing -> var
+    in
+    maybeListIndex |> P.map (variableOrListGetAt expr)
+
 
 -- ** variable
 
 
 varParser : Parser Expr
 varParser =
-    variableNameParser |> P.map Var
+    variableNameParser
+        |> P.map Var
+        |> P.andThen eListGetAtParser
+
 
 variableNameParser : Parser String
 variableNameParser =
@@ -293,6 +343,23 @@ showExpr expr =
         HttpResponseStatus ->
             "(HttpResponseStatus)"
 
+        EPrim (PBool bool) ->
+            let
+                boolAsString =
+                    case bool of
+                        True -> "true"
+                        False -> "false"
+            in
+            "(PBool " ++ boolAsString ++ " )"
+
+        EPrim (PInt x) ->
+            "(PInt " ++ String.fromInt(x) ++ ")"
+
+        EList _ ->
+            "(EList)"
+
+        EAccess _ _ ->
+            "(EAccess)"
 
 -- ** error
 

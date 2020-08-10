@@ -18,11 +18,11 @@ intTests : List (ParserTest (List P.DeadEnd) Expr)
 intTests =
     [ { message = "parse one digit integer"
       , input = "1"
-      , expect = Ok <| LInt 1
+      , expect = Ok <| EPrim (PInt 1)
       }
     , { message = "parse multi digits integer"
       , input = "123"
-      , expect = Ok <| LInt 123
+      , expect = Ok <| EPrim (PInt 123)
       }
     ]
 
@@ -34,11 +34,11 @@ boolTests : List (ParserTest (List P.DeadEnd) Expr)
 boolTests =
     [ { message = "parse true value"
       , input = "true"
-      , expect = Ok <| LBool True
+      , expect = Ok <| (EPrim (PBool True))
       }
     , { message = "parse false value"
       , input = "false"
-      , expect = Ok <| LBool False
+      , expect = Ok <| (EPrim (PBool False))
       }
     , { message = "don't parse string that looks like boolean"
       , input = "falsey"
@@ -67,6 +67,54 @@ stringTests =
     , { message = "parse weird char string"
       , input = """ "aA1&/[]^-" """
       , expect = Ok <| LString "aA1&/[]^-"
+      }
+    ]
+
+
+-- ** list
+
+
+listTests : List (ParserTest (List P.DeadEnd) Expr)
+listTests =
+    [ { message = "parse empty list"
+      , input = """ [] """
+      , expect = Ok <| EList []
+      }
+    , { message = "parse one element list"
+      , input = """ [1] """
+      , expect = Ok <| EList [ EPrim (PInt 1) ]
+      }
+    , { message = "parse multiple elements list"
+      , input = """ [1, 2,3,   6] """
+      , expect = Ok <| EList [ EPrim (PInt 1), EPrim (PInt 2), EPrim (PInt 3), EPrim (PInt 6) ]
+      }
+    , { message = "parse heterogeneous list"
+      , input = """ [1, true] """
+      , expect = Ok <| EList [ EPrim (PInt 1), EPrim (PBool True) ]
+      }
+    , { message = "parse list of list"
+      , input = """ [1, [2]] """
+      , expect = Ok <| EList [ EPrim (PInt 1), EList [ EPrim (PInt 2) ] ]
+      }
+    , { message = "fail to parse trailing commma list"
+      , input = """ [1, 2,] """
+      , expect = Err []
+      }
+    , { message = "fail to parse unclosed list"
+      , input = """ [1"""
+      , expect = Err []
+      }
+    , { message = "access list from var"
+      , input = """ a[0]"""
+      , expect = Ok <| EAccess (Var "a") (EPrim (PInt 0))
+      }
+    , { message = "access list from list"
+      , input = """ [1][0]"""
+      , expect = Ok <| EAccess (EList [ EPrim (PInt 1) ]) (EPrim (PInt 0))
+      }
+    , { message = "access list with some var"
+      , input = """ [1][myIndex]"""
+      , expect = Ok <| EAccess (EList [ EPrim (PInt 1) ]) (Var "myIndex")
       }
     ]
 
@@ -203,7 +251,7 @@ letTests : List (ParserTest (List P.DeadEnd) Proc)
 letTests =
     [ { message = "parse simple let"
       , input = "var a = 1"
-      , expect = Ok <| Let "a" (LInt 1)
+      , expect = Ok <| Let "a" (EPrim (PInt 1))
       }
     ]
 
@@ -215,15 +263,15 @@ assertEqualTests : List (ParserTest (List P.DeadEnd) Proc)
 assertEqualTests =
     [ { message = "parse simple assertEqual"
       , input = "assertEqual(1,1)"
-      , expect = Ok <| AssertEqual (LInt 1) (LInt 1)
+      , expect = Ok <| AssertEqual (EPrim (PInt 1)) (EPrim (PInt 1))
       }
     , { message = "parse assertEqual with spaces"
       , input = "assertEqual ( 1 , 1 ) "
-      , expect = Ok <| AssertEqual (LInt 1) (LInt 1)
+      , expect = Ok <| AssertEqual (EPrim (PInt 1)) (EPrim (PInt 1))
       }
     , { message = "parse assertEqual with int and bool as param"
       , input = "assertEqual( 1 , true )"
-      , expect = Ok <| AssertEqual (LInt 1) (LBool True)
+      , expect = Ok <| AssertEqual (EPrim (PInt 1)) ((EPrim (PBool True)))
       }
     ]
 
@@ -235,11 +283,11 @@ setTests : List (ParserTest (List P.DeadEnd) Proc)
 setTests =
     [ { message = "parse simple `set`"
       , input = """set("a", 1)"""
-      , expect = Ok <| Set "a" (LInt 1)
+      , expect = Ok <| Set "a" (EPrim (PInt 1))
       }
     , { message = "parse `set`"
       , input = """set("a", true)"""
-      , expect = Ok <| Set "a" (LBool True)
+      , expect = Ok <| Set "a" (EPrim (PBool True))
       }
     ]
 
@@ -252,7 +300,7 @@ tangoTests : List (ParserTests (List P.DeadEnd) TangoAst)
 tangoTests =
     [ { message = "parse simple statement"
       , input = "assertEqual(1,1);"
-      , expect = Ok <| [ AssertEqual (LInt 1) (LInt 1) ]
+      , expect = Ok <| [ AssertEqual (EPrim (PInt 1)) (EPrim (PInt 1)) ]
       }
     , { message = "dont parse statement that doesnt end with semi-colon"
       , input = "assertEqual(1,1)"
@@ -268,8 +316,8 @@ tangoTests =
                  var b = 2;
                  assertEqual(a, b);
                 """
-      , expect = Ok [ Let "a" (LInt 1)
-                    , Let "b" (LInt 2)
+      , expect = Ok [ Let "a" (EPrim (PInt 1))
+                    , Let "b" (EPrim (PInt 2))
                     , AssertEqual (Var "a") (Var "b")
                     ]
       }
@@ -316,6 +364,7 @@ suite =
         [ describe "ExprParser"
             [ describe "LInt" <| List.map checkExprParser intTests
             , describe "LBool" <| List.map checkExprParser boolTests
+            , describe "EList" <| List.map checkExprParser listTests
             , describe "LString" <| List.map checkExprParser stringTests
             , describe "Var" <| List.map checkExprParser varTests
             , describe "Get" <| List.map checkExprParser getTests
@@ -402,7 +451,7 @@ checkTangoAstParser : ParserTests (List P.DeadEnd) TangoAst -> Test
 checkTangoAstParser { message, input, expect } =
     test message <|
         \_ ->
-            case Debug.log "err" <| parseTangoscript input of
+            case parseTangoscript input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 
