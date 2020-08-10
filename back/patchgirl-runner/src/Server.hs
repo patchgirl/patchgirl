@@ -75,6 +75,7 @@ cors =
       [ "content-type"
       , "x-xsrf-token"
       -- Safari needs headers to be allowed
+      -- yet it still request to runner still get blocked :-(
       , "accept"
       , "accept-language"
       , "content-language"
