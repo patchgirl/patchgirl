@@ -427,14 +427,44 @@ showExpr expr =
         EPrim (PInt x) ->
             "(PInt " ++ String.fromInt(x) ++ ")"
 
-        EList _ ->
-            "(EList)"
+        EList x ->
+            List.map showExpr x
+                |> String.join ", "
+                |> \s ->  "(EList " ++ s ++ " )"
 
         EAccess _ _ ->
             "(EAccess)"
 
-        EJson _ ->
-            "(EJson)"
+        EJson json ->
+            "(EJson " ++ showJson json ++ ")"
+
+showJson : Json -> String
+showJson json =
+    case json of
+        JInt x -> "(JInt " ++ String.fromInt(x) ++ " )"
+        JFloat x -> "(JFloat " ++ String.fromFloat(x) ++ " )"
+        JBool bool ->
+            let
+                boolAsString =
+                    case bool of
+                        True -> "true"
+                        False -> "false"
+            in
+            "(JBool " ++ boolAsString ++ " )"
+
+        JString str -> "(JString " ++ str ++ ")"
+        JArray x ->
+            List.map showJson x
+                |> String.join ", "
+                |> \s -> "(JArray " ++ s ++ ")"
+        JObject x ->
+            Dict.toList x
+                |> List.map (\(key, value) -> "(Key " ++ key ++ ", Value " ++ showJson value ++ " )")
+                |> String.join ", "
+
+
+
+
 
 -- ** error
 
