@@ -11,6 +11,7 @@ import Parser.Expression as P exposing (OperatorTable)
 import Set exposing (Set)
 import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 import Application.Type exposing(..)
+import Dict exposing (Dict)
 
 
 -- * parse
@@ -121,6 +122,7 @@ exprParser =
            , varParser
            , getParser
            , lStringParser
+           , eJsonParser
            , binOpParser
            ]
         |. P.spaces
@@ -223,6 +225,76 @@ variableNameParser =
     , inner = \c -> Char.isAlphaNum c || c == '_'
     , reserved = reserved
     }
+
+
+-- ** json
+
+eJsonParser : Parser Expr
+eJsonParser =
+    jsonParser |> P.map EJson |> P.andThen eListGetAtParser
+
+jsonValueParser : Parser Json
+jsonValueParser =
+    let
+        jIntParser : Parser Json
+        jIntParser =
+            P.int |> P.map JInt
+
+        jBoolParser : Parser Json
+        jBoolParser =
+            P.oneOf [ P.map (always (JBool True)) (P.keyword "true")
+                    , P.map (always (JBool False)) (P.keyword "false")
+                    ]
+
+        jStringParser : Parser Json
+        jStringParser =
+            doubleQuoteString |> P.map JString
+
+        jFloatParser : Parser Json
+        jFloatParser =
+            P.float |> P.map JFloat
+
+        jArrayParser : Parser Json
+        jArrayParser =
+            P.sequence
+                { start = "["
+                , separator = ","
+                , end = "]"
+                , spaces = P.spaces
+                , item = P.lazy (\_ -> jsonValueParser)
+                , trailing = P.Forbidden
+                } |> P.map JArray
+    in
+    P.oneOf [ P.backtrackable jIntParser
+            , jFloatParser
+            , jBoolParser
+            , jStringParser
+            , P.lazy (\_ -> jArrayParser)
+            , P.lazy (\_ -> jsonParser)
+            ]
+
+jsonParser : Parser Json
+jsonParser =
+    let
+        jsonKeyValueParser : Parser (String, Json)
+        jsonKeyValueParser =
+            P.succeed (\key value -> (key, value))
+                |. P.spaces
+                |= doubleQuoteString
+                |. P.spaces
+                |. P.symbol ":"
+                |. P.spaces
+                |= jsonValueParser
+    in
+    P.sequence
+        { start = "{"
+        , separator = ","
+        , end = "}"
+        , spaces = P.spaces
+        , item = jsonKeyValueParser
+        , trailing = P.Forbidden
+        }
+        |> P.map (\keyValues -> JObject (Dict.fromList keyValues))
 
 
 -- * parser
@@ -360,6 +432,9 @@ showExpr expr =
 
         EAccess _ _ ->
             "(EAccess)"
+
+        EJson _ ->
+            "(EJson)"
 
 -- ** error
 

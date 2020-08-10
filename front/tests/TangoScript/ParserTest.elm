@@ -6,6 +6,7 @@ import TangoScript.Parser exposing(..)
 import TangoScript.DoubleQuoteString exposing(..)
 import Parser as P
 import Application.Type exposing (..)
+import Dict exposing (Dict)
 
 
 -- * expr
@@ -115,6 +116,43 @@ listTests =
     , { message = "access list with some var"
       , input = """ [1][myIndex]"""
       , expect = Ok <| EAccess (EList [ EPrim (PInt 1) ]) (Var "myIndex")
+      }
+    ]
+
+
+-- ** json
+
+
+jsonTests : List (ParserTest (List P.DeadEnd) Expr)
+jsonTests =
+    [ { message = "parse JInt"
+      , input = """ {"a": 1} """
+      , expect = Ok <| EJson <| JObject <| Dict.fromList [ ("a", JInt 1) ]
+      }
+    , { message = "parse JString"
+      , input = """ {"a": "b"} """
+      , expect = Ok <| EJson <| JObject <| Dict.fromList [ ("a", JString "b") ]
+      }
+    , { message = "parse JBool"
+      , input = """ {"a": true } """
+      , expect = Ok <| EJson <| JObject <| Dict.fromList [ ("a", JBool True) ]
+      }
+    , { message = "parse JFloat"
+      , input = """ {"a": 1.2 } """
+      , expect = Ok <| EJson <| JObject <| Dict.fromList [ ("a", JFloat 1.2) ]
+      }
+    , { message = "parse JArray"
+      , input = """ {"a": [1] } """
+      , expect = Ok <| EJson <| JObject <| Dict.fromList [ ("a", JArray [ JInt 1 ]) ]
+      }
+    , { message = "parse complex JArray"
+      , input = """ {"a": [ {"a": 1 }, "e" ] } """
+      , expect = Ok (EJson (JObject (Dict.fromList [("a",JArray [JObject (Dict.fromList [("a",JInt 1)]),JString "e"])])))
+      }
+    , { message = "parse recursive json"
+      , input = """ {"a": { "b": 2 }} """
+      , expect = Ok <| EJson <|
+                 JObject <| Dict.fromList [ ("a", JObject <| Dict.fromList [ ("b", JInt 2) ])]
       }
     ]
 
@@ -365,6 +403,7 @@ suite =
             [ describe "LInt" <| List.map checkExprParser intTests
             , describe "LBool" <| List.map checkExprParser boolTests
             , describe "EList" <| List.map checkExprParser listTests
+            , describe "EJson" <| List.map checkExprParser jsonTests
             , describe "LString" <| List.map checkExprParser stringTests
             , describe "Var" <| List.map checkExprParser varTests
             , describe "Get" <| List.map checkExprParser getTests

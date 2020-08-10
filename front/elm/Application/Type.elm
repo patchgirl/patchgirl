@@ -1,7 +1,7 @@
 module Application.Type exposing (..)
 
 import Animation
-import Dict
+import Dict exposing (Dict)
 import Uuid exposing (Uuid)
 import Parser exposing(DeadEnd)
 
@@ -441,7 +441,7 @@ type alias RequestComputationInput =
 type alias RequestComputation =
     { statusCode : Int
     , statusText : String
-    , headers : Dict.Dict String String
+    , headers : Dict String String
     , body : String
     }
 
@@ -698,7 +698,8 @@ type Proc
     | Set String Expr
 
 type Expr
-    = EPrim Prim
+    = EJson Json
+    | EPrim Prim
     | EList (List Expr)
     | EAccess Expr Expr
     | LBool Bool
@@ -710,6 +711,14 @@ type Expr
     | Add Expr Expr
     | HttpResponseBodyAsString
     | HttpResponseStatus
+
+type Json
+    = JInt Int
+    | JFloat Float
+    | JBool Bool
+    | JString String
+    | JArray (List Json)
+    | JObject (Dict String Json)
 
 type Prim
     = PBool Bool
@@ -741,3 +750,6 @@ exprToString expr =
             "EList"
         EAccess _ _ ->
             "EAccess"
+
+        EJson _ ->
+            "EJson"

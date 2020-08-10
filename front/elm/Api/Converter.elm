@@ -625,3 +625,4 @@ convertExpressionFromFrontToBack frontExpr =
         Front.EPrim _ -> Debug.todo "prim"
         Front.EList _ -> Debug.todo "list"
         Front.EAccess _ _ -> Debug.todo "list get at"
+        Front.EJson _ -> Debug.todo "json"
