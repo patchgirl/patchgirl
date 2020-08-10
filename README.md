@@ -9,7 +9,19 @@ A postman/postwoman like, web app to test your APIs !
 
 To use PatchGirl, you only need to go to the [app page 🚀](https://patchgirl.io).
 If you want to make request to an API running on your computer (e.g: localhost), you need to run the [patchgirl-runner app](https://github.com/patchgirl/patchgirl/releases).
-Running the patchgirl-runner app is simple, just download it and execute it in a terminal 🚀 (nb: only linux platforms are supported as of today, MacOS and Windows are on the roadmap).
+Running the **patchgirl-runner** app is simple, just download it and execute it in a terminal like so:
+
+```bash
+chmod +x patchgirl-runner-X.Y.Z-yourOS
+./patchgirl-runner-X.Y.Z-yourOS
+```
+
+nb: Please note that recent version of MacOS will display an error popup stating that the app hasn't been recognized and so is insecure.
+To overcome this issue, you'll need to "right-click open" the executable from the finder once!
+
+### Windows
+
+Windows support is currently on the roadmap.
 
 ## Features
 
@@ -26,8 +38,8 @@ Running the patchgirl-runner app is simple, just download it and execute it in a
 | ✅        | scenarios                            | Create and Play multiple http requests or postgresql queries one after another                                                                |
 | ✅        | pre request script                   | Play a script right before executing a request (eg: Include timestamp in the request headers, send a random string in the URL parameters,...) |
 | ✅        | post request script                  | Play a script right after executing a request (eg: Assign the response result to a variable, assert that the response status is a 200,...)    |
-| ✅        | desktop app (only Linux as of today) | Lightweight desktop proxy so you can play a request targeting a local host                                                                    |
-| 🔧        | cross platform desktop application   | Make the PatchGirl desktop app available on both MacOs and Windows (currently only available on Linux                                         |
+| ✅        | desktop app (Linux & MacOS only as of today) | Lightweight desktop proxy so you can play a request targeting a local host                                                                    |
+| 🔧        | cross platform desktop application   | Make the PatchGirl desktop app available on Windows (currently only available on Linux and MacOS                                         |
 | 🔧        | MySql request                        | Play MySQL queries                                                                                                                            |
 | 📝        | websocket                            |                                                                                                                                               |
 | 📝        | MongoDB queries                      |                                                                                                                                               |
@@ -59,9 +71,9 @@ Run a javascript script after a request is executed. This is useful if you want 
  - Assert for a response status or body
  - Set variables according on the response body
 
-📦 Desktop app
+📦 Desktop app (AKA *patchgirl runner*)
 
-Install a desktop app (Only Linux at the moment) so you can use PatchGirl locally. This is needed when you:
+Install a desktop app so you can use PatchGirl locally. This is needed when you:
 - Use PatchGirl without internet access
 - Call localhost url
 - Need to play any request that is not HTTP (i.e: Postgresql, MySQL,...)

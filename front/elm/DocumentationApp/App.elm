@@ -113,7 +113,7 @@ This is quite useful if you need to:
 
 ## Available platform
 
-As of today, the PatchGirl runner app is only available on Linux. We plan to make it available on MacOS and Windows as well soon enough.
+As of today, the PatchGirl runner app is only available on Linux and MacOS. We plan to make it available on Windows as well soon enough.
 
 ## How to use
 
@@ -148,8 +148,8 @@ If you have variable `userId` set in your environment you can use it in any text
 
 Due to browser restrictions (cf: [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) and [same origin policy](https://developer.mozilla.org/docs/Web/Security/Same_origin_policy_for_JavaScript)), PatchGirl cannot run from your computer.
 Instead, every requests you make are being sent from our servers which means that you can't by default query local hosts (i.e: `127.0.0.1`) or use your personnal VPN/Proxy.
-To overcome this issue, you need to download and run the [**PatchGirl Desktop App**](https://github.com/patchgirl/patchgirl/releases) (only available for Linux at the time) which runs on your computer and allows you to run requests from your device.
-The PatchGirl desktop app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the desktop app instead of our servers.
+To overcome this issue, you need to download and run the [**PatchGirl Runner App**](https://github.com/patchgirl/patchgirl/releases) (only available for Linux and MacOS at the time) which runs on your computer and allows you to run requests from your device.
+The PatchGirl runner app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the runner app instead of our servers.
     """
 
 
@@ -180,8 +180,8 @@ PatchGirl is a tool that aims to help testing your local/staging environment and
 
 Due to browser restrictions (cf: [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) and [same origin policy](https://developer.mozilla.org/docs/Web/Security/Same_origin_policy_for_JavaScript)), PatchGirl cannot run from your computer.
 Instead, every requests you make are being sent from our servers which means that you can't by default query local hosts (i.e: `127.0.0.1`) or use your personnal VPN/Proxy.
-To overcome this issue, you need to download and run the [**PatchGirl Desktop App**](https://github.com/patchgirl/patchgirl/releases) (only available for Linux at the time) which runs on your computer and allows you to run requests from your device.
-The PatchGirl desktop app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the desktop app instead of our servers.
+To overcome this issue, you need to download and run the [**PatchGirl Runner App**](https://github.com/patchgirl/patchgirl/releases) (only available for Linux and MacOS at the time) which runs on your computer and allows you to run requests from your device.
+The PatchGirl runner app acts as a tiny proxy. You still use the web app as an interface but every calls are being sent from the runner app instead of our servers.
     """
 
 
