@@ -6,8 +6,10 @@ module TangoScript ( TangoAst
                    , exprToString
                    ) where
 
-import qualified Data.Aeson   as Aeson
-import           GHC.Generics (Generic)
+import qualified Data.Aeson          as Aeson
+import           Data.HashMap.Strict (HashMap)
+import qualified Data.HashMap.Strict as HashMap (HashMap)
+import           GHC.Generics        (Generic)
 
 
 type TangoAst = [Proc]
@@ -35,7 +37,8 @@ instance Aeson.FromJSON Proc where
 
 
 data Expr
-  = LBool Bool
+  = EJson Json
+  | LBool Bool
   | LInt Int
   | LString String
   | Var String
@@ -44,6 +47,7 @@ data Expr
   | Add Expr Expr
   | HttpResponseBodyAsString
   | HttpResponseStatus
+  | PgResponseAsTable
   deriving (Show, Eq, Generic)
 
 instance Aeson.ToJSON Expr where
@@ -51,6 +55,27 @@ instance Aeson.ToJSON Expr where
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 instance Aeson.FromJSON Expr where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
+-- ** json
+
+
+data Json
+    = JInt Int
+    | JFloat Float
+    | JBool Bool
+    | JString String
+    | JArray [Json]
+    | JObject (HashMap String Json)
+    deriving (Show, Eq, Generic)
+
+instance Aeson.ToJSON Json where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON Json where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 

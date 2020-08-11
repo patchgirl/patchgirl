@@ -55,6 +55,7 @@ dependencies:
   - utf8-string
   - dhall
   - aeson
+  - unordered-containers
   - wai
   - warp
   - mtl

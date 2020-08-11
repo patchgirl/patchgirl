@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c0fc83d87f561bbfb2725e7171cc7df4f14602b791d7e5589355921f5a8c23c2
+-- hash: 118ea16ce5d3b09beea02f760e057c9192da6b6275a451f81cfce477d2c0277f
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -54,6 +54,7 @@ library
     , say
     , servant-server
     , stm
+    , unordered-containers
     , utf8-string
     , uuid
     , wai
@@ -107,6 +108,7 @@ executable patchgirl-runner-exe
     , say
     , servant-server
     , stm
+    , unordered-containers
     , utf8-string
     , uuid
     , wai
@@ -154,6 +156,7 @@ test-suite spec
     , servant-client
     , servant-server
     , stm
+    , unordered-containers
     , utf8-string
     , uuid
     , wai
