@@ -21,12 +21,11 @@ import qualified Say
 import           Servant                           hiding (BadPassword,
                                                     NoSuchUser)
 
-
 import           Api
 import           Env
 import           Model
+import           PgSqlComputation.App
 import           RequestComputation.App
-
 
 
 -- * run
@@ -35,7 +34,7 @@ import           RequestComputation.App
 run :: IO ()
 run = do
   putStrLn "Running web server for runner"
-  env :: Env <- createEnv Say.sayString ioRequestRunner
+  env :: Env <- createEnv Say.sayString ioRequestRunner ioPgRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   app :: Application <- mkApp env <&> cors
   let promMiddleware :: Middleware = Prometheus.prometheus $ Prometheus.PrometheusSettings ["metrics"] True True

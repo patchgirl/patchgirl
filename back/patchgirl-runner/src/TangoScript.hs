@@ -38,8 +38,11 @@ instance Aeson.FromJSON Proc where
 
 data Expr
   = EJson Json
+  | EList [Expr]
   | LBool Bool
   | LInt Int
+  | LFloat Float
+  | LNull
   | LString String
   | Var String
   | Fetch String

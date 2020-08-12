@@ -9,12 +9,13 @@ module Env( createEnv
           , getConfig
           ) where
 
-import qualified Control.Lens             as Lens
-import qualified Data.ByteString.UTF8     as BSU
-import           Dhall                    (Natural)
+import qualified Control.Lens              as Lens
+import qualified Data.ByteString.UTF8      as BSU
+import qualified Database.PostgreSQL.LibPQ as LibPQ
+import           Dhall                     (Natural)
 import qualified Dhall
-import           GHC.Generics             (Generic)
-import qualified Network.HTTP.Client      as Http
+import           GHC.Generics              (Generic)
+import qualified Network.HTTP.Client       as Http
 
 import           RequestComputation.Model
 
@@ -43,6 +44,7 @@ data Env
   = Env { _envPort        :: Natural
         , _envLog         :: String -> IO ()
         , _envHttpRequest :: Http.Request -> IO (HttpResponse BSU.ByteString)
+        , _envPgRunner :: LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result)
         }
 
 $(Lens.makeLenses ''Env)
@@ -51,9 +53,14 @@ $(Lens.makeLenses ''Env)
 -- * create env
 
 
-createEnv :: (String -> IO ()) -> (Http.Request -> IO (HttpResponse BSU.ByteString)) -> IO Env
-createEnv log httpRequest = do
+createEnv
+  :: (String -> IO ())
+  -> (Http.Request -> IO (HttpResponse BSU.ByteString))
+  -> (LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result))
+  -> IO Env
+createEnv log httpRequest pgRunner = do
   return $ Env { _envPort = 37465
                , _envLog = log
                , _envHttpRequest = httpRequest
+               , _envPgRunner = pgRunner
                }

@@ -72,7 +72,6 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
       IO.liftIO $ resultToTable result <&> \case
         Left pgError -> Left pgError
         Right pgTable -> Right $ PgTuplesOk pgTable
-      --Right . PgTuplesOk
 
     (Just result, error) ->
       IO.liftIO $
@@ -165,6 +164,14 @@ convertPgRawValueToPgValue oid value =
     case conversion of
       Right x  -> Right x
       Left str -> Left $ PgError str
+
+
+-- * pg runner
+
+
+ioPgRunner :: LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result)
+ioPgRunner =
+  LibPQ.exec
 
 
 -- * util

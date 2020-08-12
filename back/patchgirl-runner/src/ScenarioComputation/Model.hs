@@ -124,38 +124,14 @@ instance Aeson.FromJSON SceneComputation where
                                                 }
 
 
--- * scene computation
-
-
-data SceneComputationOutput
-  = ScenePgComputation PgComputationOutput
-  | SceneHttpComputation RequestComputationOutput
-  deriving (Eq, Show, Generic)
-
-
--- * succesful scene computation
-
-
-data SuccesfulSceneComputation
-  = SuccesfulHttpSceneComputation RequestComputation
-  | SuccesfulPgSceneComputation PgComputation
-  deriving (Eq, Show, Generic)
-
-instance Aeson.ToJSON SuccesfulSceneComputation where
-  toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-instance Aeson.FromJSON SuccesfulSceneComputation where
-  parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-
 -- * script exception
 
 
 data ScriptException
   = UnknownVariable Expr
   | AssertEqualFailed Expr Expr
+  | CannotUseFunction String
+  | EmptyResponse String
   deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON ScriptException where

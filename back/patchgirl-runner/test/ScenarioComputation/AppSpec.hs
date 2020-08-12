@@ -18,6 +18,7 @@ import           Test.Hspec
 
 import           Api
 import           FakeHttpRequest
+import           FakePgRequest
 import           Helper.App
 import           Http
 import           Interpolator
@@ -41,8 +42,8 @@ runScenarioComputation =
 spec :: Spec
 spec = do
 
-
--- ** empty scenario
+-- ** http
+-- *** empty scenario
 
 
   describe "empty scenario" $ do
@@ -60,12 +61,12 @@ spec = do
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** scenario with one valid scene
+-- *** scenario with one valid scene
 
 
   describe "scenario with one valid scene" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -79,17 +80,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "runs a single scene scenario" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** scenario with last scene invalid (invalid url)
+-- *** scenario with last scene invalid (invalid url)
 
 
   describe "scenario with last scene invalid" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           , (buildRequest "POST http://foo.com", Left $ HTTP.InvalidUrlException "" "")
           ]
 
@@ -107,18 +108,18 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "run all scenes" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** scenario first scene invalid (invalid url)
+-- *** scenario first scene invalid (invalid url)
 
 
   describe "scenario with first scene invalid" $ do
     let mock =
           [ (buildRequest "GET http://foo.com", Left $ HTTP.InvalidUrlException "" "")
-          , (buildRequest "POST http://foo.com", Right buildResponse)
+          , (buildRequest "POST http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -135,17 +136,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "doesnt run scenes after a failing scene" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** prescript fails: cannot `assertEqual`
+-- *** prescript fails: cannot `assertEqual`
 
 
   describe "prescript fails: cannot `assertEqual`" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -159,17 +160,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "fails" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** prescript fails: trying to access unknown local variable
+-- *** prescript fails: trying to access unknown local variable
 
 
   describe "prescript fails: trying to access unknown local variable" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -183,17 +184,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "fails" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** prescript succeed: assertEqual
+-- *** prescript succeed: assertEqual
 
 
   describe "prescript succeed: assertEqual" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -207,17 +208,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "fails" $ \clientEnv ->
           try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** prescript succeed: set global variable for next scene prescript
+-- *** prescript succeed: set global variable for next scene prescript
 
 
   describe "prescript succeed: set global variable for next scene prescript" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -234,17 +235,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "succeed" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** postscript succeed: assert equal http body response
+-- *** postscript succeed: assert equal http body response
 
 
   describe "postscript succeed: assert equal http body response" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse { httpResponseBody = "foo" } )
+          [ (buildRequest "GET http://foo.com", Right $ buildHttpResponse { httpResponseBody = "foo" } )
           ]
 
     let (input, output) =
@@ -259,17 +260,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "succeed" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** postscript fails: assert equal http body response
+-- *** postscript fails: assert equal http body response
 
 
   describe "postscript: fail assert equal http body response" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildResponse { httpResponseBody = "foo" } )
+          [ (buildRequest "GET http://foo.com", Right $ buildHttpResponse { httpResponseBody = "foo" } )
           ]
 
     let (input, output) =
@@ -284,17 +285,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "fails" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** postscript succeed: set global variable for next scene postscript
+-- *** postscript succeed: set global variable for next scene postscript
 
 
   describe "postscript succeed: set global variable for next scene postscript" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -311,17 +312,17 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "succeed" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- ** pre/postscript succeed: set global variable from prescript to next scene postscript
+-- *** pre/postscript succeed: set global variable from prescript to next scene postscript
 
 
   describe "pre/postscript succeed: set global variable from prescript to next scene postscript" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right buildResponse)
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
           ]
 
     let (input, output) =
@@ -338,9 +339,66 @@ spec = do
             ]
           )
 
-    withClient (withHttpMock2 mock) $
+    withClient (withHttpMock mock) $
       it "succeed" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
+
+
+-- *** prescript fails: use pg function from http script
+
+
+  describe "pre/postscript succeed: set global variable from prescript to next scene postscript" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ Let "a" PgResponseAsTable ]
+                                     ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ HttpPostscriptFailed requestComputation (CannotUseFunction "You can't use `pgResponseAsTable` in an http postscript ")
+            ]
+          )
+
+    withClient (withHttpMock mock) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
+
+
+
+-- ** pg
+
+
+-- *** prescript succeed: set global variable for next scene prescript
+
+
+  describe "prescript succeed: set global variable for next scene prescript" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
+          ]
+
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
+                                     ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ HttpSceneOk requestComputation
+            , buildSceneOutput $ HttpSceneOk requestComputation
+            ]
+          )
+
+    withClient (withHttpMock mock) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
+
 
 
 -- * util
@@ -358,6 +416,15 @@ buildHttpSceneWithScript method url prescript postscript =
                 , _sceneHttpInput = defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
                                                                    , _templatedRequestComputationInputUrl = url
                                                                    }
+                }
+
+buildPgSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> SceneFile
+buildPgSceneWithScript method url prescript postscript =
+  PgSceneFile { _sceneId = UUID.nil
+                , _sceneFileId = UUID.nil
+                , _scenePrescript = prescript
+                , _scenePostscript = postscript
+                , _scenePgInput = defaultPgComputationInput
                 }
 
 buildScene :: Method -> StringTemplate -> SceneFile
@@ -378,15 +445,6 @@ buildSceneOutput sceneComputationOutput =
 
 -- ** build response
 
-
-buildResponse :: HttpResponse BSU.ByteString
-buildResponse =
-  HttpResponse { httpResponseStatus = HTTP.Status { statusCode = 200
-                                                  , statusMessage = BSU.fromString "ok"
-                                                  }
-               , httpResponseHeaders = []
-               , httpResponseBody = BSU.fromString ""
-               }
 
 requestComputation :: RequestComputation
 requestComputation =
