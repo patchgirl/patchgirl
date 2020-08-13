@@ -344,32 +344,6 @@ spec = do
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
--- *** prescript fails: use pg function from http script
-
-
-  describe "pre/postscript succeed: set global variable from prescript to next scene postscript" $ do
-    let mock =
-          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
-          ]
-
-    let (input, output) =
-          ( ScenarioInput
-            { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ Let "a" PgResponseAsTable ]
-                                     ]
-            , _scenarioInputEnvVars = Map.empty
-            }
-          , ScenarioOutput
-            [ buildSceneOutput $ HttpPostscriptFailed requestComputation (CannotUseFunction "You can't use `pgResponseAsTable` in an http postscript ")
-            ]
-          )
-
-    withClient (withHttpMock mock) $
-      it "succeed" $ \clientEnv ->
-        try clientEnv (runScenarioComputation input) `shouldReturn` output
-
-
-
 -- ** pg
 
 
