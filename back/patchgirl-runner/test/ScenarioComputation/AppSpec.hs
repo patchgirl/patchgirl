@@ -18,7 +18,6 @@ import           Test.Hspec
 
 import           Api
 import           FakeHttpRequest
-import           FakePgRequest
 import           Helper.App
 import           Http
 import           Interpolator
@@ -390,15 +389,6 @@ buildHttpSceneWithScript method url prescript postscript =
                 , _sceneHttpInput = defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
                                                                    , _templatedRequestComputationInputUrl = url
                                                                    }
-                }
-
-buildPgSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> SceneFile
-buildPgSceneWithScript method url prescript postscript =
-  PgSceneFile { _sceneId = UUID.nil
-                , _sceneFileId = UUID.nil
-                , _scenePrescript = prescript
-                , _scenePostscript = postscript
-                , _scenePgInput = defaultPgComputationInput
                 }
 
 buildScene :: Method -> StringTemplate -> SceneFile

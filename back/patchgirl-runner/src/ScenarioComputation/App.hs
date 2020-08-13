@@ -39,7 +39,7 @@ runScenarioComputationHandler ScenarioInput{..} =
     buildScenes environmentVars (scenarioGlobalVars, scenes) sceneFile = do
       case lastSceneWasSuccessful scenes of
         False -> return ( scenarioGlobalVars
-                        , scenes ++ [ (buildSceneOutput sceneFile SceneNotRun) ]
+                        , scenes ++ [ buildSceneOutput sceneFile SceneNotRun ]
                         )
         True ->
           case sceneFile of

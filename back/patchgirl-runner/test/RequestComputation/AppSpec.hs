@@ -112,7 +112,5 @@ spec = do
         try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
 
 
-  where
-
 envVars :: Map String StringTemplate
 envVars = Map.empty

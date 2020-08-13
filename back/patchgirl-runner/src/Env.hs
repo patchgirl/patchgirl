@@ -4,6 +4,7 @@ module Env( createEnv
           , Env(..)
           , envPort
           , envLog
+          , envPgRunner
           , envHttpRequest
           , Config(..)
           , getConfig
