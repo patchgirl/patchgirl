@@ -7,11 +7,9 @@
 
 module ScenarioComputation.AppSpec where
 
-import qualified Data.ByteString.UTF8      as BSU
 import qualified Data.Map.Strict           as Map
 import qualified Data.UUID                 as UUID
 import qualified Network.HTTP.Client       as HTTP
-import qualified Network.HTTP.Types        as HTTP
 import           Servant
 import qualified Servant.Client            as Servant
 import           Test.Hspec
@@ -21,6 +19,7 @@ import           FakeHttpRequest
 import           Helper.App
 import           Http
 import           Interpolator
+import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           Server
@@ -175,11 +174,11 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "foo.com"] [ Let "myVar" (Fetch "unknownVariable") ] [] ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "foo.com"] [ Let "myVar" (LFetch "unknownVariable") ] [] ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PrescriptFailed $ UnknownVariable $ Fetch "unknownVariable"
+            [ buildSceneOutput $ PrescriptFailed $ UnknownVariable $ LFetch "unknownVariable"
             ]
           )
 
@@ -224,7 +223,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (LFetch "a") (LInt 1) ] []
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -250,7 +249,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "foo") ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual LHttpResponseBodyAsString (LString "foo") ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -275,7 +274,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual HttpResponseBodyAsString (LString "bar") ]
+            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual LHttpResponseBodyAsString (LString "bar") ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -301,7 +300,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ Set "a" (LInt 1) ]
-                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (LFetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -328,7 +327,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (Fetch "a") (LInt 1) ]
+                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (LFetch "a") (LInt 1) ]
                                      ]
             , _scenarioInputEnvVars = Map.empty
             }
@@ -346,38 +345,171 @@ spec = do
 -- ** pg
 
 
--- *** prescript succeed: set global variable for next scene prescript
+-- *** return simple table
 
 
-  describe "prescript succeed: set global variable for next scene prescript" $ do
-    let mock =
-          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
-          ]
-
+  describe "return simple table" $ do
     let (input, output) =
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
-            , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
-                                     , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (Fetch "a") (LInt 1) ] []
-                                     ]
+            , _scenarioInputScenes = [ buildPgSceneWithScript [] [] defaultPgComputationInput ]
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
-            , buildSceneOutput $ HttpSceneOk requestComputation
+            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [("?column?", PgInt 1)]])
             ]
           )
 
-    withClient (withHttpMock mock) $
+    withClient (mkApp defaultEnv) $
       it "succeed" $ \clientEnv ->
         try clientEnv (runScenarioComputation input) `shouldReturn` output
 
+
+
+-- *** assert eq simple table
+
+
+  describe "assert simple table" $ do
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes =
+              [ buildPgSceneWithScript
+                []
+                [ AssertEqual LPgSimpleResponse (LList [ LList [ LInt 1, LInt 2 ] ] ) ]
+                (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1, 2;" ]})
+              ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("?column?", PgInt 1), ("?column?", PgInt 2) ] ] )
+            ]
+          )
+
+    withClient (mkApp defaultEnv) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
+
+
+-- *** succeed: access simple table
+
+
+  describe "succeed: access simple table" $ do
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes =
+              [ buildPgSceneWithScript
+                []
+                [ AssertEqual
+                    (LAccessOp (LAccessOp LPgSimpleResponse (LInt 0)) (LInt 0))
+                    (LInt 1)
+                ]
+                (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
+              ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
+            ]
+          )
+
+    withClient (mkApp defaultEnv) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
+
+
+-- *** fail: access simple table
+
+
+  describe "fail: access simple table" $ do
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes =
+              [ buildPgSceneWithScript
+                []
+                [ AssertEqual
+                    (LAccessOp (LAccessOp LPgSimpleResponse (LInt 0)) (LInt 2))
+                    (LInt 1)
+                ]
+                (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
+              ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PgPostscriptFailed (PgTuplesOk [ Row [ ("id", PgInt 1) ] ]) AccessOutOfBound
+            ]
+          )
+
+    withClient (mkApp defaultEnv) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
+
+
+-- *** succeed: access rich table
+
+
+  describe "succeed: access rich table" $ do
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes =
+              [ buildPgSceneWithScript
+                []
+                [ AssertEqual
+                    (LAccessOp (LAccessOp LPgRichResponse (LInt 0)) (LString "id"))
+                    (LInt 1)
+                ]
+                (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
+              ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
+            ]
+          )
+
+    withClient (mkApp defaultEnv) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
+
+
+-- *** fail: access rich table
+
+
+  describe "fail: access rich table" $ do
+    let (input, output) =
+          ( ScenarioInput
+            { _scenarioInputId = UUID.nil
+            , _scenarioInputScenes =
+              [ buildPgSceneWithScript
+                []
+                [ AssertEqual
+                    (LAccessOp (LAccessOp LPgRichResponse (LInt 0)) (LString "name"))
+                    (LInt 1)
+                ]
+                (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
+              ]
+            , _scenarioInputEnvVars = Map.empty
+            }
+          , ScenarioOutput
+            [ buildSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AssertEqualFailed LNull (LInt 1))
+            ]
+          )
+
+    withClient (mkApp defaultEnv) $
+      it "succeed" $ \clientEnv ->
+        try clientEnv (runScenarioComputation input) `shouldReturn` output
 
 
 -- * util
 
 
 -- ** build input scene
+
+
+-- *** http
 
 
 buildHttpSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> SceneFile
@@ -394,6 +526,31 @@ buildHttpSceneWithScript method url prescript postscript =
 buildScene :: Method -> StringTemplate -> SceneFile
 buildScene method url =
   buildHttpSceneWithScript method url [] []
+
+
+-- *** pg
+
+
+buildPgSceneWithScript :: TangoAst -> TangoAst -> PgComputationInput -> SceneFile
+buildPgSceneWithScript prescript postscript pgComputationInput =
+  PgSceneFile { _sceneId         = UUID.nil
+              , _sceneFileId     = UUID.nil
+              , _scenePrescript  = prescript
+              , _scenePostscript = postscript
+              , _scenePgInput    = pgComputationInput
+              }
+
+defaultPgComputationInput :: PgComputationInput
+defaultPgComputationInput =
+  PgComputationInput { _pgComputationInputSql             = [ Sentence "select 1;" ]
+                     , _pgComputationInputPgConnection    =
+                       TemplatedPgConnection { _templatedPgConnectionHost     = [ Sentence "localhost" ]
+                                             , _templatedPgConnectionPort     = [ Sentence "5432" ]
+                                             , _templatedPgConnectionUser     = [ Sentence "postgres" ]
+                                             , _templatedPgConnectionPassword = [ Sentence "" ]
+                                             , _templatedPgConnectionDbName   = [ Sentence "test" ]
+                                             }
+                     }
 
 
 -- ** build output scene

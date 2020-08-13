@@ -90,7 +90,7 @@ defaultRequestComputationInput =
 withExceptionHttpMock :: IO HTTP.HttpException -> IO Application
 withExceptionHttpMock mock = do
   mock' <- mock
-  env <- defaultEnv2 <&> envHttpRequest .~ exceptionRunnerMock mock'
+  env <- envWithLog <&> envHttpRequest .~ exceptionRunnerMock mock'
   mkApp env
   where
     exceptionRunnerMock :: HTTP.HttpException -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
@@ -109,7 +109,7 @@ withHttpMock
   -> IO Application
 withHttpMock rawMock = do
   mock <- Monad.forM rawMock unwrapIO
-  env <- defaultEnv2 <&> envHttpRequest .~ requestRunnerMock (Map.fromList mock)
+  env <- envWithLog <&> envHttpRequest .~ requestRunnerMock (Map.fromList mock)
   mkApp env
   where
     unwrapIO

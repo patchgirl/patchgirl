@@ -132,6 +132,8 @@ data ScriptException
   | AssertEqualFailed Expr Expr
   | CannotUseFunction String
   | EmptyResponse String
+  | AccessOutOfBound
+  | CantAccessElem Expr
   deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON ScriptException where

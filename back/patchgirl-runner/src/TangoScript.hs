@@ -41,20 +41,23 @@ instance Aeson.FromJSON Proc where
 
 
 data Expr
-  = EJson Json
-  | EList [Expr]
+  = LJson Json
+  | LList [Expr]
   | LBool Bool
   | LInt Int
   | LFloat Float
   | LNull
   | LString String
-  | Var String
-  | Fetch String
-  | Eq Expr Expr
-  | Add Expr Expr
-  | HttpResponseBodyAsString
-  | HttpResponseStatus
-  | PgResponseAsTable
+  | LRowElem (String, Expr)
+  -- non primitive type
+  | LVar String
+  | LFetch String
+  | LEq Expr Expr
+  | LHttpResponseBodyAsString
+  | LHttpResponseStatus
+  | LPgSimpleResponse -- results without columnName
+  | LPgRichResponse   -- response with columnName
+  | LAccessOp Expr Expr
   deriving (Show, Eq, Generic)
 
 instance Aeson.ToJSON Expr where
@@ -115,13 +118,14 @@ exprToString = \case
   LFloat float -> Just $ show float
   LNull -> Just "null"
   LString string -> Just string
-  EList list ->
+  LList list ->
     Monad.mapM exprToString list <&> \l -> "[" ++ List.intercalate "," l ++ "]"
-  EJson json -> Just $ jsonToString json
-  Var _ -> Nothing
-  Fetch _ -> Nothing
-  Eq _ _ -> Nothing
-  Add _ _ -> Nothing
-  HttpResponseBodyAsString -> Nothing
-  HttpResponseStatus -> Nothing
-  PgResponseAsTable -> Nothing
+  LJson json -> Just $ jsonToString json
+  LVar _ -> Nothing
+  LFetch _ -> Nothing
+  LEq _ _ -> Nothing
+  LHttpResponseBodyAsString -> Nothing
+  LHttpResponseStatus -> Nothing
+  LPgSimpleResponse -> Nothing
+  LPgRichResponse -> Nothing
+  LAccessOp _ _ -> Nothing

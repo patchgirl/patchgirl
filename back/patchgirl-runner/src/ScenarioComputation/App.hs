@@ -1,3 +1,5 @@
+{-# LANGUAGE GADTs #-}
+
 module ScenarioComputation.App ( runScenarioComputationHandler) where
 
 import qualified Control.Monad             as Monad
@@ -6,6 +8,7 @@ import qualified Control.Monad.Reader      as Reader
 import qualified Control.Monad.State.Lazy  as State
 import           Data.Function             ((&))
 import           Data.Functor              ((<&>))
+import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
 
 import           Env
@@ -77,26 +80,35 @@ runHttpScene
   -> TemplatedRequestComputationInput
   -> m (SceneOutput, ScenarioVars)
 runHttpScene environmentVars scenarioGlobalVars scene sceneHttpInput =
-  case State.runState (runHttpPrescript (_scenePrescript scene) Nothing) (scenarioGlobalVars, Map.empty) of
-    (Just scriptException, (newGlobalVars, _)) ->
+  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene scenarioGlobalVars) of
+    (Just scriptException, scriptContextAfterPrescript) ->
       return ( buildSceneOutput scene (PrescriptFailed scriptException)
-             , newGlobalVars
+             , (globalVars scriptContextAfterPrescript)
              )
 
-    (Nothing, (newGlobalVars, newLocalVars)) -> do
-      runRequestComputationWithScenarioContext sceneHttpInput environmentVars newGlobalVars newLocalVars >>= \case
+    (Nothing, scriptContextAfterPrescript) -> do
+      runRequestComputationWithScenarioContext sceneHttpInput environmentVars (globalVars scriptContextAfterPrescript) (localVars scriptContextAfterPrescript) >>= \case
         Left error ->
-          return (buildSceneOutput scene (HttpSceneFailed error), newGlobalVars)
+          return (buildSceneOutput scene (HttpSceneFailed error), (globalVars scriptContextAfterPrescript))
 
         Right httpComputation ->
-          case State.runState (runHttpPostscript (_scenePostscript scene) Nothing) (newGlobalVars, Map.empty, httpComputation) of
+          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene httpComputation) (globalVars scriptContextAfterPrescript)) of
             (Just scriptException, _) ->
               return ( buildSceneOutput scene (HttpPostscriptFailed httpComputation scriptException)
-                     , newGlobalVars
+                     , globalVars scriptContextAfterPrescript
                      )
 
-            (Nothing, (scenarioGlobalVarsAfterPostscript, _, _)) ->
-              return (buildSceneOutput scene (HttpSceneOk httpComputation), scenarioGlobalVarsAfterPostscript)
+            (Nothing, scriptContextAfterPostscript) ->
+              return (buildSceneOutput scene (HttpSceneOk httpComputation)
+                     , (globalVars scriptContextAfterPostscript)
+                     )
+  where
+    mkScriptContext :: Context a -> ScenarioVars -> ScriptContext a
+    mkScriptContext context globalVars =
+      ScriptContext { globalVars = globalVars
+                    , localVars = Map.empty
+                    , context = context
+                    }
 
 
 -- ** pg
@@ -112,377 +124,275 @@ runPgScene
   -> PgComputationInput
   -> m (SceneOutput, ScenarioVars)
 runPgScene environmentVars scenarioGlobalVars scene scenePgInput =
-  case State.runState (runPgPrescript (_scenePrescript scene) Nothing) (scenarioGlobalVars, Map.empty) of
-    (Just scriptException, (newGlobalVars, _)) ->
+  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene scenarioGlobalVars) of
+    (Just scriptException, scriptContextAfterPrescript) ->
       return ( buildSceneOutput scene (PrescriptFailed scriptException)
-             , newGlobalVars
+             , (globalVars scriptContextAfterPrescript)
              )
 
-    (Nothing, (newGlobalVars, newLocalVars)) -> do
-      runPgComputationWithScenarioContext scenePgInput environmentVars newGlobalVars newLocalVars >>= \case
+    (Nothing, scriptContextAfterPrescript) -> do
+      runPgComputationWithScenarioContext scenePgInput environmentVars (globalVars scriptContextAfterPrescript) (localVars scriptContextAfterPrescript) >>= \case
         Left error ->
-          return (buildSceneOutput scene (PgSceneFailed error), newGlobalVars)
+          return (buildSceneOutput scene (PgSceneFailed error), (globalVars scriptContextAfterPrescript))
 
         Right pgComputation ->
-          case State.runState (runPgPostscript (_scenePostscript scene) Nothing) (newGlobalVars, Map.empty, pgComputation) of
+          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene pgComputation) (globalVars scriptContextAfterPrescript)) of
             (Just scriptException, _) ->
               return ( buildSceneOutput scene (PgPostscriptFailed pgComputation scriptException)
-                     , newGlobalVars
+                     , globalVars scriptContextAfterPrescript
                      )
 
-            (Nothing, (scenarioGlobalVarsAfterPostscript, _, _)) ->
-              return (buildSceneOutput scene (PgSceneOk pgComputation), scenarioGlobalVarsAfterPostscript)
+            (Nothing, scriptContextAfterPostscript) ->
+              return (buildSceneOutput scene (PgSceneOk pgComputation)
+                     , (globalVars scriptContextAfterPostscript)
+                     )
+  where
+    mkScriptContext :: Context a -> ScenarioVars -> ScriptContext a
+    mkScriptContext context globalVars =
+      ScriptContext { globalVars = globalVars
+                    , localVars = Map.empty
+                    , context = context
+                    }
 
+-- * script
 
--- * prescript
-
-
-runHttpPrescript :: TangoAst -> Maybe ScriptException -> State.State (ScenarioVars, ScenarioVars) (Maybe ScriptException)
-runHttpPrescript procs = \case
+runScript
+  :: TangoAst
+  -> Maybe ScriptException
+  -> State.State (ScriptContext a) (Maybe ScriptException)
+runScript procs = \case
   exception@(Just _) -> return exception
   Nothing ->
     case procs of
       [] -> return Nothing
       proc : xs ->
-        runHttpPrescriptProc proc >>= runHttpPrescript xs
-
-runPgPrescript :: TangoAst -> Maybe ScriptException -> State.State (ScenarioVars, ScenarioVars) (Maybe ScriptException)
-runPgPrescript procs = \case
-  exception@(Just _) -> return exception
-  Nothing ->
-    case procs of
-      [] -> return Nothing
-      proc : xs ->
-        runPgPrescriptProc proc >>= runPgPrescript xs
+        runProc proc >>= runScript xs
 
 
--- ** proc
+-- * proc
 
 
--- *** http
-
-
-runHttpPrescriptProc
-  :: Proc
-  -> State.State (ScenarioVars, ScenarioVars) (Maybe ScriptException)
-runHttpPrescriptProc = \case
+runProc :: Proc -> State.State (ScriptContext a) (Maybe ScriptException)
+runProc = \case
   AssertEqual expr1 expr2 -> do
-    ex1 <- runHttpPrescriptExpr expr1
-    ex2 <- runHttpPrescriptExpr expr2
+    ex1 <- reduceExprToPrimitive expr1
+    ex2 <- reduceExprToPrimitive expr2
     case (ex1, ex2) of
-        (Right a, Right b) ->
-          case a == b of
-            True  -> return Nothing
-            False -> return $ Just (AssertEqualFailed a b)
+      (Right a, Right b) ->
+        case a == b of
+          True  -> return $ Nothing
+          False -> return $ Just (AssertEqualFailed a b)
 
-        (Left s, _) ->
-          return $ Just s
+      (Left s, _) ->
+        return $ Just s
 
-        (_, Left s) ->
-          return $ Just s
+      (_, Left s) ->
+        return $ Just s
 
   Let var expr -> do
-    ex <- runHttpPrescriptExpr expr
+    ex <- reduceExprToPrimitive expr
     case ex of
       Left s -> return $ Just s
       Right newExpr -> do
-        (globalVars, localVars) <- State.get
-        let newLocalVars = Map.insert var newExpr localVars
-        State.put (globalVars, newLocalVars)
+        scriptContext <- State.get
+        let newLocalVars = Map.insert var newExpr (localVars scriptContext)
+        State.put (scriptContext { localVars = newLocalVars })
         return Nothing
 
   Set var expr -> do
-    ex <- runHttpPrescriptExpr expr
+    ex <- reduceExprToPrimitive expr
     case ex of
       Left s -> return $ Just s
       Right newExpr -> do
-        (globalVars, localVars) <- State.get
-        let newGlobalVars = Map.insert var newExpr globalVars
-        State.put (newGlobalVars, localVars)
+        scriptContext <- State.get
+        let newGlobalVars = Map.insert var newExpr (globalVars scriptContext)
+        State.put (scriptContext { globalVars = newGlobalVars })
         return Nothing
 
 
--- *** pg
+-- * expr
 
 
-runPgPrescriptProc
-  :: Proc
-  -> State.State (ScenarioVars, ScenarioVars) (Maybe ScriptException)
-runPgPrescriptProc = \case
-  AssertEqual expr1 expr2 -> do
-    ex1 <- runPgPrescriptExpr expr1
-    ex2 <- runPgPrescriptExpr expr2
-    case (ex1, ex2) of
-        (Right a, Right b) ->
-          case a == b of
-            True  -> return Nothing
-            False -> return $ Just (AssertEqualFailed a b)
+fromTableToSimpleList :: [Row] -> Expr
+fromTableToSimpleList rows =
+  LList $ map rowToExpr rows
+  where
+    rowToExpr :: Row -> Expr
+    rowToExpr (Row row) =
+      LList $ map pgValueToExpr row
 
-        (Left s, _) ->
-          return $ Just s
+    pgValueToExpr :: (String, PgValue) -> Expr
+    pgValueToExpr (_, pgValue) = case pgValue of
+      PgString x -> LString x
+      PgInt x    -> LInt x
+      PgFloat x  -> LFloat x
+      PgBool x   -> LBool x
+      PgNull     -> LNull
 
-        (_, Left s) ->
-          return $ Just s
+fromTableToRichList :: [Row] -> Expr
+fromTableToRichList rows =
+  LList $ map rowToExpr rows
+  where
+    rowToExpr :: Row -> Expr
+    rowToExpr (Row row) =
+      LList $ map pgValueToExpr row
 
-  Let var expr -> do
-    ex <- runPgPrescriptExpr expr
-    case ex of
-      Left s -> return $ Just s
-      Right newExpr -> do
-        (globalVars, localVars) <- State.get
-        let newLocalVars = Map.insert var newExpr localVars
-        State.put (globalVars, newLocalVars)
-        return Nothing
-
-  Set var expr -> do
-    ex <- runPgPrescriptExpr expr
-    case ex of
-      Left s -> return $ Just s
-      Right newExpr -> do
-        (globalVars, localVars) <- State.get
-        let newGlobalVars = Map.insert var newExpr globalVars
-        State.put (newGlobalVars, localVars)
-        return Nothing
+    pgValueToExpr :: (String, PgValue) -> Expr
+    pgValueToExpr (name, pgValue) = case pgValue of
+      PgString x -> LRowElem(name, LString x)
+      PgInt x    -> LRowElem(name, LInt x)
+      PgFloat x  -> LRowElem(name, LFloat x)
+      PgBool x   -> LRowElem(name, LBool x)
+      PgNull     -> LRowElem(name, LNull)
 
 
--- ** expr
+-- * context
 
 
--- *** http
+data Context a where
+  PreScene :: Context a
+  PostScene :: ToPrimitive a => a -> Context a
 
 
-runHttpPrescriptExpr :: Expr -> State.State (ScenarioVars, ScenarioVars) (Either ScriptException Expr)
-runHttpPrescriptExpr = \case
-  var@(Var str) -> do
-    localVars <- State.get <&> snd
-    Map.lookup str localVars & \case
-      Nothing -> return $ Left $ UnknownVariable var
+-- * primitive
+
+
+class ToPrimitive a where
+  getBody :: a -> Either ScriptException Expr
+  getStatus :: a -> Either ScriptException Expr
+  getSimpleTable :: a -> Either ScriptException Expr
+  getRichTable :: a -> Either ScriptException Expr
+
+
+-- ** reduce to primite
+
+
+{-
+  Expr is a recursive type.
+  This function make sure an Expr is reduced to its limit so it cannot be recursive anymore
+  eg:
+    - LEq (LInt 1) (LInt 2) => LBool False
+    - LAccessOp (LList [LInt 1, LInt 2]) (LInt 0) => LInt 1
+    - LHttpResponseStatus => LInt theHttpStatus (if available)
+    ...
+-}
+reduceExprToPrimitive
+  :: Expr
+  -> State.State (ScriptContext a) (Either ScriptException Expr)
+reduceExprToPrimitive = \case
+  LHttpResponseStatus -> do
+    context <- State.get <&> context
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseStatus in a prescript"
+      PostScene result -> return $ getStatus result
+
+  LHttpResponseBodyAsString -> do
+    context <- State.get <&> context
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseBodyAsString in a prescript"
+      PostScene result -> return $ getBody result
+
+  LPgSimpleResponse -> do
+    context <- State.get <&> context
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
+      PostScene result -> return $ getSimpleTable result
+
+  LPgRichResponse -> do
+    context <- State.get <&> context
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
+      PostScene result -> return $ getRichTable result
+
+  LEq e1 e2 -> do
+    b1 <- reduceExprToPrimitive e1
+    b2 <- reduceExprToPrimitive e2
+    return $ Right $ LBool (b1 == b2)
+
+  lvar@(LVar var) -> do
+    mValue <- State.get <&> localVars <&> Map.lookup var
+    case mValue of
+      Nothing   -> return $ Left $ UnknownVariable lvar
       Just expr -> return $ Right expr
 
-  var@(Fetch str) -> do
-    globalVars <- State.get <&> fst
-    Map.lookup str globalVars & \case
-      Nothing -> return $ Left $ UnknownVariable var
+  lfetch@(LFetch var) -> do
+    mValue <- State.get <&> globalVars <&> Map.lookup var
+    case mValue of
+      Nothing   -> return $ Left $ UnknownVariable lfetch
       Just expr -> return $ Right expr
 
-  HttpResponseBodyAsString ->
-    return $ Left $ CannotUseFunction "You can't use `httpResponseBodyAsString` in a prescript"
+  LAccessOp ex1 ex2 -> do
+    e1 <- reduceExprToPrimitive ex1
+    e2 <- reduceExprToPrimitive ex2
+    case (e1, e2) of
+      (Right (LList list), Right (LInt index)) ->
+        case getAtIndex list index of
+          Just expr -> return $ Right expr
+          Nothing   -> return $ Left AccessOutOfBound
 
-  Eq e1 e2 ->
-    return $ Right $ LBool (e1 == e2)
+      (Right (LList list), Right (LString index)) ->
+        case getAtKey list index of
+          error@(Left x) -> return $ Left x
+          Right Nothing  -> return $ Right LNull
+          Right (Just e) -> return $ Right e
 
-  Add _ _ ->
-    return $ Left $ CannotUseFunction "not implemented yet"
+      _ ->
+        undefined
 
-  HttpResponseStatus ->
-    return $ Left $ CannotUseFunction "You can't use `httpResponseStatus` in a prescript"
-
-  PgResponseAsTable ->
-    return $ Left $ CannotUseFunction "You can't use `pgResponseAsTable` in a prescript"
-
-  rest ->
-    return $ Right rest
-
-
--- *** pg
-
-
-runPgPrescriptExpr :: Expr -> State.State (ScenarioVars, ScenarioVars) (Either ScriptException Expr)
-runPgPrescriptExpr = runHttpPrescriptExpr
+  e ->
+    return $ Right e
 
 
--- * postscript
+-- ** request computation
 
 
-runHttpPostscript :: TangoAst -> Maybe ScriptException -> State.State (ScenarioVars, ScenarioVars, RequestComputation) (Maybe ScriptException)
-runHttpPostscript procs = \case
-  exception@(Just _) -> return exception
-  Nothing ->
-    case procs of
-      [] -> return Nothing
-      proc : xs ->
-        runHttpPostscriptProc proc >>= runHttpPostscript xs
+instance ToPrimitive RequestComputation where
+  getBody RequestComputation {..} =
+    Right $ LString _requestComputationBody
 
-runPgPostscript :: TangoAst -> Maybe ScriptException -> State.State (ScenarioVars, ScenarioVars, PgComputation) (Maybe ScriptException)
-runPgPostscript procs = \case
-  exception@(Just _) -> return exception
-  Nothing ->
-    case procs of
-      [] -> return Nothing
-      proc : xs ->
-        runPgPostscriptProc proc >>= runPgPostscript xs
+  getStatus RequestComputation {..} =
+    Right $ LInt _requestComputationStatusCode
+
+  getSimpleTable _ =
+    Left $ CannotUseFunction "function not available for http request"
+
+  getRichTable _ =
+    Left $ CannotUseFunction "function not available for http request"
 
 
--- ** proc
--- *** http
+-- ** pg computation
 
 
-runHttpPostscriptProc
-  :: Proc
-  -> State.State (ScenarioVars, ScenarioVars, RequestComputation) (Maybe ScriptException)
-runHttpPostscriptProc = \case
-  AssertEqual expr1 expr2 -> do
-    ex1 <- runHttpPostscriptExpr expr1
-    ex2 <- runHttpPostscriptExpr expr2
-    case (ex1, ex2) of
-        (Right a, Right b) ->
-          case a == b of
-            True  -> return Nothing
-            False -> return $ Just (AssertEqualFailed a b)
+instance ToPrimitive PgComputation where
+  getBody _ =
+    Left $ CannotUseFunction "not available for pg query"
 
-        (Left s, _) ->
-          return $ Just s
+  getStatus _ =
+    Left $ CannotUseFunction "not available for pg query"
 
-        (_, Left s) ->
-          return $ Just s
+  getSimpleTable = \case
+    PgCommandOK ->
+      Left $ EmptyResponse "empty response"
 
-  Let var expr -> do
-    ex <- runHttpPostscriptExpr expr
-    case ex of
-      Left s -> return $ Just s
-      Right newExpr -> do
-        (globalVars, localVars, reqComp) <- State.get
-        let newLocalVars = Map.insert var newExpr localVars
-        State.put (globalVars, newLocalVars, reqComp)
-        return Nothing
+    PgTuplesOk table ->
+      Right $ fromTableToSimpleList table
 
-  Set var expr -> do
-    ex <- runHttpPostscriptExpr expr
-    case ex of
-      Left s -> return $ Just s
-      Right newExpr -> do
-        (globalVars, localVars, reqComp) <- State.get
-        let newGlobalVars = Map.insert var newExpr globalVars
-        State.put (newGlobalVars, localVars, reqComp)
-        return Nothing
+  getRichTable = \case
+    PgCommandOK ->
+      Left $ EmptyResponse "empty response"
 
--- *** pg
+    PgTuplesOk table ->
+      Right $ fromTableToRichList table
 
 
-runPgPostscriptProc
-  :: Proc
-  -> State.State (ScenarioVars, ScenarioVars, PgComputation) (Maybe ScriptException)
-runPgPostscriptProc = \case
-  AssertEqual expr1 expr2 -> do
-    ex1 <- runPgPostscriptExpr expr1
-    ex2 <- runPgPostscriptExpr expr2
-    case (ex1, ex2) of
-        (Right a, Right b) ->
-          case a == b of
-            True  -> return Nothing
-            False -> return $ Just (AssertEqualFailed a b)
-
-        (Left s, _) ->
-          return $ Just s
-
-        (_, Left s) ->
-          return $ Just s
-
-  Let var expr -> do
-    ex <- runPgPostscriptExpr expr
-    case ex of
-      Left s -> return $ Just s
-      Right newExpr -> do
-        (globalVars, localVars, pgComp) <- State.get
-        let newLocalVars = Map.insert var newExpr localVars
-        State.put (globalVars, newLocalVars, pgComp)
-        return Nothing
-
-  Set var expr -> do
-    ex <- runPgPostscriptExpr expr
-    case ex of
-      Left s -> return $ Just s
-      Right newExpr -> do
-        (globalVars, localVars, pgComp) <- State.get
-        let newGlobalVars = Map.insert var newExpr globalVars
-        State.put (newGlobalVars, localVars, pgComp)
-        return Nothing
+-- * script context
 
 
-
--- ** expr
-
-
--- *** http
-
-
-runHttpPostscriptExpr :: Expr -> State.State (ScenarioVars, ScenarioVars, RequestComputation) (Either ScriptException Expr)
-runHttpPostscriptExpr = \case
-  var@(Var str) -> do
-    (_, localVars, _) <- State.get
-    Map.lookup str localVars & \case
-      Nothing -> return $ Left $ UnknownVariable var
-      Just expr -> return $ Right expr
-
-  var@(Fetch str) -> do
-    (globalVars, _, _) <- State.get
-    Map.lookup str globalVars & \case
-      Nothing -> return $ Left $ UnknownVariable var
-      Just expr -> return $ Right expr
-
-  Eq e1 e2 ->
-    return $ Right $ LBool (e1 == e2)
-
-  Add _ _ ->
-    return $ Left $ CannotUseFunction "not implemented yet"
-
-  HttpResponseBodyAsString -> do
-    (_, _, RequestComputation {..})<- State.get
-    return $ Right $ LString _requestComputationBody
-
-  HttpResponseStatus -> do
-    (_, _, RequestComputation {..})<- State.get
-    return $ Right $ LInt _requestComputationStatusCode
-
-  PgResponseAsTable ->
-    return $ Left $ CannotUseFunction "You can't use `pgResponseAsTable` in an http postscript "
-
-  rest ->
-    return $ Right rest
-
-
--- *** pg
-
-
-runPgPostscriptExpr :: Expr -> State.State (ScenarioVars, ScenarioVars, PgComputation) (Either ScriptException Expr)
-runPgPostscriptExpr = \case
-  var@(Var str) -> do
-    (_, localVars, _) <- State.get
-    Map.lookup str localVars & \case
-      Nothing -> return $ Left $ UnknownVariable var
-      Just expr -> return $ Right expr
-
-  var@(Fetch str) -> do
-    (globalVars, _, _) <- State.get
-    Map.lookup str globalVars & \case
-      Nothing -> return $ Left $ UnknownVariable var
-      Just expr -> return $ Right expr
-
-  Eq e1 e2 ->
-    return $ Right $ LBool (e1 == e2)
-
-  Add _ _ ->
-    return $ Left $ CannotUseFunction "not implemented yet"
-
-  HttpResponseBodyAsString ->
-    return $ Left $ CannotUseFunction "You can't use `httpResponseBodyAsString` in an pg postscript "
-
-  HttpResponseStatus ->
-    return $ Left $ CannotUseFunction "You can't use `httpResponseStatus` in an pg postscript "
-
-  PgResponseAsTable -> do
-    (_, _, pgComputation) <- State.get
-    case pgComputation of
-      PgCommandOK ->
-        return $ Left $ EmptyResponse "postgresql query didn't return any data"
-      PgTuplesOk table ->
-        return $ Right $ fromTableToList table
-
-  rest ->
-    return $ Right rest
-
-
--- * util
+data ScriptContext a =
+  ScriptContext { globalVars :: ScenarioVars
+                , localVars  :: ScenarioVars
+                , context    :: Context a
+                }
 
 
 buildSceneOutput :: SceneFile -> SceneComputation -> SceneOutput
@@ -492,18 +402,31 @@ buildSceneOutput scene sceneComputationOutput =
               , _outputSceneComputation = sceneComputationOutput
               }
 
-fromTableToList :: Table -> Expr
-fromTableToList (Table columns) =
-  EList $ map columnToList columns
-  where
-    columnToList :: Column -> Expr
-    columnToList (Column _ pgValues) =
-      EList $ map pgValueToExpr pgValues
+-- * util
 
-    pgValueToExpr :: PgValue -> Expr
-    pgValueToExpr = \case
-      PgString x -> LString x
-      PgInt x -> LInt x
-      PgFloat x -> LFloat x
-      PgBool x -> LBool x
-      PgNull -> LNull
+
+getAtIndex :: [a] -> Int -> Maybe a
+getAtIndex list index =
+  case (list, index) of
+    ([], _)      -> Nothing
+    (x : xs, 0) -> Just x
+    (_ : xs, n) ->
+      case n < 0 of
+        True  -> Nothing
+        False -> getAtIndex xs (n - 1)
+
+getAtKey :: [Expr] -> String -> Either ScriptException (Maybe Expr)
+getAtKey list index =
+  List.foldl' folder (Right Nothing) list
+  where
+    folder :: Either ScriptException (Maybe Expr) -> Expr -> Either ScriptException (Maybe Expr)
+    folder acc expr =
+      case acc of
+        Left exception -> Left exception
+        ok@(Right (Just _)) -> ok
+        Right Nothing -> case expr of
+          LRowElem (key, value) -> case key == index of
+            True  -> Right $ Just value
+            False -> Right $ Nothing
+
+          e -> Left $ CantAccessElem e

@@ -48,10 +48,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "a" [ PgInt 1 ]
-                                         , Column "b" [ PgInt 1 ]
-                                         , Column "c" [ PgInt 1 ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("a", PgInt 1), ("b", PgInt 1), ("c", PgInt 1) ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns reals" $ \clientEnv -> do
@@ -63,11 +61,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "a" [ PgFloat 12.345 ]
-                                         , Column "b" [ PgFloat 12.345 ]
-                                         , Column "c" [ PgFloat 12.345 ]
-                                         , Column "d" [ PgFloat 12.345 ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("a", PgFloat 12.345), ("b", PgFloat 12.345), ("c", PgFloat 12.345), ("d", PgFloat 12.345) ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
 
@@ -80,10 +75,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "a" [ PgString "coucou" ]
-                                         , Column "b" [ PgString "coucou" ]
-                                         , Column "c" [ PgString "coucou" ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("a", PgString "coucou"), ("b", PgString "coucou"), ("c", PgString "coucou") ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns null" $ \clientEnv -> do
@@ -95,8 +88,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "null" [ PgNull ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("null", PgNull) ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns bool" $ \clientEnv -> do
@@ -108,7 +101,7 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "bool" [ PgBool True ] ]
+              Right $ PgTuplesOk [ Row [ ("bool", PgBool True) ] ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns tables" $ \clientEnv -> do
@@ -120,9 +113,9 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "a" [ PgInt 1, PgInt 3 ]
-                                         , Column "b" [ PgInt 2, PgInt 4 ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("a", PgInt 1), ("b", PgInt 2) ]
+                                 , Row [ ("a", PgInt 3), ("b", PgInt 4) ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns array as string" $ \clientEnv -> do
@@ -133,7 +126,8 @@ spec = do
                 [Sentence "select ARRAY[1,2]::integer array;"]
                 validPgConnection
             )
-        let output = Right $ PgTuplesOk $ Table [ Column "array" [ PgString "{1,2}" ] ]
+        let output = Right $ PgTuplesOk [ Row [ ("array", PgString "{1,2}") ]
+                                        ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "returns tuples as string" $ \clientEnv -> do
@@ -144,7 +138,8 @@ spec = do
                 [Sentence "select (1,2);"]
                 validPgConnection
             )
-        let output = Right $ PgTuplesOk $ Table [ Column "row" [ PgString "(1,2)" ] ]
+        let output = Right $ PgTuplesOk [ Row [ ("row", PgString "(1,2)") ]
+                                        ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
 
@@ -172,9 +167,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "firstname" [ PgString "a" ]
-                                         , Column "lastname" [ PgString "b" ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("firstname", PgString "a"), ("lastname", PgString "b") ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "updates" $ \clientEnv -> do
@@ -215,7 +209,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "?column?" [ PgString "John" ] ]
+              Right $ PgTuplesOk [ Row [ ("?column?", PgString "John") ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "sustitute multiple vars" $ \clientEnv -> do
@@ -234,9 +229,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
-                                         , Column "?column?" [ PgString "Doe"  ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("?column?", PgString "John"), ("?column?", PgString "Doe") ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
       it "works when var doesn't exist" $ \clientEnv -> do
@@ -254,9 +248,8 @@ spec = do
                 validPgConnection
             )
         let output =
-              Right $ PgTuplesOk $ Table [ Column "?column?" [ PgString "John"  ]
-                                         , Column "?column?" [ PgString "{{lastname}}"  ]
-                                         ]
+              Right $ PgTuplesOk [ Row [ ("?column?", PgString "John"), ("?column?", PgString "{{lastname}}") ]
+                                 ]
         try clientEnv (runPgSqlComputation input) `shouldReturn` output
 
 -- ** invalid query

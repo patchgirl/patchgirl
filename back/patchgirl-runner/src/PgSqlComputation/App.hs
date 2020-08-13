@@ -89,28 +89,26 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
 -- * to table
 
 
-resultToTable :: LibPQ.Result -> IO (Either PgError Table)
+resultToTable :: LibPQ.Result -> IO (Either PgError [Row])
 resultToTable result = do
   columnSize <- LibPQ.nfields result <&> \c -> c - 1
   rowSize <- LibPQ.ntuples result <&> \r -> r - 1
-  eColumns :: Either PgError [Column] <- Monad.forM [0..columnSize] (buildColumn rowSize) <&> Traversable.sequence
-  return $ eColumns <&> Table
+  Monad.forM [0..rowSize] (buildRow columnSize) <&> Traversable.sequence
   where
-    buildColumn :: LibPQ.Row -> LibPQ.Column -> IO (Either PgError Column)
-    buildColumn rowSize columnIndex = do
+    buildRow :: LibPQ.Column -> LibPQ.Row -> IO (Either PgError Row)
+    buildRow columnSize rowIndex = do
+      row <- Monad.forM [0..columnSize] (buildElem rowIndex) <&> Traversable.sequence
+      return $ fmap Row row
+
+    buildElem :: LibPQ.Row -> LibPQ.Column -> IO (Either PgError (String, PgValue))
+    buildElem rowIndex columnIndex = do
       (mColumName, oid) <- columnInfo result columnIndex
       let columnName = Maybe.fromMaybe "" mColumName
-      rows :: Either PgError [PgValue] <- Traversable.forM [0..rowSize] (buildRow oid columnIndex) <&> Traversable.sequence
-      case rows of
-        Left error     -> return $ Left error
-        Right pgValues -> return $ Right $ Column columnName pgValues
-
-    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO (Either PgError PgValue)
-    buildRow oid columnIndex rowIndex = do
       mValue <- LibPQ.getvalue result rowIndex columnIndex
-      case mValue of
-        Nothing -> return $ Right PgNull
-        Just bs -> return $ BSU.toString bs & convertPgRawValueToPgValue oid
+      return $ case mValue of
+        Nothing -> Right (columnName, PgNull)
+        Just bs ->
+          BSU.toString bs & convertPgRawValueToPgValue oid <&> \pgValue -> (columnName, pgValue)
 
     columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
     columnInfo result columnIndex = do
