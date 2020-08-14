@@ -12,6 +12,7 @@
 - ignore: {name: "Reduce duplication"}
 - ignore: {name: "Use tuple-section"}
 - ignore: {name: "Redundant do"}
+- ignore: {name : "Redundant <&>"}
 #- ignore: {name: "Use fewer imports"}
 #- ignore: {name: "Unused LANGUAGE pragma"}
 #- ignore: {name: "Use newtype instead of data"}

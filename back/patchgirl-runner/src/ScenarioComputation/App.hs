@@ -1,12 +1,9 @@
-{-# LANGUAGE GADTs #-}
-
 module ScenarioComputation.App ( runScenarioComputationHandler) where
 
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.IO.Class    as IO
 import qualified Control.Monad.Reader      as Reader
 import qualified Control.Monad.State.Lazy  as State
-import           Data.Function             ((&))
 import           Data.Functor              ((<&>))
 import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
@@ -34,7 +31,9 @@ runScenarioComputationHandler ScenarioInput{..} =
   Monad.foldM (buildScenes _scenarioInputEnvVars) (Map.empty, []) _scenarioInputScenes <&> ScenarioOutput . snd
   where
     buildScenes
-      :: (Reader.MonadReader Env m, IO.MonadIO m)
+      :: ( Reader.MonadReader Env m
+         , IO.MonadIO m
+         )
       => EnvironmentVars
       -> (ScenarioVars, [SceneOutput])
       -> SceneFile
@@ -80,32 +79,35 @@ runHttpScene
   -> TemplatedRequestComputationInput
   -> m (SceneOutput, ScenarioVars)
 runHttpScene environmentVars scenarioGlobalVars scene sceneHttpInput =
-  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene scenarioGlobalVars) of
+  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene environmentVars scenarioGlobalVars) of
     (Just scriptException, scriptContextAfterPrescript) ->
       return ( buildSceneOutput scene (PrescriptFailed scriptException)
-             , (globalVars scriptContextAfterPrescript)
+             , globalVars scriptContextAfterPrescript
              )
 
     (Nothing, scriptContextAfterPrescript) -> do
       runRequestComputationWithScenarioContext sceneHttpInput environmentVars (globalVars scriptContextAfterPrescript) (localVars scriptContextAfterPrescript) >>= \case
         Left error ->
-          return (buildSceneOutput scene (HttpSceneFailed error), (globalVars scriptContextAfterPrescript))
+          return ( buildSceneOutput scene (HttpSceneFailed error)
+                 , globalVars scriptContextAfterPrescript
+                 )
 
         Right httpComputation ->
-          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene httpComputation) (globalVars scriptContextAfterPrescript)) of
+          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene httpComputation) environmentVars (globalVars scriptContextAfterPrescript)) of
             (Just scriptException, _) ->
               return ( buildSceneOutput scene (HttpPostscriptFailed httpComputation scriptException)
                      , globalVars scriptContextAfterPrescript
                      )
 
             (Nothing, scriptContextAfterPostscript) ->
-              return (buildSceneOutput scene (HttpSceneOk httpComputation)
-                     , (globalVars scriptContextAfterPostscript)
+              return ( buildSceneOutput scene (HttpSceneOk httpComputation)
+                     , globalVars scriptContextAfterPostscript
                      )
   where
-    mkScriptContext :: Context a -> ScenarioVars -> ScriptContext a
-    mkScriptContext context globalVars =
-      ScriptContext { globalVars = globalVars
+    mkScriptContext :: Context a -> EnvironmentVars -> ScenarioVars -> ScriptContext a
+    mkScriptContext context environmentVars globalVars =
+      ScriptContext { environmentVars = environmentVars
+                    , globalVars = globalVars
                     , localVars = Map.empty
                     , context = context
                     }
@@ -124,49 +126,53 @@ runPgScene
   -> PgComputationInput
   -> m (SceneOutput, ScenarioVars)
 runPgScene environmentVars scenarioGlobalVars scene scenePgInput =
-  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene scenarioGlobalVars) of
+  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene environmentVars scenarioGlobalVars) of
     (Just scriptException, scriptContextAfterPrescript) ->
       return ( buildSceneOutput scene (PrescriptFailed scriptException)
-             , (globalVars scriptContextAfterPrescript)
+             , globalVars scriptContextAfterPrescript
              )
 
     (Nothing, scriptContextAfterPrescript) -> do
       runPgComputationWithScenarioContext scenePgInput environmentVars (globalVars scriptContextAfterPrescript) (localVars scriptContextAfterPrescript) >>= \case
         Left error ->
-          return (buildSceneOutput scene (PgSceneFailed error), (globalVars scriptContextAfterPrescript))
+          return ( buildSceneOutput scene (PgSceneFailed error)
+                 , globalVars scriptContextAfterPrescript
+                 )
 
         Right pgComputation ->
-          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene pgComputation) (globalVars scriptContextAfterPrescript)) of
+          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene pgComputation) environmentVars (globalVars scriptContextAfterPrescript)) of
             (Just scriptException, _) ->
               return ( buildSceneOutput scene (PgPostscriptFailed pgComputation scriptException)
                      , globalVars scriptContextAfterPrescript
                      )
 
             (Nothing, scriptContextAfterPostscript) ->
-              return (buildSceneOutput scene (PgSceneOk pgComputation)
-                     , (globalVars scriptContextAfterPostscript)
+              return ( buildSceneOutput scene (PgSceneOk pgComputation)
+                     , globalVars scriptContextAfterPostscript
                      )
   where
-    mkScriptContext :: Context a -> ScenarioVars -> ScriptContext a
-    mkScriptContext context globalVars =
-      ScriptContext { globalVars = globalVars
+    mkScriptContext :: Context a -> EnvironmentVars -> ScenarioVars -> ScriptContext a
+    mkScriptContext context environmentVars globalVars =
+      ScriptContext { environmentVars = environmentVars
+                    , globalVars = globalVars
                     , localVars = Map.empty
                     , context = context
                     }
 
 -- * script
 
+
 runScript
   :: TangoAst
   -> Maybe ScriptException
   -> State.State (ScriptContext a) (Maybe ScriptException)
 runScript procs = \case
-  exception@(Just _) -> return exception
   Nothing ->
     case procs of
       [] -> return Nothing
       proc : xs ->
         runProc proc >>= runScript xs
+  exception -> return exception
 
 
 -- * proc
@@ -180,7 +186,7 @@ runProc = \case
     case (ex1, ex2) of
       (Right a, Right b) ->
         case a == b of
-          True  -> return $ Nothing
+          True  -> return Nothing
           False -> return $ Just (AssertEqualFailed a b)
 
       (Left s, _) ->
@@ -210,61 +216,7 @@ runProc = \case
         return Nothing
 
 
--- * expr
-
-
-fromTableToSimpleList :: [Row] -> Expr
-fromTableToSimpleList rows =
-  LList $ map rowToExpr rows
-  where
-    rowToExpr :: Row -> Expr
-    rowToExpr (Row row) =
-      LList $ map pgValueToExpr row
-
-    pgValueToExpr :: (String, PgValue) -> Expr
-    pgValueToExpr (_, pgValue) = case pgValue of
-      PgString x -> LString x
-      PgInt x    -> LInt x
-      PgFloat x  -> LFloat x
-      PgBool x   -> LBool x
-      PgNull     -> LNull
-
-fromTableToRichList :: [Row] -> Expr
-fromTableToRichList rows =
-  LList $ map rowToExpr rows
-  where
-    rowToExpr :: Row -> Expr
-    rowToExpr (Row row) =
-      LList $ map pgValueToExpr row
-
-    pgValueToExpr :: (String, PgValue) -> Expr
-    pgValueToExpr (name, pgValue) = case pgValue of
-      PgString x -> LRowElem(name, LString x)
-      PgInt x    -> LRowElem(name, LInt x)
-      PgFloat x  -> LRowElem(name, LFloat x)
-      PgBool x   -> LRowElem(name, LBool x)
-      PgNull     -> LRowElem(name, LNull)
-
-
--- * context
-
-
-data Context a where
-  PreScene :: Context a
-  PostScene :: ToPrimitive a => a -> Context a
-
-
--- * primitive
-
-
-class ToPrimitive a where
-  getBody :: a -> Either ScriptException Expr
-  getStatus :: a -> Either ScriptException Expr
-  getSimpleTable :: a -> Either ScriptException Expr
-  getRichTable :: a -> Either ScriptException Expr
-
-
--- ** reduce to primite
+-- * reduce to primitive
 
 
 {-
@@ -280,6 +232,11 @@ reduceExprToPrimitive
   :: Expr
   -> State.State (ScriptContext a) (Either ScriptException Expr)
 reduceExprToPrimitive = \case
+  LList exprs -> do
+    Monad.mapM reduceExprToPrimitive exprs <&> Monad.sequence >>= \case
+      Right reducedExprs -> return $ Right $ LList reducedExprs
+      Left s -> return $ Left s
+
   LHttpResponseStatus -> do
     context <- State.get <&> context
     case context of
@@ -332,101 +289,45 @@ reduceExprToPrimitive = \case
 
       (Right (LList list), Right (LString index)) ->
         case getAtKey list index of
-          error@(Left x) -> return $ Left x
           Right Nothing  -> return $ Right LNull
           Right (Just e) -> return $ Right e
+          Left x         -> return $ Left x
 
-      _ ->
-        undefined
+      (Right e, Right o) ->
+        return $ Left $ CantAccessElem e o
+
+      (Left other, _) ->
+        return $ Left other
+
+      (_, Left other) ->
+        return $ Left other
 
   e ->
     return $ Right e
 
-
--- ** request computation
-
-
-instance ToPrimitive RequestComputation where
-  getBody RequestComputation {..} =
-    Right $ LString _requestComputationBody
-
-  getStatus RequestComputation {..} =
-    Right $ LInt _requestComputationStatusCode
-
-  getSimpleTable _ =
-    Left $ CannotUseFunction "function not available for http request"
-
-  getRichTable _ =
-    Left $ CannotUseFunction "function not available for http request"
-
-
--- ** pg computation
-
-
-instance ToPrimitive PgComputation where
-  getBody _ =
-    Left $ CannotUseFunction "not available for pg query"
-
-  getStatus _ =
-    Left $ CannotUseFunction "not available for pg query"
-
-  getSimpleTable = \case
-    PgCommandOK ->
-      Left $ EmptyResponse "empty response"
-
-    PgTuplesOk table ->
-      Right $ fromTableToSimpleList table
-
-  getRichTable = \case
-    PgCommandOK ->
-      Left $ EmptyResponse "empty response"
-
-    PgTuplesOk table ->
-      Right $ fromTableToRichList table
-
-
--- * script context
-
-
-data ScriptContext a =
-  ScriptContext { globalVars :: ScenarioVars
-                , localVars  :: ScenarioVars
-                , context    :: Context a
-                }
-
-
-buildSceneOutput :: SceneFile -> SceneComputation -> SceneOutput
-buildSceneOutput scene sceneComputationOutput =
-  SceneOutput { _outputSceneId = _sceneId scene
-              , _outputSceneRequestFileNodeId = _sceneFileId scene
-              , _outputSceneComputation = sceneComputationOutput
-              }
-
--- * util
-
-
-getAtIndex :: [a] -> Int -> Maybe a
-getAtIndex list index =
-  case (list, index) of
-    ([], _)      -> Nothing
-    (x : xs, 0) -> Just x
-    (_ : xs, n) ->
-      case n < 0 of
-        True  -> Nothing
-        False -> getAtIndex xs (n - 1)
-
-getAtKey :: [Expr] -> String -> Either ScriptException (Maybe Expr)
-getAtKey list index =
-  List.foldl' folder (Right Nothing) list
   where
-    folder :: Either ScriptException (Maybe Expr) -> Expr -> Either ScriptException (Maybe Expr)
-    folder acc expr =
-      case acc of
-        Left exception -> Left exception
-        ok@(Right (Just _)) -> ok
-        Right Nothing -> case expr of
-          LRowElem (key, value) -> case key == index of
-            True  -> Right $ Just value
-            False -> Right $ Nothing
+    getAtIndex :: [a] -> Int -> Maybe a
+    getAtIndex list index =
+      case (list, index) of
+        ([], _)      -> Nothing
+        (x : _, 0) -> Just x
+        (_ : xs, n) ->
+          case n < 0 of
+            True  -> Nothing
+            False -> getAtIndex xs (n - 1)
 
-          e -> Left $ CantAccessElem e
+    getAtKey :: [Expr] -> String -> Either ScriptException (Maybe Expr)
+    getAtKey list index =
+      List.foldl' folder (Right Nothing) list
+      where
+        folder :: Either ScriptException (Maybe Expr) -> Expr -> Either ScriptException (Maybe Expr)
+        folder acc expr =
+          case acc of
+            Left exception -> Left exception
+            ok@(Right (Just _)) -> ok
+            Right Nothing -> case expr of
+              LRowElem (key, value) -> case key == index of
+                True  -> Right $ Just value
+                False -> Right Nothing
+
+              e -> Left $ CantAccessElem e (LString index)

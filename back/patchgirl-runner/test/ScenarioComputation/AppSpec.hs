@@ -74,7 +74,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
+            [ mkSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -101,8 +101,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
-            , buildSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
+            [ mkSceneOutput $ HttpSceneOk requestComputation
+            , mkSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
             ]
           )
 
@@ -129,8 +129,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
-            , buildSceneOutput SceneNotRun
+            [ mkSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
+            , mkSceneOutput SceneNotRun
             ]
           )
 
@@ -154,7 +154,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PrescriptFailed $ AssertEqualFailed (LString "a") (LString "b")
+            [ mkSceneOutput $ PrescriptFailed $ AssertEqualFailed (LString "a") (LString "b")
             ]
           )
 
@@ -178,7 +178,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PrescriptFailed $ UnknownVariable $ LFetch "unknownVariable"
+            [ mkSceneOutput $ PrescriptFailed $ UnknownVariable $ LFetch "unknownVariable"
             ]
           )
 
@@ -202,7 +202,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
+            [ mkSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -228,8 +228,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
-            , buildSceneOutput $ HttpSceneOk requestComputation
+            [ mkSceneOutput $ HttpSceneOk requestComputation
+            , mkSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -254,7 +254,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk $ requestComputation { _requestComputationBody = "foo" }
+            [ mkSceneOutput $ HttpSceneOk $ requestComputation { _requestComputationBody = "foo" }
             ]
           )
 
@@ -279,7 +279,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertEqualFailed (LString "foo") (LString "bar"))
+            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertEqualFailed (LString "foo") (LString "bar"))
             ]
           )
 
@@ -305,8 +305,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
-            , buildSceneOutput $ HttpSceneOk requestComputation
+            [ mkSceneOutput $ HttpSceneOk requestComputation
+            , mkSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -332,8 +332,8 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ HttpSceneOk requestComputation
-            , buildSceneOutput $ HttpSceneOk requestComputation
+            [ mkSceneOutput $ HttpSceneOk requestComputation
+            , mkSceneOutput $ HttpSceneOk requestComputation
             ]
           )
 
@@ -356,7 +356,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [("?column?", PgInt 1)]])
+            [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [("?column?", PgInt 1)]])
             ]
           )
 
@@ -382,7 +382,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("?column?", PgInt 1), ("?column?", PgInt 2) ] ] )
+            [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("?column?", PgInt 1), ("?column?", PgInt 2) ] ] )
             ]
           )
 
@@ -410,7 +410,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
+            [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
             ]
           )
 
@@ -438,7 +438,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PgPostscriptFailed (PgTuplesOk [ Row [ ("id", PgInt 1) ] ]) AccessOutOfBound
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [ Row [ ("id", PgInt 1) ] ]) AccessOutOfBound
             ]
           )
 
@@ -466,7 +466,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
+            [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
             ]
           )
 
@@ -494,7 +494,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ buildSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AssertEqualFailed LNull (LInt 1))
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AssertEqualFailed LNull (LInt 1))
             ]
           )
 
@@ -556,8 +556,8 @@ defaultPgComputationInput =
 -- ** build output scene
 
 
-buildSceneOutput :: SceneComputation -> SceneOutput
-buildSceneOutput sceneComputationOutput =
+mkSceneOutput :: SceneComputation -> SceneOutput
+mkSceneOutput sceneComputationOutput =
   SceneOutput { _outputSceneId = UUID.nil
               , _outputSceneRequestFileNodeId = UUID.nil
               , _outputSceneComputation = sceneComputationOutput

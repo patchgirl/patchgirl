@@ -7,7 +7,9 @@ module Interpolator ( Template(..)
                     , ScenarioVars
                     ) where
 
+import qualified Control.Monad   as Monad
 import qualified Data.Aeson      as Aeson
+import           Data.Function   ((&))
 import           Data.Functor    ((<&>))
 import qualified Data.List       as List
 import           Data.Map.Strict (Map)
@@ -90,3 +92,41 @@ templateToString :: Template -> String
 templateToString = \case
   Sentence sentence -> sentence
   Key key -> "{{" ++ key ++ "}}"
+
+exprToString :: Expr -> Maybe String
+exprToString = \case
+  LBool bool -> Just $ show bool
+  LInt int -> Just $ show int
+  LFloat float -> Just $ show float
+  LNull -> Just "null"
+  LString string -> Just string
+  LRowElem (_, e) -> exprToString e
+  LList list ->
+    Monad.mapM exprToString list <&> \l -> "[" ++ List.intercalate "," l ++ "]"
+  LJson json -> Just $ jsonToString json
+  LVar _ -> Nothing
+  LFetch _ -> Nothing
+  LEq _ _ -> Nothing
+  LHttpResponseBodyAsString -> Nothing
+  LHttpResponseStatus -> Nothing
+  LPgSimpleResponse -> Nothing
+  LPgRichResponse -> Nothing
+  LAccessOp _ _ -> Nothing
+
+jsonToString :: Json -> String
+jsonToString = \case
+  JInt x -> show x
+  JFloat x -> show x
+  JBool x -> show x
+  JString x -> show x
+  JArray xs ->
+    map jsonToString xs & List.intercalate ","
+  JObject keyValues ->
+    let
+      showKeyValue :: [String] -> String -> Json -> [String]
+      showKeyValue acc key value =
+        acc ++ [ "\"" ++ key ++ "\":" ++ jsonToString value ]
+    in
+      Map.foldlWithKey' showKeyValue [] keyValues
+        & List.intercalate ","
+        & \str -> "{" ++ str ++ "}"

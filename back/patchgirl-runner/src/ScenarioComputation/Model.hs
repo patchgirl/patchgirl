@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GADTs         #-}
 
 module ScenarioComputation.Model where
 
@@ -133,7 +134,7 @@ data ScriptException
   | CannotUseFunction String
   | EmptyResponse String
   | AccessOutOfBound
-  | CantAccessElem Expr
+  | CantAccessElem Expr Expr
   deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON ScriptException where
@@ -143,3 +144,117 @@ instance Aeson.ToJSON ScriptException where
 instance Aeson.FromJSON ScriptException where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+
+-- * context
+
+
+data Context a where
+  PreScene :: Context a
+  PostScene :: ToPrimitive a => a -> Context a
+
+
+-- * primitive
+
+
+class ToPrimitive a where
+  getBody :: a -> Either ScriptException Expr
+  getStatus :: a -> Either ScriptException Expr
+  getSimpleTable :: a -> Either ScriptException Expr
+  getRichTable :: a -> Either ScriptException Expr
+
+
+-- ** request computation
+
+
+instance ToPrimitive RequestComputation where
+  getBody RequestComputation {..} =
+    Right $ LString _requestComputationBody
+
+  getStatus RequestComputation {..} =
+    Right $ LInt _requestComputationStatusCode
+
+  getSimpleTable _ =
+    Left $ CannotUseFunction "function not available for http request"
+
+  getRichTable _ =
+    Left $ CannotUseFunction "function not available for http request"
+
+
+-- ** pg computation
+
+
+instance ToPrimitive PgComputation where
+  getBody _ =
+    Left $ CannotUseFunction "not available for pg query"
+
+  getStatus _ =
+    Left $ CannotUseFunction "not available for pg query"
+
+  getSimpleTable = \case
+    PgCommandOK ->
+      Left $ EmptyResponse "empty response"
+
+    PgTuplesOk table ->
+      Right $ fromTableToSimpleList table
+
+  getRichTable = \case
+    PgCommandOK ->
+      Left $ EmptyResponse "empty response"
+
+    PgTuplesOk table ->
+      Right $ fromTableToRichList table
+
+
+-- * expr
+
+
+fromTableToSimpleList :: [Row] -> Expr
+fromTableToSimpleList rows =
+  LList $ map rowToExpr rows
+  where
+    rowToExpr :: Row -> Expr
+    rowToExpr (Row row) =
+      LList $ map pgValueToExpr row
+
+    pgValueToExpr :: (String, PgValue) -> Expr
+    pgValueToExpr (_, pgValue) = case pgValue of
+      PgString x -> LString x
+      PgInt x    -> LInt x
+      PgFloat x  -> LFloat x
+      PgBool x   -> LBool x
+      PgNull     -> LNull
+
+fromTableToRichList :: [Row] -> Expr
+fromTableToRichList rows =
+  LList $ map rowToExpr rows
+  where
+    rowToExpr :: Row -> Expr
+    rowToExpr (Row row) =
+      LList $ map pgValueToExpr row
+
+    pgValueToExpr :: (String, PgValue) -> Expr
+    pgValueToExpr (name, pgValue) = case pgValue of
+      PgString x -> LRowElem(name, LString x)
+      PgInt x    -> LRowElem(name, LInt x)
+      PgFloat x  -> LRowElem(name, LFloat x)
+      PgBool x   -> LRowElem(name, LBool x)
+      PgNull     -> LRowElem(name, LNull)
+
+-- * script context
+
+
+data ScriptContext a =
+  ScriptContext { environmentVars :: EnvironmentVars
+                , globalVars      :: ScenarioVars
+                , localVars       :: ScenarioVars
+                , context         :: Context a
+                }
+
+
+buildSceneOutput :: SceneFile -> SceneComputation -> SceneOutput
+buildSceneOutput scene sceneComputationOutput =
+  SceneOutput { _outputSceneId = _sceneId scene
+              , _outputSceneRequestFileNodeId = _sceneFileId scene
+              , _outputSceneComputation = sceneComputationOutput
+              }

@@ -4,6 +4,7 @@
 
 module RequestComputation.App ( runRequestComputationHandler
                               , runRequestComputationWithScenarioContext
+                              , runRequestComputationWithScenarioContext2
                               , ioRequestRunner
                               ) where
 
@@ -11,6 +12,7 @@ module RequestComputation.App ( runRequestComputationHandler
 import qualified Control.Exception           as Exception
 import qualified Control.Monad.IO.Class      as IO
 import qualified Control.Monad.Reader        as Reader
+import qualified Control.Monad.State.Lazy    as State
 import qualified Data.Bifunctor              as Bifunctor
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
@@ -26,6 +28,7 @@ import           Http
 import           Interpolator
 import           Log
 import           RequestComputation.Model
+import           ScenarioComputation.Model
 
 
 -- * handler
@@ -43,6 +46,25 @@ runRequestComputationHandler (templatedRequestComputationInput, environmentVars)
 
 -- * run request computation with scenario context
 
+
+runRequestComputationWithScenarioContext2
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     , State.MonadState (ScriptContext a) m
+     )
+  => TemplatedRequestComputationInput
+  -> m RequestComputationOutput
+runRequestComputationWithScenarioContext2 templatedRequestComputationInput = do
+  runner <- Reader.ask <&> _envHttpRequest
+  ScriptContext{..} <- State.get
+  result <- IO.liftIO $
+    Exception.try (
+      buildRequest templatedRequestComputationInput environmentVars globalVars localVars >>= runner
+    )
+  responseToComputationResult result
+
+
+-- * current
 
 runRequestComputationWithScenarioContext
   :: ( Reader.MonadReader Env m
