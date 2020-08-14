@@ -321,7 +321,7 @@ update msg model =
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiRunnerScenarioComputation (Runner.runnerUrl model.runnerRunning) payload runScenarioResultToMsg
+                            Client.postApiRunnerScenarioComputation Runner.desktopRunnerUrl payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none
@@ -959,14 +959,14 @@ pgDetailedSceneView model scene fileRecord =
     case scene.sceneComputation of
         Nothing ->
             [ sceneInputDetailView
---            , prescriptView scene
---            , postscriptView scene
+            , prescriptView scene
+            , postscriptView scene
             ]
 
         Just sceneComputation ->
             [ sceneInputDetailView
---            , prescriptView scene
---            , postscriptView scene
+            , prescriptView scene
+            , postscriptView scene
             , hr [] "response"
             , outputSceneDetailView sceneComputation
             ]

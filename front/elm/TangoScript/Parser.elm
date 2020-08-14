@@ -33,6 +33,7 @@ reserved =
         , "get"
         , "set"
         , "httpResponseBodyAsString"
+        , "httpResponseStatus"
         , "true"
         , "false"
         ]
@@ -118,6 +119,8 @@ exprParser =
            , lIntParser
            , httpResponseBodyAsStringParser
            , httpResponseStatusParser
+           , pgSimpleTableParser
+           , pgRichTableParser
            , listParser
            , varParser
            , getParser
@@ -129,14 +132,13 @@ exprParser =
 
 lIntParser : Parser Expr
 lIntParser =
-    P.int |> P.map (\int -> (EPrim (PInt int)))
+    P.int |> P.map (\int -> LInt int)
 
 lBoolParser : Parser Expr
 lBoolParser =
-    P.succeed EPrim
-        |= P.oneOf [ P.map (always (PBool True)) (P.keyword "true")
-                   , P.map (always (PBool False)) (P.keyword "false")
-                   ]
+    P.oneOf [ P.map (always (LBool True)) (P.keyword "true")
+            , P.map (always (LBool False)) (P.keyword "false")
+            ]
 
 lStringParser : Parser Expr
 lStringParser =
@@ -144,15 +146,27 @@ lStringParser =
 
 httpResponseBodyAsStringParser : Parser Expr
 httpResponseBodyAsStringParser =
-    P.keyword "httpResponseBodyAsString" |> P.map (always HttpResponseBodyAsString)
+    P.keyword "httpResponseBodyAsString" |> P.map (always LHttpResponseBodyAsString)
 
 httpResponseStatusParser : Parser Expr
 httpResponseStatusParser =
-    P.keyword "httpResponseStatus" |> P.map (always HttpResponseStatus)
+    P.keyword "httpResponseStatus" |> P.map (always LHttpResponseStatus)
+
+pgSimpleTableParser : Parser Expr
+pgSimpleTableParser =
+    P.keyword "postgresResponse"
+        |> P.map (always LPgSimpleResponse)
+        |> P.andThen accessOpParser
+
+pgRichTableParser : Parser Expr
+pgRichTableParser =
+    P.keyword "postgresResponseAsArray"
+        |> P.map (always LPgRichResponse)
+        |> P.andThen accessOpParser
 
 getParser : Parser Expr
 getParser =
-    P.succeed Fetch
+    P.succeed LFetch
         |. P.keyword "get"
         |. P.spaces
         |. P.symbol "("
@@ -174,18 +188,18 @@ listParser =
         , item = P.lazy (\_ -> exprParser)
         , trailing = P.Forbidden
         }
-        |> P.map EList
-        |> P.andThen eListGetAtParser
+        |> P.map LList
+        |> P.andThen accessOpParser
 
 
--- ** list - get at index
+-- ** access operator
 
 
-eListGetAtParser : Expr -> Parser Expr
-eListGetAtParser expr =
+accessOpParser : Expr -> Parser Expr
+accessOpParser expr =
     let
-        listIndex : Parser Expr
-        listIndex =
+        indexParser : Parser Expr
+        indexParser =
             P.succeed identity
                 |. P.symbol "["
                 |. P.spaces
@@ -193,19 +207,21 @@ eListGetAtParser expr =
                 |. P.spaces
                 |. P.symbol "]"
 
-        maybeListIndex : P.Parser (Maybe Expr)
-        maybeListIndex =
-            P.oneOf [ listIndex |> P.map Just
+        maybeIndexParser : P.Parser (Maybe Expr)
+        maybeIndexParser =
+            P.oneOf [ indexParser |> P.map Just
                     , P.succeed Nothing
                     ]
 
-        variableOrListGetAt : Expr -> Maybe Expr -> Expr
-        variableOrListGetAt var mExpr =
-            case mExpr of
-                Just e -> EAccess var e
+        promoteToAccessOpExpr : Expr -> Maybe Expr -> Expr
+        promoteToAccessOpExpr var mIndex =
+            case mIndex of
+                Just index -> LAccessOp var index
                 Nothing -> var
     in
-    maybeListIndex |> P.map (variableOrListGetAt expr)
+    maybeIndexParser
+        |> P.map (promoteToAccessOpExpr expr)
+--        |> P.andThen accessOpParser
 
 
 -- ** variable
@@ -214,8 +230,8 @@ eListGetAtParser expr =
 varParser : Parser Expr
 varParser =
     variableNameParser
-        |> P.map Var
-        |> P.andThen eListGetAtParser
+        |> P.map LVar
+        |> P.andThen accessOpParser
 
 
 variableNameParser : Parser String
@@ -229,9 +245,12 @@ variableNameParser =
 
 -- ** json
 
+
 eJsonParser : Parser Expr
 eJsonParser =
-    jsonParser |> P.map EJson |> P.andThen eListGetAtParser
+    jsonParser
+        |> P.map LJson
+        |> P.andThen accessOpParser
 
 jsonValueParser : Parser Json
 jsonValueParser =
@@ -336,8 +355,8 @@ binOpParser =
     let
         operators : List (List (P.Operator Expr))
         operators =
-            [ [ P.infixOperator (\a b -> Eq a b) (P.symbol "==") P.AssocLeft
-              , P.infixOperator (\a b -> Add a b) (P.symbol "+") P.AssocLeft
+            [ [ P.infixOperator (\a b -> LEq a b) (P.symbol "==") P.AssocLeft
+             -- , P.infixOperator (\a b -> Add a b) (P.symbol "+") P.AssocLeft
               ]
             ]
 
@@ -397,46 +416,47 @@ showExpr expr =
         LString x ->
             "(LString " ++ x ++ ")"
 
-        Var x ->
-            "(Var " ++ x ++ ")"
+        LVar x ->
+            "(LVar " ++ x ++ ")"
 
-        Fetch x ->
-            "(Fetch " ++ x ++ ")"
+        LFetch x ->
+            "(LFetch " ++ x ++ ")"
 
-        Eq expr1 expr2 ->
+        LEq expr1 expr2 ->
             "(Eq " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
 
-        Add expr1 expr2 ->
-            "(Add " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
+        LHttpResponseBodyAsString ->
+            "(LHttpResponseBodyAsString)"
 
-        HttpResponseBodyAsString ->
-            "(HttpResponseBodyAsString)"
+        LHttpResponseStatus ->
+            "(LHttpResponseStatus)"
 
-        HttpResponseStatus ->
-            "(HttpResponseStatus)"
-
-        EPrim (PBool bool) ->
-            let
-                boolAsString =
-                    case bool of
-                        True -> "true"
-                        False -> "false"
-            in
-            "(PBool " ++ boolAsString ++ " )"
-
-        EPrim (PInt x) ->
-            "(PInt " ++ String.fromInt(x) ++ ")"
-
-        EList x ->
+        LList x ->
             List.map showExpr x
                 |> String.join ", "
-                |> \s ->  "(EList " ++ s ++ " )"
+                |> \s ->  "(LList " ++ s ++ " )"
 
-        EAccess _ _ ->
-            "(EAccess)"
+        LAccessOp _ _ ->
+            "(LAccessOp)"
 
-        EJson json ->
-            "(EJson " ++ showJson json ++ ")"
+        LJson json ->
+            "(LJson " ++ showJson json ++ ")"
+
+        LFloat x ->
+            "(LFloat " ++ String.fromFloat x ++ ")"
+
+        LNull ->
+            "(LNull)"
+
+        LRowElem (key, value) ->
+            "(LRowElem " ++ key ++ " " ++ showExpr value ++ ")"
+
+        LPgSimpleResponse ->
+            "(LPgSimpleResponse)"
+
+        LPgRichResponse ->
+            "(LPgRichResponse)"
+
 
 showJson : Json -> String
 showJson json =

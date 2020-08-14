@@ -543,13 +543,13 @@ type alias PgComputationOutput
 
 type PgComputation
     = PgCommandOK
-    | PgTuplesOk (List Col)
+    | PgTuplesOk (List Row)
 
 
 -- ** column
 
 
-type Col = Col String (List PgValue)
+type alias Row = List (String, PgValue)
 
 
 -- ** pg Value
@@ -690,6 +690,9 @@ isStorableDirty storable =
 -- * tangoscript
 
 
+-- ** proc
+
+
 type alias TangoAst = List Proc
 
 type Proc
@@ -697,20 +700,32 @@ type Proc
     | Let String Expr
     | Set String Expr
 
+
+-- ** expr
+
+
 type Expr
-    = EJson Json
-    | EPrim Prim
-    | EList (List Expr)
-    | EAccess Expr Expr
+    = LJson Json
+    | LList (List Expr)
     | LBool Bool
     | LInt Int
+    | LFloat Float
+    | LNull
     | LString String
-    | Var String
-    | Fetch String
-    | Eq Expr Expr
-    | Add Expr Expr
-    | HttpResponseBodyAsString
-    | HttpResponseStatus
+    | LRowElem (String, Expr)
+    -- non primitive type
+    | LVar String
+    | LFetch String
+    | LEq Expr Expr
+    | LHttpResponseBodyAsString
+    | LHttpResponseStatus
+    | LPgSimpleResponse -- results without columnName
+    | LPgRichResponse   -- response with columnName
+    | LAccessOp Expr Expr
+
+
+-- ** json
+
 
 type Json
     = JInt Int
@@ -719,10 +734,6 @@ type Json
     | JString String
     | JArray (List Json)
     | JObject (Dict String Json)
-
-type Prim
-    = PBool Bool
-    | PInt Int
 
 
 exprToString : Expr -> String
@@ -734,22 +745,19 @@ exprToString expr =
                 False -> "LBool false"
         LInt x -> "LInt " ++ String.fromInt(x)
         LString x -> "LString " ++ x
-        Var x -> "Var " ++ x
-        Fetch x -> "Fetch " ++ x
-        Eq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
-        Add e1 e2 -> "Add " ++ (exprToString e1) ++ " " ++ (exprToString e2)
-        HttpResponseBodyAsString -> "HttpResponseBodyAsString"
-        HttpResponseStatus -> "HttpResponseStatus"
-        EPrim (PBool x) ->
-            case x of
-                True -> "PBool true"
-                False -> "PBool false"
-        EPrim (PInt x) ->
-            "EPrim (PInt " ++ String.fromInt(x) ++ ")"
-        EList xs ->
-            "EList"
-        EAccess _ _ ->
-            "EAccess"
-
-        EJson _ ->
-            "EJson"
+        LFloat x -> "LFloat " ++ String.fromFloat(x)
+        LNull -> "LNull"
+        LRowElem (key, value) -> "LRowElem " ++ key ++ " " ++ exprToString value
+        LVar x -> "LVar " ++ x
+        LFetch x -> "LFetch " ++ x
+        LEq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
+        LHttpResponseBodyAsString -> "LHttpResponseBodyAsString"
+        LHttpResponseStatus -> "LHttpResponseStatus"
+        LPgSimpleResponse -> "LPgSimpleResponse"
+        LPgRichResponse -> "LPgRichResponse"
+        LList xs ->
+            "LList"
+        LAccessOp _ _ ->
+            "LAccessOp"
+        LJson _ ->
+            "LJson"

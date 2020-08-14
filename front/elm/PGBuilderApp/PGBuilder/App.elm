@@ -386,31 +386,41 @@ responseView pgComputationOutput =
                 PgCommandOK ->
                     text "Postgresql command Ok"
 
-                PgTuplesOk columns ->
+                PgTuplesOk rows ->
                     let
-                        columnView : Col -> Element a
-                        columnView col =
+                        headerRow : List String
+                        headerRow =
+                            case rows of
+                                header :: _ -> List.map Tuple.first header
+                                _ -> []
+
+                        rowView : Row -> Element a
+                        rowView someRow =
                             let
-                                (Col columnName pgValues) = col
-
-                                tableHeaderView : String -> Element a
-                                tableHeaderView name =
-                                    column [ width fill, spacing 10 ]
-                                        [ text name
-                                        , el [ width fill
-                                             , Border.solid
-                                             , Border.color black
-                                             , Border.width 1
-                                             ] none
-                                        ]
-
+                                elemView : (String, PgValue) -> Element a
+                                elemView (_, value) =
+                                    el [ width fill ] (showPGValue value)
                             in
-                                column [ width fill, spacing 10 ] <|
-                                    [ tableHeaderView columnName ] ++ (List.map showPGValue pgValues)
+                            row [ width fill, spacing 10 ]
+                                <| List.map elemView someRow
+
+                        tableHeaderView : String -> Element a
+                        tableHeaderView key =
+                            column [ width fill, spacing 10 ]
+                                [ text key
+                                , el [ width fill
+                                     , Border.solid
+                                     , Border.color black
+                                     , Border.width 1
+                                     ] none
+                                ]
 
                     in
-                        row [ width fill ] <|
-                            List.map columnView columns
+                        column [ width fill, spacing 10 ]
+                            [ row [ width fill ] (List.map tableHeaderView headerRow)
+                            , column [ width fill ] (List.map rowView rows)
+                            ]
+
 
 showPGValue : PgValue -> Element a
 showPGValue pgValue =
