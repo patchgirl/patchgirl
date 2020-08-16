@@ -2,8 +2,7 @@ module PgSqlComputation.App where
 
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.IO.Class    as IO
-import qualified Control.Monad.Reader      as Reader
-import qualified Control.Monad.State.Lazy  as State
+import qualified Control.Monad.State       as State
 import qualified Data.ByteString           as BS
 import qualified Data.ByteString.UTF8      as BSU
 import           Data.Function             ((&))
@@ -14,7 +13,6 @@ import qualified Data.Traversable          as Traversable
 import qualified Database.PostgreSQL.LibPQ as LibPQ
 import qualified Text.Read                 as Text
 
-import           Env
 import           Interpolator
 import           PgSqlComputation.Model
 import           ScenarioComputation.Model
@@ -24,26 +22,23 @@ import           ScenarioComputation.Model
 
 
 runPgSqlComputationHandler
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
-     )
+  :: IO.MonadIO m
   => (EnvironmentVars, PgComputationInput)
   -> m PgComputationOutput
 runPgSqlComputationHandler (environmentVars, pgComputationInput) =
-  runPgComputationWithScenarioContext pgComputationInput environmentVars Map.empty Map.empty
+  State.evalStateT (runPgComputationWithScenarioContext pgComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
 
 
 -- * run pg computation with scenario context
 
 
-runPgComputationWithScenarioContext2
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
-     , State.MonadState (ScriptContext PgComputation) m
+runPgComputationWithScenarioContext
+  :: ( IO.MonadIO m
+     , State.MonadState ScriptContext m
      )
   => PgComputationInput
   -> m PgComputationOutput
-runPgComputationWithScenarioContext2 PgComputationInput{..} = do
+runPgComputationWithScenarioContext PgComputationInput{..} = do
   sql <- substitute _pgComputationInputSql
   host <- substitute (_templatedPgConnectionHost _pgComputationInputPgConnection)
   port <- substitute (_templatedPgConnectionPort _pgComputationInputPgConnection)
@@ -85,65 +80,12 @@ runPgComputationWithScenarioContext2 PgComputationInput{..} = do
           <&> \primaryMessage -> Left $ PgError (show error ++ " " ++ primaryMessage)
   where
     substitute
-      :: State.MonadState (ScriptContext PgComputation) m
+      :: State.MonadState ScriptContext m
       => StringTemplate
       -> m String
     substitute stringTemplate = do
       ScriptContext{..} <- State.get
       return $ interpolate environmentVars globalVars localVars stringTemplate
-
-
-
-runPgComputationWithScenarioContext
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
-     )
-  => PgComputationInput
-  -> EnvironmentVars
-  -> ScenarioVars
-  -> ScenarioVars
-  -> m PgComputationOutput
-runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars = do
-  let
-    sql = substitute _pgComputationInputSql
-    pgConnection = PgConnection { _pgConnectionHost     = substitute (_templatedPgConnectionHost _pgComputationInputPgConnection)
-                                , _pgConnectionPort     = substitute (_templatedPgConnectionPort _pgComputationInputPgConnection)
-                                , _pgConnectionUser     = substitute (_templatedPgConnectionUser _pgComputationInputPgConnection)
-                                , _pgConnectionPassword = substitute (_templatedPgConnectionPassword _pgComputationInputPgConnection)
-                                , _pgConnectionDbName   = substitute (_templatedPgConnectionDbName _pgComputationInputPgConnection)
-                                }
-  (mResult, resultStatus) <- IO.liftIO $ do
-    connection <- getConnection pgConnection
-    mResult <- LibPQ.exec connection (BSU.fromString sql)
-    case mResult of
-      Nothing ->
-        return (mResult, LibPQ.FatalError)
-      Just result ->
-        LibPQ.resultStatus result <&> \resultStatus -> (mResult, resultStatus)
-
-  case (mResult, resultStatus) of
-    (Nothing, _) ->
-      IO.liftIO $ return $ Left $ PgError "FatalError: check the pg database connection"
-
-    (Just _, LibPQ.CommandOk) ->
-      IO.liftIO $ return $ Right PgCommandOK
-
-    (Just result, LibPQ.TuplesOk) ->
-      IO.liftIO $ resultToTable result <&> \case
-        Left pgError -> Left pgError
-        Right pgTable -> Right $ PgTuplesOk pgTable
-
-    (Just result, error) ->
-      IO.liftIO $
-        LibPQ.resultErrorField result LibPQ.DiagMessagePrimary
-          <&> fmap BSU.toString
-          <&> Maybe.fromMaybe ""
-          <&> \primaryMessage -> Left $ PgError (show error ++ " " ++ primaryMessage)
-  where
-    substitute :: StringTemplate -> String
-    substitute =
-      interpolate environmentVars scenarioGlobalVars scenarioLocalVars
-
 
 
 -- * to table

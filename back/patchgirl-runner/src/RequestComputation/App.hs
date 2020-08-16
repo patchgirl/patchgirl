@@ -4,7 +4,6 @@
 
 module RequestComputation.App ( runRequestComputationHandler
                               , runRequestComputationWithScenarioContext
-                              , runRequestComputationWithScenarioContext2
                               , ioRequestRunner
                               ) where
 
@@ -12,7 +11,7 @@ module RequestComputation.App ( runRequestComputationHandler
 import qualified Control.Exception           as Exception
 import qualified Control.Monad.IO.Class      as IO
 import qualified Control.Monad.Reader        as Reader
-import qualified Control.Monad.State.Lazy    as State
+import qualified Control.Monad.State         as State
 import qualified Data.Bifunctor              as Bifunctor
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
@@ -41,45 +40,26 @@ runRequestComputationHandler
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationOutput
 runRequestComputationHandler (templatedRequestComputationInput, environmentVars) =
-  runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
+--  runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
+  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
 
 
 -- * run request computation with scenario context
 
 
-runRequestComputationWithScenarioContext2
+runRequestComputationWithScenarioContext
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
-     , State.MonadState (ScriptContext a) m
+     , State.MonadState ScriptContext m
      )
   => TemplatedRequestComputationInput
   -> m RequestComputationOutput
-runRequestComputationWithScenarioContext2 templatedRequestComputationInput = do
+runRequestComputationWithScenarioContext templatedRequestComputationInput = do
   runner <- Reader.ask <&> _envHttpRequest
   ScriptContext{..} <- State.get
   result <- IO.liftIO $
     Exception.try (
       buildRequest templatedRequestComputationInput environmentVars globalVars localVars >>= runner
-    )
-  responseToComputationResult result
-
-
--- * current
-
-runRequestComputationWithScenarioContext
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
-     )
-  => TemplatedRequestComputationInput
-  -> EnvironmentVars
-  -> ScenarioVars
-  -> ScenarioVars
-  -> m RequestComputationOutput
-runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
-  runner <- Reader.ask <&> _envHttpRequest
-  result <- IO.liftIO $
-    Exception.try (
-      buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars >>= runner
     )
   responseToComputationResult result
 

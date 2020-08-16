@@ -3,7 +3,7 @@ module ScenarioComputation.App ( runScenarioComputationHandler) where
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.IO.Class    as IO
 import qualified Control.Monad.Reader      as Reader
-import qualified Control.Monad.State.Lazy  as State
+import qualified Control.Monad.State       as State
 import           Data.Functor              ((<&>))
 import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
@@ -46,12 +46,16 @@ runScenarioComputationHandler ScenarioInput{..} =
         True ->
           case sceneFile of
             HttpSceneFile{..} -> do
-              (scene, newGlobalEnvironment) <- runHttpScene environmentVars scenarioGlobalVars sceneFile _sceneHttpInput
-              return (newGlobalEnvironment, scenes ++ [ scene ])
+              (scene, scriptContext) <- State.runStateT (runHttpScene sceneFile _sceneHttpInput) (ScriptContext environmentVars scenarioGlobalVars Map.empty)
+              return ( globalVars scriptContext
+                     , scenes ++ [ scene ]
+                     )
 
             PgSceneFile{..} -> do
-              (scene, newGlobalEnvironment) <- runPgScene environmentVars scenarioGlobalVars sceneFile _scenePgInput
-              return (newGlobalEnvironment, scenes ++ [ scene ])
+              (scene, scriptContext) <- State.runStateT (runPgScene sceneFile _scenePgInput) (ScriptContext environmentVars scenarioGlobalVars Map.empty)
+              return ( globalVars scriptContext
+                     , scenes ++ [ scene ]
+                     )
 
     lastSceneWasSuccessful :: [SceneOutput] -> Bool
     lastSceneWasSuccessful = \case
@@ -72,45 +76,29 @@ runScenarioComputationHandler ScenarioInput{..} =
 runHttpScene
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
+     , State.MonadState ScriptContext m
      )
-  => EnvironmentVars
-  -> ScenarioVars
-  -> SceneFile
+  => SceneFile
   -> TemplatedRequestComputationInput
-  -> m (SceneOutput, ScenarioVars)
-runHttpScene environmentVars scenarioGlobalVars scene sceneHttpInput =
-  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene environmentVars scenarioGlobalVars) of
-    (Just scriptException, scriptContextAfterPrescript) ->
-      return ( buildSceneOutput scene (PrescriptFailed scriptException)
-             , globalVars scriptContextAfterPrescript
-             )
+  -> m SceneOutput
+runHttpScene scene sceneHttpInput = do
+  State.modify $ \s -> s { localVars = Map.empty }
+  runScript (_scenePrescript scene) PreScene Nothing >>= \case
+    Just scriptException ->
+      return $ buildSceneOutput scene (PrescriptFailed scriptException)
 
-    (Nothing, scriptContextAfterPrescript) -> do
-      runRequestComputationWithScenarioContext sceneHttpInput environmentVars (globalVars scriptContextAfterPrescript) (localVars scriptContextAfterPrescript) >>= \case
+    Nothing -> do
+      runRequestComputationWithScenarioContext sceneHttpInput >>= \case
         Left error ->
-          return ( buildSceneOutput scene (HttpSceneFailed error)
-                 , globalVars scriptContextAfterPrescript
-                 )
+          return $ buildSceneOutput scene (HttpSceneFailed error)
 
-        Right httpComputation ->
-          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene httpComputation) environmentVars (globalVars scriptContextAfterPrescript)) of
-            (Just scriptException, _) ->
-              return ( buildSceneOutput scene (HttpPostscriptFailed httpComputation scriptException)
-                     , globalVars scriptContextAfterPrescript
-                     )
+        Right httpComputation -> do
+          runScript (_scenePostscript scene) (PostScene httpComputation) Nothing >>= \case
+            Just scriptException ->
+              return $ buildSceneOutput scene (HttpPostscriptFailed httpComputation scriptException)
 
-            (Nothing, scriptContextAfterPostscript) ->
-              return ( buildSceneOutput scene (HttpSceneOk httpComputation)
-                     , globalVars scriptContextAfterPostscript
-                     )
-  where
-    mkScriptContext :: Context a -> EnvironmentVars -> ScenarioVars -> ScriptContext a
-    mkScriptContext context environmentVars globalVars =
-      ScriptContext { environmentVars = environmentVars
-                    , globalVars = globalVars
-                    , localVars = Map.empty
-                    , context = context
-                    }
+            Nothing ->
+              return $ buildSceneOutput scene (HttpSceneOk httpComputation)
 
 
 -- ** pg
@@ -119,70 +107,61 @@ runHttpScene environmentVars scenarioGlobalVars scene sceneHttpInput =
 runPgScene
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
+     , State.MonadState ScriptContext m
      )
-  => EnvironmentVars
-  -> ScenarioVars
-  -> SceneFile
+  => SceneFile
   -> PgComputationInput
-  -> m (SceneOutput, ScenarioVars)
-runPgScene environmentVars scenarioGlobalVars scene scenePgInput =
-  case State.runState (runScript (_scenePrescript scene) Nothing) (mkScriptContext PreScene environmentVars scenarioGlobalVars) of
-    (Just scriptException, scriptContextAfterPrescript) ->
-      return ( buildSceneOutput scene (PrescriptFailed scriptException)
-             , globalVars scriptContextAfterPrescript
-             )
+  -> m SceneOutput
+runPgScene scene scenePgInput = do
+  State.modify $ \s -> s { localVars = Map.empty }
+  runScript (_scenePrescript scene) PreScene Nothing >>= \case
+    Just scriptException ->
+      return $ buildSceneOutput scene (PrescriptFailed scriptException)
 
-    (Nothing, scriptContextAfterPrescript) -> do
-      runPgComputationWithScenarioContext scenePgInput environmentVars (globalVars scriptContextAfterPrescript) (localVars scriptContextAfterPrescript) >>= \case
+    Nothing -> do
+      runPgComputationWithScenarioContext scenePgInput >>= \case
         Left error ->
-          return ( buildSceneOutput scene (PgSceneFailed error)
-                 , globalVars scriptContextAfterPrescript
-                 )
+          return $ buildSceneOutput scene (PgSceneFailed error)
 
-        Right pgComputation ->
-          case State.runState (runScript (_scenePostscript scene) Nothing) (mkScriptContext (PostScene pgComputation) environmentVars (globalVars scriptContextAfterPrescript)) of
-            (Just scriptException, _) ->
-              return ( buildSceneOutput scene (PgPostscriptFailed pgComputation scriptException)
-                     , globalVars scriptContextAfterPrescript
-                     )
+        Right pgComputation -> do
+          runScript (_scenePostscript scene) (PostScene pgComputation) Nothing >>= \case
+            Just scriptException ->
+              return $ buildSceneOutput scene (PgPostscriptFailed pgComputation scriptException)
 
-            (Nothing, scriptContextAfterPostscript) ->
-              return ( buildSceneOutput scene (PgSceneOk pgComputation)
-                     , globalVars scriptContextAfterPostscript
-                     )
-  where
-    mkScriptContext :: Context a -> EnvironmentVars -> ScenarioVars -> ScriptContext a
-    mkScriptContext context environmentVars globalVars =
-      ScriptContext { environmentVars = environmentVars
-                    , globalVars = globalVars
-                    , localVars = Map.empty
-                    , context = context
-                    }
+            Nothing ->
+              return $ buildSceneOutput scene (PgSceneOk pgComputation)
+
 
 -- * script
 
 
 runScript
-  :: TangoAst
+  :: State.MonadState ScriptContext m
+  => TangoAst
+  -> Context a
   -> Maybe ScriptException
-  -> State.State (ScriptContext a) (Maybe ScriptException)
-runScript procs = \case
+  -> m (Maybe ScriptException)
+runScript procs context = \case
   Nothing ->
     case procs of
       [] -> return Nothing
       proc : xs ->
-        runProc proc >>= runScript xs
+        runProc context proc >>= runScript xs context
   exception -> return exception
 
 
 -- * proc
 
 
-runProc :: Proc -> State.State (ScriptContext a) (Maybe ScriptException)
-runProc = \case
+runProc
+  :: State.MonadState ScriptContext m
+  => Context a
+  -> Proc
+  -> m (Maybe ScriptException)
+runProc context = \case
   AssertEqual expr1 expr2 -> do
-    ex1 <- reduceExprToPrimitive expr1
-    ex2 <- reduceExprToPrimitive expr2
+    ex1 <- reduceExprToPrimitive context expr1
+    ex2 <- reduceExprToPrimitive context expr2
     case (ex1, ex2) of
       (Right a, Right b) ->
         case a == b of
@@ -196,23 +175,19 @@ runProc = \case
         return $ Just s
 
   Let var expr -> do
-    ex <- reduceExprToPrimitive expr
+    ex <- reduceExprToPrimitive context expr
     case ex of
       Left s -> return $ Just s
       Right newExpr -> do
-        scriptContext <- State.get
-        let newLocalVars = Map.insert var newExpr (localVars scriptContext)
-        State.put (scriptContext { localVars = newLocalVars })
+        State.modify $ \state -> state { localVars = Map.insert var newExpr (localVars state) }
         return Nothing
 
   Set var expr -> do
-    ex <- reduceExprToPrimitive expr
+    ex <- reduceExprToPrimitive context expr
     case ex of
       Left s -> return $ Just s
       Right newExpr -> do
-        scriptContext <- State.get
-        let newGlobalVars = Map.insert var newExpr (globalVars scriptContext)
-        State.put (scriptContext { globalVars = newGlobalVars })
+        State.modify $ \state -> state { globalVars = Map.insert var newExpr (globalVars state) }
         return Nothing
 
 
@@ -229,58 +204,54 @@ runProc = \case
     ...
 -}
 reduceExprToPrimitive
-  :: Expr
-  -> State.State (ScriptContext a) (Either ScriptException Expr)
-reduceExprToPrimitive = \case
+  :: State.MonadState ScriptContext m
+  => Context a
+  -> Expr
+  -> m (Either ScriptException Expr)
+reduceExprToPrimitive context = \case
   LList exprs -> do
-    Monad.mapM reduceExprToPrimitive exprs <&> Monad.sequence >>= \case
+    Monad.mapM (reduceExprToPrimitive context) exprs <&> Monad.sequence >>= \case
       Right reducedExprs -> return $ Right $ LList reducedExprs
       Left s -> return $ Left s
 
   LHttpResponseStatus -> do
-    context <- State.get <&> context
     case context of
       PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseStatus in a prescript"
       PostScene result -> return $ getStatus result
 
   LHttpResponseBodyAsString -> do
-    context <- State.get <&> context
     case context of
       PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseBodyAsString in a prescript"
       PostScene result -> return $ getBody result
 
   LPgSimpleResponse -> do
-    context <- State.get <&> context
     case context of
       PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
       PostScene result -> return $ getSimpleTable result
 
   LPgRichResponse -> do
-    context <- State.get <&> context
     case context of
       PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
       PostScene result -> return $ getRichTable result
 
   LEq e1 e2 -> do
-    b1 <- reduceExprToPrimitive e1
-    b2 <- reduceExprToPrimitive e2
+    b1 <- reduceExprToPrimitive context e1
+    b2 <- reduceExprToPrimitive context e2
     return $ Right $ LBool (b1 == b2)
 
   lvar@(LVar var) -> do
-    mValue <- State.get <&> localVars <&> Map.lookup var
-    case mValue of
+    State.get <&> localVars <&> Map.lookup var >>= \case
       Nothing   -> return $ Left $ UnknownVariable lvar
       Just expr -> return $ Right expr
 
   lfetch@(LFetch var) -> do
-    mValue <- State.get <&> globalVars <&> Map.lookup var
-    case mValue of
+    State.get <&> globalVars <&> Map.lookup var >>= \case
       Nothing   -> return $ Left $ UnknownVariable lfetch
       Just expr -> return $ Right expr
 
   LAccessOp ex1 ex2 -> do
-    e1 <- reduceExprToPrimitive ex1
-    e2 <- reduceExprToPrimitive ex2
+    e1 <- reduceExprToPrimitive context ex1
+    e2 <- reduceExprToPrimitive context ex2
     case (e1, e2) of
       (Right (LList list), Right (LInt index)) ->
         case getAtIndex list index of

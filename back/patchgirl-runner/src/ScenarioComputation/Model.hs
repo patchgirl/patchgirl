@@ -241,14 +241,14 @@ fromTableToRichList rows =
       PgBool x   -> LRowElem(name, LBool x)
       PgNull     -> LRowElem(name, LNull)
 
+
 -- * script context
 
 
-data ScriptContext a =
+data ScriptContext =
   ScriptContext { environmentVars :: EnvironmentVars
                 , globalVars      :: ScenarioVars
                 , localVars       :: ScenarioVars
-                , context         :: Context a
                 }
 
 
