@@ -43,19 +43,11 @@ runScenarioComputationHandler ScenarioInput{..} =
         False -> return ( scenarioGlobalVars
                         , scenes ++ [ buildSceneOutput sceneFile SceneNotRun ]
                         )
-        True ->
-          case sceneFile of
-            HttpSceneFile{..} -> do
-              (scene, scriptContext) <- State.runStateT (runHttpScene sceneFile _sceneHttpInput) (ScriptContext environmentVars scenarioGlobalVars Map.empty)
-              return ( globalVars scriptContext
-                     , scenes ++ [ scene ]
-                     )
-
-            PgSceneFile{..} -> do
-              (scene, scriptContext) <- State.runStateT (runPgScene sceneFile _scenePgInput) (ScriptContext environmentVars scenarioGlobalVars Map.empty)
-              return ( globalVars scriptContext
-                     , scenes ++ [ scene ]
-                     )
+        True -> do
+          (scene, scriptContext) <- State.runStateT (buildScene sceneFile) (ScriptContext environmentVars scenarioGlobalVars Map.empty)
+          return ( globalVars scriptContext
+                 , scenes ++ [ scene ]
+                 )
 
     lastSceneWasSuccessful :: [SceneOutput] -> Bool
     lastSceneWasSuccessful = \case
@@ -65,6 +57,18 @@ runScenarioComputationHandler ScenarioInput{..} =
         PgSceneOk _   -> True
         _             -> False
       (_:xs) -> lastSceneWasSuccessful xs
+
+    buildScene
+      :: ( Reader.MonadReader Env m
+         , IO.MonadIO m
+         , State.MonadState ScriptContext m
+         )
+      => SceneFile
+      -> m SceneOutput
+    buildScene sceneFile =
+      case sceneFile of
+        HttpSceneFile{..} -> runHttpScene sceneFile _sceneHttpInput
+        PgSceneFile{..}   -> runPgScene sceneFile _scenePgInput
 
 
 -- * scene
