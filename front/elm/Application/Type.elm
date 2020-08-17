@@ -605,7 +605,7 @@ scriptExceptionToString scriptException =
             "UnknownVariable " ++ exprToString expr
 
         AssertEqualFailed e1 e2 ->
-            "AssertEqualFailed " ++ (exprToString e1) ++ " " ++ (exprToString e2)
+            "assertEqual failed: " ++ (exprToString e1) ++ " is not equal to " ++ (exprToString e2)
 
 
 -- * editable
@@ -741,22 +741,24 @@ exprToString expr =
     case expr of
         LBool x ->
             case x of
-                True -> "LBool true"
-                False -> "LBool false"
-        LInt x -> "LInt " ++ String.fromInt(x)
-        LString x -> "LString " ++ x
-        LFloat x -> "LFloat " ++ String.fromFloat(x)
-        LNull -> "LNull"
-        LRowElem (key, value) -> "LRowElem " ++ key ++ " " ++ exprToString value
-        LVar x -> "LVar " ++ x
-        LFetch x -> "LFetch " ++ x
+                True -> "Boolean true"
+                False -> "Boolean false"
+        LInt x -> "Integer " ++ String.fromInt(x)
+        LString x -> "String " ++ x
+        LFloat x -> "Float " ++ String.fromFloat(x)
+        LNull -> "null"
+        LRowElem (key, value) -> "RowElem " ++ key ++ " " ++ exprToString value
+        LVar x -> "var " ++ x
+        LFetch x -> "global var " ++ x
         LEq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
-        LHttpResponseBodyAsString -> "LHttpResponseBodyAsString"
-        LHttpResponseStatus -> "LHttpResponseStatus"
-        LPgSimpleResponse -> "LPgSimpleResponse"
-        LPgRichResponse -> "LPgRichResponse"
+        LHttpResponseBodyAsString -> "httpResponseBodyAsString"
+        LHttpResponseStatus -> "httpResponseStatus"
+        LPgSimpleResponse -> "pgResponse"
+        LPgRichResponse -> "pgResponseAsArray"
         LList xs ->
-            "LList"
+            List.map exprToString xs
+                |> String.join ", "
+                |> \s -> "[" ++ s ++ "]"
         LAccessOp _ _ ->
             "LAccessOp"
         LJson _ ->

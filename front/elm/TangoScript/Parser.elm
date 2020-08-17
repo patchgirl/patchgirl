@@ -135,13 +135,13 @@ exprParser =
         |. P.spaces
         |= P.oneOf
            [ lBoolParser
-           , lIntParser
            , httpResponseBodyAsStringParser
            , httpResponseStatusParser
            , pgSimpleTableParser
            , pgRichTableParser
            , listParser
            , varParser
+           , lIntParser
            , getParser
            , lStringParser
            , eJsonParser

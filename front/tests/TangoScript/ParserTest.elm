@@ -182,6 +182,10 @@ varTests =
       , input = "foo-bar"
       , expect = Ok <| LVar "foo"
       }
+    , { message = "parse var starting with `e`" -- cf issue with integer and floats starting with `e` (https://github.com/elm/parser/issues/28)
+      , input = "e"
+      , expect = Ok <| LVar "e"
+      }
     ]
 
 
@@ -274,6 +278,23 @@ eqTests =
 -- * proc
 
 
+-- ** set
+
+
+setTests : List (ParserTest (List P.DeadEnd) Proc)
+setTests =
+    [ { message = "parse simple `set`"
+      , input = """set("a", 1)"""
+      , expect = Ok <| Set "a" (LInt 1)
+      }
+    , { message = "parse `set`"
+      , input = """set("a", true)"""
+      , expect = Ok <| Set "a" (LBool True)
+      }
+    ]
+
+
+
 -- ** let
 
 
@@ -304,23 +325,6 @@ assertEqualTests =
       , expect = Ok <| AssertEqual (LInt 1) (LBool True)
       }
     ]
-
-
--- ** set
-
-
-setTests : List (ParserTest (List P.DeadEnd) Proc)
-setTests =
-    [ { message = "parse simple `set`"
-      , input = """set("a", 1)"""
-      , expect = Ok <| Set "a" (LInt 1)
-      }
-    , { message = "parse `set`"
-      , input = """set("a", true)"""
-      , expect = Ok <| Set "a" (LBool True)
-      }
-    ]
-
 
 
 -- * tango
@@ -437,7 +441,7 @@ checkExprParser : ParserTest (List P.DeadEnd) Expr -> Test
 checkExprParser { message, input, expect } =
     test message <|
         \_ ->
-            case P.run exprParser input of
+            case Debug.log "foo" <| P.run exprParser input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 
