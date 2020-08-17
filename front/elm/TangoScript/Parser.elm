@@ -41,7 +41,11 @@ reserved =
 
 -- * proc
 
-
+{- a procedure is an action to be executed.
+  It usually performs a side effect (setting a variable in a certain scope for exemple)
+  so you can view it as a function of type: executeProc :: IO ()
+  A list of procs can constitue a tangoscript program
+-}
 procParser : Parser Proc
 procParser =
     P.succeed identity
@@ -54,43 +58,12 @@ procParser =
         |. P.spaces
 
 
--- ** let
-
-
-letParser : Parser Proc
-letParser =
-    P.succeed Let
-        |. P.keyword "var"
-        |. P.spaces
-        |= variableNameParser
-        |. P.spaces
-        |. P.symbol "="
-        |. P.spaces
-        |= (P.lazy <| \_ -> exprParser)
-
-
--- ** assert equal
-
-
-assertEqualParser : Parser Proc
-assertEqualParser =
-    P.succeed AssertEqual
-        |. P.keyword "assertEqual"
-        |. P.spaces
-        |. P.symbol "("
-        |. P.spaces
-        |= (P.lazy <| \_ -> exprParser)
-        |. P.spaces
-        |. P.symbol ","
-        |. P.spaces
-        |= (P.lazy <| \_ -> exprParser)
-        |. P.spaces
-        |. P.symbol ")"
-
-
 -- ** set
 
-
+{-
+  set procedure is meant to set variable with a global scope
+  e.g: set("a", 1);
+-}
 setParser : Parser Proc
 setParser =
     P.succeed Set
@@ -107,9 +80,55 @@ setParser =
         |. P.symbol ")"
 
 
+-- ** let
+
+{-
+  `let` procedure is meant to set variables with a local scope
+  e.g: var a = 1;
+-}
+letParser : Parser Proc
+letParser =
+    P.succeed Let
+        |. P.keyword "var"
+        |. P.spaces
+        |= variableNameParser
+        |. P.spaces
+        |. P.symbol "="
+        |. P.spaces
+        |= (P.lazy <| \_ -> exprParser)
+
+
+-- ** assert equal
+
+
+{-
+  assertEqual is a function that compares two expressions
+  eg: assertEqual(1, 2);
+-}
+assertEqualParser : Parser Proc
+assertEqualParser =
+    P.succeed AssertEqual
+        |. P.keyword "assertEqual"
+        |. P.spaces
+        |. P.symbol "("
+        |. P.spaces
+        |= (P.lazy <| \_ -> exprParser)
+        |. P.spaces
+        |. P.symbol ","
+        |. P.spaces
+        |= (P.lazy <| \_ -> exprParser)
+        |. P.spaces
+        |. P.symbol ")"
+
+
 -- * expr
 
 
+{- expression is a self recursive type
+  it cannot appear at the top level of a tangoscript program (only procedure can)
+  so the following program is invalid: `someVar[0];`
+  whereAs this is valid: `var a = someVar[0];`
+ -}
 exprParser : Parser Expr
 exprParser =
     P.succeed identity
@@ -130,9 +149,17 @@ exprParser =
            ]
         |. P.spaces
 
+
+-- ** not accessible expr
+
+{- these expressions cannot be promoted to an accessible operator (e.g: `[]`)
+   because this doesn't make sense:
+     - 1[0];
+     - true[0];
+-}
 lIntParser : Parser Expr
 lIntParser =
-    P.int |> P.map (\int -> LInt int)
+    P.int |> P.map LInt
 
 lBoolParser : Parser Expr
 lBoolParser =
@@ -140,29 +167,60 @@ lBoolParser =
             , P.map (always (LBool False)) (P.keyword "false")
             ]
 
+
+-- ** accessible expr
+
+
+{- these expressions can be promoted to an accessible operator
+   because this make sense:
+     - "hello there"[4]
+     - [1, 2, 3, 4][0]
+     - ...
+ -}
+
 lStringParser : Parser Expr
 lStringParser =
-    doubleQuoteString |> P.map LString
+    doubleQuoteString
+        |> P.map LString
+        |> P.andThen promoteToAccessOpParser
+
+varParser : Parser Expr
+varParser =
+    variableNameParser
+        |> P.map LVar
+        |> P.andThen promoteToAccessOpParser
+
+variableNameParser : Parser String
+variableNameParser =
+  P.variable
+    { start = Char.isLower
+    , inner = \c -> Char.isAlphaNum c || c == '_'
+    , reserved = reserved
+    }
 
 httpResponseBodyAsStringParser : Parser Expr
 httpResponseBodyAsStringParser =
-    P.keyword "httpResponseBodyAsString" |> P.map (always LHttpResponseBodyAsString)
+    P.keyword "httpResponseBodyAsString"
+        |> P.map (always LHttpResponseBodyAsString)
+        |> P.andThen promoteToAccessOpParser
 
 httpResponseStatusParser : Parser Expr
 httpResponseStatusParser =
-    P.keyword "httpResponseStatus" |> P.map (always LHttpResponseStatus)
+    P.keyword "httpResponseStatus"
+        |> P.map (always LHttpResponseStatus)
+        |> P.andThen promoteToAccessOpParser
 
 pgSimpleTableParser : Parser Expr
 pgSimpleTableParser =
     P.keyword "postgresResponse"
         |> P.map (always LPgSimpleResponse)
-        |> P.andThen accessOpParser
+        |> P.andThen promoteToAccessOpParser
 
 pgRichTableParser : Parser Expr
 pgRichTableParser =
     P.keyword "postgresResponseAsArray"
         |> P.map (always LPgRichResponse)
-        |> P.andThen accessOpParser
+        |> P.andThen promoteToAccessOpParser
 
 getParser : Parser Expr
 getParser =
@@ -174,9 +232,7 @@ getParser =
         |= doubleQuoteString
         |. P.spaces
         |. P.symbol ")"
-
--- ** list
-
+        |> P.andThen promoteToAccessOpParser
 
 listParser : Parser Expr
 listParser =
@@ -189,14 +245,14 @@ listParser =
         , trailing = P.Forbidden
         }
         |> P.map LList
-        |> P.andThen accessOpParser
+        |> P.andThen promoteToAccessOpParser
 
 
 -- ** access operator
 
 
-accessOpParser : Expr -> Parser Expr
-accessOpParser expr =
+promoteToAccessOpParser : Expr -> Parser Expr
+promoteToAccessOpParser expr =
     let
         indexParser : Parser Expr
         indexParser =
@@ -213,34 +269,16 @@ accessOpParser expr =
                     , P.succeed Nothing
                     ]
 
-        promoteToAccessOpExpr : Expr -> Maybe Expr -> Expr
-        promoteToAccessOpExpr var mIndex =
+        promote : Expr -> Maybe Expr -> Parser Expr
+        promote var mIndex =
             case mIndex of
-                Just index -> LAccessOp var index
-                Nothing -> var
+                Just index ->
+                    promoteToAccessOpParser (LAccessOp expr index)
+                Nothing ->
+                    P.succeed expr
+
     in
-    maybeIndexParser
-        |> P.map (promoteToAccessOpExpr expr)
---        |> P.andThen accessOpParser
-
-
--- ** variable
-
-
-varParser : Parser Expr
-varParser =
-    variableNameParser
-        |> P.map LVar
-        |> P.andThen accessOpParser
-
-
-variableNameParser : Parser String
-variableNameParser =
-  P.variable
-    { start = Char.isLower
-    , inner = \c -> Char.isAlphaNum c || c == '_'
-    , reserved = reserved
-    }
+    maybeIndexParser |> P.andThen (promote expr)
 
 
 -- ** json
@@ -250,7 +288,7 @@ eJsonParser : Parser Expr
 eJsonParser =
     jsonParser
         |> P.map LJson
-        |> P.andThen accessOpParser
+        |> P.andThen promoteToAccessOpParser
 
 jsonValueParser : Parser Json
 jsonValueParser =
