@@ -47,6 +47,7 @@ type alias UserData =
 type Msg
     = LinkClicked UrlRequest
     | UrlChanged Url.Url
+    | DocumentationMsg DocumentationApp.Msg
     | BuilderAppMsg RequestBuilderApp.Msg
     | PGBuilderAppMsg PGBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
@@ -184,6 +185,11 @@ update msg model =
                 ( newModel, newSubMsg ) ->
                     ( newModel, Cmd.map MainNavBarMsg newSubMsg )
 
+        DocumentationMsg subMsg ->
+            case DocumentationApp.update subMsg of
+                newSubMsg ->
+                    ( model, Cmd.map DocumentationMsg newSubMsg )
+
         Animate subMsg ->
             let
                 newModel =
@@ -298,7 +304,7 @@ mainView model =
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
 
             DocumentationPage mDocumentation ->
-                appLayout (DocumentationApp.view mDocumentation)
+                appLayout <| map DocumentationMsg (DocumentationApp.view mDocumentation)
 
             TangoScriptPage ->
                 appLayout <| map TangoScriptMsg (TangoScriptApp.view model)

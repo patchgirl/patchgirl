@@ -1,4 +1,4 @@
-module Page exposing (Page(..), href, urlToPage, Documentation(..))
+module Page exposing (Page(..), href, urlToPage, Documentation(..), documentationToString, documentationFromString)
 
 import Url
 import Url.Parser as Url exposing ((</>))
@@ -32,16 +32,26 @@ documentationToString documentation =
             "scenario"
 
         RequestDoc ->
-            "request"
+            "http-request"
 
         PostgresDoc ->
             "postgres"
 
         EnvironmentDoc ->
-            "environment"
+            "environment-variables"
 
         PatchGirlRunnerAppDoc ->
-            "patchGirlRunnerApp"
+            "patchgirl-runner"
+
+documentationFromString : String -> Maybe Documentation
+documentationFromString documentation =
+    case documentation of
+        "scenario" -> Just ScenarioDoc
+        "http-request" -> Just RequestDoc
+        "postgres" -> Just PostgresDoc
+        "environment-variables" -> Just EnvironmentDoc
+        "patchgirl-runner" -> Just PatchGirlRunnerAppDoc
+        _ -> Nothing
 
 
 -- * parser
@@ -57,7 +67,7 @@ documentationParser =
         parser : String -> Maybe Documentation
         parser s =
             case s of
-                "request" ->
+                "http-request" ->
                     Just RequestDoc
 
                 "postgres" ->
@@ -66,10 +76,10 @@ documentationParser =
                 "scenario" ->
                     Just ScenarioDoc
 
-                "environment" ->
+                "environment-variables" ->
                     Just EnvironmentDoc
 
-                "patchGirlRunnerApp" ->
+                "patchgirl-runner" ->
                     Just PatchGirlRunnerAppDoc
 
                 _  ->

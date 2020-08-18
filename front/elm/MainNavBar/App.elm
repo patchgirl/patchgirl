@@ -391,7 +391,7 @@ centerView model =
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
             { url = href (ReqPage Nothing Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = "Request" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = "HTTP" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
