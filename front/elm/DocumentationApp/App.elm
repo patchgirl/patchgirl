@@ -57,7 +57,6 @@ update msg =
                 |> Task.attempt (always NoOp)
 
 
-
 -- * view
 
 
@@ -70,6 +69,7 @@ view currentDocumentation =
                                   , scenarioView
                                   , environmentView
                                   , patchgirlRunnerAppView
+                                  , tangoscriptView
                                   ] |> traverseListResult
 
         mkMenuItem : DocMenu -> Element Msg
@@ -113,7 +113,6 @@ view currentDocumentation =
                         , label = text title
                         }
 
-
         mkMenu : List DocPage -> List (Element Msg)
         mkMenu docPages =
             List.map .menu docPages
@@ -132,45 +131,6 @@ view currentDocumentation =
                            ] (mkMenu docPages)
             , contentView currentDocumentation
             ]
-
-
--- * navigation
-
-
-navView : Documentation -> Element msg
-navView documentation =
-    column [ Background.color white
-           , boxShadow
-           , spacing 20
-           , padding 20
-           , alignTop
-           ]
-        [ documentationLink documentation RequestDoc "Request"
-        , documentationLink documentation PostgresDoc "Postgresql"
-        , documentationLink documentation ScenarioDoc "Scenario"
-        , documentationLink documentation EnvironmentDoc "Environment"
-        , documentationLink documentation PatchGirlRunnerAppDoc "PatchGirl Runner App"
-        ]
-
-documentationLink : Documentation -> Documentation -> String -> Element msg
-documentationLink currentDocumentation documentation title =
-    let
-        selected : Bool
-        selected =
-            currentDocumentation == documentation
-    in
-    link []
-        { url = href (DocumentationPage (documentation))
-        , label =
-            case selected of
-                True ->
-                    el [ paddingXY 20 0 ] <|
-                        iconWithAttr { defaultIconAttribute
-                                         | title = title
-                                         , icon = "keyboard_arrow_right"
-                                     }
-                False -> el [] (text title)
-        }
 
 
 -- * content
@@ -202,6 +162,9 @@ contentView documentation =
 
             PatchGirlRunnerAppDoc ->
                 doc patchgirlRunnerAppView
+
+            TangoscriptDoc ->
+                doc tangoscriptView
 
 
 -- ** request
@@ -272,55 +235,13 @@ scenarioView =
     """
 # Scenario
 
-The "Scenario" menu allows you to play HTTP and postgres SQL requests sequentially.
-
-## Requests
-
-Only existing http or postgres requests can be added to a scenario.
+The "Scenario" menu allows you to compose **scenes** into a scenario and play them sequentially.
+A scene is defined as a request of any types (HTTP, SQL,...).
 
 ## [Pre|Post] Script
 
-You can add script before and after every http requests of a scenario. This might come in handy if you need to override a variable before executing a request or if you need to test the response of a request.
-Script uses a syntax similar to javascript.
-
-### Local variable
-
-In your [pre|post] script, you can define local variable with the syntax:
-
-**`var foo = 1;`**
-
-Local variable's scope is only limited to the script they are being defined in.
-
-### Global variable
-
-You can define a variable that will live through out its script with the syntax:
-
-**`set("foo", 1);`**
-
-You can use a global variable with this syntax:
-
-**`get("foo");`**
-
-Note that global variable's scope is only limited to the scenario they are defined in.
-For variable that lives everywhere, you need to use environment variables.
-
-### Assertion
-
-When you run a scenario, you can make assertions in a script with the `assertEqual` function. Its syntax is:
-
-**`assertEqual("someValue", "someOtherValue");`**
-
-If both parameter are of the same type and same value, then the script succeeds.
-When an assertion fails, every following scenes of a scenario won't be ran.
-
-
-#### Http assertion
-
-In a post script, some utilities are available:
-- **`httpResponseBodyAsString`** returns the response body as a string
-- **`httpResponseStatus`** returns the response status as an int
-
-So if you want to check that the response succeeded you can write: **`assertEqual(httpResponseStatus, 200);`**
+You can add a script right before and/or just after every scene execution. This might come in handy if you need to override a variable before executing a request or if you need to test the response of a scene.
+Script are written with [Tangoscript](/#app/documentation/tangoscript).
 
 """
 
@@ -367,13 +288,119 @@ As of today, the PatchGirl runner app is only available on Linux and MacOS. We p
 
 Installation is quite easy because the PatchGirl runner app is a standalone executable. After downloading it, you only need to run it:
 
-**`chmod +x ./linux-x86-64-patchgirl-runner-exe`**
-
-**`./linux-x86-64-patchgirl-runner-exe`**
+```bash
+chmod +x ./linux-x86-64-patchgirl-runner-exe
+./linux-x86-64-patchgirl-runner-exe
+```
 
 Once it is running you should see 2 green arrows appearing in the [UI](https://patchgirl.io/#app/scenario) in the top right hand corner.
 This means that PatchGirl Runner is enabled and that you can play all kinds of requests (HTTP, SQL, scenarios...) straight from your computer.
     """
+
+
+-- ** tangoscript
+
+
+tangoscriptView : String
+tangoscriptView =
+    """
+# Tangoscript
+
+Tangoscript is a small scripting language that will help you interact with scenario. It main purpose is to get and parse results (HTTP response, SQL response,...) store local or global variables to reuse them accross a scenario.
+
+## Set local variables
+
+Local variables are variables that lives accross a single scene. You can instantiate a variables in a prescript and use it in its postscript.
+Local variables can be set with the syntax:
+
+```tangoscript
+var foo = 1;
+```
+
+Local variables can be used in the input of a scene with the mustache syntax:
+
+```
+http://domain.com/users/{{foo}}
+```
+
+## Set global variables
+
+Global variables lives accross an entire scenario.
+e.g: given a scenario composed of 3 HTTP requests. If you define a global variable in the first HTTP request, it can be used in the last HTTP request as well.
+
+Global variables can be set with the syntax:
+
+```tangoscript
+set("foo", 1);
+```
+
+Global variables can be used in a script with the syntax:
+
+```tangoscript
+fetch("foo");
+```
+
+Global variables can be used in the input of a scene with the mustache syntax:
+
+```
+http://domain.com/users/{{foo}}
+```
+
+## Assertion
+
+Assertions are useful when you want to make sure some data is equal to an expected result.
+Assertions can be used with the syntax:
+
+```tangoscript
+assertEqual(a, b);
+```
+
+Note that `a` and `b` must be of the same type to make assertEqual succeeds.
+If an `assertEqual` fails, all following scenes of a scenario won't be played.
+
+## Accessing a scene response
+
+Tangoscript make it easy to access a scene response by providing functions. Note that these functions are only available in the scene's postscript.
+If you wish to make a response available everywhere, you can store it in a global variable.
+
+### HTTP response
+
+In an HTTP post script, the following functions are available:
+
+```tangoscript
+httpResponseBodyAsString // returns the response body as a string
+httpResponseStatus // returns the response status as an int
+```
+
+So if you want to check that the response succeeded you can write:
+
+```tangoscript
+assertEqual(httpResponseStatus, 200);
+```
+
+### Postgres response
+
+In an Postgres SQL post script, the following functions are available:
+
+```tangoscript
+// returns the response as a raw array without the table headers
+postgresResponseAsArray
+// returns the response and makes it easier to access a particular field
+postgresResponse
+```
+
+Given the SQL query:
+
+```SQL
+select 1 as id, "john" as name;
+```
+They can be used like this:
+
+```tangoscript
+assertEqual(postgresResponseAsArray, [1,"john"]);
+assertEqual(postgresResponse[0]["id"], 1);
+```
+"""
 
 
 -- * markdown

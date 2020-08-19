@@ -24,6 +24,7 @@ type Documentation
     | PostgresDoc
     | EnvironmentDoc
     | PatchGirlRunnerAppDoc
+    | TangoscriptDoc
 
 documentationToString : Documentation -> String
 documentationToString documentation =
@@ -43,6 +44,9 @@ documentationToString documentation =
         PatchGirlRunnerAppDoc ->
             "patchgirl-runner"
 
+        TangoscriptDoc ->
+            "tangoscript"
+
 documentationFromString : String -> Maybe Documentation
 documentationFromString documentation =
     case documentation of
@@ -51,6 +55,7 @@ documentationFromString documentation =
         "postgres" -> Just PostgresDoc
         "environment-variables" -> Just EnvironmentDoc
         "patchgirl-runner" -> Just PatchGirlRunnerAppDoc
+        "tangoscript" -> Just TangoscriptDoc
         _ -> Nothing
 
 
@@ -81,6 +86,9 @@ documentationParser =
 
                 "patchgirl-runner" ->
                     Just PatchGirlRunnerAppDoc
+
+                "tangoscript" ->
+                    Just TangoscriptDoc
 
                 _  ->
                     Nothing

@@ -284,7 +284,7 @@ mainView model =
                      ]
 
     in
-        case model.page of
+        case Debug.log "e" model.page of
             HomePage ->
                 homeView
 
