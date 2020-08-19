@@ -8,7 +8,7 @@ import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
 import Json.Decode as Json
-
+import Regex exposing (Regex)
 
 
 -- * color
@@ -519,3 +519,28 @@ traverseListResult list =
         )
         (Ok [])
         list
+
+
+-- * string
+
+
+softEllipsis : Int -> String -> String
+softEllipsis howLong string =
+    if String.length string <= howLong then
+        string
+
+    else
+        string
+            |> Regex.findAtMost 1 (softBreakRegexp howLong)
+            |> List.map .match
+            |> String.join ""
+            |> Regex.replace (regexFromString "([\\.,;:\\s])+$") (always "")
+            |> (\a -> String.append a "...")
+
+regexFromString : String -> Regex
+regexFromString =
+    Regex.fromString >> Maybe.withDefault Regex.never
+
+softBreakRegexp : Int -> Regex.Regex
+softBreakRegexp width =
+    regexFromString <| ".{1," ++ String.fromInt width ++ "}(\\s+|$)|\\S+?(\\s+|$)"

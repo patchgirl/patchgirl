@@ -801,7 +801,7 @@ httpDetailedSceneView model scene fileRecord =
                         }
 
         sceneInputDetailView =
-            column [ width fill, spacing 10 ]
+            column [ width fill, spacing 15 ]
               [ row [ spacing 10, width fill ]
                     [ link [ alignLeft ]
                           { url = href <| ReqPage (Just scene.nodeId) (Just model.id)
@@ -818,7 +818,15 @@ httpDetailedSceneView model scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
-              , el [ ] (text methodAndUrl)
+              , el [ width fill
+                   , padding 10
+                   , Border.rounded 5
+                   , Background.color secondaryColor
+                   , Font.family
+                         [ Font.typeface "Roboto"
+                         , Font.monospace
+                         ]
+                   ] (text methodAndUrl)
               ]
 
         whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
@@ -906,8 +914,12 @@ httpDetailedSceneView model scene fileRecord =
 pgDetailedSceneView : Model -> Scene -> PgFileRecord -> List (Element Msg)
 pgDetailedSceneView model scene fileRecord =
     let
+        sqlText =
+            editedOrNotEditedValue fileRecord.sql
+                |> softEllipsis 80
+
         sceneInputDetailView =
-            column [ width fill, spacing 10 ]
+            column [ width fill, spacing 15 ]
               [ row [ width fill ]
                     [ link [ alignLeft ]
                           { url = href <| PgPage (Just fileRecord.id)
@@ -923,6 +935,15 @@ pgDetailedSceneView model scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
+              , el [ width fill
+                   , padding 10
+                   , Border.rounded 5
+                   , Background.color secondaryColor
+                   , Font.family
+                         [ Font.typeface "Roboto"
+                         , Font.monospace
+                         ]
+                   ] <| text sqlText
               ]
 
         outputSceneDetailView : SceneComputation -> Element Msg
