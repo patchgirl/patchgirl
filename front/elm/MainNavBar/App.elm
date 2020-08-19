@@ -159,7 +159,15 @@ view model =
                      , Background.color secondaryColor
                      , Font.color primaryColor
                      , Font.center
-                     ] (text "Sandbox mode - data will be reset every 5min, sign in to keep your data!")
+                     ] <|
+                      row [ centerX ]
+                          [ text "Sandbox mode - data will be reset every 5min, "
+                          , link []
+                              { url = githubOauthLink
+                              , label = el [ Font.underline ] (text "sign in")
+                              }
+                          , text " to keep your data!"
+                          ]
 
               _ ->
                   none
@@ -305,11 +313,6 @@ visitorRightView model =
 
 signInView : Model a -> Element Msg
 signInView model =
-    let
-        {- todo this url should be dynamic depending on the env -}
-        githubOauthLink =
-            "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
-    in
     link
         ([ Events.onMouseEnter (ShowMainMenuName SignInMenu)
          , Events.onMouseLeave HideMainMenuName
@@ -488,3 +491,9 @@ isPgPage page =
 
         _ ->
             False
+
+
+{- todo this url should be dynamic depending on the env -}
+githubOauthLink : String
+githubOauthLink =
+    "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
