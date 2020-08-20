@@ -11,7 +11,7 @@ import Http
 import Page exposing (..)
 import Random
 import Util exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 
 
 
@@ -21,43 +21,43 @@ import Uuid
 type alias Model a =
     { a
         | requestCollection : RequestCollection
-        , displayedRequestNodeMenuId : Maybe Uuid.Uuid
+        , displayedRequestNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
+        , page : Page
     }
-
 
 
 -- * message
 
 
 type Msg
-    = ToggleFolder Uuid.Uuid
-    | ToggleMenu Uuid.Uuid
+    = ToggleFolder Uuid
+    | ToggleMenu Uuid
       -- mkdir
-    | GenerateRandomUUIDForFolder Uuid.Uuid
-    | AskMkdir Uuid.Uuid Uuid.Uuid
-    | Mkdir Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForFolder Uuid
+    | AskMkdir Uuid Uuid
+    | Mkdir Uuid Uuid
       -- create file
-    | GenerateRandomUUIDForFile Uuid.Uuid
-    | AskTouch Uuid.Uuid Uuid.Uuid
-    | Touch Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForFile Uuid
+    | AskTouch Uuid Uuid
+    | Touch Uuid Uuid
       -- create root file
     | GenerateRandomUUIDForRootFile
-    | AskTouchRoot Uuid.Uuid
-    | TouchRoot Uuid.Uuid
+    | AskTouchRoot Uuid
+    | TouchRoot Uuid
       -- create root folder
     | GenerateRandomUUIDForRootFolder
-    | AskMkdirRoot Uuid.Uuid
-    | MkdirRoot Uuid.Uuid
+    | AskMkdirRoot Uuid
+    | MkdirRoot Uuid
       -- rename
-    | ShowRenameInput Uuid.Uuid
-    | ChangeName Uuid.Uuid String -- while focus is on the input
-    | AskRename Uuid.Uuid String -- validate input
-    | Rename Uuid.Uuid String -- refresh input
+    | ShowRenameInput Uuid
+    | ChangeName Uuid String -- while focus is on the input
+    | AskRename Uuid String -- validate input
+    | Rename Uuid String -- refresh input
       -- delete
-    | AskDelete Uuid.Uuid
-    | Delete Uuid.Uuid
+    | AskDelete Uuid
+    | Delete Uuid
     | BuilderTreeServerError
 
 
@@ -343,10 +343,22 @@ update msg model =
 
 
 -- * util
+
+
+getSelectedBuilderId : Model a -> Maybe Uuid
+getSelectedBuilderId model =
+    case model.page of
+        ReqPage (Just id) _ ->
+            Just id
+
+        _ ->
+            Nothing
+
+
 -- ** msg handler
 
 
-renameNodeResultToMsg : Uuid.Uuid -> String -> Result Http.Error () -> Msg
+renameNodeResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 renameNodeResultToMsg id newName result =
     case result of
         Ok _ ->
@@ -356,7 +368,7 @@ renameNodeResultToMsg id newName result =
             BuilderTreeServerError
 
 
-createRequestFolderResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+createRequestFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
 createRequestFolderResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
@@ -366,7 +378,7 @@ createRequestFolderResultToMsg parentNodeId id result =
             BuilderTreeServerError
 
 
-deleteRequestNodeResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteRequestNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
 deleteRequestNodeResultToMsg id result =
     case result of
         Ok _ ->
@@ -376,7 +388,7 @@ deleteRequestNodeResultToMsg id result =
             BuilderTreeServerError
 
 
-newRequestFileResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+newRequestFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
 newRequestFileResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
@@ -386,7 +398,7 @@ newRequestFileResultToMsg parentNodeId id result =
             BuilderTreeServerError
 
 
-createRootRequestFileResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootRequestFileResultToMsg : Uuid -> Result Http.Error () -> Msg
 createRootRequestFileResultToMsg id result =
     case result of
         Ok _ ->
@@ -396,7 +408,7 @@ createRootRequestFileResultToMsg id result =
             BuilderTreeServerError
 
 
-createRootRequestFolderResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootRequestFolderResultToMsg : Uuid -> Result Http.Error () -> Msg
 createRootRequestFolderResultToMsg id result =
     case result of
         Ok _ ->
@@ -410,7 +422,7 @@ createRootRequestFolderResultToMsg id result =
 -- ** tree manipulation
 
 
-getRequestNodeId : RequestNode -> Uuid.Uuid
+getRequestNodeId : RequestNode -> Uuid
 getRequestNodeId requestNode =
     case requestNode of
         RequestFolder { id } ->
@@ -420,7 +432,7 @@ getRequestNodeId requestNode =
             id
 
 
-modifyRequestNode : Uuid.Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
+modifyRequestNode : Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
 modifyRequestNode id f requestNode =
     case getRequestNodeId requestNode == id of
         True ->
@@ -439,7 +451,7 @@ modifyRequestNode id f requestNode =
                         }
 
 
-deleteRequestNode : Uuid.Uuid -> RequestNode -> List RequestNode
+deleteRequestNode : Uuid -> RequestNode -> List RequestNode
 deleteRequestNode idToDelete requestNode =
     case getRequestNodeId requestNode == idToDelete of
         True ->
@@ -472,7 +484,7 @@ toggleFolder node =
                 }
 
 
-mkdir : Uuid.Uuid -> RequestNode -> RequestNode
+mkdir : Uuid -> RequestNode -> RequestNode
 mkdir id node =
     case node of
         (RequestFile _) as file ->
@@ -486,7 +498,7 @@ mkdir id node =
                 }
 
 
-touch : Uuid.Uuid -> RequestNode -> RequestNode
+touch : Uuid -> RequestNode -> RequestNode
 touch id parentNode =
     case parentNode of
         (RequestFile _) as file ->
@@ -538,7 +550,7 @@ tempRename newName node =
             RequestFile { file | name = changeEditedValue newName file.name }
 
 
-mkDefaultFolder : Uuid.Uuid -> RequestNode
+mkDefaultFolder : Uuid -> RequestNode
 mkDefaultFolder id =
     RequestFolder
         { id = id
@@ -548,7 +560,7 @@ mkDefaultFolder id =
         }
 
 
-mkDefaultFile : Uuid.Uuid -> RequestNode
+mkDefaultFile : Uuid -> RequestNode
 mkDefaultFile id =
     RequestFile
         { id = id
@@ -587,7 +599,7 @@ view model =
                 ]
 
         treeView =
-            column [ spacing 10 ] (nodeView model.displayedRequestNodeMenuId requestNodes)
+            column [ spacing 10 ] (nodeView model requestNodes)
     in
     column [ alignTop, spacing 20, centerX ]
         [ mainMenuView
@@ -595,8 +607,8 @@ view model =
         ]
 
 
-nodeView : Maybe Uuid.Uuid -> List RequestNode -> List (Element Msg)
-nodeView mDisplayedRequestNodeMenuIndex requestCollection =
+nodeView : Model a -> List RequestNode -> List (Element Msg)
+nodeView model requestCollection =
     case requestCollection of
         [] ->
             []
@@ -606,23 +618,23 @@ nodeView mDisplayedRequestNodeMenuIndex requestCollection =
                 RequestFolder { id, name, open, children } ->
                     let
                         folderChildrenView =
-                            nodeView mDisplayedRequestNodeMenuIndex children
+                            nodeView model children
 
                         tailView =
-                            nodeView mDisplayedRequestNodeMenuIndex tail
+                            nodeView model tail
 
                         currentFolderView =
-                            folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open
+                            folderView id model name folderChildrenView open
                     in
                     currentFolderView :: tailView
 
                 RequestFile { id, name } ->
                     let
                         tailView =
-                            nodeView mDisplayedRequestNodeMenuIndex tail
+                            nodeView model tail
 
                         currentFileView =
-                            fileView id mDisplayedRequestNodeMenuIndex name
+                            fileView id model name
                     in
                     currentFileView :: tailView
 
@@ -631,15 +643,20 @@ nodeView mDisplayedRequestNodeMenuIndex requestCollection =
 -- ** file view
 
 
-fileReadView : String -> Uuid.Uuid -> Element Msg
-fileReadView name id =
+fileReadView : Model a -> String -> Uuid -> Element Msg
+fileReadView model name id =
+    let
+        color =
+            case getSelectedBuilderId model == Just id of
+                True -> primaryColor
+                False -> secondaryColor
+    in
     link []
         { url = href (ReqPage (Just id) Nothing)
-        , label = el [] <| iconWithTextAndColor "label" name secondaryColor
+        , label = el [] <| iconWithTextAndColor "label" name color
         }
 
-
-fileEditView : String -> Uuid.Uuid -> Element Msg
+fileEditView : String -> Uuid -> Element Msg
 fileEditView name id =
     Input.text
         [ Util.onEnterWithInput (AskRename id)
@@ -650,20 +667,19 @@ fileEditView name id =
         , label = Input.labelHidden "rename file"
         }
 
-
-fileView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> Element Msg
-fileView id mDisplayedRequestNodeMenuIndex name =
+fileView : Uuid -> Model a -> Editable String -> Element Msg
+fileView id model name =
     let
         modeView =
             case name of
                 NotEdited value ->
-                    fileReadView value id
+                    fileReadView model value id
 
                 Edited oldValue newValue ->
                     fileEditView newValue id
 
         showMenu =
-            mDisplayedRequestNodeMenuIndex == Just id
+            model.displayedRequestNodeMenuId == Just id
 
         menuView =
             case not showMenu of
@@ -717,7 +733,7 @@ folderWithIconView name isOpen =
     iconWithText folderIconText name
 
 
-folderMenuView : Uuid.Uuid -> Bool -> Element Msg
+folderMenuView : Uuid -> Bool -> Element Msg
 folderMenuView id isOpen =
     let
         iconClass =
@@ -759,7 +775,7 @@ folderMenuView id isOpen =
             row [] [ menuIcon ]
 
 
-folderReadView : Uuid.Uuid -> String -> Bool -> Element Msg
+folderReadView : Uuid -> String -> Bool -> Element Msg
 folderReadView id name isOpen =
     Input.button []
         { onPress = Just <| ToggleFolder id
@@ -767,7 +783,7 @@ folderReadView id name isOpen =
         }
 
 
-folderEditView : Uuid.Uuid -> String -> Element Msg
+folderEditView : Uuid -> String -> Element Msg
 folderEditView id name =
     Input.text
         [ Util.onEnterWithInput (AskRename id)
@@ -779,8 +795,8 @@ folderEditView id name =
         }
 
 
-folderView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
-folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open =
+folderView : Uuid -> Model a -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+folderView id model name folderChildrenView open =
     let
         modeView =
             case name of
@@ -791,7 +807,7 @@ folderView id mDisplayedRequestNodeMenuIndex name folderChildrenView open =
                     folderEditView id newValue
 
         showMenu =
-            Just id == mDisplayedRequestNodeMenuIndex
+            Just id == model.displayedRequestNodeMenuId
     in
     column [ width (fill |> maximum 300) ]
         [ row []
