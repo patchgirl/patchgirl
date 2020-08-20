@@ -2,7 +2,7 @@ module Page exposing (Page(..), href, urlToPage, Documentation(..), documentatio
 
 import Url
 import Url.Parser as Url exposing ((</>))
-import Uuid
+import Uuid exposing (Uuid)
 
 
 -- * model
@@ -10,10 +10,10 @@ import Uuid
 
 type Page
     = HomePage
-    | ReqPage (Maybe Uuid.Uuid) (Maybe Uuid.Uuid)
-    | PgPage (Maybe Uuid.Uuid)
+    | ReqPage (Maybe Uuid) (Maybe Uuid)
+    | PgPage (Maybe Uuid)
     | EnvPage
-    | ScenarioPage (Maybe Uuid.Uuid)
+    | ScenarioPage (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
     | TangoScriptPage
@@ -62,7 +62,7 @@ documentationFromString documentation =
 -- * parser
 
 
-uuidParser : Url.Parser (Uuid.Uuid -> b) b
+uuidParser : Url.Parser (Uuid -> b) b
 uuidParser =
     Url.custom "UUID" Uuid.fromString
 

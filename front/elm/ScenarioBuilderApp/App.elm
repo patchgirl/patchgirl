@@ -15,7 +15,7 @@ import Page exposing (..)
 import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import ScenarioBuilderApp.ScenarioTree.App as ScenarioTree
 import Util exposing (..)
-import Uuid
+import Uuid exposing(Uuid)
 
 
 
@@ -30,7 +30,7 @@ type alias Model a =
         , scenarioCollection : ScenarioCollection
         , requestCollection : RequestCollection
         , pgCollection : PgCollection
-        , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
+        , displayedScenarioNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
@@ -94,7 +94,7 @@ update msg model =
 -- * util
 
 
-getSelectedBuilderId : Model a -> Maybe Uuid.Uuid
+getSelectedBuilderId : Model a -> Maybe Uuid
 getSelectedBuilderId model =
     case model.page of
         ScenarioPage (Just id) ->
@@ -128,7 +128,7 @@ getBuilder model =
 convertFromFileToBuilder :
     ScenarioFileRecord
     -> Model a
-    -> Uuid.Uuid
+    -> Uuid
     -> List (Storable NewKeyValue KeyValue)
     -> ScenarioBuilder.Model
 convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =

@@ -39,7 +39,7 @@ type alias Model =
     { session : Session
     , notification : Maybe String
     , whichModal : Maybe Modal
-    , id : Uuid.Uuid
+    , id : Uuid
     , requestCollection : RequestCollection
     , pgCollection : PgCollection
     , scenarioCollectionId : Uuid
@@ -452,7 +452,7 @@ update msg model =
 -- * util
 
 
-mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> ActorType -> Scene
+mkDefaultScene : Uuid -> Uuid -> ActorType -> Scene
 mkDefaultScene id nodeId actorType =
     { id = id
     , nodeId = nodeId
@@ -475,7 +475,7 @@ runScenarioResultToMsg result =
             Debug.todo "server error" ServerError
 
 
-deleteSceneResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteSceneResultToMsg : Uuid -> Result Http.Error () -> Msg
 deleteSceneResultToMsg sceneId result =
     case result of
         Ok () ->
@@ -716,7 +716,7 @@ sceneView model scene =
 -- ** arrow view
 
 
-arrowView : Uuid.Uuid -> Element Msg
+arrowView : Uuid -> Element Msg
 arrowView id =
     let
         addSceneBtn =
@@ -1102,7 +1102,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                             in
                             currentFileView :: tailView
 
-        httpFolderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+        httpFolderView : Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
         httpFolderView id name folderChildrenView open =
             let
                 folderIcon =
@@ -1157,7 +1157,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                             in
                             currentFileView :: tailView
 
-        pgFolderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+        pgFolderView : Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
         pgFolderView id name folderChildrenView open =
             let
                 folderIcon =

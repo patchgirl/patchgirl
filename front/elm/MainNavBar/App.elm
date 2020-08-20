@@ -377,7 +377,7 @@ centerView model =
                 , iconVerticalAlign = Just "text-top"
             }
 
-        currentDisplayedBuilderId : Maybe Uuid.Uuid
+        currentDisplayedBuilderId : Maybe Uuid
         currentDisplayedBuilderId =
             case model.page of
                 ReqPage mId _ ->

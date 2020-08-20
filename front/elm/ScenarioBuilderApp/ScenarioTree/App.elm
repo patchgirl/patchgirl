@@ -8,8 +8,7 @@ import Http
 import Page exposing (..)
 import Random
 import Util exposing (..)
-import Uuid
-
+import Uuid exposing (Uuid)
 
 
 -- * model
@@ -18,43 +17,43 @@ import Uuid
 type alias Model a =
     { a
         | scenarioCollection : ScenarioCollection
-        , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
+        , displayedScenarioNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
+        , page : Page
     }
-
 
 
 -- * message
 
 
 type Msg
-    = ToggleFolder Uuid.Uuid
-    | ToggleMenu Uuid.Uuid
+    = ToggleFolder Uuid
+    | ToggleMenu Uuid
       -- mkdir
-    | GenerateRandomUUIDForFolder Uuid.Uuid
-    | AskMkdir Uuid.Uuid Uuid.Uuid
-    | Mkdir Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForFolder Uuid
+    | AskMkdir Uuid Uuid
+    | Mkdir Uuid Uuid
       -- create file
-    | GenerateRandomUUIDForFile Uuid.Uuid
-    | AskTouch Uuid.Uuid Uuid.Uuid
-    | Touch Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForFile Uuid
+    | AskTouch Uuid Uuid
+    | Touch Uuid Uuid
       -- create root file
     | GenerateRandomUUIDForRootFile
-    | AskTouchRoot Uuid.Uuid
-    | TouchRoot Uuid.Uuid
+    | AskTouchRoot Uuid
+    | TouchRoot Uuid
       -- create root folder
     | GenerateRandomUUIDForRootFolder
-    | AskMkdirRoot Uuid.Uuid
-    | MkdirRoot Uuid.Uuid
+    | AskMkdirRoot Uuid
+    | MkdirRoot Uuid
       -- rename
-    | ShowRenameInput Uuid.Uuid
-    | ChangeName Uuid.Uuid String -- while focus is on the input
-    | AskRename Uuid.Uuid String -- validate input
-    | Rename Uuid.Uuid String -- refresh input
+    | ShowRenameInput Uuid
+    | ChangeName Uuid String -- while focus is on the input
+    | AskRename Uuid String -- validate input
+    | Rename Uuid String -- refresh input
       -- delete
-    | AskDelete Uuid.Uuid
-    | Delete Uuid.Uuid
+    | AskDelete Uuid
+    | Delete Uuid
     | ScenarioBuilderTreeServerError
 
 
@@ -375,10 +374,22 @@ update msg model =
 
 
 -- * util
+
+
+getSelectedBuilderId : Model a -> Maybe Uuid
+getSelectedBuilderId model =
+    case model.page of
+        ScenarioPage (Just id) ->
+            Just id
+
+        _ ->
+            Nothing
+
+
 -- ** msg handler
 
 
-renameNodeResultToMsg : Uuid.Uuid -> String -> Result Http.Error () -> Msg
+renameNodeResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 renameNodeResultToMsg id newName result =
     case result of
         Ok _ ->
@@ -388,7 +399,7 @@ renameNodeResultToMsg id newName result =
             ScenarioBuilderTreeServerError
 
 
-createScenarioFolderResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+createScenarioFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
 createScenarioFolderResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
@@ -398,7 +409,7 @@ createScenarioFolderResultToMsg parentNodeId id result =
             ScenarioBuilderTreeServerError
 
 
-deleteScenarioNodeResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteScenarioNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
 deleteScenarioNodeResultToMsg id result =
     case result of
         Ok _ ->
@@ -408,7 +419,7 @@ deleteScenarioNodeResultToMsg id result =
             ScenarioBuilderTreeServerError
 
 
-newScenarioFileResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+newScenarioFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
 newScenarioFileResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
@@ -418,7 +429,7 @@ newScenarioFileResultToMsg parentNodeId id result =
             ScenarioBuilderTreeServerError
 
 
-createRootScenarioFileResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootScenarioFileResultToMsg : Uuid -> Result Http.Error () -> Msg
 createRootScenarioFileResultToMsg id result =
     case result of
         Ok _ ->
@@ -428,7 +439,7 @@ createRootScenarioFileResultToMsg id result =
             ScenarioBuilderTreeServerError
 
 
-createRootScenarioFolderResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootScenarioFolderResultToMsg : Uuid -> Result Http.Error () -> Msg
 createRootScenarioFolderResultToMsg id result =
     case result of
         Ok _ ->
@@ -442,7 +453,7 @@ createRootScenarioFolderResultToMsg id result =
 -- ** tree manipulation
 
 
-getScenarioNodeId : ScenarioNode -> Uuid.Uuid
+getScenarioNodeId : ScenarioNode -> Uuid
 getScenarioNodeId scenarioNode =
     case scenarioNode of
         ScenarioFolder { id } ->
@@ -451,7 +462,7 @@ getScenarioNodeId scenarioNode =
         ScenarioFile { id } ->
             id
 
-findFile : List ScenarioNode -> Uuid.Uuid -> Maybe ScenarioFileRecord
+findFile : List ScenarioNode -> Uuid -> Maybe ScenarioFileRecord
 findFile scenarioNodes id =
     case findNode scenarioNodes id of
         Just (ScenarioFile file) ->
@@ -460,7 +471,7 @@ findFile scenarioNodes id =
         _ ->
             Nothing
 
-findNode : List ScenarioNode -> Uuid.Uuid -> Maybe ScenarioNode
+findNode : List ScenarioNode -> Uuid -> Maybe ScenarioNode
 findNode scenarioNodes id =
     let
         find : ScenarioNode -> Maybe ScenarioNode
@@ -485,7 +496,7 @@ findNode scenarioNodes id =
     List.head <| catMaybes (List.map find scenarioNodes)
 
 
-modifyScenarioNode : Uuid.Uuid -> (ScenarioNode -> ScenarioNode) -> ScenarioNode -> ScenarioNode
+modifyScenarioNode : Uuid -> (ScenarioNode -> ScenarioNode) -> ScenarioNode -> ScenarioNode
 modifyScenarioNode id f scenarioNode =
     case getScenarioNodeId scenarioNode == id of
         True ->
@@ -504,7 +515,7 @@ modifyScenarioNode id f scenarioNode =
                         }
 
 
-deleteScenarioNode : Uuid.Uuid -> ScenarioNode -> List ScenarioNode
+deleteScenarioNode : Uuid -> ScenarioNode -> List ScenarioNode
 deleteScenarioNode idToDelete scenarioNode =
     case getScenarioNodeId scenarioNode == idToDelete of
         True ->
@@ -537,7 +548,7 @@ toggleFolder node =
                 }
 
 
-mkdir : Uuid.Uuid -> ScenarioNode -> ScenarioNode
+mkdir : Uuid -> ScenarioNode -> ScenarioNode
 mkdir id node =
     case node of
         (ScenarioFile _) as file ->
@@ -551,7 +562,7 @@ mkdir id node =
                 }
 
 
-touch : Uuid.Uuid -> ScenarioNode -> ScenarioNode
+touch : Uuid -> ScenarioNode -> ScenarioNode
 touch id parentNode =
     case parentNode of
         (ScenarioFile _) as file ->
@@ -603,7 +614,7 @@ tempRename newName node =
             ScenarioFile { file | name = changeEditedValue newName file.name }
 
 
-mkDefaultFolder : Uuid.Uuid -> ScenarioNode
+mkDefaultFolder : Uuid -> ScenarioNode
 mkDefaultFolder id =
     ScenarioFolder
         { id = id
@@ -613,7 +624,7 @@ mkDefaultFolder id =
         }
 
 
-mkDefaultFile : Uuid.Uuid -> ScenarioNode
+mkDefaultFile : Uuid -> ScenarioNode
 mkDefaultFile id =
     ScenarioFile
         { id = id
@@ -658,7 +669,7 @@ view model =
                 ]
 
         treeView =
-            column [ spacing 10 ] (nodeView model.displayedScenarioNodeMenuId scenarioNodes)
+            column [ spacing 10 ] (nodeView model scenarioNodes)
     in
     column [ alignTop, spacing 20, centerX ]
         [ mainMenuView
@@ -666,8 +677,8 @@ view model =
         ]
 
 
-nodeView : Maybe Uuid.Uuid -> List ScenarioNode -> List (Element Msg)
-nodeView mDisplayedScenarioNodeMenuIndex scenarioCollection =
+nodeView : Model a -> List ScenarioNode -> List (Element Msg)
+nodeView model scenarioCollection =
     case scenarioCollection of
         [] ->
             []
@@ -677,23 +688,23 @@ nodeView mDisplayedScenarioNodeMenuIndex scenarioCollection =
                 ScenarioFolder { id, name, open, children } ->
                     let
                         folderChildrenView =
-                            nodeView mDisplayedScenarioNodeMenuIndex children
+                            nodeView model children
 
                         tailView =
-                            nodeView mDisplayedScenarioNodeMenuIndex tail
+                            nodeView model tail
 
                         currentFolderView =
-                            folderView id mDisplayedScenarioNodeMenuIndex name folderChildrenView open
+                            folderView id model name folderChildrenView open
                     in
                     currentFolderView :: tailView
 
                 ScenarioFile { id, name } ->
                     let
                         tailView =
-                            nodeView mDisplayedScenarioNodeMenuIndex tail
+                            nodeView model tail
 
                         currentFileView =
-                            fileView id mDisplayedScenarioNodeMenuIndex name
+                            fileView id model name
                     in
                     currentFileView :: tailView
 
@@ -702,15 +713,21 @@ nodeView mDisplayedScenarioNodeMenuIndex scenarioCollection =
 -- ** file view
 
 
-fileReadView : String -> Uuid.Uuid -> Element Msg
-fileReadView name id =
+fileReadView : Model a -> String -> Uuid -> Element Msg
+fileReadView model name id =
+    let
+        color =
+            case getSelectedBuilderId model == Just id of
+                True -> primaryColor
+                False -> secondaryColor
+    in
     link []
         { url = href (ScenarioPage (Just id))
-        , label = el [] <| iconWithTextAndColor "label" name secondaryColor
+        , label = el [] <| iconWithTextAndColor "label" name color
         }
 
 
-fileEditView : String -> Uuid.Uuid -> Element Msg
+fileEditView : String -> Uuid -> Element Msg
 fileEditView name id =
     Input.text
         [ Util.onEnterWithInput (AskRename id)
@@ -722,19 +739,19 @@ fileEditView name id =
         }
 
 
-fileView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> Element Msg
-fileView id mDisplayedScenarioNodeMenuIndex name =
+fileView : Uuid -> Model a -> Editable String -> Element Msg
+fileView id model name =
     let
         modeView =
             case name of
                 NotEdited value ->
-                    fileReadView value id
+                    fileReadView model value id
 
                 Edited oldValue newValue ->
                     fileEditView newValue id
 
         showMenu =
-            mDisplayedScenarioNodeMenuIndex == Just id
+            model.displayedScenarioNodeMenuId == Just id
 
         menuView =
             case not showMenu of
@@ -788,7 +805,7 @@ folderWithIconView name isOpen =
     iconWithText folderIconText name
 
 
-folderMenuView : Uuid.Uuid -> Bool -> Element Msg
+folderMenuView : Uuid -> Bool -> Element Msg
 folderMenuView id isOpen =
     let
         iconClass =
@@ -830,7 +847,7 @@ folderMenuView id isOpen =
             row [] [ menuIcon ]
 
 
-folderReadView : Uuid.Uuid -> String -> Bool -> Element Msg
+folderReadView : Uuid -> String -> Bool -> Element Msg
 folderReadView id name isOpen =
     Input.button []
         { onPress = Just <| ToggleFolder id
@@ -838,7 +855,7 @@ folderReadView id name isOpen =
         }
 
 
-folderEditView : Uuid.Uuid -> String -> Element Msg
+folderEditView : Uuid -> String -> Element Msg
 folderEditView id name =
     Input.text
         [ Util.onEnterWithInput (AskRename id)
@@ -850,8 +867,8 @@ folderEditView id name =
         }
 
 
-folderView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
-folderView id mDisplayedScenarioNodeMenuIndex name folderChildrenView open =
+folderView : Uuid -> Model a -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+folderView id model name folderChildrenView open =
     let
         modeView =
             case name of
@@ -862,7 +879,7 @@ folderView id mDisplayedScenarioNodeMenuIndex name folderChildrenView open =
                     folderEditView id newValue
 
         showMenu =
-            Just id == mDisplayedScenarioNodeMenuIndex
+            Just id == model.displayedScenarioNodeMenuId
     in
     column [ width (fill |> maximum 300) ]
         [ row []
