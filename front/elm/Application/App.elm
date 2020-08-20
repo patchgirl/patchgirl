@@ -501,7 +501,13 @@ homeView model =
                                        }
                         , el [ alignRight ] clearIcon
                         ]
-                  , el [ width fill, padding 10, Border.rounded 5, Background.color secondaryColor, Font.family [ Font.typeface "Roboto" , Font.monospace ] ] (text "TRUNCATE user, invoice;")
+                  , Input.multiline [ Background.color lightGrey ]
+                      { onChange = always NoOp
+                      , text = "TRUNCATE user, invoice;"
+                      , placeholder = Nothing
+                      , label = Input.labelHidden "http gist"
+                      , spellcheck = False
+                      }
                 ]
             ,  column [ width fill, spacing 20 ]
                 [ Input.multiline []
@@ -511,7 +517,6 @@ homeView model =
                       , label = Input.labelAbove [ centerY, width fill ]
                                 <| row [ width fill ]
                             [ el [ alignLeft ] (text "Prescript:")
-                            , el [ alignRight, Font.alignRight, Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
                             ]
                       , spellcheck = False
                       }
@@ -522,7 +527,6 @@ homeView model =
                     , label = Input.labelAbove [ centerY, width fill ]
                               <| row [ width fill ]
                           [ el [ alignLeft ] (text "Postscript:")
-                          , el [ alignRight, Font.alignRight, Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
                           ]
                     , spellcheck = False
                     }
@@ -539,7 +543,13 @@ homeView model =
                                        }
                         , el [ alignRight ] clearIcon
                         ]
-                  , el [ width fill, padding 10, Border.rounded 5, Background.color secondaryColor, Font.family [ Font.typeface "Roboto" , Font.monospace ] ] (text "POST https://{{host}}/users")
+                  , Input.multiline [ Background.color lightGrey ]
+                      { onChange = always NoOp
+                      , text = "POST https://{{host}}/users"
+                      , placeholder = Nothing
+                      , label = Input.labelHidden "http gist"
+                      , spellcheck = False
+                      }
                 ]
             ,  column [ width fill, spacing 20 ]
                 [ Input.multiline []
@@ -549,7 +559,6 @@ homeView model =
                       , label = Input.labelAbove [ centerY, width fill ]
                                 <| row [ width fill ]
                             [ el [ alignLeft ] (text "Prescript:")
-                            , el [ alignRight, Font.alignRight, Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
                             ]
                       , spellcheck = False
                       }
@@ -561,7 +570,6 @@ set("userId", httpResponseAsJson["userId"]);"""
                     , label = Input.labelAbove [ centerY, width fill ]
                               <| row [ width fill ]
                           [ el [ alignLeft ] (text "Postscript:")
-                          , el [ alignRight, Font.alignRight, Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
                           ]
                     , spellcheck = False
                     }
@@ -578,7 +586,13 @@ set("userId", httpResponseAsJson["userId"]);"""
                                        }
                         , el [ alignRight ] clearIcon
                         ]
-                  , el [ width fill, padding 10, Border.rounded 5, Background.color secondaryColor, Font.family [ Font.typeface "Roboto" , Font.monospace ] ] (text "POST https://{{host}}/invoice")
+                  , Input.multiline [ Background.color lightGrey ]
+                      { onChange = always NoOp
+                      , text = "POST https://{{host}}/invoice"
+                      , placeholder = Nothing
+                      , label = Input.labelHidden "http gist"
+                      , spellcheck = False
+                      }
                 ]
             ,  column [ width fill, spacing 20 ]
                 [ Input.multiline []
@@ -589,7 +603,6 @@ set("userId", get("userId"));"""
                       , label = Input.labelAbove [ centerY, width fill ]
                                 <| row [ width fill ]
                             [ el [ alignLeft ] (text "Prescript:")
-                            , el [ alignRight, Font.alignRight, Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
                             ]
                       , spellcheck = False
                       }
@@ -600,7 +613,6 @@ set("userId", get("userId"));"""
                     , label = Input.labelAbove [ centerY, width fill ]
                               <| row [ width fill ]
                           [ el [ alignLeft ] (text "Postscript:")
-                          , el [ alignRight, Font.alignRight, Font.underline ] (rightIconWithTextAndColor "help" "Help" primaryColor)
                           ]
                     , spellcheck = False
                     }

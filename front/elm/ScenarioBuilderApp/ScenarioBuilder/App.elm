@@ -818,15 +818,13 @@ httpDetailedSceneView model scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
-              , el [ width fill
-                   , padding 10
-                   , Border.rounded 5
-                   , Background.color secondaryColor
-                   , Font.family
-                         [ Font.typeface "Roboto"
-                         , Font.monospace
-                         ]
-                   ] (text methodAndUrl)
+              , Input.multiline [ Background.color lightGrey ]
+                  { onChange = always DoNothing
+                  , text = methodAndUrl
+                  , placeholder = Nothing
+                  , label = Input.labelHidden "http gist"
+                  , spellcheck = False
+                  }
               ]
 
         whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
@@ -935,15 +933,13 @@ pgDetailedSceneView model scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
-              , el [ width fill
-                   , padding 10
-                   , Border.rounded 5
-                   , Background.color secondaryColor
-                   , Font.family
-                         [ Font.typeface "Roboto"
-                         , Font.monospace
-                         ]
-                   ] <| text sqlText
+              , Input.multiline [ Background.color lightGrey ]
+                  { onChange = always DoNothing
+                  , text = sqlText
+                  , placeholder = Nothing
+                  , label = Input.labelHidden "http gist"
+                  , spellcheck = False
+                  }
               ]
 
         outputSceneDetailView : SceneComputation -> Element Msg
