@@ -389,25 +389,25 @@ centerView model =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
         [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
             { url = href (ScenarioPage Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = "Scenario" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
             { url = href (ReqPage Nothing Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = "HTTP" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = " HTTP" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
             { url = href (PgPage Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = "Postgres" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
             { url = href EnvPage
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = "Environment" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
             { url = href (DocumentationPage RequestDoc)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = "Documentation" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = " Documentation" })
             }
         ]
 
