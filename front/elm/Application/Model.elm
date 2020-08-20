@@ -24,6 +24,9 @@ type alias Model =
     , notification : Maybe String
     , notificationAnimation : Animation.State
 
+    -- Landing page DEMO
+    , sceneToDemo : SceneToDemo
+
     -- MODAL
     , whichModal : Maybe Modal
 
@@ -57,6 +60,13 @@ type alias Model =
     }
 
 
+-- * scene to demo
+
+
+type SceneToDemo
+    = Scene1
+    | Scene2
+    | Scene3
 
 -- * environment
 
