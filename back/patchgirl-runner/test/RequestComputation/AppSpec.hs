@@ -7,11 +7,9 @@
 
 module RequestComputation.AppSpec where
 
-import qualified Data.ByteString.UTF8     as BSU
 import           Data.Map.Strict          (Map)
 import qualified Data.Map.Strict          as Map
 import qualified Network.HTTP.Client      as HTTP
-import qualified Network.HTTP.Types       as HTTP
 import           Servant
 import qualified Servant.Client           as Servant
 import           Test.Hspec
@@ -42,8 +40,24 @@ spec = do
 -- ** computation succeeded
 
 
-  describe "valid request computation input" $
-    withClient (withHttpMock [ requestWithResponse1 ]) $
+  describe "valid request computation input" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
+          ]
+
+    let (input1, output1) =
+          ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
+                                             , _templatedRequestComputationInputHeaders = []
+                                             , _templatedRequestComputationInputUrl = [ Sentence "http://foo.com" ]
+                                             , _templatedRequestComputationInputBody = [ Sentence "" ]
+                                             }
+          , Right (RequestComputation { _requestComputationStatusCode = 200
+                                      , _requestComputationHeaders    = []
+                                      , _requestComputationBody       = ""
+                                      })
+          )
+
+    withClient (withHttpMock mock) $
       it "returns ok200" $ \clientEnv ->
         try clientEnv (runRequestComputation (input1, envVars)) `shouldReturn` output1
 
@@ -51,15 +65,30 @@ spec = do
 -- ** computation interpolate env vars
 
 
-  describe "computation interpolate env vars" $
-    withClient (withHttpMock [ requestWithResponse2 ]) $
+  describe "computation interpolate env vars" $ do
+    let mock =
+          [ (buildRequest "GET http://foo.com", Right buildHttpResponse)
+          ]
+
+    let (input2, output2) =
+          ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
+                                             , _templatedRequestComputationInputHeaders = []
+                                             , _templatedRequestComputationInputUrl = [ Key "host" ]
+                                             , _templatedRequestComputationInputBody = [ Sentence "" ]
+                                             }
+          , Right (RequestComputation { _requestComputationStatusCode = 200
+                                      , _requestComputationHeaders    = []
+                                      , _requestComputationBody       = ""
+                                      })
+          )
+
+    withClient (withHttpMock mock) $
       it "interpolate env vars" $ \clientEnv -> do
         let envVars = Map.fromList [ ( "host"
                                      , [ Sentence "http://foo.com" ]
                                      )
                                    ]
-        try clientEnv (runRequestComputation (input2, envVars))
-        `shouldReturn` output2
+        try clientEnv (runRequestComputation (input2, envVars)) `shouldReturn` output2
 
 
 -- ** computation failed
@@ -79,66 +108,6 @@ spec = do
     withClient (withExceptionHttpMock (throwException HTTP.ConnectionTimeout)) $
       it "returns overlong headers" $ \clientEnv ->
         try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
-
-
-  where
-
-
--- ** 200
-
-
-    requestWithResponse1 =
-      ( defaultRequest
-      , HttpResponse { httpResponseStatus =
-                       HTTP.Status { statusCode = 200
-                                   , statusMessage = BSU.fromString "ok"
-                                   }
-                     , httpResponseHeaders = []
-                     , httpResponseBody = BSU.fromString ""
-                     }
-      )
-
-    (input1, output1) =
-      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
-                                         , _templatedRequestComputationInputHeaders = []
-                                         , _templatedRequestComputationInputUrl = [ Sentence "http://foo.com" ]
-                                         , _templatedRequestComputationInputBody = [ Sentence "" ]
-                                         }
-      , Right (RequestComputation { _requestComputationStatusCode = 200
-                                        , _requestComputationHeaders    = []
-                                        , _requestComputationBody       = ""
-                                        })
-      )
-
-
--- ** 200 with interpolation
-
-
-    requestWithResponse2 =
-      ( defaultRequest
-      , HttpResponse { httpResponseStatus =
-                       HTTP.Status { statusCode = 200
-                                   , statusMessage = BSU.fromString "ok"
-                                   }
-                     , httpResponseHeaders = []
-                     , httpResponseBody = BSU.fromString ""
-                     }
-      )
-
-    (input2, output2) =
-      ( TemplatedRequestComputationInput { _templatedRequestComputationInputMethod = Get
-                                         , _templatedRequestComputationInputHeaders = []
-                                         , _templatedRequestComputationInputUrl = [ Key "host" ]
-                                         , _templatedRequestComputationInputBody = [ Sentence "" ]
-                                         }
-      , Right (RequestComputation { _requestComputationStatusCode = 200
-                                        , _requestComputationHeaders    = []
-                                        , _requestComputationBody       = ""
-                                        })
-      )
-
-
--- ** environment vars
 
 
 envVars :: Map String StringTemplate

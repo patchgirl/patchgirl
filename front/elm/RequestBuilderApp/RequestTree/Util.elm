@@ -2,10 +2,10 @@ module RequestBuilderApp.RequestTree.Util exposing (..)
 
 import Application.Type exposing (..)
 import Util exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 
 
-findNode : List RequestNode -> Uuid.Uuid -> Maybe RequestNode
+findNode : List RequestNode -> Uuid -> Maybe RequestNode
 findNode requestNodes id =
     let
         find : RequestNode -> Maybe RequestNode
@@ -30,7 +30,7 @@ findNode requestNodes id =
     List.head <| catMaybes (List.map find requestNodes)
 
 
-findFile : List RequestNode -> Uuid.Uuid -> Maybe RequestFileRecord
+findFile : List RequestNode -> Uuid -> Maybe RequestFileRecord
 findFile requestNodes id =
     case findNode requestNodes id of
         Just (RequestFile file) ->

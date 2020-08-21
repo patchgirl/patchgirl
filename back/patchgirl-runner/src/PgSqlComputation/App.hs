@@ -2,7 +2,7 @@ module PgSqlComputation.App where
 
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.IO.Class    as IO
-import qualified Control.Monad.Reader      as Reader
+import qualified Control.Monad.State       as State
 import qualified Data.ByteString           as BS
 import qualified Data.ByteString.UTF8      as BSU
 import           Data.Function             ((&))
@@ -13,45 +13,44 @@ import qualified Data.Traversable          as Traversable
 import qualified Database.PostgreSQL.LibPQ as LibPQ
 import qualified Text.Read                 as Text
 
-import           Env
 import           Interpolator
 import           PgSqlComputation.Model
+import           ScenarioComputation.Model
 
 
 -- * handler
 
 
 runPgSqlComputationHandler
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
-     )
+  :: IO.MonadIO m
   => (EnvironmentVars, PgComputationInput)
   -> m PgComputationOutput
 runPgSqlComputationHandler (environmentVars, pgComputationInput) =
-  runPgComputationWithScenarioContext pgComputationInput environmentVars Map.empty Map.empty
+  State.evalStateT (runPgComputationWithScenarioContext pgComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
 
 
 -- * run pg computation with scenario context
 
 
 runPgComputationWithScenarioContext
-  :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
+  :: ( IO.MonadIO m
+     , State.MonadState ScriptContext m
      )
   => PgComputationInput
-  -> EnvironmentVars
-  -> ScenarioVars
-  -> ScenarioVars
   -> m PgComputationOutput
-runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars = do
-  let
-    sql = substitute _pgComputationInputSql
-    pgConnection = PgConnection { _pgConnectionHost     = substitute (_templatedPgConnectionHost _pgComputationInputPgConnection)
-                                , _pgConnectionPort     = substitute (_templatedPgConnectionPort _pgComputationInputPgConnection)
-                                , _pgConnectionUser     = substitute (_templatedPgConnectionUser _pgComputationInputPgConnection)
-                                , _pgConnectionPassword = substitute (_templatedPgConnectionPassword _pgComputationInputPgConnection)
-                                , _pgConnectionDbName   = substitute (_templatedPgConnectionDbName _pgComputationInputPgConnection)
-                                }
+runPgComputationWithScenarioContext PgComputationInput{..} = do
+  sql <- substitute _pgComputationInputSql
+  host <- substitute (_templatedPgConnectionHost _pgComputationInputPgConnection)
+  port <- substitute (_templatedPgConnectionPort _pgComputationInputPgConnection)
+  user <- substitute (_templatedPgConnectionUser _pgComputationInputPgConnection)
+  password <- substitute (_templatedPgConnectionPassword _pgComputationInputPgConnection)
+  db <- substitute (_templatedPgConnectionDbName _pgComputationInputPgConnection)
+  let pgConnection = PgConnection { _pgConnectionHost     = host
+                                  , _pgConnectionPort     = port
+                                  , _pgConnectionUser     = user
+                                  , _pgConnectionPassword = password
+                                  , _pgConnectionDbName   = db
+                                  }
   (mResult, resultStatus) <- IO.liftIO $ do
     connection <- getConnection pgConnection
     mResult <- LibPQ.exec connection (BSU.fromString sql)
@@ -72,7 +71,6 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
       IO.liftIO $ resultToTable result <&> \case
         Left pgError -> Left pgError
         Right pgTable -> Right $ PgTuplesOk pgTable
-      --Right . PgTuplesOk
 
     (Just result, error) ->
       IO.liftIO $
@@ -81,37 +79,38 @@ runPgComputationWithScenarioContext PgComputationInput{..} environmentVars scena
           <&> Maybe.fromMaybe ""
           <&> \primaryMessage -> Left $ PgError (show error ++ " " ++ primaryMessage)
   where
-    substitute :: StringTemplate -> String
-    substitute =
-      interpolate environmentVars scenarioGlobalVars scenarioLocalVars
-
+    substitute
+      :: State.MonadState ScriptContext m
+      => StringTemplate
+      -> m String
+    substitute stringTemplate = do
+      ScriptContext{..} <- State.get
+      return $ interpolate environmentVars globalVars localVars stringTemplate
 
 
 -- * to table
 
 
-resultToTable :: LibPQ.Result -> IO (Either PgError Table)
+resultToTable :: LibPQ.Result -> IO (Either PgError [Row])
 resultToTable result = do
   columnSize <- LibPQ.nfields result <&> \c -> c - 1
   rowSize <- LibPQ.ntuples result <&> \r -> r - 1
-  eColumns :: Either PgError [Column] <- Monad.forM [0..columnSize] (buildColumn rowSize) <&> Traversable.sequence
-  return $ eColumns <&> Table
+  Monad.forM [0..rowSize] (buildRow columnSize) <&> Traversable.sequence
   where
-    buildColumn :: LibPQ.Row -> LibPQ.Column -> IO (Either PgError Column)
-    buildColumn rowSize columnIndex = do
+    buildRow :: LibPQ.Column -> LibPQ.Row -> IO (Either PgError Row)
+    buildRow columnSize rowIndex = do
+      row <- Monad.forM [0..columnSize] (buildElem rowIndex) <&> Traversable.sequence
+      return $ fmap Row row
+
+    buildElem :: LibPQ.Row -> LibPQ.Column -> IO (Either PgError (String, PgValue))
+    buildElem rowIndex columnIndex = do
       (mColumName, oid) <- columnInfo result columnIndex
       let columnName = Maybe.fromMaybe "" mColumName
-      rows :: Either PgError [PgValue] <- Traversable.forM [0..rowSize] (buildRow oid columnIndex) <&> Traversable.sequence
-      case rows of
-        Left error     -> return $ Left error
-        Right pgValues -> return $ Right $ Column columnName pgValues
-
-    buildRow :: LibPQ.Oid -> LibPQ.Column -> LibPQ.Row -> IO (Either PgError PgValue)
-    buildRow oid columnIndex rowIndex = do
       mValue <- LibPQ.getvalue result rowIndex columnIndex
-      case mValue of
-        Nothing -> return $ Right PgNull
-        Just bs -> return $ BSU.toString bs & convertPgRawValueToPgValue oid
+      return $ case mValue of
+        Nothing -> Right (columnName, PgNull)
+        Just bs ->
+          BSU.toString bs & convertPgRawValueToPgValue oid <&> \pgValue -> (columnName, pgValue)
 
     columnInfo :: LibPQ.Result -> LibPQ.Column -> IO (Maybe String, LibPQ.Oid)
     columnInfo result columnIndex = do
@@ -165,6 +164,14 @@ convertPgRawValueToPgValue oid value =
     case conversion of
       Right x  -> Right x
       Left str -> Left $ PgError str
+
+
+-- * pg runner
+
+
+ioPgRunner :: LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result)
+ioPgRunner =
+  LibPQ.exec
 
 
 -- * util

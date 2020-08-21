@@ -196,10 +196,11 @@ deriveElmDef deriveWithSingleFieldObject ''Runner.TemplatedRequestComputationInp
 deriveElmDef deriveWithTaggedObject ''Runner.TangoAst
 deriveElmDef deriveWithTaggedObject ''Runner.Proc
 deriveElmDef deriveWithTaggedObject ''Runner.Expr
+deriveElmDef deriveWithTaggedObject ''Runner.Json
 deriveElmDef deriveWithTaggedObject ''Runner.EnvironmentVars
 deriveElmDef deriveWithTaggedObject ''Runner.StringTemplate
 deriveElmDef deriveWithTaggedObject ''Runner.PgComputation
-deriveElmDef deriveWithTaggedObject ''Runner.Table
+deriveElmDef deriveWithTaggedObject ''Runner.Row
 deriveElmDef deriveWithTaggedObject ''Runner.Column
 deriveElmDef deriveWithTaggedObject ''Runner.PgValue
 deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
@@ -365,11 +366,12 @@ runnerElmModule =
       , DefineElm (Proxy :: Proxy Runner.SceneOutput)
       , DefineElm (Proxy :: Proxy Runner.Expr)
       , DefineElm (Proxy :: Proxy Runner.TangoAst)
+      , DefineElm (Proxy :: Proxy Runner.Json)
+      , DefineElm (Proxy :: Proxy Runner.Row)
       , DefineElm (Proxy :: Proxy Runner.Proc)
       , DefineElm (Proxy :: Proxy Runner.EnvironmentVars)
       , DefineElm (Proxy :: Proxy Runner.SceneComputation)
       , DefineElm (Proxy :: Proxy Runner.PgComputation)
-      , DefineElm (Proxy :: Proxy Runner.Table)
       , DefineElm (Proxy :: Proxy Runner.Column)
       , DefineElm (Proxy :: Proxy Runner.PgValue)
       , DefineElm (Proxy :: Proxy Runner.PgComputationInput)

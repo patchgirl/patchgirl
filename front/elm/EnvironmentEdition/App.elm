@@ -324,10 +324,15 @@ view model =
 entryView : Maybe Int -> Environment -> Element Msg
 entryView mSelectedEnvId environment =
     let
+        color =
+            case mSelectedEnvId == Just environment.id of
+                True -> primaryColor
+                False -> secondaryColor
+
         readView =
             Input.button []
                 { onPress = Just <| SelectEnvToEdit environment.id
-                , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) secondaryColor
+                , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) color
                 }
 
         editView =

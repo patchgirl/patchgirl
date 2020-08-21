@@ -7,7 +7,7 @@ import List.Extra as List
 import Modal exposing (Modal)
 import Page exposing (..)
 import Url as Url
-import Uuid
+import Uuid exposing (Uuid)
 
 
 -- * model
@@ -24,6 +24,9 @@ type alias Model =
     , notification : Maybe String
     , notificationAnimation : Animation.State
 
+    -- Landing page DEMO
+    , sceneToDemo : SceneToDemo
+
     -- MODAL
     , whichModal : Maybe Modal
 
@@ -31,18 +34,18 @@ type alias Model =
     , showMainMenuName : Maybe MainMenuName
 
     -- BUILDER APP
-    , displayedRequestNodeMenuId : Maybe Uuid.Uuid
+    , displayedRequestNodeMenuId : Maybe Uuid
     , requestCollection : RequestCollection
 
     -- SQL
-    , displayedPgNodeMenuId : Maybe Uuid.Uuid
+    , displayedPgNodeMenuId : Maybe Uuid
     , pgCollection : PgCollection
     , sqlQuery : Editable String
     , pgComputation : Maybe PgComputation
 
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
-    , displayedScenarioNodeMenuId : Maybe Uuid.Uuid
+    , displayedScenarioNodeMenuId : Maybe Uuid
 
     -- TANGOSCRIPT APP
     , script : String
@@ -57,6 +60,13 @@ type alias Model =
     }
 
 
+-- * scene to demo
+
+
+type SceneToDemo
+    = Scene1
+    | Scene2
+    | Scene3
 
 -- * environment
 

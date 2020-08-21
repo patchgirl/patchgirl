@@ -3,11 +3,12 @@
 module TangoScript ( TangoAst
                    , Proc(..)
                    , Expr(..)
-                   , exprToString
+                   , Json(..)
                    ) where
 
-import qualified Data.Aeson   as Aeson
-import           GHC.Generics (Generic)
+import qualified Data.Aeson      as Aeson
+import           Data.Map.Strict (Map)
+import           GHC.Generics    (Generic)
 
 
 type TangoAst = [Proc]
@@ -35,15 +36,23 @@ instance Aeson.FromJSON Proc where
 
 
 data Expr
-  = LBool Bool
+  = LJson Json
+  | LList [Expr]
+  | LBool Bool
   | LInt Int
+  | LFloat Float
+  | LNull
   | LString String
-  | Var String
-  | Fetch String
-  | Eq Expr Expr
-  | Add Expr Expr
-  | HttpResponseBodyAsString
-  | HttpResponseStatus
+  | LRowElem (String, Expr)
+  -- non primitive type
+  | LVar String
+  | LFetch String
+  | LEq Expr Expr
+  | LHttpResponseBodyAsString
+  | LHttpResponseStatus
+  | LPgSimpleResponse -- results without columnName
+  | LPgRichResponse   -- response with columnName
+  | LAccessOp Expr Expr
   deriving (Show, Eq, Generic)
 
 instance Aeson.ToJSON Expr where
@@ -55,17 +64,22 @@ instance Aeson.FromJSON Expr where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- * util
+-- ** json
 
 
-exprToString :: Expr -> Maybe String
-exprToString = \case
-  LBool bool -> Just $ show bool
-  LInt int -> Just $ show int
-  LString string -> Just string
-  Var _ -> Nothing
-  Fetch _ -> Nothing
-  Eq _ _ -> Nothing
-  Add _ _ -> Nothing
-  HttpResponseBodyAsString -> Nothing
-  HttpResponseStatus -> Nothing
+data Json
+    = JInt Int
+    | JFloat Float
+    | JBool Bool
+    | JString String
+    | JArray [Json]
+    | JObject (Map String Json)
+    deriving (Show, Eq, Generic)
+
+instance Aeson.ToJSON Json where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON Json where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }

@@ -71,7 +71,7 @@ instance Aeson.FromJSON PgError where
 
 data PgComputation
   = PgCommandOK
-  | PgTuplesOk Table
+  | PgTuplesOk [Row]
   deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON PgComputation where
@@ -83,22 +83,18 @@ instance Aeson.FromJSON PgComputation where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- * table
+-- * row
 
 
-newtype Table = Table [Column] deriving (Eq, Show, Read, Generic, Ord)
+newtype Row = Row [ (String, PgValue) ] deriving (Eq, Show, Read, Generic, Ord)
 
-instance Aeson.ToJSON Table where
+instance Aeson.ToJSON Row where
   toJSON =
     Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
-instance Aeson.FromJSON Table where
+instance Aeson.FromJSON Row where
   parseJSON =
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
-
-
--- * column
-
 
 data Column = Column String [PgValue] deriving (Eq, Show, Read, Generic, Ord)
 

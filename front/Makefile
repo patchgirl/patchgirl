@@ -13,7 +13,7 @@ watch:
 	clear; npx chokidar 'elm/**/*.elm' -c 'clear; elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js'
 
 debug:
-	clear; echo "building front/app";  elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js --debug
+	clear; echo "building front/app"; npx elm make elm/Main.elm elm/AppLoader.elm --output=../public/js/app.js --debug
 
 format:
 	clear; npx elm-format elm/

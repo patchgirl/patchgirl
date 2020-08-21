@@ -1,10 +1,10 @@
 module FakeHttpRequest ( throwException
                        , withHttpMock
-                       , withHttpMock2
                        , withExceptionHttpMock
                        , defaultRequest
                        , defaultRequestComputationInput
                        , buildRequest
+                       , buildHttpResponse
                        ) where
 
 import qualified Control.Exception        as Exception
@@ -54,6 +54,14 @@ defaultRequest :: IO FakeHttpRequest
 defaultRequest =
   FakeHttpRequest <$> HTTP.parseRequest "GET http://foo.com"
 
+buildHttpResponse :: HttpResponse BSU.ByteString
+buildHttpResponse =
+  HttpResponse { httpResponseStatus = HTTP.Status { statusCode = 200
+                                                  , statusMessage = BSU.fromString "ok"
+                                                  }
+               , httpResponseHeaders = []
+               , httpResponseBody = BSU.fromString ""
+               }
 
 -- * exception util
 
@@ -76,42 +84,13 @@ defaultRequestComputationInput =
                                    }
 
 
--- * mock
-
-
-withHttpMock :: [ (IO FakeHttpRequest, HttpResponse BSU.ByteString) ] -> IO Application
-withHttpMock rawMock = do
-  mock <- Monad.forM rawMock foo
-  env <- defaultEnv2 <&> envHttpRequest .~ requestRunnerMock (Map.fromList mock)
-  mkApp env
-  where
-    foo :: (IO FakeHttpRequest, HttpResponse BSU.ByteString) -> IO (FakeHttpRequest, HttpResponse BSU.ByteString)
-    foo (f, s) = f <&> \f'-> (f', s)
-
-    requestRunnerMock
-      :: IO.MonadIO m
-      => Map FakeHttpRequest (HttpResponse BSU.ByteString)
-      -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
-    requestRunnerMock mock =
-      \input -> return $ Map.findWithDefault notFoundResponse (FakeHttpRequest input) mock
-        where
-          notFoundResponse =
-            HttpResponse { httpResponseStatus =
-                           HTTP.Status { statusCode = 404
-                                       , statusMessage = BSU.fromString "not found"
-                                       }
-                         , httpResponseHeaders = []
-                         , httpResponseBody = BSU.fromString ""
-                         }
-
-
 -- * exception mock
 
 
 withExceptionHttpMock :: IO HTTP.HttpException -> IO Application
 withExceptionHttpMock mock = do
   mock' <- mock
-  env <- defaultEnv2 <&> envHttpRequest .~ exceptionRunnerMock mock'
+  env <- envWithLog <&> envHttpRequest .~ exceptionRunnerMock mock'
   mkApp env
   where
     exceptionRunnerMock :: HTTP.HttpException -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
@@ -122,15 +101,15 @@ withExceptionHttpMock mock = do
 -- * with http mock
 
 
-withHttpMock2
+withHttpMock
   :: [ ( IO FakeHttpRequest
        , Either HTTP.HttpException (HttpResponse BSU.ByteString)
        )
      ]
   -> IO Application
-withHttpMock2 rawMock = do
+withHttpMock rawMock = do
   mock <- Monad.forM rawMock unwrapIO
-  env <- defaultEnv2 <&> envHttpRequest .~ requestRunnerMock (Map.fromList mock)
+  env <- envWithLog <&> envHttpRequest .~ requestRunnerMock (Map.fromList mock)
   mkApp env
   where
     unwrapIO

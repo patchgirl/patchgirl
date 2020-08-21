@@ -472,13 +472,9 @@ convertPgComputationFromBackToFront backPgComputation =
 -- ** column
 
 
-convertPgTableFromBackToFront : Back.Column -> Front.Col
-convertPgTableFromBackToFront backColumn =
-    let
-        (Back.Column columnName pgValues) = backColumn
-    in
-    Front.Col columnName (List.map convertPgValueFromBackToFront pgValues)
-
+convertPgTableFromBackToFront : Back.Row -> Front.Row
+convertPgTableFromBackToFront backRow =
+    List.map (\(key, pgValue) -> (key, convertPgValueFromBackToFront pgValue)) backRow
 
 convertPgValueFromBackToFront : Back.PgValue -> Front.PgValue
 convertPgValueFromBackToFront backPgValue =
@@ -550,7 +546,7 @@ convertScenarioOutputFromBackToFront scenesOutput =
                    Front.HttpPostscriptFailed (convertRequestComputationFromBackToFront httpComputation) (convertScriptExceptionFromBackToFront scriptException)
 
                Back.PgPostscriptFailed pgComputation scriptException ->
-                   Front.PgPostscriptFailed (Debug.todo "") (convertScriptExceptionFromBackToFront scriptException)
+                   Front.PgPostscriptFailed (convertPgComputationFromBackToFront pgComputation) (convertScriptExceptionFromBackToFront scriptException)
 
                Back.HttpSceneOk requestComputation ->
                    Front.HttpSceneOk (convertRequestComputationFromBackToFront requestComputation)
@@ -574,6 +570,8 @@ convertScriptExceptionFromBackToFront backScriptException =
         Back.AssertEqualFailed expr1 expr2 ->
             Front.AssertEqualFailed (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
 
+        _ ->
+            Debug.todo ""
 
 -- * tangoscript
 
@@ -600,15 +598,22 @@ convertProcFromFrontToBack frontProc =
 convertExpressionFromBackToFront : Back.Expr -> Front.Expr
 convertExpressionFromBackToFront backEx =
     case backEx of
+        Back.LJson json -> Debug.todo "json"
+        Back.LList xs -> List.map convertExpressionFromBackToFront xs |> Front.LList
         Back.LBool x -> Front.LBool x
         Back.LInt x -> Front.LInt x
+        Back.LFloat x -> Front.LFloat x
+        Back.LNull -> Front.LNull
         Back.LString x -> Front.LString x
-        Back.Var x -> Front.Var x
-        Back.Fetch x -> Front.Fetch x
-        Back.Eq a b -> Front.Eq (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
-        Back.Add a b -> Front.Add (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
-        Back.HttpResponseBodyAsString -> Front.HttpResponseBodyAsString
-        Back.HttpResponseStatus -> Front.HttpResponseStatus
+        Back.LRowElem (s, e) -> Front.LRowElem (s, convertExpressionFromBackToFront e)
+        Back.LVar x -> Front.LVar x
+        Back.LFetch x -> Front.LFetch x
+        Back.LEq a b -> Front.LEq (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
+        Back.LHttpResponseBodyAsString -> Front.LHttpResponseBodyAsString
+        Back.LHttpResponseStatus -> Front.LHttpResponseStatus
+        Back.LPgSimpleResponse -> Front.LPgSimpleResponse
+        Back.LPgRichResponse -> Front.LPgRichResponse
+        Back.LAccessOp a b -> Front.LAccessOp (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
 
 convertExpressionFromFrontToBack : Front.Expr -> Back.Expr
 convertExpressionFromFrontToBack frontExpr =
@@ -616,9 +621,16 @@ convertExpressionFromFrontToBack frontExpr =
         Front.LBool x -> Back.LBool x
         Front.LInt x -> Back.LInt x
         Front.LString x -> Back.LString x
-        Front.Var x -> Back.Var x
-        Front.Fetch x -> Back.Fetch x
-        Front.Eq a b -> Back.Eq (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
-        Front.HttpResponseBodyAsString -> Back.HttpResponseBodyAsString
-        Front.Add a b -> Back.Add (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
-        Front.HttpResponseStatus -> Back.HttpResponseStatus
+        Front.LFloat x -> Back.LFloat x
+        Front.LNull -> Back.LNull
+        Front.LRowElem (k, v) -> Back.LRowElem (k, convertExpressionFromFrontToBack v)
+        Front.LVar x -> Back.LVar x
+        Front.LFetch x -> Back.LFetch x
+        Front.LEq a b -> Back.LEq (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
+        Front.LHttpResponseBodyAsString -> Back.LHttpResponseBodyAsString
+        Front.LHttpResponseStatus -> Back.LHttpResponseStatus
+        Front.LPgSimpleResponse -> Back.LPgSimpleResponse
+        Front.LPgRichResponse -> Back.LPgRichResponse
+        Front.LList xs -> Back.LList (List.map convertExpressionFromFrontToBack xs)
+        Front.LAccessOp e o -> Back.LAccessOp (convertExpressionFromFrontToBack e) (convertExpressionFromFrontToBack o)
+        Front.LJson _ -> Debug.todo ""

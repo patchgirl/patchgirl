@@ -39,7 +39,7 @@ type alias Model =
     { session : Session
     , notification : Maybe String
     , whichModal : Maybe Modal
-    , id : Uuid.Uuid
+    , id : Uuid
     , requestCollection : RequestCollection
     , pgCollection : PgCollection
     , scenarioCollectionId : Uuid
@@ -321,7 +321,7 @@ update msg model =
                 newMsg =
                     case mPayload of
                         Just payload ->
-                            Client.postApiRunnerScenarioComputation (Runner.runnerUrl model.runnerRunning) payload runScenarioResultToMsg
+                            Client.postApiRunnerScenarioComputation Runner.desktopRunnerUrl payload runScenarioResultToMsg
 
                         Nothing ->
                             Cmd.none
@@ -452,7 +452,7 @@ update msg model =
 -- * util
 
 
-mkDefaultScene : Uuid.Uuid -> Uuid.Uuid -> ActorType -> Scene
+mkDefaultScene : Uuid -> Uuid -> ActorType -> Scene
 mkDefaultScene id nodeId actorType =
     { id = id
     , nodeId = nodeId
@@ -475,7 +475,7 @@ runScenarioResultToMsg result =
             Debug.todo "server error" ServerError
 
 
-deleteSceneResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deleteSceneResultToMsg : Uuid -> Result Http.Error () -> Msg
 deleteSceneResultToMsg sceneId result =
     case result of
         Ok () ->
@@ -716,7 +716,7 @@ sceneView model scene =
 -- ** arrow view
 
 
-arrowView : Uuid.Uuid -> Element Msg
+arrowView : Uuid -> Element Msg
 arrowView id =
     let
         addSceneBtn =
@@ -801,7 +801,7 @@ httpDetailedSceneView model scene fileRecord =
                         }
 
         sceneInputDetailView =
-            column [ width fill, spacing 10 ]
+            column [ width fill, spacing 15 ]
               [ row [ spacing 10, width fill ]
                     [ link [ alignLeft ]
                           { url = href <| ReqPage (Just scene.nodeId) (Just model.id)
@@ -818,7 +818,13 @@ httpDetailedSceneView model scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
-              , el [ ] (text methodAndUrl)
+              , Input.multiline [ Background.color lightGrey ]
+                  { onChange = always DoNothing
+                  , text = methodAndUrl
+                  , placeholder = Nothing
+                  , label = Input.labelHidden "http gist"
+                  , spellcheck = False
+                  }
               ]
 
         whichResponseButtonView : List (String, Bool, Msg) -> Element Msg
@@ -906,8 +912,12 @@ httpDetailedSceneView model scene fileRecord =
 pgDetailedSceneView : Model -> Scene -> PgFileRecord -> List (Element Msg)
 pgDetailedSceneView model scene fileRecord =
     let
+        sqlText =
+            editedOrNotEditedValue fileRecord.sql
+                |> softEllipsis 80
+
         sceneInputDetailView =
-            column [ width fill, spacing 10 ]
+            column [ width fill, spacing 15 ]
               [ row [ width fill ]
                     [ link [ alignLeft ]
                           { url = href <| PgPage (Just fileRecord.id)
@@ -923,6 +933,13 @@ pgDetailedSceneView model scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
+              , Input.multiline [ Background.color lightGrey ]
+                  { onChange = always DoNothing
+                  , text = sqlText
+                  , placeholder = Nothing
+                  , label = Input.labelHidden "http gist"
+                  , spellcheck = False
+                  }
               ]
 
         outputSceneDetailView : SceneComputation -> Element Msg
@@ -959,14 +976,14 @@ pgDetailedSceneView model scene fileRecord =
     case scene.sceneComputation of
         Nothing ->
             [ sceneInputDetailView
---            , prescriptView scene
---            , postscriptView scene
+            , prescriptView scene
+            , postscriptView scene
             ]
 
         Just sceneComputation ->
             [ sceneInputDetailView
---            , prescriptView scene
---            , postscriptView scene
+            , prescriptView scene
+            , postscriptView scene
             , hr [] "response"
             , outputSceneDetailView sceneComputation
             ]
@@ -1085,7 +1102,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                             in
                             currentFileView :: tailView
 
-        httpFolderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+        httpFolderView : Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
         httpFolderView id name folderChildrenView open =
             let
                 folderIcon =
@@ -1140,7 +1157,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                             in
                             currentFileView :: tailView
 
-        pgFolderView : Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+        pgFolderView : Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
         pgFolderView id name folderChildrenView open =
             let
                 folderIcon =

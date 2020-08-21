@@ -1,8 +1,8 @@
-module Page exposing (Page(..), href, urlToPage, Documentation(..))
+module Page exposing (Page(..), href, urlToPage, Documentation(..), documentationToString, documentationFromString)
 
 import Url
 import Url.Parser as Url exposing ((</>))
-import Uuid
+import Uuid exposing (Uuid)
 
 
 -- * model
@@ -10,10 +10,10 @@ import Uuid
 
 type Page
     = HomePage
-    | ReqPage (Maybe Uuid.Uuid) (Maybe Uuid.Uuid)
-    | PgPage (Maybe Uuid.Uuid)
+    | ReqPage (Maybe Uuid) (Maybe Uuid)
+    | PgPage (Maybe Uuid)
     | EnvPage
-    | ScenarioPage (Maybe Uuid.Uuid)
+    | ScenarioPage (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
     | TangoScriptPage
@@ -24,6 +24,7 @@ type Documentation
     | PostgresDoc
     | EnvironmentDoc
     | PatchGirlRunnerAppDoc
+    | TangoscriptDoc
 
 documentationToString : Documentation -> String
 documentationToString documentation =
@@ -32,22 +33,36 @@ documentationToString documentation =
             "scenario"
 
         RequestDoc ->
-            "request"
+            "http-request"
 
         PostgresDoc ->
             "postgres"
 
         EnvironmentDoc ->
-            "environment"
+            "environment-variables"
 
         PatchGirlRunnerAppDoc ->
-            "patchGirlRunnerApp"
+            "patchgirl-runner"
+
+        TangoscriptDoc ->
+            "tangoscript"
+
+documentationFromString : String -> Maybe Documentation
+documentationFromString documentation =
+    case documentation of
+        "scenario" -> Just ScenarioDoc
+        "http-request" -> Just RequestDoc
+        "postgres" -> Just PostgresDoc
+        "environment-variables" -> Just EnvironmentDoc
+        "patchgirl-runner" -> Just PatchGirlRunnerAppDoc
+        "tangoscript" -> Just TangoscriptDoc
+        _ -> Nothing
 
 
 -- * parser
 
 
-uuidParser : Url.Parser (Uuid.Uuid -> b) b
+uuidParser : Url.Parser (Uuid -> b) b
 uuidParser =
     Url.custom "UUID" Uuid.fromString
 
@@ -57,7 +72,7 @@ documentationParser =
         parser : String -> Maybe Documentation
         parser s =
             case s of
-                "request" ->
+                "http-request" ->
                     Just RequestDoc
 
                 "postgres" ->
@@ -66,11 +81,14 @@ documentationParser =
                 "scenario" ->
                     Just ScenarioDoc
 
-                "environment" ->
+                "environment-variables" ->
                     Just EnvironmentDoc
 
-                "patchGirlRunnerApp" ->
+                "patchgirl-runner" ->
                     Just PatchGirlRunnerAppDoc
+
+                "tangoscript" ->
+                    Just TangoscriptDoc
 
                 _  ->
                     Nothing

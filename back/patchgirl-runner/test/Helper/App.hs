@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (withClient, try, errorsWithStatus, defaultEnv, defaultEnv2) where
+module Helper.App (withClient, try, errorsWithStatus, envWithLog, defaultEnv) where
 
 import           Control.Concurrent.STM
 import           Control.Exception        (throwIO)
@@ -12,6 +12,8 @@ import           Servant.Client
 import qualified Test.Hspec               as Hspec
 
 import           Env
+import           PgSqlComputation.App
+import           RequestComputation.App
 
 
 -- * helper
@@ -49,16 +51,12 @@ defaultEnv :: Env
 defaultEnv =
   Env { _envPort = 3001
       , _envLog = undefined
-      , _envHttpRequest = undefined
+      , _envHttpRequest = ioRequestRunner
+      , _envPgRunner = ioPgRunner
       }
 
-
-defaultEnv2 :: IO Env
-defaultEnv2 = do
+envWithLog :: IO Env
+envWithLog = do
   logs <- newTVarIO ""
   let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
-  return $
-    Env { _envPort = 3001
-        , _envLog = logFunc
-        , _envHttpRequest = undefined
-        }
+  return $ defaultEnv { _envLog = logFunc }

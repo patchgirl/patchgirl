@@ -11,6 +11,7 @@ module RequestComputation.App ( runRequestComputationHandler
 import qualified Control.Exception           as Exception
 import qualified Control.Monad.IO.Class      as IO
 import qualified Control.Monad.Reader        as Reader
+import qualified Control.Monad.State         as State
 import qualified Data.Bifunctor              as Bifunctor
 import qualified Data.ByteString.UTF8        as BSU
 import qualified Data.CaseInsensitive        as CI
@@ -26,6 +27,7 @@ import           Http
 import           Interpolator
 import           Log
 import           RequestComputation.Model
+import           ScenarioComputation.Model
 
 
 -- * handler
@@ -38,7 +40,8 @@ runRequestComputationHandler
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationOutput
 runRequestComputationHandler (templatedRequestComputationInput, environmentVars) =
-  runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
+--  runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
+  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
 
 
 -- * run request computation with scenario context
@@ -47,17 +50,16 @@ runRequestComputationHandler (templatedRequestComputationInput, environmentVars)
 runRequestComputationWithScenarioContext
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
+     , State.MonadState ScriptContext m
      )
   => TemplatedRequestComputationInput
-  -> EnvironmentVars
-  -> ScenarioVars
-  -> ScenarioVars
   -> m RequestComputationOutput
-runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
+runRequestComputationWithScenarioContext templatedRequestComputationInput = do
   runner <- Reader.ask <&> _envHttpRequest
+  ScriptContext{..} <- State.get
   result <- IO.liftIO $
     Exception.try (
-      buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars >>= runner
+      buildRequest templatedRequestComputationInput environmentVars globalVars localVars >>= runner
     )
   responseToComputationResult result
 

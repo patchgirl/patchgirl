@@ -1,7 +1,7 @@
 module Application.Type exposing (..)
 
 import Animation
-import Dict
+import Dict exposing (Dict)
 import Uuid exposing (Uuid)
 import Parser exposing(DeadEnd)
 
@@ -441,7 +441,7 @@ type alias RequestComputationInput =
 type alias RequestComputation =
     { statusCode : Int
     , statusText : String
-    , headers : Dict.Dict String String
+    , headers : Dict String String
     , body : String
     }
 
@@ -543,13 +543,13 @@ type alias PgComputationOutput
 
 type PgComputation
     = PgCommandOK
-    | PgTuplesOk (List Col)
+    | PgTuplesOk (List Row)
 
 
 -- ** column
 
 
-type Col = Col String (List PgValue)
+type alias Row = List (String, PgValue)
 
 
 -- ** pg Value
@@ -605,7 +605,7 @@ scriptExceptionToString scriptException =
             "UnknownVariable " ++ exprToString expr
 
         AssertEqualFailed e1 e2 ->
-            "AssertEqualFailed " ++ (exprToString e1) ++ " " ++ (exprToString e2)
+            "assertEqual failed: " ++ (exprToString e1) ++ " is not equal to " ++ (exprToString e2)
 
 
 -- * editable
@@ -690,6 +690,9 @@ isStorableDirty storable =
 -- * tangoscript
 
 
+-- ** proc
+
+
 type alias TangoAst = List Proc
 
 type Proc
@@ -697,16 +700,40 @@ type Proc
     | Let String Expr
     | Set String Expr
 
+
+-- ** expr
+
+
 type Expr
-    = LBool Bool
+    = LJson Json
+    | LList (List Expr)
+    | LBool Bool
     | LInt Int
+    | LFloat Float
+    | LNull
     | LString String
-    | Var String
-    | Fetch String
-    | Eq Expr Expr
-    | Add Expr Expr
-    | HttpResponseBodyAsString
-    | HttpResponseStatus
+    | LRowElem (String, Expr)
+    -- non primitive type
+    | LVar String
+    | LFetch String
+    | LEq Expr Expr
+    | LHttpResponseBodyAsString
+    | LHttpResponseStatus
+    | LPgSimpleResponse -- results without columnName
+    | LPgRichResponse   -- response with columnName
+    | LAccessOp Expr Expr
+
+
+-- ** json
+
+
+type Json
+    = JInt Int
+    | JFloat Float
+    | JBool Bool
+    | JString String
+    | JArray (List Json)
+    | JObject (Dict String Json)
 
 
 exprToString : Expr -> String
@@ -714,13 +741,25 @@ exprToString expr =
     case expr of
         LBool x ->
             case x of
-                True -> "LBool true"
-                False -> "LBool false"
-        LInt x -> "LInt " ++ String.fromInt(x)
-        LString x -> "LString " ++ x
-        Var x -> "Var " ++ x
-        Fetch x -> "Fetch " ++ x
-        Eq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
-        Add e1 e2 -> "Add " ++ (exprToString e1) ++ " " ++ (exprToString e2)
-        HttpResponseBodyAsString -> "HttpResponseBodyAsString"
-        HttpResponseStatus -> "HttpResponseStatus"
+                True -> "Boolean true"
+                False -> "Boolean false"
+        LInt x -> "Integer " ++ String.fromInt(x)
+        LString x -> "String " ++ x
+        LFloat x -> "Float " ++ String.fromFloat(x)
+        LNull -> "null"
+        LRowElem (key, value) -> "RowElem " ++ key ++ " " ++ exprToString value
+        LVar x -> "var " ++ x
+        LFetch x -> "global var " ++ x
+        LEq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
+        LHttpResponseBodyAsString -> "httpResponseBodyAsString"
+        LHttpResponseStatus -> "httpResponseStatus"
+        LPgSimpleResponse -> "pgResponse"
+        LPgRichResponse -> "pgResponseAsArray"
+        LList xs ->
+            List.map exprToString xs
+                |> String.join ", "
+                |> \s -> "[" ++ s ++ "]"
+        LAccessOp _ _ ->
+            "LAccessOp"
+        LJson _ ->
+            "LJson"

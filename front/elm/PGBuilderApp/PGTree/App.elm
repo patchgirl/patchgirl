@@ -11,7 +11,7 @@ import Http
 import Page exposing (..)
 import Random
 import Util exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 
 
 
@@ -21,9 +21,10 @@ import Uuid
 type alias Model a =
     { a
         | pgCollection : PgCollection
-        , displayedPgNodeMenuId : Maybe Uuid.Uuid
+        , displayedPgNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
+        , page : Page
     }
 
 
@@ -32,32 +33,32 @@ type alias Model a =
 
 
 type Msg
-    = ToggleFolder Uuid.Uuid
-    | ToggleMenu Uuid.Uuid
+    = ToggleFolder Uuid
+    | ToggleMenu Uuid
       -- mkdir
-    | GenerateRandomUUIDForFolder Uuid.Uuid
-    | AskMkdir Uuid.Uuid Uuid.Uuid
-    | Mkdir Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForFolder Uuid
+    | AskMkdir Uuid Uuid
+    | Mkdir Uuid Uuid
       -- create file
-    | GenerateRandomUUIDForFile Uuid.Uuid
-    | AskTouch Uuid.Uuid Uuid.Uuid
-    | Touch Uuid.Uuid Uuid.Uuid
+    | GenerateRandomUUIDForFile Uuid
+    | AskTouch Uuid Uuid
+    | Touch Uuid Uuid
       -- create root file
     | GenerateRandomUUIDForRootFile
-    | AskTouchRoot Uuid.Uuid
-    | TouchRoot Uuid.Uuid
+    | AskTouchRoot Uuid
+    | TouchRoot Uuid
       -- create root folder
     | GenerateRandomUUIDForRootFolder
-    | AskMkdirRoot Uuid.Uuid
-    | MkdirRoot Uuid.Uuid
+    | AskMkdirRoot Uuid
+    | MkdirRoot Uuid
       -- rename
-    | ShowRenameInput Uuid.Uuid
-    | ChangeName Uuid.Uuid String -- while focus is on the input
-    | AskRename Uuid.Uuid String -- validate input
-    | Rename Uuid.Uuid String -- refresh input
+    | ShowRenameInput Uuid
+    | ChangeName Uuid String -- while focus is on the input
+    | AskRename Uuid String -- validate input
+    | Rename Uuid String -- refresh input
       -- delete
-    | AskDelete Uuid.Uuid
-    | Delete Uuid.Uuid
+    | AskDelete Uuid
+    | Delete Uuid
     | BuilderTreeServerError
 
 
@@ -362,10 +363,20 @@ update msg model =
 -- * util
 
 
+getSelectedBuilderId : Model a -> Maybe Uuid
+getSelectedBuilderId model =
+    case model.page of
+        PgPage (Just id) ->
+            Just id
+
+        _ ->
+            Nothing
+
+
 -- ** msg handler
 
 
-renameNodeResultToMsg : Uuid.Uuid -> String -> Result Http.Error () -> Msg
+renameNodeResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 renameNodeResultToMsg id newName result =
     case result of
         Ok _ ->
@@ -375,7 +386,7 @@ renameNodeResultToMsg id newName result =
             BuilderTreeServerError
 
 
-createPgFolderResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+createPgFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
 createPgFolderResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
@@ -385,7 +396,7 @@ createPgFolderResultToMsg parentNodeId id result =
             BuilderTreeServerError
 
 
-deletePgNodeResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+deletePgNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
 deletePgNodeResultToMsg id result =
     case result of
         Ok _ ->
@@ -395,7 +406,7 @@ deletePgNodeResultToMsg id result =
             BuilderTreeServerError
 
 
-newPgFileResultToMsg : Uuid.Uuid -> Uuid.Uuid -> Result Http.Error () -> Msg
+newPgFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
 newPgFileResultToMsg parentNodeId id result =
     case result of
         Ok _ ->
@@ -405,7 +416,7 @@ newPgFileResultToMsg parentNodeId id result =
             BuilderTreeServerError
 
 
-createRootPgFileResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootPgFileResultToMsg : Uuid -> Result Http.Error () -> Msg
 createRootPgFileResultToMsg id result =
     case result of
         Ok _ ->
@@ -415,7 +426,7 @@ createRootPgFileResultToMsg id result =
             BuilderTreeServerError
 
 
-createRootPgFolderResultToMsg : Uuid.Uuid -> Result Http.Error () -> Msg
+createRootPgFolderResultToMsg : Uuid -> Result Http.Error () -> Msg
 createRootPgFolderResultToMsg id result =
     case result of
         Ok _ ->
@@ -429,7 +440,7 @@ createRootPgFolderResultToMsg id result =
 -- ** tree manipulation
 
 
-getPgNodeId : PgNode -> Uuid.Uuid
+getPgNodeId : PgNode -> Uuid
 getPgNodeId pgNode =
     case pgNode of
         PgFolder { id } ->
@@ -439,7 +450,7 @@ getPgNodeId pgNode =
             id
 
 
-modifyPgNode : Uuid.Uuid -> (PgNode -> PgNode) -> PgNode -> PgNode
+modifyPgNode : Uuid -> (PgNode -> PgNode) -> PgNode -> PgNode
 modifyPgNode id f pgNode =
     case getPgNodeId pgNode == id of
         True ->
@@ -458,7 +469,7 @@ modifyPgNode id f pgNode =
                         }
 
 
-deletePgNode : Uuid.Uuid -> PgNode -> List PgNode
+deletePgNode : Uuid -> PgNode -> List PgNode
 deletePgNode idToDelete pgNode =
     case getPgNodeId pgNode == idToDelete of
         True ->
@@ -491,7 +502,7 @@ toggleFolder node =
                 }
 
 
-mkdir : Uuid.Uuid -> PgNode -> PgNode
+mkdir : Uuid -> PgNode -> PgNode
 mkdir id node =
     case node of
         (PgFile _) as file ->
@@ -505,7 +516,7 @@ mkdir id node =
                 }
 
 
-touch : Uuid.Uuid -> PgNode -> PgNode
+touch : Uuid -> PgNode -> PgNode
 touch id parentNode =
     case parentNode of
         (PgFile _) as file ->
@@ -557,7 +568,7 @@ tempRename newName node =
             PgFile { file | name = changeEditedValue newName file.name }
 
 
-mkDefaultFolder : Uuid.Uuid -> PgNode
+mkDefaultFolder : Uuid -> PgNode
 mkDefaultFolder id =
     PgFolder
         { id = id
@@ -567,7 +578,7 @@ mkDefaultFolder id =
         }
 
 
-mkDefaultFile : Uuid.Uuid -> PgNode
+mkDefaultFile : Uuid -> PgNode
 mkDefaultFile id =
     PgFile
         { id = id
@@ -605,7 +616,7 @@ view model =
                 ]
 
         treeView =
-            column [ spacing 10 ] (nodeView model.displayedPgNodeMenuId pgNodes)
+            column [ spacing 10 ] (nodeView model pgNodes)
     in
     column [ alignTop, spacing 20, centerX ]
         [ mainMenuView
@@ -613,8 +624,8 @@ view model =
         ]
 
 
-nodeView : Maybe Uuid.Uuid -> List PgNode -> List (Element Msg)
-nodeView mDisplayedPgNodeMenuIndex pgCollection =
+nodeView : Model a -> List PgNode -> List (Element Msg)
+nodeView model pgCollection =
     case pgCollection of
         [] ->
             []
@@ -624,23 +635,23 @@ nodeView mDisplayedPgNodeMenuIndex pgCollection =
                 PgFolder { id, name, open, children } ->
                     let
                         folderChildrenView =
-                            nodeView mDisplayedPgNodeMenuIndex children
+                            nodeView model children
 
                         tailView =
-                            nodeView mDisplayedPgNodeMenuIndex tail
+                            nodeView model tail
 
                         currentFolderView =
-                            folderView id mDisplayedPgNodeMenuIndex name folderChildrenView open
+                            folderView id model name folderChildrenView open
                     in
                     currentFolderView :: tailView
 
                 PgFile { id, name } ->
                     let
                         tailView =
-                            nodeView mDisplayedPgNodeMenuIndex tail
+                            nodeView model tail
 
                         currentFileView =
-                            fileView id mDisplayedPgNodeMenuIndex name
+                            fileView id model name
                     in
                     currentFileView :: tailView
 
@@ -649,15 +660,20 @@ nodeView mDisplayedPgNodeMenuIndex pgCollection =
 -- ** file view
 
 
-fileReadView : String -> Uuid.Uuid -> Element Msg
-fileReadView name id =
+fileReadView : Model a -> String -> Uuid -> Element Msg
+fileReadView model name id =
+    let
+        color =
+            case getSelectedBuilderId model == Just id of
+                True -> primaryColor
+                False -> secondaryColor
+    in
     link []
         { url = href (PgPage (Just id))
-        , label = el [] <| iconWithTextAndColor "label" name secondaryColor
+        , label = el [] <| iconWithTextAndColor "label" name color
         }
 
-
-fileEditView : String -> Uuid.Uuid -> Element Msg
+fileEditView : String -> Uuid -> Element Msg
 fileEditView name id =
     Input.text
         [ Util.onEnterWithInput (AskRename id)
@@ -668,20 +684,19 @@ fileEditView name id =
         , label = Input.labelHidden "rename file"
         }
 
-
-fileView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> Element Msg
-fileView id mDisplayedPgNodeMenuIndex name =
+fileView : Uuid -> Model a -> Editable String -> Element Msg
+fileView id model name =
     let
         modeView =
             case name of
                 NotEdited value ->
-                    fileReadView value id
+                    fileReadView model value id
 
                 Edited oldValue newValue ->
                     fileEditView newValue id
 
         showMenu =
-            mDisplayedPgNodeMenuIndex == Just id
+            model.displayedPgNodeMenuId == Just id
 
         menuView =
             case not showMenu of
@@ -735,7 +750,7 @@ folderWithIconView name isOpen =
     iconWithText folderIconText name
 
 
-folderMenuView : Uuid.Uuid -> Bool -> Element Msg
+folderMenuView : Uuid -> Bool -> Element Msg
 folderMenuView id isOpen =
     let
         iconClass =
@@ -777,7 +792,7 @@ folderMenuView id isOpen =
             row [] [ menuIcon ]
 
 
-folderReadView : Uuid.Uuid -> String -> Bool -> Element Msg
+folderReadView : Uuid -> String -> Bool -> Element Msg
 folderReadView id name isOpen =
     Input.button []
         { onPress = Just <| ToggleFolder id
@@ -785,7 +800,7 @@ folderReadView id name isOpen =
         }
 
 
-folderEditView : Uuid.Uuid -> String -> Element Msg
+folderEditView : Uuid -> String -> Element Msg
 folderEditView id name =
     Input.text
         [ Util.onEnterWithInput (AskRename id)
@@ -797,8 +812,8 @@ folderEditView id name =
         }
 
 
-folderView : Uuid.Uuid -> Maybe Uuid.Uuid -> Editable String -> List (Element Msg) -> Bool -> Element Msg
-folderView id mDisplayedPgNodeMenuIndex name folderChildrenView open =
+folderView : Uuid -> Model a -> Editable String -> List (Element Msg) -> Bool -> Element Msg
+folderView id model name folderChildrenView open =
     let
         modeView =
             case name of
@@ -809,7 +824,7 @@ folderView id mDisplayedPgNodeMenuIndex name folderChildrenView open =
                     folderEditView id newValue
 
         showMenu =
-            Just id == mDisplayedPgNodeMenuIndex
+            Just id == model.displayedPgNodeMenuId
     in
     column [ width (fill |> maximum 300) ]
         [ row []

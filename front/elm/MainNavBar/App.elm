@@ -159,7 +159,15 @@ view model =
                      , Background.color secondaryColor
                      , Font.color primaryColor
                      , Font.center
-                     ] (text "Sandbox mode - data will be reset every 5min, sign in to keep your data!")
+                     ] <|
+                      row [ centerX ]
+                          [ text "Sandbox mode - data will be reset every 5min, "
+                          , link []
+                              { url = githubOauthLink
+                              , label = el [ Font.underline ] (text "sign in")
+                              }
+                          , text " to keep your data!"
+                          ]
 
               _ ->
                   none
@@ -305,11 +313,6 @@ visitorRightView model =
 
 signInView : Model a -> Element Msg
 signInView model =
-    let
-        {- todo this url should be dynamic depending on the env -}
-        githubOauthLink =
-            "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
-    in
     link
         ([ Events.onMouseEnter (ShowMainMenuName SignInMenu)
          , Events.onMouseLeave HideMainMenuName
@@ -374,7 +377,7 @@ centerView model =
                 , iconVerticalAlign = Just "text-top"
             }
 
-        currentDisplayedBuilderId : Maybe Uuid.Uuid
+        currentDisplayedBuilderId : Maybe Uuid
         currentDisplayedBuilderId =
             case model.page of
                 ReqPage mId _ ->
@@ -386,25 +389,25 @@ centerView model =
     row [ centerX, centerY, paddingXY 10 0, height fill ]
         [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
             { url = href (ScenarioPage Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = "Scenario" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
             { url = href (ReqPage Nothing Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = "Request" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = " HTTP" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
             { url = href (PgPage Nothing)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = "Postgres" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
             { url = href EnvPage
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = "Environment" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
             { url = href (DocumentationPage RequestDoc)
-            , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = "Documentation" })
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = " Documentation" })
             }
         ]
 
@@ -488,3 +491,9 @@ isPgPage page =
 
         _ ->
             False
+
+
+{- todo this url should be dynamic depending on the env -}
+githubOauthLink : String
+githubOauthLink =
+    "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"

@@ -107,5 +107,5 @@ jobs:
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: ${{ env.BINARY_PATH }}
-          asset_name: patchgirl-runner-${{ steps.tag.outputs.tag }}-${{ runner.os }}-ghc-${{ matrix.ghc }}${{ env.EXT }}
+          asset_name: patchgirl-runner-${{ steps.tag.outputs.tag }}-${{ runner.os }}${{ env.EXT }}
           asset_content_type: application/octet-stream

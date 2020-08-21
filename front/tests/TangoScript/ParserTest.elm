@@ -6,6 +6,7 @@ import TangoScript.Parser exposing(..)
 import TangoScript.DoubleQuoteString exposing(..)
 import Parser as P
 import Application.Type exposing (..)
+import Dict exposing (Dict)
 
 
 -- * expr
@@ -42,11 +43,11 @@ boolTests =
       }
     , { message = "don't parse string that looks like boolean"
       , input = "falsey"
-      , expect = Ok <| Var "falsey"
+      , expect = Ok <| LVar "falsey"
       }
     , { message = "don't parse case doesn't match"
       , input = "falsE"
-      , expect = Ok <| Var "falsE"
+      , expect = Ok <| LVar "falsE"
       }
     ]
 
@@ -71,6 +72,95 @@ stringTests =
     ]
 
 
+-- ** list
+
+
+listTests : List (ParserTest (List P.DeadEnd) Expr)
+listTests =
+    [ { message = "parse empty list"
+      , input = """ [] """
+      , expect = Ok <| LList []
+      }
+    , { message = "parse one element list"
+      , input = """ [1] """
+      , expect = Ok <| LList [ LInt 1 ]
+      }
+    , { message = "parse multiple elements list"
+      , input = """ [1, 2,3,   6] """
+      , expect = Ok <| LList [ LInt 1, LInt 2, LInt 3, LInt 6 ]
+      }
+    , { message = "parse heterogeneous list"
+      , input = """ [1, true] """
+      , expect = Ok <| LList [ LInt 1, LBool True ]
+      }
+    , { message = "parse list of list"
+      , input = """ [1, [2]] """
+      , expect = Ok <| LList [ LInt 1, LList [ LInt 2 ] ]
+      }
+    , { message = "fail to parse trailing commma list"
+      , input = """ [1, 2,] """
+      , expect = Err []
+      }
+    , { message = "fail to parse unclosed list"
+      , input = """ [1"""
+      , expect = Err []
+      }
+    , { message = "access list from var"
+      , input = """ a[0]"""
+      , expect = Ok <| LAccessOp (LVar "a") (LInt 0)
+      }
+    , { message = "access list from list"
+      , input = """ [1][0]"""
+      , expect = Ok <| LAccessOp (LList [ LInt 1 ]) (LInt 0)
+      }
+    , { message = "access list with some var"
+      , input = """ [1][myIndex]"""
+      , expect = Ok <| LAccessOp (LList [ LInt 1 ]) (LVar "myIndex")
+      }
+    , { message = "double access list with some var"
+      , input = """ a[0][1]"""
+      , expect = Ok <| LAccessOp (LAccessOp (LVar "a") (LInt 0)) (LInt 1)
+      }
+    ]
+
+
+-- ** json
+
+
+jsonTests : List (ParserTest (List P.DeadEnd) Expr)
+jsonTests =
+    [ { message = "parse JInt"
+      , input = """ {"a": 1} """
+      , expect = Ok <| LJson <| JObject <| Dict.fromList [ ("a", JInt 1) ]
+      }
+    , { message = "parse JString"
+      , input = """ {"a": "b"} """
+      , expect = Ok <| LJson <| JObject <| Dict.fromList [ ("a", JString "b") ]
+      }
+    , { message = "parse JBool"
+      , input = """ {"a": true } """
+      , expect = Ok <| LJson <| JObject <| Dict.fromList [ ("a", JBool True) ]
+      }
+    , { message = "parse JFloat"
+      , input = """ {"a": 1.2 } """
+      , expect = Ok <| LJson <| JObject <| Dict.fromList [ ("a", JFloat 1.2) ]
+      }
+    , { message = "parse JArray"
+      , input = """ {"a": [1] } """
+      , expect = Ok <| LJson <| JObject <| Dict.fromList [ ("a", JArray [ JInt 1 ]) ]
+      }
+    , { message = "parse complex JArray"
+      , input = """ {"a": [ {"a": 1 }, "e" ] } """
+      , expect = Ok (LJson (JObject (Dict.fromList [("a",JArray [JObject (Dict.fromList [("a",JInt 1)]),JString "e"])])))
+      }
+    , { message = "parse recursive json"
+      , input = """ {"a": { "b": 2 }} """
+      , expect = Ok <| LJson <|
+                 JObject <| Dict.fromList [ ("a", JObject <| Dict.fromList [ ("b", JInt 2) ])]
+      }
+    ]
+
+
 -- ** var
 
 
@@ -78,7 +168,7 @@ varTests : List (ParserTest (List P.DeadEnd) Expr)
 varTests =
     [ { message = "parse var"
       , input = "yes"
-      , expect = Ok <| Var "yes"
+      , expect = Ok <| LVar "yes"
       }
     , { message = "dont parse var that start with capital case"
       , input = "Yes"
@@ -86,11 +176,15 @@ varTests =
       }
     , { message = "parse var with weird format"
       , input = "yes01T_iset"
-      , expect = Ok <| Var "yes01T_iset"
+      , expect = Ok <| LVar "yes01T_iset"
       }
     , { message = "parse only var before hyphen"
       , input = "foo-bar"
-      , expect = Ok <| Var "foo"
+      , expect = Ok <| LVar "foo"
+      }
+    , { message = "parse var starting with `e`" -- cf issue with integer and floats starting with `e` (https://github.com/elm/parser/issues/28)
+      , input = "e"
+      , expect = Ok <| LVar "e"
       }
     ]
 
@@ -118,11 +212,11 @@ getTests : List (ParserTest (List P.DeadEnd) Expr)
 getTests =
     [ { message = "parse simple `get`"
       , input = """get("a")"""
-      , expect = Ok <| Fetch "a"
+      , expect = Ok <| LFetch "a"
       }
     , { message = "parse `get`"
       , input = """get ( " a " ) """
-      , expect = Ok <| Fetch " a "
+      , expect = Ok <| LFetch " a "
       }
     ]
 
@@ -134,7 +228,7 @@ responseAsStringTests : List (ParserTest (List P.DeadEnd) Expr)
 responseAsStringTests =
     [ { message = "parse simple `httpResponseBodyAsString`"
       , input = "httpResponseBodyAsString"
-      , expect = Ok <| HttpResponseBodyAsString
+      , expect = Ok <| LHttpResponseBodyAsString
       }
     ]
 
@@ -146,7 +240,7 @@ responseStatusAsStringTests : List (ParserTest (List P.DeadEnd) Expr)
 responseStatusAsStringTests =
     [ { message = "parse simple `httpResponseStatus`"
       , input = "httpResponseStatus"
-      , expect = Ok <| HttpResponseStatus
+      , expect = Ok <| LHttpResponseStatus
       }
     ]
 
@@ -176,56 +270,12 @@ eqTests : List (ParserTest (List P.DeadEnd) Expr)
 eqTests =
     [ { message = "parse `eq`"
       , input = "1 == 2"
-      , expect = Ok <| Eq (LInt 1) (LInt 2)
-      }
-    ]
-
-
--- ** add
-
-
-addTests : List (ParserTest (List P.DeadEnd) Expr)
-addTests =
-    [ { message = "parse `+`"
-      , input = "1 + 2"
-      , expect = Ok <| Add (LInt 1) (LInt 2)
+      , expect = Ok <| LEq (LInt 1) (LInt 2)
       }
     ]
 
 
 -- * proc
-
-
--- ** let
-
-
-letTests : List (ParserTest (List P.DeadEnd) Proc)
-letTests =
-    [ { message = "parse simple let"
-      , input = "var a = 1"
-      , expect = Ok <| Let "a" (LInt 1)
-      }
-    ]
-
-
--- ** assertEqual
-
-
-assertEqualTests : List (ParserTest (List P.DeadEnd) Proc)
-assertEqualTests =
-    [ { message = "parse simple assertEqual"
-      , input = "assertEqual(1,1)"
-      , expect = Ok <| AssertEqual (LInt 1) (LInt 1)
-      }
-    , { message = "parse assertEqual with spaces"
-      , input = "assertEqual ( 1 , 1 ) "
-      , expect = Ok <| AssertEqual (LInt 1) (LInt 1)
-      }
-    , { message = "parse assertEqual with int and bool as param"
-      , input = "assertEqual( 1 , true )"
-      , expect = Ok <| AssertEqual (LInt 1) (LBool True)
-      }
-    ]
 
 
 -- ** set
@@ -243,6 +293,38 @@ setTests =
       }
     ]
 
+
+
+-- ** let
+
+
+letTests : List (ParserTest (List P.DeadEnd) Proc)
+letTests =
+    [ { message = "parse simple let"
+      , input = "var a = 1"
+      , expect = Ok <| Let "a" (LInt 1)
+      }
+    ]
+
+
+-- ** assertLEqual
+
+
+assertEqualTests : List (ParserTest (List P.DeadEnd) Proc)
+assertEqualTests =
+    [ { message = "parse simple assertEqual"
+      , input = "assertEqual(1,1)"
+      , expect = Ok <| AssertEqual (LInt 1) (LInt 1)
+      }
+    , { message = "parse assertEqual with spaces"
+      , input = "assertEqual ( 1 , 1 ) "
+      , expect = Ok <| AssertEqual (LInt 1) (LInt 1)
+      }
+    , { message = "parse assertEqual with int and bool as param"
+      , input = "assertEqual( 1 , true )"
+      , expect = Ok <| AssertEqual (LInt 1) (LBool True)
+      }
+    ]
 
 
 -- * tango
@@ -270,7 +352,7 @@ tangoTests =
                 """
       , expect = Ok [ Let "a" (LInt 1)
                     , Let "b" (LInt 2)
-                    , AssertEqual (Var "a") (Var "b")
+                    , AssertEqual (LVar "a") (LVar "b")
                     ]
       }
     , { message = "parse more complex statements with strings"
@@ -281,7 +363,7 @@ tangoTests =
                 """
       , expect = Ok [ Let "a" (LString "1")
                     , Let "b" (LString "2")
-                    , AssertEqual (Var "a") (Var "b")
+                    , AssertEqual (LVar "a") (LVar "b")
                     ]
       }
     , { message = "parse statements with random newlines"
@@ -295,7 +377,7 @@ tangoTests =
 
                 """
       , expect = Ok [ Let "a" (LString "1")
-                    , AssertEqual (Var "a") (Var "b")
+                    , AssertEqual (LVar "a") (LVar "b")
                     ]
       }
     , { message = "don't parse statements on same line"
@@ -303,6 +385,13 @@ tangoTests =
                  var a = "1";assertEqual(a, b);
                 """
       , expect = Err [ ]
+      }
+    , { message = "parse httpResponse"
+      , input = """
+                 var b = postgresResponse[0];
+                """
+      , expect = Ok [ Let "b" (LAccessOp LPgSimpleResponse (LInt 0))
+                    ]
       }
     ]
 
@@ -316,13 +405,14 @@ suite =
         [ describe "ExprParser"
             [ describe "LInt" <| List.map checkExprParser intTests
             , describe "LBool" <| List.map checkExprParser boolTests
+            , describe "LList" <| List.map checkExprParser listTests
+            , describe "LJson" <| List.map checkExprParser jsonTests
             , describe "LString" <| List.map checkExprParser stringTests
-            , describe "Var" <| List.map checkExprParser varTests
+            , describe "LVar" <| List.map checkExprParser varTests
             , describe "Get" <| List.map checkExprParser getTests
             , describe "ResponseAsString" <| List.map checkExprParser responseAsStringTests
             , describe "ResponseStatusAsString" <| List.map checkExprParser responseStatusAsStringTests
 --            , describe "Eq" <| List.map checkExprParser eqTests
---            , describe "Add" <| List.map checkExprParser addTests
             , describe "DQString" <| List.map checkDStringParser doubleQTests
             ]
         , describe "ProcParser"
@@ -351,7 +441,7 @@ checkExprParser : ParserTest (List P.DeadEnd) Expr -> Test
 checkExprParser { message, input, expect } =
     test message <|
         \_ ->
-            case P.run exprParser input of
+            case Debug.log "foo" <| P.run exprParser input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 
@@ -402,7 +492,7 @@ checkTangoAstParser : ParserTests (List P.DeadEnd) TangoAst -> Test
 checkTangoAstParser { message, input, expect } =
     test message <|
         \_ ->
-            case Debug.log "err" <| parseTangoscript input of
+            case parseTangoscript input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 
