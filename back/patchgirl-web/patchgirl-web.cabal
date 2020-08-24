@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f56449d406a236a4c796cff86966446a85b87f55aefaf7f38d39e72f320095fe
+-- hash: 44e2a7c5f33fbc13feb980e62cd8cad5aaf8472b6053247b57b54290d1acb2eb
 
 name:           patchgirl-web
 version:        0.0.0
@@ -56,7 +56,7 @@ library
   hs-source-dirs:
       src
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
   build-depends:
       aeson
     , aeson-qq
@@ -109,7 +109,7 @@ executable patchgirl-web-exe
   other-modules:
       Paths_patchgirl_web
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
   build-depends:
       aeson
     , aeson-qq
@@ -185,7 +185,7 @@ test-suite spec
   hs-source-dirs:
       test
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
   build-depends:
       aeson
     , aeson-qq
