@@ -396,8 +396,6 @@ $$;
 
 SET default_tablespace = '';
 
-SET default_with_oids = false;
-
 --
 -- Name: account; Type: TABLE; Schema: public; Owner: -
 --
