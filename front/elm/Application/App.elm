@@ -406,6 +406,7 @@ homeView model =
             column [ Font.center, width fill, centerX, spacing 40 ]
                 [ column [ width fill, centerX, spacing 10, Font.size 24 ]
                       [ el [ width fill ] (text "Play HTTP and SQL queries to seed your Database")
+                      , el [ width fill ] (text "& Make testing fun again!")
                       ]
                 , column [ width shrink, centerX, spacing 30, Font.size 20 ]
                     [ column [ width fill, centerX, spacing 20 ]
