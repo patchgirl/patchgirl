@@ -916,9 +916,29 @@ pgDetailedSceneView model scene fileRecord =
             editedOrNotEditedValue fileRecord.sql
                 |> softEllipsis 80
 
+        saveSceneButton =
+            case isDirty scene.prescriptStr || isDirty scene.postscriptStr of
+                False ->
+                    none
+
+                True ->
+                    Input.button [ Border.solid
+                                 , Border.color secondaryColor
+                                 , Border.width 1
+                                 , Border.rounded 5
+                                 , Background.color secondaryColor
+                                 , paddingXY 10 10
+                                 ]
+                        { onPress = Just (UpdateScene scene)
+                        , label =
+                            row [ centerX, centerY ]
+                                [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
+                                ]
+                        }
+
         sceneInputDetailView =
             column [ width fill, spacing 15 ]
-              [ row [ width fill ]
+              [ row [ spacing 10, width fill ]
                     [ link [ alignLeft ]
                           { url = href <| PgPage (Just fileRecord.id)
                           , label = el [ Font.underline, Font.size 25 ] <|
@@ -928,6 +948,7 @@ pgDetailedSceneView model scene fileRecord =
                                                      , primIconColor = Just primaryColor
                                                  }
                           }
+                    , saveSceneButton
                     , Input.button [ alignRight ]
                         { onPress = Just HideDetailedView
                         , label = el [ alignRight ] clearIcon
