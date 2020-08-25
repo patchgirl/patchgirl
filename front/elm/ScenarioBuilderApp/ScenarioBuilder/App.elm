@@ -861,13 +861,13 @@ httpDetailedSceneView model scene fileRecord =
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
                 PgSceneFailed error ->
-                    text <| "This postgresql query failed because of: " ++ error
+                    none
 
                 HttpPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                PgPostscriptFailed _ scriptException ->
-                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+                PgPostscriptFailed _ _ ->
+                    none
 
                 HttpSceneOk requestComputationOutput ->
                     column [ width fill ]
@@ -885,8 +885,7 @@ httpDetailedSceneView model scene fileRecord =
                         ]
 
                 PgSceneOk pgComputation ->
-                    column [ width fill ]
-                        []
+                    none
 
 
     in
@@ -916,9 +915,29 @@ pgDetailedSceneView model scene fileRecord =
             editedOrNotEditedValue fileRecord.sql
                 |> softEllipsis 80
 
+        saveSceneButton =
+            case isDirty scene.prescriptStr || isDirty scene.postscriptStr of
+                False ->
+                    none
+
+                True ->
+                    Input.button [ Border.solid
+                                 , Border.color secondaryColor
+                                 , Border.width 1
+                                 , Border.rounded 5
+                                 , Background.color secondaryColor
+                                 , paddingXY 10 10
+                                 ]
+                        { onPress = Just (UpdateScene scene)
+                        , label =
+                            row [ centerX, centerY ]
+                                [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
+                                ]
+                        }
+
         sceneInputDetailView =
             column [ width fill, spacing 15 ]
-              [ row [ width fill ]
+              [ row [ spacing 10, width fill ]
                     [ link [ alignLeft ]
                           { url = href <| PgPage (Just fileRecord.id)
                           , label = el [ Font.underline, Font.size 25 ] <|
@@ -928,6 +947,7 @@ pgDetailedSceneView model scene fileRecord =
                                                      , primIconColor = Just primaryColor
                                                  }
                           }
+                    , saveSceneButton
                     , Input.button [ alignRight ]
                         { onPress = Just HideDetailedView
                         , label = el [ alignRight ] clearIcon
@@ -951,14 +971,14 @@ pgDetailedSceneView model scene fileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneFailed httpException ->
-                    text <| "This request failed because of: " ++ httpExceptionToString httpException
+                HttpSceneFailed _ ->
+                    none
 
                 PgSceneFailed error ->
                     PgBuilder.responseView (Err error)
 
-                HttpPostscriptFailed _ scriptException ->
-                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+                HttpPostscriptFailed _ _ ->
+                    none
 
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
@@ -967,11 +987,7 @@ pgDetailedSceneView model scene fileRecord =
                     none
 
                 PgSceneOk pgComputation ->
-                    column [ width fill ]
-                        [ PgBuilder.responseView (Ok pgComputation)
-                        ]
-
-
+                    PgBuilder.responseView (Ok pgComputation)
     in
     case scene.sceneComputation of
         Nothing ->

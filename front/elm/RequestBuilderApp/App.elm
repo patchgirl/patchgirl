@@ -192,7 +192,7 @@ view model fromScenarioId =
               , link [ centerX ] { label = el [ Font.underline ] (text "Patchgirl Runner App")
                                  , url = "https://patchgirl.io/#app/documentation/patchGirlRunnerApp"
                                  }
-              , el [ centerX ] (text " to enable postgres requests!")
+              , el [ centerX ] (text " to have the best experience!")
               ]
     in
     column [ width fill, spacing 10 ]

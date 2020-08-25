@@ -188,7 +188,7 @@ view model =
               , link [ centerX ] { label = el [ Font.underline ] (text "Patchgirl Runner App")
                                  , url = "https://patchgirl.io/#app/documentation/patchGirlRunnerApp"
                                  }
-              , el [ centerX ] (text " to enable postgres requests!")
+              , el [ centerX ] (text " to enable scenarios!")
               ]
     in
     column [ width fill, spacing 10 ]

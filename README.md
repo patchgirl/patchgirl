@@ -8,15 +8,29 @@ A postman/postwoman like, web app to test your APIs !
 ## How to use
 
 To use PatchGirl, you only need to go to the [app page 🚀](https://patchgirl.io).
-If you want to make request to an API running on your computer (e.g: localhost), you need to run the [patchgirl-runner app](https://github.com/patchgirl/patchgirl/releases).
-Running the **patchgirl-runner** app is simple, just download it and execute it in a terminal like so:
+However, for a full experience, you'll to run **patchgirl-runner** on your computer. It acts as a tiny proxy that runs your request (HTTP, SQL,...) from you computer.
+
+## Installing Patchgirl-runner
+
+### Linux
+
+Just download the latest binary for linux [here](https://github.com/patchgirl/patchgirl/releases) and run it:
 
 ```bash
-chmod +x patchgirl-runner-X.Y.Z-yourOS
-./patchgirl-runner-X.Y.Z-yourOS
+chmod +x patchgirl-runner-X.Y.Z
+./patchgirl-runner-X.Y.Z
 ```
 
-nb: Please note that recent version of MacOS will display an error popup stating that the app hasn't been recognized and so is insecure.
+### MacOS
+
+Either download and run the mac binary from the release (cf Linux section) or use homebrew:
+
+```bash
+brew install patchgirl/patchgirl/runner
+patchgirl-runner # to run patchgirl-runner
+```
+
+nb: Please note that for recent versions of MacOS, if you use the binary method, MacOS will display an error popup stating that the app hasn't been recognized and so is insecure.
 To overcome this issue, you'll need to "right-click open" the executable from the finder once!
 
 ### Windows

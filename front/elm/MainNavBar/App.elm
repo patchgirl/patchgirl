@@ -496,4 +496,8 @@ isPgPage page =
 {- todo this url should be dynamic depending on the env -}
 githubOauthLink : String
 githubOauthLink =
-    "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
+    let
+      prod = "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
+      dev = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
+    in
+        prod

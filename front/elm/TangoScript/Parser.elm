@@ -212,13 +212,13 @@ httpResponseStatusParser =
 
 pgSimpleTableParser : Parser Expr
 pgSimpleTableParser =
-    P.keyword "postgresResponse"
+    P.keyword "postgresResponseAsArray"
         |> P.map (always LPgSimpleResponse)
         |> P.andThen promoteToAccessOpParser
 
 pgRichTableParser : Parser Expr
 pgRichTableParser =
-    P.keyword "postgresResponseAsArray"
+    P.keyword "postgresResponse"
         |> P.map (always LPgRichResponse)
         |> P.andThen promoteToAccessOpParser
 
