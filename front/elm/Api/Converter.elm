@@ -7,6 +7,7 @@ import Application.Type as Front exposing (..)
 import Dict
 import Tuple
 import StringTemplate exposing(..)
+import TangoScript.Parser exposing (..)
 
 
 -- * request Collection
@@ -153,9 +154,9 @@ convertSceneActorFromBackToFront sceneActor =
             , actorType = Front.HttpActor
             , sceneComputation = Nothing
             , prescriptStr = NotEdited s.scenePrescript
-            , prescriptAst = Ok []
+            , prescriptAst = parseTangoscript s.scenePrescript
             , postscriptStr = NotEdited s.scenePostscript
-            , postscriptAst = Ok []
+            , postscriptAst = parseTangoscript s.scenePostscript
             }
 
         Back.PgSceneActor s ->
@@ -164,9 +165,9 @@ convertSceneActorFromBackToFront sceneActor =
             , actorType = Front.PgActor
             , sceneComputation = Nothing
             , prescriptStr = NotEdited s.scenePrescript
-            , prescriptAst = Ok []
+            , prescriptAst = parseTangoscript s.scenePrescript
             , postscriptStr = NotEdited s.scenePostscript
-            , postscriptAst = Ok []
+            , postscriptAst = parseTangoscript s.scenePostscript
             }
 
 
@@ -570,8 +571,18 @@ convertScriptExceptionFromBackToFront backScriptException =
         Back.AssertEqualFailed expr1 expr2 ->
             Front.AssertEqualFailed (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
 
-        _ ->
-            Debug.todo ""
+        Back.CannotUseFunction str ->
+            Front.CannotUseFunction str
+
+        Back.EmptyResponse str ->
+            Front.EmptyResponse str
+
+        Back.AccessOutOfBound  ->
+            Front.AccessOutOfBound
+
+        Back.CantAccessElem expr1 expr2 ->
+            Front.CantAccessElem (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
+
 
 -- * tangoscript
 

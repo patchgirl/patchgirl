@@ -597,16 +597,32 @@ type SceneComputation
 type ScriptException
   = UnknownVariable Expr
   | AssertEqualFailed Expr Expr
+  | CannotUseFunction String
+  | EmptyResponse String
+  | AccessOutOfBound
+  | CantAccessElem Expr Expr
+
 
 scriptExceptionToString : ScriptException -> String
 scriptExceptionToString scriptException =
     case scriptException of
         UnknownVariable expr ->
-            "UnknownVariable " ++ exprToString expr
+            "Unknown variable " ++ exprToString expr
 
         AssertEqualFailed e1 e2 ->
             "assertEqual failed: " ++ (exprToString e1) ++ " is not equal to " ++ (exprToString e2)
 
+        CannotUseFunction function ->
+            "Cannot use function: [" ++ function ++ "]"
+
+        EmptyResponse response ->
+            "Empty response: " ++  response
+
+        AccessOutOfBound ->
+            "Access out of bound"
+
+        CantAccessElem expr1 expr2 ->
+            "Cant access elem: [" ++ exprToString expr1 ++ "]"
 
 -- * editable
 {-

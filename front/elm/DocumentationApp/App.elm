@@ -392,12 +392,12 @@ postgresResponse
 Given the SQL query:
 
 ```SQL
-select 1 as id, "john" as name;
+select 1 as id, 'john' as name;
 ```
 They can be used like this:
 
 ```tangoscript
-assertEqual(postgresResponseAsArray, [1,"john"]);
+assertEqual(postgresResponseAsArray[0], [1,"john"]);
 assertEqual(postgresResponse[0]["id"], 1);
 ```
 """

@@ -861,13 +861,13 @@ httpDetailedSceneView model scene fileRecord =
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
                 PgSceneFailed error ->
-                    text <| "This postgresql query failed because of: " ++ error
+                    none
 
                 HttpPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                PgPostscriptFailed _ scriptException ->
-                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+                PgPostscriptFailed _ _ ->
+                    none
 
                 HttpSceneOk requestComputationOutput ->
                     column [ width fill ]
@@ -885,8 +885,7 @@ httpDetailedSceneView model scene fileRecord =
                         ]
 
                 PgSceneOk pgComputation ->
-                    column [ width fill ]
-                        []
+                    none
 
 
     in
@@ -972,14 +971,14 @@ pgDetailedSceneView model scene fileRecord =
                 PrescriptFailed scriptException ->
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneFailed httpException ->
-                    text <| "This request failed because of: " ++ httpExceptionToString httpException
+                HttpSceneFailed _ ->
+                    none
 
                 PgSceneFailed error ->
                     PgBuilder.responseView (Err error)
 
-                HttpPostscriptFailed _ scriptException ->
-                    text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
+                HttpPostscriptFailed _ _ ->
+                    none
 
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
@@ -988,11 +987,7 @@ pgDetailedSceneView model scene fileRecord =
                     none
 
                 PgSceneOk pgComputation ->
-                    column [ width fill ]
-                        [ PgBuilder.responseView (Ok pgComputation)
-                        ]
-
-
+                    PgBuilder.responseView (Ok pgComputation)
     in
     case scene.sceneComputation of
         Nothing ->
