@@ -12,7 +12,7 @@ import Page exposing (..)
 import Random
 import Util exposing (..)
 import Uuid exposing (Uuid)
-
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -24,7 +24,8 @@ type alias Model a =
         , displayedPgNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
-        , page : Page
+        , displayedPgId : Maybe Uuid
+        , navigationKey : Navigation.Key
     }
 
 
@@ -271,8 +272,17 @@ update msg model =
                         | pgCollection =
                             PgCollection pgCollectionId newPgNodes
                     }
+
+                newMsg =
+                    case model.displayedPgId == Just id of
+                        True ->
+                            Navigation.pushUrl model.navigationKey (href (PgPage Nothing))
+
+                        False ->
+                            Cmd.none
+
             in
-            ( newModel, Cmd.none )
+            ( newModel, newMsg )
 
         GenerateRandomUUIDForRootFile ->
             let
@@ -361,16 +371,6 @@ update msg model =
 
 
 -- * util
-
-
-getSelectedBuilderId : Model a -> Maybe Uuid
-getSelectedBuilderId model =
-    case model.page of
-        PgPage (Just id) ->
-            Just id
-
-        _ ->
-            Nothing
 
 
 -- ** msg handler
@@ -664,7 +664,7 @@ fileReadView : Model a -> String -> Uuid -> Element Msg
 fileReadView model name id =
     let
         color =
-            case getSelectedBuilderId model == Just id of
+            case model.displayedPgId == Just id of
                 True -> primaryColor
                 False -> secondaryColor
     in

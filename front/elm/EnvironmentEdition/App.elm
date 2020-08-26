@@ -6,11 +6,13 @@ import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Page exposing (..)
 import Element.Input as Input
 import Http
 import List.Extra as List
 import Util exposing (..)
 import StringTemplate exposing(..)
+import Browser.Navigation as Navigation
 
 
 -- *  environment edition
@@ -23,7 +25,8 @@ type alias Model a =
     { a
         | environments : List Environment
         , session : Session
-        , selectedEnvironmentToEditId : Maybe Int
+        , displayedEnvId : Maybe Int
+        , navigationKey : Navigation.Key
     }
 
 
@@ -41,8 +44,7 @@ defaultEnvironment =
 
 
 type Msg
-    = SelectEnvToEdit Int
-    | EnvironmentKeyValueEditionMsg KeyValueMsg
+    = EnvironmentKeyValueEditionMsg KeyValueMsg
     | AskEnvironmentCreation String
     | EnvironmentCreated Int String
     | ChangeName Int String
@@ -61,13 +63,6 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        SelectEnvToEdit id ->
-            let
-                newModel =
-                    { model | selectedEnvironmentToEditId = Just id }
-            in
-            ( newModel, Cmd.none )
-
         AskEnvironmentCreation name ->
             let
                 payload =
@@ -151,21 +146,20 @@ update msg model =
                 newEnvironments =
                     List.filter (\elem -> elem.id /= id) model.environments
 
-                newSelectedEnvironmentToEditId =
-                    case model.selectedEnvironmentToEditId == Just id of
+                newMsg =
+                    case model.displayedEnvId == Just id of
                         True ->
-                            Nothing
+                            Navigation.pushUrl model.navigationKey (href (EnvPage Nothing))
 
                         False ->
-                            model.selectedEnvironmentToEditId
+                            Cmd.none
 
                 newModel =
                     { model
-                        | selectedEnvironmentToEditId = newSelectedEnvironmentToEditId
-                        , environments = newEnvironments
+                        | environments = newEnvironments
                     }
             in
-            ( newModel, Cmd.none )
+            ( newModel, newMsg )
 
         ChangeName id name ->
             let
@@ -192,7 +186,7 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just environment ->
-                    case ( updateKeyValue subMsg ( model.session, environment ), model.selectedEnvironmentToEditId ) of
+                    case ( updateKeyValue subMsg ( model.session, environment ), model.displayedEnvId ) of
                         ( ( newEnvironment, newSubMsg ), Just id ) ->
                             let
                                 newEnvironments =
@@ -248,7 +242,7 @@ getEnvironmentToEdit model =
         selectEnvironment id =
             List.find (\env -> env.id == id) model.environments
     in
-    Maybe.andThen selectEnvironment model.selectedEnvironmentToEditId
+    Maybe.andThen selectEnvironment model.displayedEnvId
 
 
 
@@ -260,7 +254,7 @@ view model =
     let
         mSelectedEnv : Maybe Environment
         mSelectedEnv =
-            List.find (\env -> Just env.id == model.selectedEnvironmentToEditId) model.environments
+            List.find (\env -> Just env.id == model.displayedEnvId) model.environments
 
         keyValuesEditionView =
             case mSelectedEnv of
@@ -280,7 +274,7 @@ view model =
                     text "no environment selected"
 
         envListView =
-            List.map (entryView model.selectedEnvironmentToEditId) model.environments
+            List.map (entryView model.displayedEnvId) model.environments
 
         addEnvButtonView =
             Input.button []
@@ -330,10 +324,9 @@ entryView mSelectedEnvId environment =
                 False -> secondaryColor
 
         readView =
-            Input.button []
-                { onPress = Just <| SelectEnvToEdit environment.id
-                , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) color
-                }
+            link [] { url = href (EnvPage (Just environment.id))
+                    , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) color
+                    }
 
         editView =
             Input.text [ Util.onEnterWithInput (AskRename environment.id) ]

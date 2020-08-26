@@ -17,7 +17,7 @@ import RequestBuilderApp.RequestTree.App as RequestTree
 import RequestBuilderApp.RequestTree.Util as RequestTree
 import Util exposing (..)
 import Uuid exposing (Uuid)
-
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -28,10 +28,12 @@ type alias Model a =
         | notification : Maybe String
         , requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid
+        , displayedRequestId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
         , runnerRunning : Bool
+        , navigationKey : Navigation.Key
     }
 
 
@@ -42,7 +44,6 @@ type Msg
     = BuilderMsg RequestBuilder.Msg
     | TreeMsg RequestTree.Msg
     | EnvSelectionMsg Int
-
 
 
 -- * update
@@ -97,16 +98,6 @@ update msg model =
 -- * util
 
 
-getSelectedBuilderId : Model a -> Maybe Uuid
-getSelectedBuilderId model =
-    case model.page of
-        ReqPage (Just id) _ ->
-            Just id
-
-        _ ->
-            Nothing
-
-
 getBuilder : Model a -> Maybe RequestBuilder.Model
 getBuilder model =
     let
@@ -115,9 +106,9 @@ getBuilder model =
 
         mFile : Maybe RequestFileRecord
         mFile =
-            Maybe.andThen (RequestTree.findFile requestNodes) (getSelectedBuilderId model)
+            Maybe.andThen (RequestTree.findFile requestNodes) model.displayedRequestId
     in
-    case ( getSelectedBuilderId model, mFile ) of
+    case (model.displayedRequestId, mFile ) of
         ( Just _, Just file ) ->
             let
                 keyValuesToRun =

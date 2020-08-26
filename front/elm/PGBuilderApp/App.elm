@@ -18,7 +18,7 @@ import PGBuilderApp.PGTree.Util as PgTree
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Api.RunnerGeneratedClient as Client
-
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -28,12 +28,13 @@ type alias Model a =
     { a
         | pgCollection : PgCollection
         , displayedPgNodeMenuId : Maybe Uuid
+        , displayedPgId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
         , runnerRunning : Bool
+        , navigationKey : Navigation.Key
     }
-
 
 
 -- * message
@@ -95,15 +96,6 @@ update msg model =
 -- * util
 
 
-getSelectedBuilderId : Model a -> Maybe Uuid
-getSelectedBuilderId model =
-    case model.page of
-        PgPage (Just id) ->
-            Just id
-
-        _ ->
-            Nothing
-
 getBuilder : Model a -> Maybe PGBuilder.Model
 getBuilder model =
     let
@@ -112,9 +104,9 @@ getBuilder model =
 
         mFile : Maybe PgFileRecord
         mFile =
-            Maybe.andThen (PgTree.findFile pgNodes) (getSelectedBuilderId model)
+            Maybe.andThen (PgTree.findFile pgNodes) model.displayedPgId
     in
-    case ( getSelectedBuilderId model, mFile ) of
+    case ( model.displayedPgId, mFile ) of
         ( Just _, Just file ) ->
             let
                 keyValuesToRun =
@@ -169,8 +161,8 @@ changeFileBuilder builder node =
 -- * view
 
 
-view : Model a -> Maybe Uuid -> Element Msg
-view model mId =
+view : Model a -> Element Msg
+view model =
     let
         enableRunnerBanner =
             row [ width fill
@@ -205,7 +197,7 @@ view model mId =
                     [ el [] <| envSelectionView <| List.map .name model.environments
                     , el [ paddingXY 10 0 ] <| map TreeMsg (PgTree.view model)
                     ]
-              , builderView model mId
+              , builderView model
               ]
         ]
 
@@ -224,8 +216,8 @@ envSelectionView environmentNames =
                 (List.indexedMap entryView environmentNames)
             ]
 
-builderView : Model a -> Maybe Uuid -> Element Msg
-builderView model mId =
+builderView : Model a -> Element Msg
+builderView model =
     case getBuilder model of
         Just builder ->
             el [ width (fillPortion 9)

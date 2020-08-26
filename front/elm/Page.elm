@@ -12,7 +12,7 @@ type Page
     = HomePage
     | ReqPage (Maybe Uuid) (Maybe Uuid)
     | PgPage (Maybe Uuid)
-    | EnvPage
+    | EnvPage (Maybe Int)
     | ScenarioPage (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
@@ -108,7 +108,8 @@ urlParser =
         , Url.map (ReqPage Nothing Nothing) (appRoot </> Url.s "req")
         , Url.map (\id -> PgPage (Just id)) (appRoot </> Url.s "pg" </> uuidParser)
         , Url.map (PgPage Nothing) (appRoot </> Url.s "pg")
-        , Url.map EnvPage (appRoot </> Url.s "env")
+        , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> Url.int)
+        , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
         , Url.map (\id -> ScenarioPage (Just id)) (appRoot </> Url.s "scenario" </> uuidParser)
         , Url.map (ScenarioPage Nothing) (appRoot </> Url.s "scenario")
         , Url.map (\documentation -> DocumentationPage documentation) (appRoot </> Url.s "documentation" </> documentationParser)
@@ -142,8 +143,11 @@ href page =
                 PgPage Nothing ->
                     [ "app", "pg" ]
 
-                EnvPage ->
+                EnvPage Nothing ->
                     [ "app", "env" ]
+
+                EnvPage (Just id) ->
+                    [ "app", "env", String.fromInt id ]
 
                 ScenarioPage (Just uuid) ->
                     [ "app", "scenario", Uuid.toString uuid ]

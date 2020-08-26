@@ -9,6 +9,7 @@ import Page exposing (..)
 import Random
 import Util exposing (..)
 import Uuid exposing (Uuid)
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -20,7 +21,8 @@ type alias Model a =
         , displayedScenarioNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
-        , page : Page
+        , displayedScenarioId : Maybe Uuid
+        , navigationKey : Navigation.Key
     }
 
 
@@ -282,8 +284,16 @@ update msg model =
                         | scenarioCollection =
                             ScenarioCollection scenarioCollectionId newScenarioNodes
                     }
+
+                newMsg =
+                    case model.displayedScenarioId == Just id of
+                        True ->
+                            Navigation.pushUrl model.navigationKey (href (ScenarioPage Nothing))
+
+                        False ->
+                            Cmd.none
             in
-            ( newModel, Cmd.none )
+            ( newModel, newMsg )
 
 
 -- ** root file
@@ -374,16 +384,6 @@ update msg model =
 
 
 -- * util
-
-
-getSelectedBuilderId : Model a -> Maybe Uuid
-getSelectedBuilderId model =
-    case model.page of
-        ScenarioPage (Just id) ->
-            Just id
-
-        _ ->
-            Nothing
 
 
 -- ** msg handler
@@ -717,7 +717,7 @@ fileReadView : Model a -> String -> Uuid -> Element Msg
 fileReadView model name id =
     let
         color =
-            case getSelectedBuilderId model == Just id of
+            case model.displayedScenarioId == Just id of
                 True -> primaryColor
                 False -> secondaryColor
     in

@@ -28,6 +28,11 @@ type alias Model a =
         , page : Page
         , showMainMenuName : Maybe MainMenuName
         , runnerRunning : Bool
+        , displayedScenarioId : Maybe Uuid
+        , displayedRequestId : Maybe Uuid
+        , displayedPgId : Maybe Uuid
+        , displayedEnvId : Maybe Int
+        , displayedDocumentation : Documentation
     }
 
 
@@ -71,7 +76,7 @@ update msg model =
         OpenEnvPage ->
             let
                 newModel =
-                    { model | page = EnvPage }
+                    { model | page = EnvPage Nothing }
             in
             ( newModel, Cmd.none )
 
@@ -388,25 +393,25 @@ centerView model =
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
         [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
-            { url = href (ScenarioPage Nothing)
+            { url = href (ScenarioPage model.displayedScenarioId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
-            { url = href (ReqPage Nothing Nothing)
+            { url = href (ReqPage model.displayedRequestId Nothing)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = " HTTP" })
             }
         , link
             (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
-            { url = href (PgPage Nothing)
+            { url = href (PgPage model.displayedPgId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
-            { url = href EnvPage
+            { url = href (EnvPage model.displayedEnvId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
-            { url = href (DocumentationPage RequestDoc)
+            { url = href (DocumentationPage model.displayedDocumentation)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = " Documentation" })
             }
         ]
@@ -468,7 +473,7 @@ isReqPage page =
 isEnvPage : Page -> Bool
 isEnvPage page =
     case page of
-        EnvPage ->
+        EnvPage _ ->
             True
 
         _ ->
