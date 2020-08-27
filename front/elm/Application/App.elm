@@ -65,7 +65,6 @@ type Msg
     | RunnerRunning
 
 
-
 -- * init
 
 
@@ -119,20 +118,25 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
             , displayedPgNodeMenuId = Nothing
+            , displayedPgId = Nothing
             , pgCollection = pgCollection
             , sqlQuery = NotEdited ""
             , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
+            , displayedRequestId = Nothing
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
+            , displayedScenarioId = Nothing
             , script = ""
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
+            , displayedEnvId = Nothing
             , environments = environments
             , runnerRunning = False
+            , displayedDocumentation = RequestDoc
             }
     in
-    ( model, Cmd.none )
+    ( updateModelWithPage page model, Cmd.none )
 
 
 
@@ -160,18 +164,19 @@ update msg model =
 
         UrlChanged url ->
             let
-                newPage =
-                    urlToPage url
-
                 newModel =
-                    { model | page = newPage }
+                    updateModelWithPage (urlToPage url) model
             in
             ( newModel, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Internal url ->
-                    ( model, Navigation.pushUrl model.navigationKey <| Url.toString url )
+                    let
+                        newModel =
+                            updateModelWithPage (urlToPage url) model
+                    in
+                    ( newModel, Navigation.pushUrl model.navigationKey <| Url.toString url )
 
                 External url ->
                     ( model, Navigation.load url )
@@ -252,6 +257,31 @@ update msg model =
 -- * util
 
 
+updateModelWithPage : Page -> Model -> Model
+updateModelWithPage page model =
+    let
+        newModel =
+            case page of
+                ReqPage mId _ ->
+                    { model | displayedRequestId = mId }
+
+                PgPage mId ->
+                    { model | displayedPgId = mId }
+
+                EnvPage mId ->
+                    { model | displayedEnvId = mId }
+
+                ScenarioPage mId ->
+                    { model | displayedScenarioId = mId }
+
+                DocumentationPage documentation ->
+                    { model | displayedDocumentation = documentation }
+
+                _ -> model
+    in
+    { newModel | page = page }
+
+
 fetchRunnerStatus : Cmd Msg
 fetchRunnerStatus =
     let
@@ -319,17 +349,17 @@ mainView model =
             ReqPage _ mFromScenarioId ->
                 appLayout <| map BuilderAppMsg (RequestBuilderApp.view model mFromScenarioId)
 
-            PgPage id ->
-                appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model id)
+            PgPage _ ->
+                appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model)
 
-            EnvPage ->
+            EnvPage _ ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
             ScenarioPage _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
 
-            DocumentationPage mDocumentation ->
-                appLayout <| map DocumentationMsg (DocumentationApp.view mDocumentation)
+            DocumentationPage _ ->
+                appLayout <| map DocumentationMsg (DocumentationApp.view model)
 
             TangoScriptPage ->
                 appLayout <| map TangoScriptMsg (TangoScriptApp.view model)
@@ -444,8 +474,8 @@ homeView model =
                            [ Background.color secondaryColor
                            , Font.color primaryColor
                            ]
-                     ] { url = "#app/scenario"
-                       , label = el [ centerY, centerX ] <| text "Try it for free!"
+                     ] { url = href (ScenarioPage model.displayedScenarioId)
+                       , label = el [ centerY, centerX ] <| text "Try it!"
                        }
                 ]
 

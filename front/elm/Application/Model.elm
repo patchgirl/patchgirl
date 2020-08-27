@@ -24,6 +24,9 @@ type alias Model =
     , notification : Maybe String
     , notificationAnimation : Animation.State
 
+    -- DOCUMENTATION
+    , displayedDocumentation : Documentation
+
     -- Landing page DEMO
     , sceneToDemo : SceneToDemo
 
@@ -35,10 +38,12 @@ type alias Model =
 
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid
+    , displayedRequestId : Maybe Uuid
     , requestCollection : RequestCollection
 
     -- SQL
     , displayedPgNodeMenuId : Maybe Uuid
+    , displayedPgId : Maybe Uuid
     , pgCollection : PgCollection
     , sqlQuery : Editable String
     , pgComputation : Maybe PgComputation
@@ -46,6 +51,7 @@ type alias Model =
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid
+    , displayedScenarioId : Maybe Uuid
 
     -- TANGOSCRIPT APP
     , script : String
@@ -53,6 +59,7 @@ type alias Model =
     -- ENVIRONMENT
     , selectedEnvironmentToRunIndex : Maybe Int
     , selectedEnvironmentToEditId : Maybe Int
+    , displayedEnvId : Maybe Int
     , environments : List Environment
 
     -- RUNNER
@@ -67,6 +74,7 @@ type SceneToDemo
     = Scene1
     | Scene2
     | Scene3
+
 
 -- * environment
 

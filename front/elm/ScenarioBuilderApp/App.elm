@@ -16,7 +16,7 @@ import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import ScenarioBuilderApp.ScenarioTree.App as ScenarioTree
 import Util exposing (..)
 import Uuid exposing(Uuid)
-
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -31,10 +31,11 @@ type alias Model a =
         , requestCollection : RequestCollection
         , pgCollection : PgCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
+        , displayedScenarioId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
-        , page : Page
         , runnerRunning : Bool
+        , navigationKey : Navigation.Key
     }
 
 
@@ -94,16 +95,6 @@ update msg model =
 -- * util
 
 
-getSelectedBuilderId : Model a -> Maybe Uuid
-getSelectedBuilderId model =
-    case model.page of
-        ScenarioPage (Just id) ->
-            Just id
-
-        _ ->
-            Nothing
-
-
 getBuilder : Model a -> Maybe ScenarioBuilder.Model
 getBuilder model =
     let
@@ -112,7 +103,7 @@ getBuilder model =
 
         mFile : Maybe ScenarioFileRecord
         mFile =
-            Maybe.andThen (ScenarioTree.findFile scenarioNodes) (getSelectedBuilderId model)
+            Maybe.andThen (ScenarioTree.findFile scenarioNodes) (model.displayedScenarioId)
     in
     case mFile of
         Just file ->

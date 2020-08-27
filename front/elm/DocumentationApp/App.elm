@@ -24,6 +24,8 @@ import Task
 
 -- * model
 
+type alias Model a =
+    { a | displayedDocumentation : Documentation }
 
 type alias DocPage =
     { content : List Md.Block
@@ -60,8 +62,8 @@ update msg =
 -- * view
 
 
-view : Documentation -> Element Msg
-view currentDocumentation =
+view : Model a -> Element Msg
+view model =
     let
         contents : Result String (List DocPage)
         contents = List.map parse [ requestView
@@ -76,7 +78,7 @@ view currentDocumentation =
         mkMenuItem (h1, children) =
             let
                 isSelectedMenu =
-                    documentationToString currentDocumentation == normalizeTitle h1
+                    documentationToString model.displayedDocumentation == normalizeTitle h1
 
                 selectedMenuAttrs =
                     case isSelectedMenu of
@@ -129,7 +131,7 @@ view currentDocumentation =
                            , padding 20
                            , alignTop
                            ] (mkMenu docPages)
-            , contentView currentDocumentation
+            , contentView model.displayedDocumentation
             ]
 
 
