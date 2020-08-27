@@ -65,7 +65,6 @@ type Msg
     | RunnerRunning
 
 
-
 -- * init
 
 
@@ -165,19 +164,19 @@ update msg model =
 
         UrlChanged url ->
             let
-                newPage =
-                    urlToPage url
-
                 newModel =
-                    updateModelWithPage newPage model
-
+                    updateModelWithPage (urlToPage url) model
             in
             ( newModel, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Internal url ->
-                    ( model, Navigation.pushUrl model.navigationKey <| Url.toString url )
+                    let
+                        newModel =
+                            updateModelWithPage (urlToPage url) model
+                    in
+                    ( newModel, Navigation.pushUrl model.navigationKey <| Url.toString url )
 
                 External url ->
                     ( model, Navigation.load url )
@@ -260,23 +259,27 @@ update msg model =
 
 updateModelWithPage : Page -> Model -> Model
 updateModelWithPage page model =
-    case page of
-        ReqPage mId _ ->
-            { model | displayedRequestId = mId }
+    let
+        newModel =
+            case page of
+                ReqPage mId _ ->
+                    { model | displayedRequestId = mId }
 
-        PgPage mId ->
-            { model | displayedPgId = mId }
+                PgPage mId ->
+                    { model | displayedPgId = mId }
 
-        EnvPage mId ->
-            { model | displayedEnvId = mId }
+                EnvPage mId ->
+                    { model | displayedEnvId = mId }
 
-        ScenarioPage mId ->
-            { model | displayedScenarioId = mId }
+                ScenarioPage mId ->
+                    { model | displayedScenarioId = mId }
 
-        DocumentationPage documentation ->
-            { model | displayedDocumentation = documentation }
+                DocumentationPage documentation ->
+                    { model | displayedDocumentation = documentation }
 
-        _ -> model
+                _ -> model
+    in
+    { newModel | page = page }
 
 
 fetchRunnerStatus : Cmd Msg
@@ -471,8 +474,8 @@ homeView model =
                            [ Background.color secondaryColor
                            , Font.color primaryColor
                            ]
-                     ] { url = "#app/scenario"
-                       , label = el [ centerY, centerX ] <| text "Try it for free!"
+                     ] { url = href (ScenarioPage model.displayedScenarioId)
+                       , label = el [ centerY, centerX ] <| text "Try it!"
                        }
                 ]
 
