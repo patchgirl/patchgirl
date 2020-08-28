@@ -4,6 +4,7 @@ import Api.WebGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Input as Input
+import Element.Font as Font
 import Http
 import Page exposing (..)
 import Random
@@ -715,12 +716,20 @@ nodeView model scenarioCollection =
 fileReadView : Model a -> String -> Uuid -> Element Msg
 fileReadView model name id =
     let
+        selected =
+            model.displayedScenarioId == Just id
+
         color =
-            case model.displayedScenarioId == Just id of
+            case selected of
                 True -> primaryColor
                 False -> secondaryColor
+
+        weight =
+            case selected of
+               True -> Font.heavy
+               False -> Font.regular
     in
-    link []
+    link [ weight ]
         { url = href (ScenarioPage (Just id) Nothing)
         , label = el [] <| iconWithTextAndColor "label" name color
         }
