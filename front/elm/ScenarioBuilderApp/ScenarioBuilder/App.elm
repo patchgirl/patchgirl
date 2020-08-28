@@ -30,6 +30,7 @@ import StringTemplate exposing (..)
 import Dict exposing (Dict)
 import Runner
 import PGBuilderApp.PGTree.Util as PgTree
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -46,11 +47,12 @@ type alias Model =
     , scenes : List Scene
     , keyValues : List (Storable NewKeyValue KeyValue)
     , name : Editable String
-    , showDetailedSceneView : Maybe Uuid
+    , displayedSceneId : Maybe Uuid
     , whichResponseView : HttpResponseView
     , environments : List Environment
     , environmentId : Editable (Maybe Int)
     , runnerRunning : Bool
+    , navigationKey : Navigation.Key
     }
 
 
@@ -79,8 +81,6 @@ type
     | AskRunScenario
     | ScenarioProcessed ScenarioOutput
       -- detailed view
-    | ShowDetailedView Uuid
-    | HideDetailedView
     | ShowBodyResponseView
     | ShowHeaderResponseView
     -- script
@@ -192,8 +192,17 @@ update msg model =
 
                 newModel =
                     { model | scenes = newScenes }
+
+                newMsg =
+                    case model.displayedSceneId == Just id of
+                        True ->
+                            Navigation.pushUrl model.navigationKey (href (ScenarioPage (Just model.id) Nothing))
+
+                        False ->
+                            Cmd.none
+
             in
-            ( newModel, Cmd.none )
+            ( newModel, newMsg )
 
 
 -- ** update scene
@@ -303,10 +312,10 @@ update msg model =
                 mScenes =
                     let
                         a =
-                            Debug.log "scenes" model.scenes
+                            model.scenes
                                 |> List.map sceneToSceneInput
                     in
-                        Debug.log "a" a |> traverseListMaybe
+                        a |> traverseListMaybe
 
                 mPayload =
                     mScenes
@@ -357,21 +366,6 @@ update msg model =
 
 
 -- ** detailed view
-
-
-        ShowDetailedView sceneId ->
-            let
-                newModel =
-                    { model | showDetailedSceneView = Just sceneId }
-            in
-            (newModel, Cmd.none)
-
-        HideDetailedView ->
-            let
-                newModel =
-                    { model | showDetailedSceneView = Nothing }
-            in
-            (newModel, Cmd.none)
 
         ShowBodyResponseView ->
             let
@@ -620,7 +614,7 @@ view model =
                 , envSelectionView
                 ]
     in
-    case model.showDetailedSceneView of
+    case model.displayedSceneId of
         Nothing ->
             wrappedRow [ height fill, width fill, spacing 20 ]
                 [ el [ alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
@@ -644,7 +638,7 @@ sceneView : Model -> Scene -> Element Msg
 sceneView model scene =
     let
         selectedSceneAttrs =
-            case model.showDetailedSceneView == Just scene.id of
+            case model.displayedSceneId == Just scene.id of
                 True ->
                     Border.color black
                 False ->
@@ -681,7 +675,7 @@ sceneView model scene =
                             "storage"
             in
             column [ centerX, spacing 10 ]
-                [ Input.button
+                [ link
                     ( [ Border.solid
                       , Border.width 1
                       , Border.rounded 5
@@ -692,7 +686,7 @@ sceneView model scene =
                       , centerX
                       ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
                     )
-                    { onPress = Just (ShowDetailedView scene.id)
+                    { url = href <| ScenarioPage (Just model.id) (Just scene.id)
                     , label =
                         row [ spacing 20, centerX ]
                             [ row []
@@ -741,7 +735,7 @@ detailedSceneView : Model -> Uuid -> Element Msg
 detailedSceneView model sceneId =
     let
         mSceneAndRecord =
-            List.find (\scene -> scene.id == sceneId) model.scenes
+            List.find (\scene -> scene.id == sceneId) (model.scenes)
                 |> Maybe.andThen (\scene -> (findRecord model scene) |> Maybe.map (\record -> (scene, record)))
     in
     case mSceneAndRecord of
@@ -813,8 +807,8 @@ httpDetailedSceneView model scene fileRecord =
                                                  }
                           }
                     , saveSceneButton
-                    , Input.button [ alignRight ]
-                        { onPress = Just HideDetailedView
+                    , link [ alignRight ]
+                        { url = href <| ScenarioPage (Just model.id) Nothing
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
@@ -948,8 +942,8 @@ pgDetailedSceneView model scene fileRecord =
                                                  }
                           }
                     , saveSceneButton
-                    , Input.button [ alignRight ]
-                        { onPress = Just HideDetailedView
+                    , link [ alignRight ]
+                        { url =  href <| ScenarioPage (Just model.id) (Nothing)
                         , label = el [ alignRight ] clearIcon
                         }
                     ]

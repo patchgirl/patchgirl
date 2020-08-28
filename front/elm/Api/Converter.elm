@@ -133,7 +133,6 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
                         , scenes = List.map convertSceneActorFromBackToFront file.scenarioNodeScenes
-                        , showDetailedSceneView = Nothing
                         , whichResponseView = BodyResponseView
                         , environmentId = NotEdited file.scenarioNodeEnvironmentId
                         }

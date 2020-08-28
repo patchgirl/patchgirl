@@ -499,7 +499,7 @@ goBackToScenarioView mScenarioId =
 
         Just scenarioId ->
             link []
-                { url = href (ScenarioPage (Just scenarioId))
+                { url = href (ScenarioPage (Just scenarioId) Nothing)
                 , label = el [ Font.heavy ] <| iconWithTextAndColor "keyboard_backspace" "Go back to scenario" primaryColor
                 }
 

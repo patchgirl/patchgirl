@@ -52,6 +52,7 @@ type alias Model =
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid
     , displayedScenarioId : Maybe Uuid
+    , displayedSceneId : Maybe Uuid
 
     -- TANGOSCRIPT APP
     , script : String

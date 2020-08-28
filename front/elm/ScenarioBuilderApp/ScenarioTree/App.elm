@@ -288,7 +288,7 @@ update msg model =
                 newMsg =
                     case model.displayedScenarioId == Just id of
                         True ->
-                            Navigation.pushUrl model.navigationKey (href (ScenarioPage Nothing))
+                            Navigation.pushUrl model.navigationKey (href (ScenarioPage Nothing Nothing))
 
                         False ->
                             Cmd.none
@@ -631,7 +631,6 @@ mkDefaultFile id =
         , environmentId = NotEdited Nothing
         , name = NotEdited defaultFileName
         , scenes = []
-        , showDetailedSceneView = Nothing
         , whichResponseView = BodyResponseView
         }
 
@@ -722,7 +721,7 @@ fileReadView model name id =
                 False -> secondaryColor
     in
     link []
-        { url = href (ScenarioPage (Just id))
+        { url = href (ScenarioPage (Just id) Nothing)
         , label = el [] <| iconWithTextAndColor "label" name color
         }
 

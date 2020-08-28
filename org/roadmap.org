@@ -19,8 +19,6 @@
 
 ** TODO Scenario: prettify "add a scene to your scenario" button
    SCHEDULED: <2020-08-27 jeu.>
-** TODO Scenario: scene details in URL
-   SCHEDULED: <2020-08-27 jeu.>
 ** TODO Scenario: reset data
    SCHEDULED: <2020-08-27 jeu.>
 ** TODO Tree: duplicate entry for file

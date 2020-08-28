@@ -32,6 +32,7 @@ type alias Model a =
         , pgCollection : PgCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
         , displayedScenarioId : Maybe Uuid
+        , displayedSceneId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , runnerRunning : Bool
@@ -133,11 +134,12 @@ convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =
     , scenes = file.scenes
     , keyValues = keyValuesToRun
     , name = file.name
-    , showDetailedSceneView = file.showDetailedSceneView
+    , displayedSceneId = model.displayedSceneId
     , whichResponseView = file.whichResponseView
     , environments = model.environments
     , environmentId = file.environmentId
     , runnerRunning = model.runnerRunning
+    , navigationKey = model.navigationKey
     }
 
 convertFromBuilderToFile : ScenarioBuilder.Model -> ScenarioFileRecord
@@ -145,7 +147,6 @@ convertFromBuilderToFile builder =
     { id = builder.id
     , name = builder.name
     , scenes = builder.scenes
-    , showDetailedSceneView = builder.showDetailedSceneView
     , whichResponseView = builder.whichResponseView
     , environmentId = builder.environmentId
     }
@@ -158,7 +159,6 @@ changeFileBuilder builder node =
 
         ScenarioFile f ->
             ScenarioFile (convertFromBuilderToFile builder)
-
 
 
 -- * view

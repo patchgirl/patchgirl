@@ -267,7 +267,6 @@ type alias ScenarioFileRecord =
     , environmentId : Editable (Maybe Int)
     , name : Editable String
     , scenes : List Scene
-    , showDetailedSceneView : Maybe Uuid
     , whichResponseView : HttpResponseView
     }
 

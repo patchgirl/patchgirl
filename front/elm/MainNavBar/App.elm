@@ -29,6 +29,7 @@ type alias Model a =
         , showMainMenuName : Maybe MainMenuName
         , runnerRunning : Bool
         , displayedScenarioId : Maybe Uuid
+        , displayedSceneId : Maybe Uuid
         , displayedRequestId : Maybe Uuid
         , displayedPgId : Maybe Uuid
         , displayedEnvId : Maybe Int
@@ -83,7 +84,7 @@ update msg model =
         OpenScenarioPage ->
             let
                 newModel =
-                    { model | page = ScenarioPage Nothing }
+                    { model | page = ScenarioPage Nothing Nothing }
             in
             ( newModel, Cmd.none )
 
@@ -393,7 +394,7 @@ centerView model =
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
         [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
-            { url = href (ScenarioPage model.displayedScenarioId)
+            { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
@@ -455,7 +456,7 @@ mainLinkAttributeWhenActive event active =
 isScenarioPage : Page -> Bool
 isScenarioPage page =
     case page of
-        ScenarioPage _ ->
+        ScenarioPage _ _ ->
             True
 
         _ ->

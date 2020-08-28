@@ -13,7 +13,7 @@ type Page
     | ReqPage (Maybe Uuid) (Maybe Uuid)
     | PgPage (Maybe Uuid)
     | EnvPage (Maybe Int)
-    | ScenarioPage (Maybe Uuid)
+    | ScenarioPage (Maybe Uuid) (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
     | TangoScriptPage
@@ -110,8 +110,9 @@ urlParser =
         , Url.map (PgPage Nothing) (appRoot </> Url.s "pg")
         , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> Url.int)
         , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
-        , Url.map (\id -> ScenarioPage (Just id)) (appRoot </> Url.s "scenario" </> uuidParser)
-        , Url.map (ScenarioPage Nothing) (appRoot </> Url.s "scenario")
+        , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
+        , Url.map (\id -> ScenarioPage (Just id) Nothing) (appRoot </> Url.s "scenario" </> uuidParser)
+        , Url.map (ScenarioPage Nothing Nothing) (appRoot </> Url.s "scenario")
         , Url.map (\documentation -> DocumentationPage documentation) (appRoot </> Url.s "documentation" </> documentationParser)
         , Url.map (TangoScriptPage) (appRoot </> Url.s "tangoscript")
         ]
@@ -149,11 +150,14 @@ href page =
                 EnvPage (Just id) ->
                     [ "app", "env", String.fromInt id ]
 
-                ScenarioPage (Just uuid) ->
-                    [ "app", "scenario", Uuid.toString uuid ]
-
-                ScenarioPage Nothing ->
-                    [ "app", "scenario" ]
+                ScenarioPage mUuid1 mUuid2  ->
+                    let
+                        uuidToStr mUuid =
+                            mUuid
+                                |> Maybe.map Uuid.toString
+                                |> Maybe.withDefault ""
+                    in
+                    [ "app", "scenario", uuidToStr mUuid1, uuidToStr mUuid2 ]
 
                 TangoScriptPage ->
                     [ "app", "tangoscript" ]

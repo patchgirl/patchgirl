@@ -127,6 +127,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
             , displayedScenarioId = Nothing
+            , displayedSceneId = Nothing
             , script = ""
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
@@ -271,8 +272,11 @@ updateModelWithPage page model =
                 EnvPage mId ->
                     { model | displayedEnvId = mId }
 
-                ScenarioPage mId ->
-                    { model | displayedScenarioId = mId }
+                ScenarioPage mId1 mId2  ->
+                    { model
+                        | displayedScenarioId = mId1
+                        , displayedSceneId = mId2
+                    }
 
                 DocumentationPage documentation ->
                     { model | displayedDocumentation = documentation }
@@ -355,7 +359,7 @@ mainView model =
             EnvPage _ ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
-            ScenarioPage _ ->
+            ScenarioPage _ _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
 
             DocumentationPage _ ->
@@ -474,7 +478,7 @@ homeView model =
                            [ Background.color secondaryColor
                            , Font.color primaryColor
                            ]
-                     ] { url = href (ScenarioPage model.displayedScenarioId)
+                     ] { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
                        , label = el [ centerY, centerX ] <| text "Try it!"
                        }
                 ]
