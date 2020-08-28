@@ -21,8 +21,6 @@
    SCHEDULED: <2020-08-27 jeu.>
 ** TODO Scenario: scene details in URL
    SCHEDULED: <2020-08-27 jeu.>
-** TODO SQL: sql input handles newlines
-   SCHEDULED: <2020-08-27 jeu.>
 ** TODO Scenario: reset data
    SCHEDULED: <2020-08-27 jeu.>
 ** TODO Tree: duplicate entry for file

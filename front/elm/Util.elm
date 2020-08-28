@@ -424,19 +424,6 @@ onEnter msg =
     Html.on "keydown" (Json.andThen isEnter Html.keyCode) |> htmlAttribute
 
 
-onEnter2 : a -> Attribute a
-onEnter2 msg =
-    let
-        isEnter code =
-            if code == 13 then
-                Json.succeed msg
-
-            else
-                Json.fail "not ENTER"
-    in
-    Html.on "keydown" (Json.andThen isEnter Html.keyCode) |> htmlAttribute
-
-
 onEnterWithInput : (String -> a) -> Attribute a
 onEnterWithInput tagger =
     let

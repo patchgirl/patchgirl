@@ -302,6 +302,10 @@ view model =
                   none
         ]
 
+
+-- ** builder
+
+
 builderView : Model -> Element Msg
 builderView model =
     column [ alignLeft, width fill, spacing 20 ]
@@ -367,13 +371,18 @@ builderView model =
                   , label = labelInputView "Database: "
                   }
               ]
-        , Input.text [ Util.onEnter AskRun ]
+        , Input.multiline [ Util.onEnter AskRun ]
             { onChange = UpdateSqlQuery
             , text = editedOrNotEditedValue model.sqlQuery
             , placeholder = Just <| Input.placeholder [] (text "SELECT * FROM your_table;")
             , label = labelInputView "SQL: "
+            , spellcheck = False
             }
         ]
+
+
+-- ** response
+
 
 responseView : PgComputationOutput -> Element a
 responseView pgComputationOutput =
