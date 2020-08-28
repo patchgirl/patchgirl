@@ -24,6 +24,7 @@ import Task
 
 -- * model
 
+
 type alias Model a =
     { a | displayedDocumentation : Documentation }
 
@@ -77,13 +78,24 @@ view model =
         mkMenuItem : DocMenu -> Element Msg
         mkMenuItem (h1, children) =
             let
-                isSelectedMenu =
+                selected =
                     documentationToString model.displayedDocumentation == normalizeTitle h1
 
                 selectedMenuAttrs =
-                    case isSelectedMenu of
+                    case selected of
                         True -> Font.bold
                         False -> Font.regular
+
+                color =
+                    case selected of
+                        True -> primaryColor
+                        False -> secondaryColor
+
+                weight =
+                    case selected of
+                       True -> Font.heavy
+                       False -> Font.regular
+
             in
             column [ spacing 5 ]
                 [ link [ selectedMenuAttrs ]
@@ -93,10 +105,10 @@ view model =
                               |> Maybe.withDefault RequestDoc
                               |> DocumentationPage
                               |> href
-                      , label = text h1
+                      , label = el [ weight ] <| iconWithTextAndColor "label" h1 color
                       }
                 , column [ spacing 5 ] <|
-                    case isSelectedMenu of
+                    case selected of
                         True -> List.map (mkSubMenuItem h1) children
                         False -> []
                 ]

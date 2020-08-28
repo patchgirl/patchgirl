@@ -612,7 +612,7 @@ view model =
                     }
                 , Input.button []
                     { onPress = Just <| GenerateRandomUUIDForRootFile
-                    , label = iconWithText "note_add" "new pg"
+                    , label = iconWithText "note_add" "new request"
                     }
                 ]
 

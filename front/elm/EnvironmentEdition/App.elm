@@ -278,13 +278,9 @@ view model =
             List.map (entryView model.displayedEnvId) model.environments
 
         addEnvButtonView =
-            Input.button []
+            Input.button [ alignLeft, width fill, Font.alignLeft ]
                 { onPress = Just <| AskEnvironmentCreation "new environment"
-                , label =
-                    row []
-                        [ addIcon
-                        , el [] (text "Add environment")
-                        ]
+                , label = iconWithText "note_add" "new environment"
                 }
     in
     wrappedRow
@@ -295,17 +291,18 @@ view model =
         [ column
             [ alignLeft
             , alignTop
-            , spacing 10
+            , spacing 20
             , padding 20
             , width (fillPortion 1)
             , Background.color white
             , boxShadow
             ]
-            [ column [ spacing 10 ] envListView
-            , el [ centerX ] addEnvButtonView
+            [ addEnvButtonView
+            , column [ spacing 10 ] envListView
             ]
         , el [ width (fillPortion 9)
-             , centerX, alignTop
+             , centerX
+             , alignTop
              ]
               <| el [ centerX
                     , alignTop
