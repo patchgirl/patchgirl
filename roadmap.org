@@ -1,0 +1,50 @@
+# create todo M-S Enter
+# todo toggle C-c C-t
+# schedule a todo C-c C-s
+# S-tab toggle hierarchy
+# org-todo-list -> to show all todos
+# org-agenda
+# org-archive-subtree
+
+* Features
+
+** TODO Notification system
+** TODO Tangoscript: parse json
+** TODO Scenario: cookie
+** TODO Scenario: include scenario
+
+
+* Improvements
+
+
+** DONE HTTP: remove `Header` label when there is no headers
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO Scenario: prettify "add a scene to your scenario" button
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO Scenario: scene details in URL
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO SQL: sql input handles newlines
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO Scenario: reset data
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO Tree: duplicate entry for file
+** TODO Scenario: select scene modal
+** TODO Tangoscript: documentation for the language
+** TODO Tangoscript: parsing speed
+** TODO SQL: pg elephant icon
+** TODO Tree: when removing an HTTP or SQL file, warn if they are used in a scene and hence unremovable
+
+
+* Bugs
+
+
+** TODO http request: Json response unreadable
+long json response body won't show scrollbars in the input so we have to scroll with the keyboard
+
+
+* Refacto
+
+
+** TODO weeder to remove deadcode https://github.com/ocharles/weeder
+** TODO stan to clean project
+** TODO env id as UUID

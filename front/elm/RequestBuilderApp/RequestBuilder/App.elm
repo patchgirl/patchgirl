@@ -678,11 +678,16 @@ headersView model =
                         ]
                 }
     in
-    column [ width fill, spacing 20 ]
-        [ text "Header:"
-        , column [ width fill, spacing 10 ] headerInputs
-        , addHeaderButton
-        ]
+        case List.isEmpty (editedOrNotEditedValue model.httpHeaders) of
+            True ->
+                el [ width fill, spacing 20 ] addHeaderButton
+
+            False ->
+                column [ width fill, spacing 20 ]
+                    [ text "Header:"
+                    , column [ width fill, spacing 10 ] headerInputs
+                    , addHeaderButton
+                    ]
 
 
 headerView : Model -> Int -> ( String, String ) -> Element Msg
