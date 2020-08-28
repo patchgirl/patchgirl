@@ -6,6 +6,7 @@ import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Page exposing (..)
 import Element.Input as Input
 import Http
@@ -318,13 +319,21 @@ view model =
 entryView : Maybe Int -> Environment -> Element Msg
 entryView mSelectedEnvId environment =
     let
+        selected =
+            mSelectedEnvId == Just environment.id
+
         color =
-            case mSelectedEnvId == Just environment.id of
+            case selected  of
                 True -> primaryColor
                 False -> secondaryColor
 
+        weight =
+            case selected of
+               True -> Font.heavy
+               False -> Font.regular
+
         readView =
-            link [] { url = href (EnvPage (Just environment.id))
+            link [ weight ] { url = href (EnvPage (Just environment.id))
                     , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) color
                     }
 
