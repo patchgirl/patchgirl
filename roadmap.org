@@ -12,20 +12,20 @@
 ** TODO Tangoscript: parse json
 ** TODO Scenario: cookie
 ** TODO Scenario: include scenario
-** TODO Team mode
-** TODO Reporting dashboard
+
 
 * Improvements
 
 
 ** TODO Scenario: prettify "add a scene to your scenario" button
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO Scenario: scene details in URL
+   SCHEDULED: <2020-08-27 jeu.>
+** TODO SQL: sql input handles newlines
+   SCHEDULED: <2020-08-27 jeu.>
 ** TODO Scenario: reset data
    SCHEDULED: <2020-08-27 jeu.>
-** TODO Better tree node edition
-*** TODO When my mouse is over a tree node, I display an edit btn
-*** TODO When I click on the edit btn, the whole edit view is shown
-*** TODO When I am on the edit view, I can do all the operation available (rename, delete, new folder, new file)
-*** TODO When I am on the edit view, I can duplicate entry for file
+** TODO Tree: duplicate entry for file
 ** TODO Scenario: select scene modal
 ** TODO Tangoscript: documentation for the language
 ** TODO Tangoscript: parsing speed
@@ -39,10 +39,10 @@
 ** TODO http request: Json response unreadable
 long json response body won't show scrollbars in the input so we have to scroll with the keyboard
 
+
 * Refacto
 
 
 ** TODO weeder to remove deadcode https://github.com/ocharles/weeder
 ** TODO stan to clean project
 ** TODO env id as UUID
-** TODO make patchgirl-web compile much faster with less memory

@@ -1,0 +1,12 @@
+# sleep agenda
+
+|-----------+---------+----------+------------------------+--------+--------------------------------------------------------------------------------------------------------------------|
+| date      | qualite | couche a | duree d'endormissement | reveil | commentaire                                                                                                        |
+|-----------+---------+----------+------------------------+--------+--------------------------------------------------------------------------------------------------------------------|
+| 29->30 08 | 3/5     | ~2h      | longue                 | 9h40   | - pas d'ecran de la journee                                                                                        |
+|           |         |          |                        |        | - soiree jeux jusqu'a tres tard                                                                                    |
+|           |         |          |                        |        | - peu d'alcool mais beaucoup mange                                                                                 |
+|           |         |          |                        |        | - preparation crash test a l'inkubator pour patchgirl (donc legerement stresse a un moment de la journee)          |
+|           |         |          |                        |        | - reflexion "sexiste" envers Clemence ("c'est ma secretaire") qui m'a mis mal a l'aise apres l'etonnement de Lucie |
+|           |         |          |                        |        |                                                                                                                    |
+|-----------+---------+----------+------------------------+--------+--------------------------------------------------------------------------------------------------------------------|

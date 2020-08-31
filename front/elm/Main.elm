@@ -10,7 +10,6 @@ import Browser
 import Json.Decode as D
 import Json.Encode as E
 
-
 main : Program E.Value Application.Model Application.Msg
 main =
     Browser.application

@@ -31,6 +31,7 @@ import Dict exposing (Dict)
 import Runner
 import PGBuilderApp.PGTree.Util as PgTree
 import Browser.Navigation as Navigation
+import HttpError exposing(..)
 
 
 -- * model
@@ -71,7 +72,7 @@ type
       -- delete scene
     | AskDeleteScene Uuid
     | DeleteScene Uuid
-    | ServerError
+    | Error String
       -- update scene
     | UpdateScene Scene
     | SceneUpdated Scene
@@ -436,8 +437,8 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        ServerError ->
-            ( model, Cmd.none )
+        Error err ->
+            ( { model | notification = Just err }, Cmd.none )
 
         DoNothing ->
             ( model, Cmd.none )
@@ -465,8 +466,8 @@ runScenarioResultToMsg result =
         Ok scenarioOutput ->
             ScenarioProcessed (Client.convertScenarioOutputFromBackToFront scenarioOutput)
 
-        Err error ->
-            Debug.todo "server error" ServerError
+        Err err ->
+            Error (httpErrorToString err)
 
 
 deleteSceneResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -475,8 +476,8 @@ deleteSceneResultToMsg sceneId result =
         Ok () ->
             DeleteScene sceneId
 
-        Err error ->
-            Debug.todo "server error" ServerError
+        Err err ->
+            Error (httpErrorToString err)
 
 
 createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> ActorType -> Result Http.Error () -> Msg
@@ -490,8 +491,8 @@ createSceneResultToMsg sceneParentId nodeId newSceneId actorType result =
                 PgActor ->
                     SelectPgFile sceneParentId nodeId newSceneId
 
-        Err error ->
-            Debug.todo "server error" ServerError
+        Err err ->
+            Error (httpErrorToString err)
 
 updateSceneResultToMsg : Scene -> Result Http.Error () -> Msg
 updateSceneResultToMsg scene result =
@@ -499,8 +500,8 @@ updateSceneResultToMsg scene result =
         Ok () ->
             SceneUpdated scene
 
-        Err error ->
-            Debug.todo "server error" ServerError
+        Err err ->
+            Error (httpErrorToString err)
 
 updateScenarioResultToMsg : Maybe Int -> Result Http.Error () -> Msg
 updateScenarioResultToMsg newEnvironmentId result =
@@ -508,8 +509,8 @@ updateScenarioResultToMsg newEnvironmentId result =
         Ok () ->
             UpdateScenarioFile newEnvironmentId
 
-        Err error ->
-            Debug.todo "server error" ServerError
+        Err err ->
+            Error (httpErrorToString err)
 
 findRecord : Model -> Scene -> Maybe FileRecord
 findRecord model scene =

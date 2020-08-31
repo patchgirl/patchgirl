@@ -31,22 +31,30 @@
     </script>
     <!-- End Matomo Code -->
 
+    <link rel="stylesheet" href="/public/css/notification.css"></link>
+    <script src="/public/js/notification.js"></script>
+
   </head>
   <body style="background-color=rgba(245,248,250,1)">
     <div id="loader"></div>
     <div id="app"></div>
-
     <script>
       var loader = Elm.AppLoader.init({
         node: document.getElementById("loader")
       });
 
       loader.ports.loadApplication.subscribe(function(userData) {
-        Elm.Main.init({
+        var app = Elm.Main.init({
           node: document.getElementById("app"),
           flags: userData
         });
+
+        let notifier = new AWN({ position: "top-right", durations: { info: null} });
+        app.ports.sendNotification.subscribe(function(message) {
+          notifier.success(message, {});
+        });
       });
     </script>
+
   </body>
 </html>
