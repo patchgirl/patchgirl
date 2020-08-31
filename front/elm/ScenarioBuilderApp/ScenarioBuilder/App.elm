@@ -681,30 +681,31 @@ sceneView model scene =
                             "storage"
             in
             column [ centerX, spacing 10 ]
-                [ link
+                [ row
                     ( [ Border.solid
                       , Border.width 1
                       , Border.rounded 5
                       , Background.color white
                       , Border.color black
-                      , padding 20
                       , boxShadow
                       , centerX
                       ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
-                    )
-                    { url = href <| ScenarioPage (Just model.id) (Just scene.id)
-                    , label =
-                        row [ spacing 20, centerX ]
-                            [ row []
-                                  [ iconWithAttr { defaultIconAttribute | icon = sceneIcon, title = "" }
-                                  , text (notEditedValue name)
-                                  ]
-                            , Input.button []
-                                { onPress = Just (AskDeleteScene scene.id)
-                                , label = el [ alignRight ] clearIcon
-                                }
-                            ]
-                    }
+                    ) [ link [ padding 20, width fill, height fill ]
+                           { url = href <| ScenarioPage (Just model.id) (Just scene.id)
+                           , label =
+                               row [ spacing 20, centerX ]
+                                   [ row []
+                                         [ iconWithAttr { defaultIconAttribute | icon = sceneIcon, title = "" }
+                                         , text (notEditedValue name)
+                                         ]
+                                   ]
+                           }
+                     , Input.button []
+                            { onPress = Just (AskDeleteScene scene.id)
+                            , label = el [ alignRight ] clearIcon
+                            }
+                      , el [ width (px 10) ] none
+                      ]
                 , arrowView scene.id
                 ]
 
