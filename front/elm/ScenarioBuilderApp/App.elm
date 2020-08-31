@@ -210,9 +210,7 @@ builderView model =
                 (map ScenarioBuilderMsg (ScenarioBuilder.view builder))
 
         Nothing ->
-            el [ width (fillPortion 9)
-               , centerX, alignTop
-               ]
+            el [ width (fillPortion 9), centerX, alignTop ]
                 <| el [ centerX
                       , alignTop
                       , padding 20

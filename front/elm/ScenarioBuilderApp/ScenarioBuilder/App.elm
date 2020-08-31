@@ -617,8 +617,11 @@ view model =
     case model.displayedSceneId of
         Nothing ->
             wrappedRow [ height fill, width fill, spacing 20 ]
-                [ el [ alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
-                , el [ alignTop, height fill ] scenesView
+                [ el [ width <| fillPortion 1, alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                , row [ width <| fillPortion 9, alignTop, spacing 20 ]
+                    [ el [ width <| fillPortion 2, height fill ] scenesView
+                    , el [ width <| fillPortion 8, height fill, alignRight ] none
+                    ]
                 ]
 
         Just sceneId ->
@@ -637,8 +640,11 @@ view model =
 sceneView : Model -> Scene -> Element Msg
 sceneView model scene =
     let
+        selected =
+            model.displayedSceneId == Just scene.id
+
         selectedSceneAttrs =
-            case model.displayedSceneId == Just scene.id of
+            case selected of
                 True ->
                     Border.color black
                 False ->
@@ -740,7 +746,15 @@ detailedSceneView model sceneId =
     in
     case mSceneAndRecord of
         Nothing ->
-            none
+            el [ width fill
+               , height fill
+               , centerX
+               , alignTop
+               , spacing 40
+               , padding 20
+               , boxShadow
+               , Background.color white
+               ] none
 
         Just (scene, fileRecord) ->
             column [ width fill

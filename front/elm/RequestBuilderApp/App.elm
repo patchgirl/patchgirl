@@ -229,17 +229,11 @@ builderView : Model a -> Maybe Uuid -> Element Msg
 builderView model fromScenarioId =
     case getBuilder model of
         Just builder ->
-            el [ width (fillPortion 9)
-               , width fill
-               , height fill
-               , alignTop
-               ]
+            el [ width (fillPortion 9), centerX, alignTop ]
                 (map BuilderMsg (RequestBuilder.view builder fromScenarioId))
 
         Nothing ->
-            el [ width (fillPortion 9)
-               , centerX, centerY, alignTop
-               ]
+            el [ width (fillPortion 9), centerX, alignTop ]
                 <| el ( [ centerX
                         , alignTop
                         , padding 20
