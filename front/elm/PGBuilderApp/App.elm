@@ -27,6 +27,7 @@ import Browser.Navigation as Navigation
 type alias Model a =
     { a
         | pgCollection : PgCollection
+        , notification : Maybe Notification
         , displayedPgNodeMenuId : Maybe Uuid
         , displayedPgId : Maybe Uuid
         , environments : List Environment
@@ -82,6 +83,7 @@ update msg model =
                         newModel =
                             { model
                                 | pgCollection = PgCollection pgCollectionId newBuilderTree
+                                , notification = newBuilder.notification
                             }
 
                         newMsg =
@@ -112,16 +114,17 @@ getBuilder model =
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
             in
-            Just (convertFromFileToBuilder file pgCollectionId keyValuesToRun)
+            Just (convertFromFileToBuilder file pgCollectionId keyValuesToRun model.notification)
 
         _ ->
             Nothing
 
 
-convertFromFileToBuilder : PgFileRecord -> Uuid -> List (Storable NewKeyValue KeyValue) -> PGBuilder.Model
-convertFromFileToBuilder file pgCollectionId keyValuesToRun =
+convertFromFileToBuilder : PgFileRecord -> Uuid -> List (Storable NewKeyValue KeyValue) -> Maybe Notification -> PGBuilder.Model
+convertFromFileToBuilder file pgCollectionId keyValuesToRun notification =
     { id = file.id
     , pgCollectionId = pgCollectionId
+    , notification = notification
     , keyValues = keyValuesToRun
     , name = file.name
     , sqlQuery = file.sql

@@ -14,6 +14,7 @@ import Random
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Browser.Navigation as Navigation
+import HttpError exposing (..)
 
 
 -- * model
@@ -23,6 +24,7 @@ type alias Model a =
     { a
         | pgCollection : PgCollection
         , displayedPgNodeMenuId : Maybe Uuid
+        , notification : Maybe Notification
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , displayedPgId : Maybe Uuid
@@ -61,7 +63,7 @@ type Msg
       -- delete
     | AskDelete Uuid
     | Delete Uuid
-    | BuilderTreeServerError
+    | PrintNotification Notification
 
 
 
@@ -367,8 +369,14 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        BuilderTreeServerError ->
-            Debug.todo "error with builder tree"
+        PrintNotification notification ->
+            let
+                newModel =
+                    { model
+                        | notification = Just notification
+                    }
+            in
+            ( newModel, Cmd.none )
 
 
 -- * util
@@ -384,7 +392,7 @@ renameNodeResultToMsg id newName result =
             Rename id newName
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not rename. Try reloading the page" (httpErrorToString error)
 
 
 createPgFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
@@ -394,7 +402,7 @@ createPgFolderResultToMsg parentNodeId id result =
             Mkdir parentNodeId id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create folder, try reloading the page!" (httpErrorToString error)
 
 
 deletePgNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -404,7 +412,7 @@ deletePgNodeResultToMsg id result =
             Delete id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not delete, try reloading the page!" (httpErrorToString error)
 
 
 newPgFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
@@ -414,7 +422,7 @@ newPgFileResultToMsg parentNodeId id result =
             Touch parentNodeId id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create new file, try reloading the page!" (httpErrorToString error)
 
 
 createRootPgFileResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -424,7 +432,7 @@ createRootPgFileResultToMsg id result =
             TouchRoot id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create new folder, try reloading the page!" (httpErrorToString error)
 
 
 createRootPgFolderResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -434,7 +442,7 @@ createRootPgFolderResultToMsg id result =
             MkdirRoot id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create folder, try reloading the page!" (httpErrorToString error)
 
 
 

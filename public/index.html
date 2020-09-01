@@ -51,6 +51,7 @@
 
         let notifier = new AWN({ position: "top-right", durations: { info: null} });
         app.ports.sendNotification.subscribe(function(message) {
+          console.log(`debug: ${message.debug}`);
           switch(message.status) {
           case 'success':
             notifier.success(message.content, {});
@@ -61,8 +62,6 @@
           case 'alert':
             notifier.alert(message.content, {});
             break;
-          default:
-            //console.log(`could not pattern match notificationStatus: ${message.status} `);
           }
         });
       });

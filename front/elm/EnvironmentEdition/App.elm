@@ -14,6 +14,7 @@ import List.Extra as List
 import Util exposing (..)
 import StringTemplate exposing(..)
 import Browser.Navigation as Navigation
+import HttpError exposing (..)
 
 
 -- *  environment edition
@@ -26,6 +27,7 @@ type alias Model a =
     { a
         | environments : List Environment
         , session : Session
+        , notification : Maybe Notification
         , displayedEnvId : Maybe Int
         , navigationKey : Navigation.Key
     }
@@ -53,7 +55,7 @@ type Msg
     | EnvironmentRenamed Int String
     | AskDelete Int
     | EnvironmentDeleted Int
-    | EnvServerError
+    | PrintNotification Notification
     | ShowRenameInput Int
 
 
@@ -91,8 +93,8 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        EnvServerError ->
-            Debug.todo "server error :-("
+        PrintNotification notification ->
+            ( { model | notification = Just notification }, Cmd.none)
 
         ShowRenameInput id ->
             let
@@ -187,20 +189,15 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just environment ->
-                    case ( updateKeyValue subMsg ( model.session, environment ), model.displayedEnvId ) of
-                        ( ( newEnvironment, newSubMsg ), Just id ) ->
+                    case updateKeyValue subMsg ( model, environment ) of
+                         ( newModel, newEnvironment, newSubMsg ) ->
                             let
                                 newEnvironments =
-                                    List.updateIf (\env -> env.id == id) (always newEnvironment) model.environments
-
-                                newModel =
-                                    { model | environments = newEnvironments }
+                                    List.updateIf (\env -> env.id == newEnvironment.id) (always newEnvironment) model.environments
                             in
-                            ( newModel, Cmd.map EnvironmentKeyValueEditionMsg newSubMsg )
-
-                        _ ->
-                            Debug.todo "error when trying to edit environment key value"
-
+                            ( { newModel | environments = newEnvironments }
+                            , Cmd.map EnvironmentKeyValueEditionMsg newSubMsg
+                            )
 
 
 -- ** util
@@ -212,8 +209,8 @@ newEnvironmentResultToMsg name result =
         Ok id ->
             EnvironmentCreated id name
 
-        Err _ ->
-            EnvServerError
+        Err err ->
+            PrintNotification <| AlertNotification "Could not create a new environment, try reloading the page!" (httpErrorToString err)
 
 
 updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
@@ -222,8 +219,8 @@ updateEnvironmentResultToMsg id name result =
         Ok () ->
             EnvironmentRenamed id name
 
-        Err _ ->
-            Debug.todo "server error" EnvServerError
+        Err err ->
+            PrintNotification <| AlertNotification "Could not update environment, try reloading the page!" (httpErrorToString err)
 
 
 deleteEnvironmentResultToMsg : Int -> Result Http.Error () -> Msg
@@ -232,8 +229,8 @@ deleteEnvironmentResultToMsg id result =
         Ok () ->
             EnvironmentDeleted id
 
-        Err _ ->
-            Debug.todo "server error" EnvServerError
+        Err err ->
+            PrintNotification <| AlertNotification "Could not delete environment, try reloading the page!" (httpErrorToString err)
 
 
 getEnvironmentToEdit : Model a -> Maybe Environment
@@ -263,6 +260,7 @@ view model =
                     let
                         subModel =
                             { session = model.session
+                            , notification = model.notification
                             , keyValues = selectedEnv.keyValues
                             , name = selectedEnv.name
                             , id = selectedEnv.id
@@ -384,6 +382,7 @@ labelInputView labelText =
 type alias KeyValueModel a =
     { a
         | keyValues : List (Storable NewKeyValue KeyValue)
+        , notification : Maybe Notification
         , name : Editable String
         , id : Int
     }
@@ -407,93 +406,95 @@ type KeyValueMsg
     | AskDeleteKeyValue Int
     | KeyDeleted Int
     | DeleteNewKeyValue Int
-    | KeyValueServerError
+    | PrintNotification2 Notification
 
 
 
 -- ** update
 
 
-updateKeyValue : KeyValueMsg -> ( Session, Environment ) -> ( Environment, Cmd KeyValueMsg )
-updateKeyValue msg ( session, model ) =
+updateKeyValue : KeyValueMsg -> ( Model a, Environment ) -> ( Model a, Environment, Cmd KeyValueMsg )
+updateKeyValue msg ( model, environment ) =
     case msg of
         PromptKey idx newKey ->
             let
                 newKeyValues =
-                    List.updateAt idx (changeKey newKey) model.keyValues
+                    List.updateAt idx (changeKey newKey) environment.keyValues
 
-                newModel =
-                    { model | keyValues = newKeyValues }
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
             in
-            ( newModel, Cmd.none )
+            ( model, newEnvironment, Cmd.none )
 
         PromptValue idx newValue ->
             let
                 newKeyValues =
-                    List.updateAt idx (changeValue (stringToTemplate newValue)) model.keyValues
+                    List.updateAt idx (changeValue (stringToTemplate newValue)) environment.keyValues
 
-                newModel =
-                    { model | keyValues = newKeyValues }
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
             in
-            ( newModel, Cmd.none )
+            ( model, newEnvironment, Cmd.none )
 
         AddNewInput ->
             let
                 newKeyValues =
-                    model.keyValues ++ [ newDefaultKeyValue ]
+                    environment.keyValues ++ [ newDefaultKeyValue ]
 
-                newModel =
-                    { model | keyValues = newKeyValues }
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
             in
-            ( newModel, Cmd.none )
+            ( model, newEnvironment, Cmd.none )
 
         DeleteNewKeyValue idx ->
             let
                 newKeyValues =
-                    List.removeAt idx model.keyValues
+                    List.removeAt idx environment.keyValues
 
-                newModel =
-                    { model | keyValues = newKeyValues }
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
             in
-            ( newModel, Cmd.none )
+            ( model, newEnvironment, Cmd.none )
 
         AskDeleteKeyValue id ->
             let
                 newMsg =
-                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken session) model.id id (deleteKeyValueResultToMsg id)
+                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken model.session) environment.id id (deleteKeyValueResultToMsg id)
             in
-            ( model, newMsg )
+            ( model, environment, newMsg )
 
         KeyDeleted id ->
             let
                 newKeyValues =
-                    removeKeyValueWithId id model.keyValues
+                    removeKeyValueWithId id environment.keyValues
 
-                newModel =
-                    { model | keyValues = newKeyValues }
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
             in
-            ( newModel, Cmd.none )
+            ( model, newEnvironment, Cmd.none )
 
         AskSave ->
             let
                 updateKeyValues =
-                    List.map Client.convertEnvironmentKeyValueFromFrontToBack model.keyValues
+                    List.map Client.convertEnvironmentKeyValueFromFrontToBack environment.keyValues
 
                 newMsg =
-                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken session) model.id updateKeyValues updateKeyValuesResultToMsg
+                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken model.session) environment.id updateKeyValues updateKeyValuesResultToMsg
             in
-            ( model, newMsg )
+            ( model, environment, newMsg )
 
         KeyValuesUpserted newKeyValues ->
             let
-                newModel =
-                    { model | keyValues = newKeyValues }
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
             in
-            ( newModel, Cmd.none )
+            ( model, newEnvironment, Cmd.none )
 
-        KeyValueServerError ->
-            Debug.todo "server error while handling key values"
-
+        PrintNotification2 notification ->
+            ( { model | notification = Just notification }
+            , environment
+            , Cmd.none
+            )
 
 
 -- ** util
@@ -509,8 +510,8 @@ updateKeyValuesResultToMsg result =
             in
             KeyValuesUpserted keyValues
 
-        Err _ ->
-            Debug.todo "server error" KeyValueServerError
+        Err err ->
+            PrintNotification2 <| AlertNotification "Could not update key value, try reloading the page!" (httpErrorToString err)
 
 
 deleteKeyValueResultToMsg : Int -> Result Http.Error () -> KeyValueMsg
@@ -519,8 +520,8 @@ deleteKeyValueResultToMsg id result =
         Ok () ->
             KeyDeleted id
 
-        Err _ ->
-            Debug.todo "server error" KeyValueServerError
+        Err err ->
+            PrintNotification2 <| AlertNotification "Could not delete key value, try reloading the page" (httpErrorToString err)
 
 
 removeKeyValueWithId : Int -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)

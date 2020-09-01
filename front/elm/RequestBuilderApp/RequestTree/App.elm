@@ -14,6 +14,7 @@ import Random
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Browser.Navigation as Navigation
+import HttpError exposing(..)
 
 
 -- * model
@@ -22,6 +23,7 @@ import Browser.Navigation as Navigation
 type alias Model a =
     { a
         | requestCollection : RequestCollection
+        , notification : Maybe Notification
         , displayedRequestNodeMenuId : Maybe Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
@@ -60,7 +62,7 @@ type Msg
       -- delete
     | AskDelete Uuid
     | Delete Uuid
-    | BuilderTreeServerError
+    | PrintNotification Notification
 
 
 
@@ -349,8 +351,8 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        BuilderTreeServerError ->
-            Debug.todo "error with builder tree"
+        PrintNotification notification ->
+            ( { model | notification = Just notification }, Cmd.none )
 
 
 -- * util
@@ -366,7 +368,7 @@ renameNodeResultToMsg id newName result =
             Rename id newName
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not rename, try reloading the page!" (httpErrorToString error)
 
 
 createRequestFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
@@ -376,7 +378,7 @@ createRequestFolderResultToMsg parentNodeId id result =
             Mkdir parentNodeId id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create folder, try reloading the page!" (httpErrorToString error)
 
 
 deleteRequestNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -386,7 +388,7 @@ deleteRequestNodeResultToMsg id result =
             Delete id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not delete, maybe this HTTP request is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
 
 newRequestFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
@@ -396,7 +398,7 @@ newRequestFileResultToMsg parentNodeId id result =
             Touch parentNodeId id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could create a new file, try reloading the page" (httpErrorToString error)
 
 
 createRootRequestFileResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -406,7 +408,7 @@ createRootRequestFileResultToMsg id result =
             TouchRoot id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create a new file, try reloading the page" (httpErrorToString error)
 
 
 createRootRequestFolderResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -416,7 +418,7 @@ createRootRequestFolderResultToMsg id result =
             MkdirRoot id
 
         Err error ->
-            BuilderTreeServerError
+            PrintNotification <| AlertNotification "Could not create folder, try reloading the page" (httpErrorToString error)
 
 
 

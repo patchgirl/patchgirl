@@ -114,15 +114,15 @@ getBuilder model =
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
             in
-            Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model)
+            Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model.runnerRunning model.notification)
 
         _ ->
             Nothing
 
 
-convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Model a -> RequestBuilder.Model
-convertFromFileToBuilder file requestCollectionId keyValuesToRun model =
-    { notification = model.notification
+convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Bool -> Maybe Notification -> RequestBuilder.Model
+convertFromFileToBuilder file requestCollectionId keyValuesToRun runnerRunning notification =
+    { notification = notification
     , id = file.id
     , requestCollectionId = requestCollectionId
     , keyValues = keyValuesToRun
@@ -135,7 +135,7 @@ convertFromFileToBuilder file requestCollectionId keyValuesToRun model =
     , showResponseView = file.showResponseView
     , whichResponseView = file.whichResponseView
     , runRequestIconAnimation = file.runRequestIconAnimation
-    , runnerRunning = model.runnerRunning
+    , runnerRunning = runnerRunning
     }
 
 

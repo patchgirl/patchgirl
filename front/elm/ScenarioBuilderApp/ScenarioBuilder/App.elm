@@ -72,7 +72,6 @@ type
       -- delete scene
     | AskDeleteScene Uuid
     | DeleteScene Uuid
-    | Error String
       -- update scene
     | UpdateScene Scene
     | SceneUpdated Scene
@@ -89,6 +88,7 @@ type
     | SetPostscript Scene String
       -- other
     | SetEnvironmentId (Maybe Int)
+    | PrintNotification Notification
     | DoNothing
 
 
@@ -285,7 +285,7 @@ update msg model =
                                         (PgCollection collectionId _) =
                                             model.pgCollection
                                     in
-                                    PgBuilderApp.convertFromFileToBuilder pgRecord collectionId model.keyValues
+                                    PgBuilderApp.convertFromFileToBuilder pgRecord collectionId model.keyValues Nothing
                                         |> PgBuilder.buildPgComputationPayload
                                         |> \(_, pgComputationInput) ->
                                            Just <| Client.PgSceneFile { sceneId = scene.id
@@ -437,8 +437,8 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        Error err ->
-            ( { model | notification = Just (AlertNotification err) }, Cmd.none )
+        PrintNotification notification ->
+            ( { model | notification = Just notification }, Cmd.none )
 
         DoNothing ->
             ( model, Cmd.none )
@@ -467,7 +467,8 @@ runScenarioResultToMsg result =
             ScenarioProcessed (Client.convertScenarioOutputFromBackToFront scenarioOutput)
 
         Err err ->
-            Error (httpErrorToString err)
+            PrintNotification <|
+                AlertNotification "Could not run scenario. Is <a href=\"/#app/documentation/patchgirl-runner\">patchgirl-runner</a> running?" (httpErrorToString err)
 
 
 deleteSceneResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -477,7 +478,7 @@ deleteSceneResultToMsg sceneId result =
             DeleteScene sceneId
 
         Err err ->
-            Error (httpErrorToString err)
+            PrintNotification <| AlertNotification ("Could not delete scene, try to reload the page.") (httpErrorToString err)
 
 
 createSceneResultToMsg : Maybe Uuid -> Uuid -> Uuid -> ActorType -> Result Http.Error () -> Msg
@@ -492,7 +493,7 @@ createSceneResultToMsg sceneParentId nodeId newSceneId actorType result =
                     SelectPgFile sceneParentId nodeId newSceneId
 
         Err err ->
-            Error (httpErrorToString err)
+            PrintNotification <| AlertNotification "Could not create the scene, try reloading the page!" (httpErrorToString err)
 
 updateSceneResultToMsg : Scene -> Result Http.Error () -> Msg
 updateSceneResultToMsg scene result =
@@ -501,7 +502,7 @@ updateSceneResultToMsg scene result =
             SceneUpdated scene
 
         Err err ->
-            Error (httpErrorToString err)
+            PrintNotification <| AlertNotification "Could not update the scene, try reloading the page!" (httpErrorToString err)
 
 updateScenarioResultToMsg : Maybe Int -> Result Http.Error () -> Msg
 updateScenarioResultToMsg newEnvironmentId result =
@@ -510,7 +511,7 @@ updateScenarioResultToMsg newEnvironmentId result =
             UpdateScenarioFile newEnvironmentId
 
         Err err ->
-            Error (httpErrorToString err)
+            PrintNotification  <| AlertNotification "Could not update the scenario, try reloading the page!" (httpErrorToString err)
 
 findRecord : Model -> Scene -> Maybe FileRecord
 findRecord model scene =

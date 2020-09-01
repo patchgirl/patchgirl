@@ -25,6 +25,7 @@ import Uuid exposing (Uuid)
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import Runner
+import HttpError exposing(..)
 
 
 -- * model
@@ -64,8 +65,7 @@ type Msg
     | AskRun
     | LocalComputationDone (Result DetailedError ( Http.Metadata, String )) -- request ran from the browser
     | RemoteComputationDone RequestComputationOutput -- request ran from the server
-    | RemoteComputationFailed
-    | ServerError
+    | PrintNotification Notification
     | AskSave
     | SaveSuccessfully
     | Animate Animation.Msg
@@ -196,7 +196,7 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        RemoteComputationFailed ->
+{-        RemoteComputationFailed ->
             let
                 newRunRequestIconAnimation =
                     Animation.interrupt
@@ -212,7 +212,7 @@ update msg model =
                     }
             in
             ( newModel, Cmd.none )
-
+-}
         LocalComputationDone result ->
             let
                 newModel =
@@ -286,10 +286,21 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        ServerError ->
+        PrintNotification notification ->
             let
+                newRunRequestIconAnimation =
+                    Animation.interrupt
+                        [ Animation.to [ Animation.rotate (Animation.turn 1) ]
+                        , Animation.set [ Animation.rotate (Animation.turn 0) ]
+                        ]
+                        model.runRequestIconAnimation
+
                 newModel =
-                    { model | notification = Just (AlertNotification "server error") }
+                    { model
+                        | notification = Just notification
+                        , requestComputationResult = Nothing
+                        , runRequestIconAnimation = newRunRequestIconAnimation
+                    }
             in
             ( newModel, Cmd.none )
 
@@ -308,7 +319,6 @@ isBuilderDirty model =
             , model.httpBody
             ]
 
-
 updateRequestFileResultToMsg : Result Http.Error () -> Msg
 updateRequestFileResultToMsg result =
     case result of
@@ -316,8 +326,7 @@ updateRequestFileResultToMsg result =
             SaveSuccessfully
 
         Err error ->
-            ServerError
-
+            PrintNotification <| AlertNotification "" (httpErrorToString error)
 
 remoteComputationDoneToMsg : Result Http.Error Client.RequestComputationOutput -> Msg
 remoteComputationDoneToMsg result =
@@ -327,8 +336,7 @@ remoteComputationDoneToMsg result =
                 Client.convertRequestComputationOutputFromBackToFront backRequestComputationOutput
 
         Err error ->
-            RemoteComputationFailed
-
+            PrintNotification <| AlertNotification "Could not run HTTP request" (httpErrorToString error)
 
 parseHeaders : String -> List ( String, String )
 parseHeaders headers =
@@ -343,7 +351,6 @@ parseHeaders headers =
                     ( "", "" )
     in
     String.lines headers |> List.map parseRawHeader
-
 
 buildRequestToRun : List (Storable NewKeyValue KeyValue) -> Model -> Cmd Msg
 buildRequestToRun envKeyValues model =
@@ -367,13 +374,11 @@ buildRequestToRun envKeyValues model =
     in
     Client.postApiRunnerRequestComputation (Runner.runnerUrl model.runnerRunning) backRequestComputationInput remoteComputationDoneToMsg
 
-
 type DetailedError
     = BadUrl String
     | Timeout
     | NetworkError
     | BadStatus Http.Metadata String
-
 
 convertResponseStringToResult : Http.Response String -> Result DetailedError ( Http.Metadata, String )
 convertResponseStringToResult httpResponse =

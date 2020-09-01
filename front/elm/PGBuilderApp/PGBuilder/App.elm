@@ -26,6 +26,7 @@ import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import Runner
 import StringTemplate exposing(..)
+import HttpError exposing(..)
 
 
 -- * model
@@ -33,6 +34,7 @@ import StringTemplate exposing(..)
 
 type alias Model =
     { id : Uuid
+    , notification : Maybe Notification
     , pgCollectionId : Uuid
     , name : Editable String
     , dbHost : Editable String
@@ -60,7 +62,7 @@ type Msg
     | AskRun
     | RemoteComputationDone PgComputationOutput
     | RemoteComputationFailed
-    | ServerError
+    | PrintNotification Notification
     | AskSave
     | SaveSuccessfully
 
@@ -181,8 +183,9 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        ServerError ->
-            (Debug.log "server error" model, Cmd.none)
+        PrintNotification notification ->
+            ( { model | notification = Just notification }, Cmd.none )
+
 
 
 -- * util
@@ -226,7 +229,7 @@ postPgSqlComputationResultToMsg result =
             RemoteComputationDone (Client.convertPgComputationOutputFromBackToFront pgComputationOutput)
 
         Err error ->
-            ServerError
+            PrintNotification <| AlertNotification "Could not run SQL request. Is <a href=\"/#app/documentation/patchgirl-runner\">patchgirl-runner</a> running?" (httpErrorToString error)
 
 isBuilderDirty : Model -> Bool
 isBuilderDirty model =
@@ -247,7 +250,7 @@ updatePgFileResultToMsg result =
             SaveSuccessfully
 
         Err error ->
-            ServerError
+            PrintNotification <| AlertNotification "Could not update the SQL query. Try reloading the page!" (httpErrorToString error)
 
 parseHeaders : String -> List ( String, String )
 parseHeaders headers =

@@ -22,27 +22,28 @@ type MainMenuName
 
 
 type Notification
-    = SuccessNotification String
-    | InfoNotification String
-    | AlertNotification String
+    = SuccessNotification String String
+    | InfoNotification String String
+    | AlertNotification String String
 
 notificationEncoder : Notification -> Value
 notificationEncoder notification =
     let
-        (status, content) =
+        (status, content, debug) =
             case notification of
-                SuccessNotification message ->
-                    ("notification", message)
+                SuccessNotification message log ->
+                    ("notification", message, log)
 
-                InfoNotification message ->
-                    ("info", message)
+                InfoNotification message log ->
+                    ("info", message, log)
 
-                AlertNotification message ->
-                    ("alert", message)
+                AlertNotification message log ->
+                    ("alert", message, log)
     in
     Json.object
         [ ( "status", Json.string status )
         , ( "content", Json.string content )
+        , ( "debug", Json.string debug )
         ]
 
 
