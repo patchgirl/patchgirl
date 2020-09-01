@@ -47,6 +47,13 @@ notificationEncoder notification =
         ]
 
 
+-- * tooltip
+
+
+type RequestToolTipLocation =
+    UrlToolTipLocation
+
+
 -- * session
 
 
@@ -160,6 +167,17 @@ templateAsString templatedString =
 templatedStringAsString : StringTemplate -> String
 templatedStringAsString templatedStrings =
     templatedStrings |> List.map templateAsString |> String.join ""
+
+stringTemplateContainsKey : StringTemplate -> Bool
+stringTemplateContainsKey stringTemplate =
+    let
+        templateIsKey : Template -> Bool
+        templateIsKey template =
+            case template of
+                Key _ -> True
+                _ -> False
+    in
+    List.any templateIsKey stringTemplate
 
 
 -- * request collection
@@ -731,6 +749,12 @@ isStorableDirty storable =
         Saved _ ->
             False
 
+latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, StringTemplate)
+latestValueOfStorable storable =
+    case storable of
+        New { key, value } -> (key, value)
+        Saved { key, value } -> (key, value)
+        Edited2 _ { key, value } -> (key, value)
 
 -- * tangoscript
 

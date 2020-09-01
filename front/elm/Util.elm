@@ -46,6 +46,14 @@ fontGreen : Color
 fontGreen =
     rgb255 21 87 36
 
+greenColor : Color
+greenColor =
+    rgb255 0 128 0
+
+redColor : Color
+redColor =
+    rgb255 255 0 0
+
 backgroundGreen : Color
 backgroundGreen =
     rgb255 212 237 218

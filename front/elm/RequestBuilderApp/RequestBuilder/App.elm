@@ -9,6 +9,7 @@ import Dict
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
 import Html as Html
@@ -26,6 +27,8 @@ import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import Runner
 import HttpError exposing(..)
+import Interpolator exposing(..)
+import StringTemplate exposing(..)
 
 
 -- * model
@@ -47,7 +50,6 @@ type alias Model =
     , runRequestIconAnimation : Animation.State
     , runnerRunning : Bool
     }
-
 
 
 -- * message
@@ -305,7 +307,6 @@ update msg model =
             ( newModel, Cmd.none )
 
 
-
 -- * util
 
 
@@ -359,10 +360,6 @@ buildRequestToRun envKeyValues model =
         request =
             buildRequestComputationInput model
 
-        mkHeader : ( String, String ) -> Http.Header
-        mkHeader ( headerKey, headerValue ) =
-            Http.header headerKey headerValue
-
         backRequestComputationInput =
             ( Client.convertRequestComputationInputFromFrontToBack request
             , envKeyValues
@@ -370,7 +367,6 @@ buildRequestToRun envKeyValues model =
                 |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                 |> Dict.fromList
             )
-
     in
     Client.postApiRunnerRequestComputation (Runner.runnerUrl model.runnerRunning) backRequestComputationInput remoteComputationDoneToMsg
 
@@ -431,13 +427,6 @@ expectStringDetailed msg =
     Http.expectStringResponse msg convertResponseStringToResult
 
 
-latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, StringTemplate)
-latestValueOfStorable storable =
-    case storable of
-        New { key, value } -> (key, value)
-        Saved { key, value } -> (key, value)
-        Edited2 _ { key, value } -> (key, value)
-
 -- * view
 
 
@@ -445,12 +434,8 @@ view : Model -> Maybe Uuid -> Element Msg
 view model mFromScenarioId =
     let
         builderView =
-            column [ width fill, spacing 10 ]
-                [ column [ width fill ]
-                    [ row [ width fill, spacing 10 ]
-                        [ urlView model
-                        ]
-                    ]
+            column [ width fill, spacing 20 ]
+                [ urlView model
                 , methodView model
                 , headersView model
                 , bodyView model
@@ -463,6 +448,7 @@ view model mFromScenarioId =
                 , Background.color white
                 , boxShadow
                 , padding 20
+                , spacing 10
                 ]
                 [ goBackToScenarioView mFromScenarioId
                 , titleView model
@@ -633,13 +619,15 @@ responseView model =
 urlView : Model -> Element Msg
 urlView model =
     el [ alignLeft, width fill ] <|
-        Input.text [ Util.onEnter AskRun ]
-            { onChange = UpdateUrl
-            , text = editedOrNotEditedValue model.httpUrl
-            , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-            , label = labelInputView "Url: "
-            }
-
+        row [ width fill, spacing 30 ]
+            [ Input.text [ Util.onEnter AskRun ]
+                  { onChange = UpdateUrl
+                  , text = editedOrNotEditedValue model.httpUrl
+                  , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
+                  , label = Input.labelLeft [ centerY ] <| text "Url: "
+                  }
+            , showInterpolation model (editedOrNotEditedValue model.httpUrl)
+            ]
 
 
 -- ** method
@@ -650,7 +638,7 @@ methodView model =
     Input.radioRow [ padding 10, spacing 10 ]
         { onChange = SetHttpMethod
         , selected = Just <| editedOrNotEditedValue model.httpMethod
-        , label = labelInputView "Method: "
+        , label = Input.labelLeft [ centerY ] <| text "Method: "
         , options =
             [ Input.option HttpGet (text "Get")
             , Input.option HttpPost (text "Post")
@@ -689,7 +677,7 @@ headersView model =
 
             False ->
                 column [ width fill, spacing 20 ]
-                    [ text "Header:"
+                    [ text "Headers:"
                     , column [ width fill, spacing 10 ] headerInputs
                     , addHeaderButton
                     ]
@@ -698,18 +686,24 @@ headersView model =
 headerView : Model -> Int -> ( String, String ) -> Element Msg
 headerView model idx ( headerKey, headerValue ) =
     row [ width fill, spacing 10 ]
-        [ Input.text [ Util.onEnter AskRun ]
-            { onChange = UpdateHeaderKey idx
-            , text = headerKey
-            , placeholder = Nothing
-            , label = Input.labelLeft [ centerY ] (text "key: ")
-            }
-        , Input.text [ Util.onEnter AskRun ]
-            { onChange = UpdateHeaderValue idx
-            , text = headerValue
-            , placeholder = Nothing
-            , label = Input.labelLeft [ centerY ] (text "value: ")
-            }
+        [ row [ width fill, spacing 30 ]
+              [ Input.text [ Util.onEnter AskRun ]
+                    { onChange = UpdateHeaderKey idx
+                    , text = headerKey
+                    , placeholder = Nothing
+                    , label = Input.labelLeft [ centerY ] (text "key: ")
+                    }
+              , showInterpolation model headerKey
+              ]
+        , row [ width fill, spacing 30 ]
+            [ Input.text [ Util.onEnter AskRun ]
+                  { onChange = UpdateHeaderValue idx
+                  , text = headerValue
+                  , placeholder = Nothing
+                  , label = Input.labelLeft [ centerY ] (text "value: ")
+                  }
+            , showInterpolation model headerValue
+            ]
         , Input.button [ centerY ]
             { onPress = Just <| DeleteHeader idx
             , label =
@@ -726,13 +720,16 @@ headerView model idx ( headerKey, headerValue ) =
 
 bodyView : Model -> Element Msg
 bodyView model =
-    Input.multiline []
-        { onChange = SetHttpBody
-        , text = editedOrNotEditedValue model.httpBody
-        , placeholder = Just <| Input.placeholder [] (text "{}")
-        , label = labelInputView "Body: "
-        , spellcheck = False
-        }
+    wrappedRow [ width fill, spacing 30 ]
+        [ Input.multiline []
+              { onChange = SetHttpBody
+              , text = editedOrNotEditedValue model.httpBody
+              , placeholder = Just <| Input.placeholder [] (text "{}")
+              , label = labelInputView "Body: "
+              , spellcheck = False
+              }
+        , showOnlyInterpolation model (editedOrNotEditedValue model.httpBody)
+        ]
 
 
 
@@ -756,6 +753,46 @@ joinTuple : String -> ( String, String ) -> String
 joinTuple separator ( key, value ) =
     key ++ separator ++ value
 
+
+showInterpolation : Model -> String -> Element Msg
+showInterpolation model str =
+    let
+        template =
+            stringToTemplate str
+
+        interpolated =
+            interpolate model.keyValues template
+
+        value =
+            allInterpolatedStringAsElement interpolated
+    in
+    case stringTemplateContainsKey template of
+        False -> none
+        True ->
+            el [ centerY
+               , padding 10
+               , htmlAttribute (Html.class "arrow_box")
+               ] value
+
+showOnlyInterpolation : Model -> String -> Element Msg
+showOnlyInterpolation model str =
+    let
+        template =
+            stringToTemplate str
+
+        interpolated =
+            interpolate model.keyValues template
+
+        value =
+            onlyInterpolatedStringAsElement interpolated
+    in
+    case stringTemplateContainsKey template of
+        False -> none
+        True ->
+            el [ centerY
+               , padding 10
+               , htmlAttribute (Html.class "arrow_box")
+               ] value
 
 
 -- * subscriptions
