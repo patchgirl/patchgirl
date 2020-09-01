@@ -69,4 +69,4 @@ onlyInterpolatedStringAsElement interpolatedStrings =
     in
     column [ spacing 10, centerX, Font.center, Font.family
               [ Font.typeface "Roboto mono" ]
-        ] <| List.map showInterpolatedStringSingle interpolatedStrings
+           ] <| List.map showInterpolatedStringSingle interpolatedStrings

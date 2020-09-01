@@ -626,7 +626,7 @@ urlView model =
                   , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
                   , label = Input.labelLeft [ centerY ] <| text "Url: "
                   }
-            , showInterpolation model (editedOrNotEditedValue model.httpUrl)
+            , showFullInterpolation model (editedOrNotEditedValue model.httpUrl)
             ]
 
 
@@ -693,7 +693,7 @@ headerView model idx ( headerKey, headerValue ) =
                     , placeholder = Nothing
                     , label = Input.labelLeft [ centerY ] (text "key: ")
                     }
-              , showInterpolation model headerKey
+              , showFullInterpolation model headerKey
               ]
         , row [ width fill, spacing 30 ]
             [ Input.text [ Util.onEnter AskRun ]
@@ -702,7 +702,7 @@ headerView model idx ( headerKey, headerValue ) =
                   , placeholder = Nothing
                   , label = Input.labelLeft [ centerY ] (text "value: ")
                   }
-            , showInterpolation model headerValue
+            , showFullInterpolation model headerValue
             ]
         , Input.button [ centerY ]
             { onPress = Just <| DeleteHeader idx
@@ -754,8 +754,8 @@ joinTuple separator ( key, value ) =
     key ++ separator ++ value
 
 
-showInterpolation : Model -> String -> Element Msg
-showInterpolation model str =
+showFullInterpolation : Model -> String -> Element Msg
+showFullInterpolation model str =
     let
         template =
             stringToTemplate str
