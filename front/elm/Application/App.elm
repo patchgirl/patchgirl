@@ -148,25 +148,26 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
 -- * update
 
 
-handleNotification : Model -> Cmd Msg -> (Model, Cmd Msg)
-handleNotification model cmd =
-    case model.notification of
-        Just message ->
-            ( { model | notification = Nothing }
-            , Cmd.batch [ cmd, sendNotification (notificationEncoder message) ]
-            )
-
-        Nothing ->
-            (model, cmd)
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    let
+        handleNotification : (Model, Cmd Msg) -> (Model, Cmd Msg)
+        handleNotification (newModel, cmd) =
+            case newModel.notification of
+                Just message ->
+                    ( { newModel | notification = Nothing }
+                    , Cmd.batch [ cmd, sendNotification (notificationEncoder message) ]
+                    )
+
+                Nothing ->
+                    (newModel, cmd)
+    in
+    handleNotification <| case msg of
         NoOp ->
-            handleNotification model Cmd.none
+            (model, Cmd.none)
 
         ChangeDemoScene newSceneToDemo ->
-            handleNotification { model | sceneToDemo = newSceneToDemo } Cmd.none
+            ({ model | sceneToDemo = newSceneToDemo }, Cmd.none)
 
         NextDemo ->
             let
@@ -176,14 +177,14 @@ update msg model =
                         Scene2 -> Scene3
                         Scene3 -> Scene1
             in
-            handleNotification { model | sceneToDemo = nextDemo } Cmd.none
+            ({ model | sceneToDemo = nextDemo }, Cmd.none)
 
         UrlChanged url ->
             let
                 newModel =
                     updateModelWithPage (urlToPage url) model
             in
-            handleNotification newModel Cmd.none
+            (newModel, Cmd.none)
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -195,49 +196,49 @@ update msg model =
                         newMsg =
                             Navigation.pushUrl model.navigationKey <| Url.toString url
                     in
-                    handleNotification newModel newMsg
+                    (newModel, newMsg)
 
                 External url ->
-                    handleNotification model  (Navigation.load url)
+                    (model, (Navigation.load url))
 
         BuilderAppMsg subMsg ->
             let
                 ( newModel, newMsg ) =
                     RequestBuilderApp.update subMsg model
             in
-            handleNotification newModel (Cmd.map BuilderAppMsg newMsg)
+            (newModel, (Cmd.map BuilderAppMsg newMsg))
 
         PGBuilderAppMsg subMsg ->
             let
                 ( newModel, newMsg ) =
                     PGBuilderApp.update subMsg model
             in
-            handleNotification newModel (Cmd.map PGBuilderAppMsg newMsg)
+            (newModel, (Cmd.map PGBuilderAppMsg newMsg))
 
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
                 ( newModel, newSubMsg ) ->
-                    handleNotification newModel (Cmd.map EnvironmentEditionMsg newSubMsg)
+                    (newModel, (Cmd.map EnvironmentEditionMsg newSubMsg))
 
         ScenarioMsg subMsg ->
             case ScenarioBuilderApp.update subMsg model of
                 ( newModel, newSubMsg ) ->
-                    handleNotification newModel (Cmd.map ScenarioMsg newSubMsg)
+                    (newModel, (Cmd.map ScenarioMsg newSubMsg))
 
         TangoScriptMsg subMsg ->
             case TangoScriptApp.update subMsg model of
                 ( newModel, newSubMsg ) ->
-                    handleNotification newModel (Cmd.map TangoScriptMsg newSubMsg)
+                    (newModel, (Cmd.map TangoScriptMsg newSubMsg))
 
         MainNavBarMsg subMsg ->
             case MainNavBar.update subMsg model of
                 ( newModel, newSubMsg ) ->
-                    handleNotification newModel (Cmd.map MainNavBarMsg newSubMsg)
+                    (newModel, (Cmd.map MainNavBarMsg newSubMsg))
 
         DocumentationMsg subMsg ->
             case DocumentationApp.update subMsg of
                 newSubMsg ->
-                    handleNotification model (Cmd.map DocumentationMsg newSubMsg)
+                    (model, (Cmd.map DocumentationMsg newSubMsg))
 
         Animate subMsg ->
             let
@@ -249,28 +250,28 @@ update msg model =
                             Animation.update subMsg model.notificationAnimation
                     }
             in
-            handleNotification newModel Cmd.none
+            (newModel, Cmd.none)
 
         CheckRunnerStatus ->
             let
                 newMsg =
                     fetchRunnerStatus
             in
-            handleNotification model newMsg
+            (model, newMsg)
 
         RunnerNotRunning ->
             let
                 newModel =
                     { model | runnerRunning = False }
             in
-            handleNotification newModel Cmd.none
+            (newModel, Cmd.none)
 
         RunnerRunning ->
             let
                 newModel =
                     { model | runnerRunning = True }
             in
-            handleNotification newModel Cmd.none
+            (newModel, Cmd.none)
 
 
 -- * util
