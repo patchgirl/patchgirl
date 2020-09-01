@@ -8,7 +8,7 @@
 
 * Features
 
-** TODO Notification system
+** TODO Env variable: Show env variable in input
 ** TODO Tangoscript: parse json
 ** TODO Scenario: cookie
 ** TODO Scenario: include scenario
@@ -17,15 +17,15 @@
 
 * Improvements
 
-
-** TODO Scenario: prettify "add a scene to your scenario" button
 ** TODO Scenario: reset data
-   SCHEDULED: <2020-08-27 jeu.>
 ** TODO Better tree node edition
 *** TODO When my mouse is over a tree node, I display an edit btn
 *** TODO When I click on the edit btn, the whole edit view is shown
 *** TODO When I am on the edit view, I can do all the operation available (rename, delete, new folder, new file)
 *** TODO When I am on the edit view, I can duplicate entry for file
+** TODO Import from postman
+** TODO Import from swagger
+** TODO Scenario: prettify "add a scene to your scenario" button
 ** TODO Scenario: select scene modal
 ** TODO Tangoscript: documentation for the language
 ** TODO Tangoscript: parsing speed
