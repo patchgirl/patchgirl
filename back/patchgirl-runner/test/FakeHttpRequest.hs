@@ -51,7 +51,7 @@ buildRequest rawRequest =
   FakeHttpRequest <$> HTTP.parseRequest rawRequest
 
 defaultRequest :: IO FakeHttpRequest
-defaultRequest =
+defaultRequest = do
   FakeHttpRequest <$> HTTP.parseRequest "GET http://foo.com"
 
 buildHttpResponse :: HttpResponse BSU.ByteString

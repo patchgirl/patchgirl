@@ -4,6 +4,7 @@ module Helper.App (withClient, try, errorsWithStatus, envWithLog, defaultEnv) wh
 
 import           Control.Concurrent.STM
 import           Control.Exception        (throwIO)
+import qualified Say
 import qualified Network.HTTP.Client      as Client
 import           Network.HTTP.Types       (Status)
 import           Network.Wai.Handler.Warp (testWithApplication)
@@ -50,7 +51,7 @@ withClient app innerSpec =
 defaultEnv :: Env
 defaultEnv =
   Env { _envPort = 3001
-      , _envLog = undefined
+      , _envLog = Say.sayString
       , _envHttpRequest = ioRequestRunner
       , _envPgRunner = ioPgRunner
       }
