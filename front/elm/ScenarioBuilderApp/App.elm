@@ -24,7 +24,7 @@ import Browser.Navigation as Navigation
 
 type alias Model a =
     { a
-        | notification : Maybe String
+        | notification : Maybe Notification
         , session : Session
         , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection

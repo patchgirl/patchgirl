@@ -21,7 +21,7 @@ type alias Model =
     , loadingAnimation : Animation.State -- use to fade in the app on init
 
     -- NOTIFICATION
-    , notification : Maybe String
+    , notification : Maybe Notification
     , notificationAnimation : Animation.State
 
     -- DOCUMENTATION

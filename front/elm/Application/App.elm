@@ -29,8 +29,11 @@ import Time
 import Http
 import Api.RunnerGeneratedClient as Client
 import Runner
+import Json.Encode exposing(Value)
 
-port sendNotification : String -> Cmd msg
+
+port sendNotification : Value -> Cmd msg
+
 
 -- * model
 
@@ -144,12 +147,13 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
 
 -- * update
 
+
 handleNotification : Model -> Cmd Msg -> (Model, Cmd Msg)
 handleNotification model cmd =
     case model.notification of
         Just message ->
             ( { model | notification = Nothing }
-            , Cmd.batch [ cmd, sendNotification message ]
+            , Cmd.batch [ cmd, sendNotification (notificationEncoder message) ]
             )
 
         Nothing ->
@@ -328,7 +332,6 @@ view model =
             (Background.color lightGrey)
                 :: loadingAnimation
                 ++ [ inFront (modalView model)
-                   , inFront (notificationView model)
                    ]
 
         body =
@@ -720,31 +723,6 @@ modalView model =
 
     in
     Modal.view modalConfig
-
-
-
--- ** notification view
-
-
-notificationView : Model -> Element Msg
-notificationView model =
-    case model.notification of
-        Just message ->
-            let
-                animationStyle =
-                    List.map htmlAttribute (Animation.render model.notificationAnimation)
-            in
-            el
-                ([ alignRight
-                 , height (px 10)
-                 ]
-                    ++ animationStyle
-                )
-                (text message)
-
-        Nothing ->
-            none
-
 
 
 -- * subscriptions

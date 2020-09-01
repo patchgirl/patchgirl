@@ -25,7 +25,7 @@ import Browser.Navigation as Navigation
 
 type alias Model a =
     { a
-        | notification : Maybe String
+        | notification : Maybe Notification
         , requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid
         , displayedRequestId : Maybe Uuid

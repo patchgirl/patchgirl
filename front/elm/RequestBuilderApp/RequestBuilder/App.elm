@@ -31,7 +31,7 @@ import Runner
 
 
 type alias Model =
-    { notification : Maybe String
+    { notification : Maybe Notification
     , id : Uuid
     , requestCollectionId : Int
     , keyValues : List (Storable NewKeyValue KeyValue)
@@ -289,7 +289,7 @@ update msg model =
         ServerError ->
             let
                 newModel =
-                    { model | notification = Just "server error" }
+                    { model | notification = Just (AlertNotification "server error") }
             in
             ( newModel, Cmd.none )
 

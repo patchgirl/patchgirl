@@ -39,7 +39,7 @@ import HttpError exposing(..)
 
 type alias Model =
     { session : Session
-    , notification : Maybe String
+    , notification : Maybe Notification
     , whichModal : Maybe Modal
     , id : Uuid
     , requestCollection : RequestCollection
@@ -438,7 +438,7 @@ update msg model =
             ( newModel, Cmd.none )
 
         Error err ->
-            ( { model | notification = Just err }, Cmd.none )
+            ( { model | notification = Just (AlertNotification err) }, Cmd.none )
 
         DoNothing ->
             ( model, Cmd.none )

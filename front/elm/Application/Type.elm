@@ -4,6 +4,7 @@ import Animation
 import Dict exposing (Dict)
 import Uuid exposing (Uuid)
 import Parser exposing(DeadEnd)
+import Json.Encode as Json exposing(Value)
 
 
 -- * menu
@@ -15,6 +16,34 @@ type MainMenuName
     | SignOutMenu
     | GithubMenu
     | RunnerStatusMenu
+
+
+-- * notification
+
+
+type Notification
+    = SuccessNotification String
+    | InfoNotification String
+    | AlertNotification String
+
+notificationEncoder : Notification -> Value
+notificationEncoder notification =
+    let
+        (status, content) =
+            case notification of
+                SuccessNotification message ->
+                    ("notification", message)
+
+                InfoNotification message ->
+                    ("info", message)
+
+                AlertNotification message ->
+                    ("alert", message)
+    in
+    Json.object
+        [ ( "status", Json.string status )
+        , ( "content", Json.string content )
+        ]
 
 
 -- * session
