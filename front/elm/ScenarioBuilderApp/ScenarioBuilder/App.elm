@@ -468,7 +468,7 @@ runScenarioResultToMsg result =
 
         Err err ->
             PrintNotification <|
-                AlertNotification "Could not run scenario. Is <a href=\"/#app/documentation/patchgirl-runner\">patchgirl-runner</a> running?" (httpErrorToString err)
+                AlertNotification ("Could not run SQL request. Is <a href=\"" ++ (href (DocumentationPage PatchGirlRunnerAppDoc)) ++ "\">patchgirl-runner</a> running?") (httpErrorToString err)
 
 
 deleteSceneResultToMsg : Uuid -> Result Http.Error () -> Msg

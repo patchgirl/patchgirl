@@ -177,7 +177,7 @@ view model =
               ]
               [ el [ centerX ] (text "Offline mode - Run the ")
               , link [ centerX ] { label = el [ Font.underline ] (text "Patchgirl Runner App")
-                                 , url = "https://patchgirl.io/#app/documentation/patchGirlRunnerApp"
+                                 , url = href (DocumentationPage PatchGirlRunnerAppDoc)
                                  }
               , el [ centerX ] (text " to enable postgres requests!")
               ]

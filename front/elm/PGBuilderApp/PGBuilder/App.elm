@@ -229,7 +229,9 @@ postPgSqlComputationResultToMsg result =
             RemoteComputationDone (Client.convertPgComputationOutputFromBackToFront pgComputationOutput)
 
         Err error ->
-            PrintNotification <| AlertNotification "Could not run SQL request. Is <a href=\"/#app/documentation/patchgirl-runner\">patchgirl-runner</a> running?" (httpErrorToString error)
+            PrintNotification <|
+                AlertNotification
+                    ("Could not run SQL request. Is <a href=\"" ++ (href (DocumentationPage PatchGirlRunnerAppDoc)) ++ "\">patchgirl-runner</a> running?") (httpErrorToString error)
 
 isBuilderDirty : Model -> Bool
 isBuilderDirty model =
