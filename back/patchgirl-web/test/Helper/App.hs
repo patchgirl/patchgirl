@@ -27,7 +27,8 @@ import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
 import           Servant.Client
 import qualified Test.Hspec                       as Hspec
 
-import           PatchGirl.Internal               hiding (Http)
+import           PatchGirl.Client hiding (Http)
+import           DB
 
 
 -- * helper

@@ -22,7 +22,9 @@ import qualified Database.PostgreSQL.Simple.Types     as PG
 
 import           GHC.Generics
 import           PatchGirl.Client
-import           PatchGirl.Internal
+import           PgNode.Sql
+import           RequestNode.Sql
+import           ScenarioNode.Sql
 
 
 -- * account

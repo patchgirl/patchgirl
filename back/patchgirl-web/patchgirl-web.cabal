@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 44e2a7c5f33fbc13feb980e62cd8cad5aaf8472b6053247b57b54290d1acb2eb
+-- hash: ecd45e4dfcbc7b0933bb2f32a88f04a8c8c2e6e2fe1455a534e9d44a2edfd236
 
 name:           patchgirl-web
 version:        0.0.0
@@ -26,7 +26,6 @@ library
       PatchGirl
       PatchGirl.Api
       PatchGirl.Client
-      PatchGirl.Internal
       PatchGirl.Internal.Env
       PatchGirl.Model
       PatchGirl.Server

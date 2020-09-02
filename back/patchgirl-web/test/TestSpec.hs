@@ -13,8 +13,9 @@ import           Test.Hspec
 
 import           Helper.App
 import           PatchGirl.Client
-import           PatchGirl.Internal
 import           PatchGirl.Server
+import           Test
+
 
 
 -- * client
