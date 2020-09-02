@@ -398,13 +398,16 @@ builderView model =
                   , showInterpolatedCredentials (editedOrNotEditedValue model.dbName)
                   ]
               ]
-        , Input.multiline [ Util.onEnter AskRun ]
-            { onChange = UpdateSqlQuery
-            , text = editedOrNotEditedValue model.sqlQuery
-            , placeholder = Just <| Input.placeholder [] (text "SELECT * FROM your_table;")
-            , label = labelInputView "SQL: "
-            , spellcheck = False
-            }
+        , wrappedRow [ width fill, spacing 30 ]
+            [ Input.multiline [ Util.onEnter AskRun ]
+                  { onChange = UpdateSqlQuery
+                  , text = editedOrNotEditedValue model.sqlQuery
+                  , placeholder = Just <| Input.placeholder [] (text "SELECT * FROM your_table;")
+                  , label = labelInputView "SQL: "
+                  , spellcheck = False
+                  }
+            , showOnlyInterpolation model.keyValues (editedOrNotEditedValue model.sqlQuery)
+            ]
         ]
 
 

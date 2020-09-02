@@ -10,8 +10,6 @@
 * Features
 
 
-** TODO Env variable: Show env variable in input
-   SCHEDULED: <2020-09-02 mer.>
 ** TODO hide value env button
    SCHEDULED: <2020-09-02 mer.>
 ** TODO Tangoscript: parse json
