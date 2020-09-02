@@ -28,7 +28,6 @@ import Page exposing(..)
 import Runner
 import HttpError exposing(..)
 import Interpolator exposing(..)
-import StringTemplate exposing(..)
 
 
 -- * model
@@ -626,7 +625,7 @@ urlView model =
                   , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
                   , label = Input.labelLeft [ centerY ] <| text "Url: "
                   }
-            , showFullInterpolation model (editedOrNotEditedValue model.httpUrl)
+            , showFullInterpolation "left-arrow-box" model.keyValues (editedOrNotEditedValue model.httpUrl)
             ]
 
 
@@ -693,7 +692,7 @@ headerView model idx ( headerKey, headerValue ) =
                     , placeholder = Nothing
                     , label = Input.labelLeft [ centerY ] (text "key: ")
                     }
-              , showFullInterpolation model headerKey
+              , showFullInterpolation "left-arrow-box" model.keyValues headerKey
               ]
         , row [ width fill, spacing 30 ]
             [ Input.text [ Util.onEnter AskRun ]
@@ -702,7 +701,7 @@ headerView model idx ( headerKey, headerValue ) =
                   , placeholder = Nothing
                   , label = Input.labelLeft [ centerY ] (text "value: ")
                   }
-            , showFullInterpolation model headerValue
+            , showFullInterpolation "left-arrow-box" model.keyValues headerValue
             ]
         , Input.button [ centerY ]
             { onPress = Just <| DeleteHeader idx
@@ -728,7 +727,7 @@ bodyView model =
               , label = labelInputView "Body: "
               , spellcheck = False
               }
-        , showOnlyInterpolation model (editedOrNotEditedValue model.httpBody)
+        , showOnlyInterpolation model.keyValues (editedOrNotEditedValue model.httpBody)
         ]
 
 
@@ -753,46 +752,6 @@ joinTuple : String -> ( String, String ) -> String
 joinTuple separator ( key, value ) =
     key ++ separator ++ value
 
-
-showFullInterpolation : Model -> String -> Element Msg
-showFullInterpolation model str =
-    let
-        template =
-            stringToTemplate str
-
-        interpolated =
-            interpolate model.keyValues template
-
-        value =
-            allInterpolatedStringAsElement interpolated
-    in
-    case stringTemplateContainsKey template of
-        False -> none
-        True ->
-            el [ centerY
-               , padding 10
-               , htmlAttribute (Html.class "arrow_box")
-               ] value
-
-showOnlyInterpolation : Model -> String -> Element Msg
-showOnlyInterpolation model str =
-    let
-        template =
-            stringToTemplate str
-
-        interpolated =
-            interpolate model.keyValues template
-
-        value =
-            onlyInterpolatedStringAsElement interpolated
-    in
-    case stringTemplateContainsKey template of
-        False -> none
-        True ->
-            el [ centerY
-               , padding 10
-               , htmlAttribute (Html.class "arrow_box")
-               ] value
 
 
 -- * subscriptions

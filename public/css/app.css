@@ -55,13 +55,12 @@ pre code {
   border: 0;
 }
 
-.arrow_box {
+.left-arrow-box {
   position: relative;
   background: rgba(249,227,208, 0.3);
-  border: 3px solid #c2e1f5;
 }
 
-.arrow_box:after, .arrow_box:before {
+.left-arrow-box:after, .left-arrow-box:before {
   right: 100%;
   top: 50%;
   border: solid transparent;
@@ -73,7 +72,7 @@ pre code {
 }
 
 
-.arrow_box:before {
+.left-arrow-box:before {
   border-right-color: rgba(249,227,208, 0.3);
   border-width: 20px;
   margin-top: -20px;

@@ -5,12 +5,21 @@ import Element.Font as Font
 import Application.Type exposing(..)
 import Dict
 import Util exposing (..)
+import StringTemplate exposing(..)
+import Html.Attributes as Html
+
+
+-- * model
 
 
 type InterpolatedString
     = RawString String
     | MissingKey String
     | InterpolatedKey String String
+
+
+-- * interpolate
+
 
 interpolate : List (Storable NewKeyValue KeyValue) -> StringTemplate -> List InterpolatedString
 interpolate envKeyValues stringTemplate =
@@ -38,6 +47,13 @@ interpolate envKeyValues stringTemplate =
     List.map interpolateSingle stringTemplate
 
 
+-- * util
+
+
+{-
+  input: "coucou{{host}} ?"
+  output: coucou <b>api.com</b> ?
+-}
 allInterpolatedStringAsElement : List InterpolatedString -> Element a
 allInterpolatedStringAsElement interpolatedStrings =
     let
@@ -53,6 +69,13 @@ allInterpolatedStringAsElement interpolatedStrings =
         ] <| List.map showInterpolatedStringSingle interpolatedStrings
 
 
+
+{-
+  input: "hello {{firstname}} {{lastname}}!"
+  output: |
+    firstname: John
+    lastname: Doe
+-}
 onlyInterpolatedStringAsElement : List InterpolatedString -> Element a
 onlyInterpolatedStringAsElement interpolatedStrings =
     let
@@ -70,3 +93,47 @@ onlyInterpolatedStringAsElement interpolatedStrings =
     column [ spacing 10, centerX, Font.center, Font.family
               [ Font.typeface "Roboto mono" ]
            ] <| List.map showInterpolatedStringSingle interpolatedStrings
+
+
+-- * display wrapper
+
+
+showFullInterpolation : String -> List (Storable NewKeyValue KeyValue) -> String -> Element a
+showFullInterpolation class keyValues str =
+    let
+        template =
+            stringToTemplate str
+
+        interpolated =
+            interpolate keyValues template
+
+        value =
+            allInterpolatedStringAsElement interpolated
+    in
+    case stringTemplateContainsKey template of
+        False -> none
+        True ->
+            el [ centerY
+               , padding 10
+               , htmlAttribute (Html.class class)
+               ] value
+
+showOnlyInterpolation : List (Storable NewKeyValue KeyValue) -> String -> Element a
+showOnlyInterpolation keyValues str =
+    let
+        template =
+            stringToTemplate str
+
+        interpolated =
+            interpolate keyValues template
+
+        value =
+            onlyInterpolatedStringAsElement interpolated
+    in
+    case stringTemplateContainsKey template of
+        False -> none
+        True ->
+            el [ centerY
+               , padding 10
+               , htmlAttribute (Html.class "left-arrow-box")
+               ] value

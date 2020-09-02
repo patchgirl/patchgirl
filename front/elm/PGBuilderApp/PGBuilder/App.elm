@@ -27,6 +27,7 @@ import Page exposing(..)
 import Runner
 import StringTemplate exposing(..)
 import HttpError exposing(..)
+import Interpolator exposing(..)
 
 
 -- * model
@@ -313,6 +314,12 @@ view model =
 
 builderView : Model -> Element Msg
 builderView model =
+    let
+        showInterpolatedCredentials : String -> Element Msg
+        showInterpolatedCredentials str =
+            el [ paddingEach { top = 25, bottom = 0, left = 0, right = 0 } ] <|
+                showFullInterpolation "left-arrow-box" model.keyValues str
+    in
     column [ alignLeft, width fill, spacing 20 ]
         [ row [ spacing 10, width fill ]
               [ el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue model.name) secondaryColor
@@ -344,37 +351,52 @@ builderView model =
                            ] (iconWithTextAndColorAndAttr "send" "Run" primaryColor [] )
                     }
               ]
-        , row [ spacing 10 ]
-              [ Input.text []
-                    { onChange = UpdateHost
-                    , text = editedOrNotEditedValue model.dbHost
-                    , placeholder = Just <| Input.placeholder [] (text "localhost")
-                    , label = labelInputView "Host: "
-                    }
-              , Input.text []
-                  { onChange = UpdatePort
-                  , text = editedOrNotEditedValue model.dbPort
-                  , placeholder = Just <| Input.placeholder [] (text "5432")
-                  , label = labelInputView "Port: "
-                  }
-              , Input.text []
-                  { onChange = UpdateUser
-                  , text = editedOrNotEditedValue model.dbUser
-                  , placeholder = Just <| Input.placeholder [] (text "postgres")
-                  , label = labelInputView "User: "
-                  }
-              , Input.text []
-                  { onChange = UpdatePassword
-                  , text = editedOrNotEditedValue model.dbPassword
-                  , placeholder = Just <| Input.placeholder [] (text "password")
-                  , label = labelInputView "Password: "
-                  }
-              , Input.text []
-                  { onChange = UpdateDbName
-                  , text = editedOrNotEditedValue model.dbName
-                  , placeholder = Just <| Input.placeholder [] (text "database")
-                  , label = labelInputView "Database: "
-                  }
+        , row [ spacing 20 ]
+              [ row [ width fill, spacing 30 ]
+                    [ Input.text []
+                          { onChange = UpdateHost
+                          , text = editedOrNotEditedValue model.dbHost
+                          , placeholder = Just <| Input.placeholder [] (text "localhost")
+                          , label = labelInputView "Host: "
+                          }
+                    , showInterpolatedCredentials (editedOrNotEditedValue model.dbHost)
+                    ]
+              , row [ width fill, spacing 30 ]
+                  [ Input.text []
+                        { onChange = UpdatePort
+                        , text = editedOrNotEditedValue model.dbPort
+                        , placeholder = Just <| Input.placeholder [] (text "5432")
+                        , label = labelInputView "Port: "
+                        }
+                  , showInterpolatedCredentials (editedOrNotEditedValue model.dbPort)
+                  ]
+              , row [ width fill, spacing 30 ]
+                  [ Input.text []
+                        { onChange = UpdateUser
+                        , text = editedOrNotEditedValue model.dbUser
+                        , placeholder = Just <| Input.placeholder [] (text "postgres")
+                        , label = labelInputView "User: "
+                        }
+                  , showInterpolatedCredentials (editedOrNotEditedValue model.dbUser)
+                  ]
+              , row [ width fill, spacing 30 ]
+                  [ Input.text []
+                        { onChange = UpdatePassword
+                        , text = editedOrNotEditedValue model.dbPassword
+                        , placeholder = Just <| Input.placeholder [] (text "password")
+                        , label = labelInputView "Password: "
+                        }
+                  , showInterpolatedCredentials (editedOrNotEditedValue model.dbPassword)
+                  ]
+              , row [ width fill, spacing 30 ]
+                  [ Input.text []
+                        { onChange = UpdateDbName
+                        , text = editedOrNotEditedValue model.dbName
+                        , placeholder = Just <| Input.placeholder [] (text "database")
+                        , label = labelInputView "Database: "
+                        }
+                  , showInterpolatedCredentials (editedOrNotEditedValue model.dbName)
+                  ]
               ]
         , Input.multiline [ Util.onEnter AskRun ]
             { onChange = UpdateSqlQuery
