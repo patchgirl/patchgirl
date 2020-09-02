@@ -139,7 +139,8 @@ CREATE TABLE key_value(
     id SERIAL PRIMARY KEY,
     environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
     key TEXT NOT NULL,
-    value TEXT NOT NULL
+    value TEXT NOT NULL,
+    hidden BOOLEAN NOT NULL
 );
 
 

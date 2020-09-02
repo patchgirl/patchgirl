@@ -47,13 +47,6 @@ notificationEncoder notification =
         ]
 
 
--- * tooltip
-
-
-type RequestToolTipLocation =
-    UrlToolTipLocation
-
-
 -- * session
 
 
@@ -115,22 +108,26 @@ type alias Environment =
 toLatestKeyValue : Storable NewKeyValue KeyValue
                  -> { key : String
                     , value : StringTemplate
+                    , hidden : Bool
                     }
 toLatestKeyValue storable =
     case storable of
-        New { key, value } ->
+        New { key, value, hidden } ->
             { key = key
             , value = value
+            , hidden = hidden
             }
 
-        Saved { key, value } ->
+        Saved { key, value, hidden } ->
             { key = key
             , value = value
+            , hidden = hidden
             }
 
-        Edited2 _ { key, value } ->
+        Edited2 _ { key, value, hidden } ->
             { key = key
             , value = value
+            , hidden = hidden
             }
 
 
@@ -140,12 +137,14 @@ toLatestKeyValue storable =
 type alias NewKeyValue =
     { key : String
     , value : StringTemplate
+    , hidden : Bool
     }
 
 type alias KeyValue =
     { id : Int
     , key : String
     , value : StringTemplate
+    , hidden : Bool
     }
 
 
@@ -749,12 +748,12 @@ isStorableDirty storable =
         Saved _ ->
             False
 
-latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, StringTemplate)
+latestValueOfStorable : Storable NewKeyValue KeyValue -> { key : String, value : StringTemplate, hidden : Bool }
 latestValueOfStorable storable =
     case storable of
-        New { key, value } -> (key, value)
-        Saved { key, value } -> (key, value)
-        Edited2 _ { key, value } -> (key, value)
+        New { key, value, hidden } -> { key = key, value = value, hidden = hidden }
+        Saved { key, value, hidden } -> { key = key, value = value, hidden = hidden }
+        Edited2 _ { key, value, hidden } -> { key = key, value = value, hidden = hidden }
 
 -- * tangoscript
 

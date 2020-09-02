@@ -166,9 +166,9 @@ createAccountAndcleanDBAfter f = do
   accountId <- insertFakeAccount 1 connection
   token <- signedUserToken accountId
   withConnection f Test { connection = connection
-                         , accountId = accountId
-                         , token = token
-                         }
+                        , accountId = accountId
+                        , token = token
+                        }
     where
       withConnection :: (Test -> IO a) -> Test -> IO a
       withConnection f test@Test { connection }  =

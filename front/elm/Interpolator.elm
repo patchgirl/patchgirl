@@ -15,7 +15,7 @@ import Html.Attributes as Html
 type InterpolatedString
     = RawString String
     | MissingKey String
-    | InterpolatedKey String String
+    | InterpolatedKey String String Bool
 
 
 -- * interpolate
@@ -35,14 +35,15 @@ interpolate envKeyValues stringTemplate =
                         keyValues =
                             envKeyValues
                                 |> List.map latestValueOfStorable
+                                |> List.map (\r -> (r.key, (r.value, r.hidden)))
                                 |> Dict.fromList
                     in
                     case Dict.get str keyValues of
                         Nothing ->
                             MissingKey str
 
-                        Just value ->
-                            InterpolatedKey str (templatedStringAsString value)
+                        Just (value, hidden) ->
+                            InterpolatedKey str (templatedStringAsString value) hidden
     in
     List.map interpolateSingle stringTemplate
 
@@ -62,7 +63,17 @@ allInterpolatedStringAsElement interpolatedStrings =
             case interpolatedString of
                 RawString str -> text str
                 MissingKey str -> el [ Font.color redColor, Font.bold ] <| text ("{{" ++ str ++ "}}")
-                InterpolatedKey _ str -> el [ Font.color greenColor, Font.bold ] (text str)
+                InterpolatedKey _ str hidden ->
+                    case hidden of
+                        False ->
+                            el [ Font.color greenColor, Font.bold ] (text str)
+
+                        True ->
+                            let
+                                hiddenValue =
+                                    String.repeat (String.length str) "*"
+                            in
+                            el [ Font.color greenColor, Font.bold ] (text hiddenValue)
     in
     row [ centerY, centerX, Font.center, Font.family
               [ Font.typeface "Roboto mono" ]
@@ -84,10 +95,19 @@ onlyInterpolatedStringAsElement interpolatedStrings =
             case interpolatedString of
                 RawString _ -> none
                 MissingKey str -> el [ Font.color redColor, Font.bold ] <| text ("{{" ++ str ++ "}}")
-                InterpolatedKey key value ->
+                InterpolatedKey key value hidden ->
                     row []
                         [ text (key ++ ": ")
-                        , el [ Font.color greenColor, Font.bold ] (text value)
+                        , case hidden of
+                              False ->
+                                  el [ Font.color greenColor, Font.bold ] (text value)
+
+                              True ->
+                                  let
+                                      hiddenValue =
+                                          String.repeat (String.length value) "*"
+                                  in
+                                  el [ Font.color greenColor, Font.bold ] (text hiddenValue)
                         ]
     in
     column [ spacing 10, centerX, Font.center, Font.family

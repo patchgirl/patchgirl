@@ -266,7 +266,7 @@ view model =
                             , id = selectedEnv.id
                             }
                     in
-                    el [] <|
+                    el [ width fill ] <|
                         map EnvironmentKeyValueEditionMsg (envKeyValueView subModel)
 
                 Nothing ->
@@ -390,7 +390,10 @@ type alias KeyValueModel a =
 
 newDefaultKeyValue : Storable NewKeyValue KeyValue
 newDefaultKeyValue =
-    New { key = "", value = [Sentence ""] }
+    New { key = ""
+        , value = [ Sentence "" ]
+        , hidden = False
+        }
 
 
 
@@ -407,7 +410,7 @@ type KeyValueMsg
     | KeyDeleted Int
     | DeleteNewKeyValue Int
     | PrintNotification2 Notification
-
+    | ToggleValueVisibility Int
 
 
 -- ** update
@@ -495,6 +498,17 @@ updateKeyValue msg ( model, environment ) =
             , environment
             , Cmd.none
             )
+
+        ToggleValueVisibility idx ->
+            let
+                newKeyValues =
+                    List.updateAt idx toggleValueVisibility environment.keyValues
+
+                newEnvironment =
+                    { environment | keyValues = newKeyValues }
+            in
+            ( model, newEnvironment, Cmd.none )
+
 
 
 -- ** util
@@ -597,7 +611,17 @@ changeValue newValue storable =
                 False ->
                     Edited2 saved { edited | value = newValue }
 
+toggleValueVisibility : Storable NewKeyValue KeyValue -> Storable NewKeyValue KeyValue
+toggleValueVisibility storable =
+    case storable of
+        New new ->
+            New { new | hidden = not new.hidden }
 
+        Saved saved ->
+            Edited2 saved { saved | hidden = not saved.hidden }
+
+        Edited2 saved edited ->
+            Edited2 saved { edited | hidden = not edited.hidden }
 
 -- ** view
 
@@ -615,11 +639,14 @@ envKeyValueView model =
                         ]
                 }
     in
-    column [ spacing 10 ]
+    column [ spacing 30 ]
         [ titleView model
         , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
         , el [ centerX ] addNewKeyValueView
         ]
+
+
+-- *** title view
 
 
 titleView : KeyValueModel a -> Element KeyValueMsg
@@ -647,6 +674,9 @@ titleView model =
         ]
 
 
+-- *** main action view
+
+
 mainActionButtonsView : Element KeyValueMsg
 mainActionButtonsView =
     let
@@ -666,59 +696,96 @@ mainActionButtonsView =
         }
 
 
+-- *** key value entry view
+
+
 viewKeyValue : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
 viewKeyValue idx sKeyValue =
     let
-        deleteView =
-            case sKeyValue of
-                New new ->
-                    Input.button []
-                        { onPress = Just <| DeleteNewKeyValue idx
-                        , label = el [] deleteIcon
-                        }
-
-                Saved saved ->
-                    Input.button []
-                        { onPress = Just <| AskDeleteKeyValue saved.id
-                        , label = el [] deleteIcon
-                        }
-
-                Edited2 saved _ ->
-                    Input.button []
-                        { onPress = Just <| AskDeleteKeyValue saved.id
-                        , label = el [] deleteIcon
-                        }
+        { key, value, hidden } =
+            toLatestKeyValue sKeyValue
     in
-    row [ spacing 5 ]
-        [ Input.text []
-            { onChange = PromptKey idx
-            , text =
-                case sKeyValue of
-                    New { key } ->
-                        key
+    wrappedRow [ spacing 20 ]
+        [ Input.text [ centerY ]
+              { onChange = PromptKey idx
+              , text = key
+              , placeholder = Just <| Input.placeholder [ centerY ] (text "key")
+              , label = Input.labelLeft [ centerY ] (text "Key: ")
+              }
+        , case hidden of
+              False ->
+                  Input.text [ centerY, width (px 250) ]
+                      { onChange = PromptValue idx
+                      , text = templatedStringAsString value
+                      , placeholder = Just <| Input.placeholder [ centerY ] (text "key")
+                      , label = Input.labelLeft [ centerY ] (text "Value: ")
+                      }
 
-                    Saved { key } ->
-                        key
-
-                    Edited2 _ { key } ->
-                        key
-            , placeholder = Just <| Input.placeholder [] (text "key")
-            , label = Input.labelHidden "Key: "
-            }
-        , Input.text []
-            { onChange = PromptValue idx
-            , text =
-                case sKeyValue of
-                    New { value } ->
-                        templatedStringAsString value
-
-                    Saved { value } ->
-                        templatedStringAsString value
-
-                    Edited2 _ { value } ->
-                        templatedStringAsString value
-            , placeholder = Just <| Input.placeholder [] (text "value")
-            , label = Input.labelHidden "Value: "
-            }
-        , deleteView
+              True ->
+                  Input.newPassword [ centerY, width (px 250) ]
+                      { onChange = PromptValue idx
+                      , text = templatedStringAsString value
+                      , placeholder = Just <| Input.placeholder [ centerY ] (text "value")
+                      , label = Input.labelLeft [ centerY ] (text "Value: ")
+                      , show = False
+                      }
+        , deleteView idx sKeyValue
+        , hideView idx sKeyValue
         ]
+
+
+-- *** delete view
+
+
+deleteView : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
+deleteView idx sKeyValue =
+    case sKeyValue of
+        New new ->
+            Input.button []
+                { onPress = Just <| DeleteNewKeyValue idx
+                , label = el [] deleteIcon
+                }
+
+        Saved saved ->
+            Input.button []
+                { onPress = Just <| AskDeleteKeyValue saved.id
+                , label = el [] deleteIcon
+                }
+
+        Edited2 saved _ ->
+            Input.button []
+                { onPress = Just <| AskDeleteKeyValue saved.id
+                , label = el [] deleteIcon
+                }
+
+
+-- *** hide view
+
+
+hideView : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
+hideView idx sKeyValue =
+    let
+        label =
+            case (toLatestKeyValue sKeyValue).hidden of
+                True ->
+                    iconWithAttr { defaultIconAttribute
+                                     | icon = "toggle_on"
+                                     , iconSize = Just "30px"
+                                     , title = " hide value"
+                                     , primIconColor = Nothing
+                                     , iconVerticalAlign = Just "middle"
+                                 }
+
+                False ->
+                    iconWithAttr { defaultIconAttribute
+                                     | icon = "toggle_off"
+                                     , iconSize = Just "30px"
+                                     , title = " hide value"
+                                     , primIconColor = Nothing
+                                     , iconVerticalAlign = Just "middle"
+                                 }
+    in
+    Input.button []
+        { onPress = Just <| ToggleValueVisibility idx
+        , label = label
+        }

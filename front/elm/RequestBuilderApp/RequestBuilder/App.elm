@@ -363,6 +363,7 @@ buildRequestToRun envKeyValues model =
             ( Client.convertRequestComputationInputFromFrontToBack request
             , envKeyValues
                 |> List.map latestValueOfStorable
+                |> List.map (\{ key, value } -> (key, value))
                 |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                 |> Dict.fromList
             )

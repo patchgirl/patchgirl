@@ -5,18 +5,21 @@ module Environment.Model ( KeyValue(..)
                          , keyValueId
                          , keyValueKey
                          , keyValueValue
+                         , keyValueHidden
                          , PGEnvironmentWithKeyValue(..)
                          , pgEnvironmentWithKeyValueEnvironmentId
                          , pgEnvironmentWithKeyValueEnvironmentName
                          , pgEnvironmentWithKeyValueKeyValueId
                          , pgEnvironmentWithKeyValueKey
                          , pgEnvironmentWithKeyValueValue
+                         , pgEnvironmentWithKeyValueHidden
                          , PGEnvironmentWithoutKeyValue(..)
                          , pgEnvironmentWithoutKeyValueEnvironmentId
                          , pgEnvironmentWithoutKeyValueEnvironmentName
                          , NewKeyValue(..)
                          , newKeyValueKey
                          , newKeyValueValue
+                         , newKeyValueHidden
                          , Environment(..)
                          , environmentId
                          , environmentName
@@ -43,6 +46,7 @@ data KeyValue =
   KeyValue { _keyValueId    :: Int
            , _keyValueKey   :: String
            , _keyValueValue :: String
+           , _keyValueHidden :: Bool
            } deriving (Eq, Show, Generic, PG.FromRow)
 
 instance FromJSON KeyValue where
@@ -85,6 +89,7 @@ data PGEnvironmentWithKeyValue =
                             , _pgEnvironmentWithKeyValueKeyValueId      :: Int
                             , _pgEnvironmentWithKeyValueKey             :: String
                             , _pgEnvironmentWithKeyValueValue           :: String
+                            , _pgEnvironmentWithKeyValueHidden          :: Bool
                             } deriving (Generic, PG.FromRow)
 
 data PGEnvironmentWithoutKeyValue =
@@ -139,6 +144,7 @@ instance FromJSON UpdateEnvironment where
 data NewKeyValue
   = NewKeyValue { _newKeyValueKey   :: String
                 , _newKeyValueValue :: String
+                , _newKeyValueHidden  :: Bool
                 }
   deriving (Eq, Show, Generic)
 

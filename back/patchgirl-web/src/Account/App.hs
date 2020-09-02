@@ -207,16 +207,16 @@ resetVisitorSql connection = do
 -- ** key values
 
 
-          INSERT INTO key_value (environment_id, key, value)
-          VALUES (1, 'host', 'reqres.in/api');
+          INSERT INTO key_value (environment_id, key, value, hidden)
+          VALUES (1, 'host', 'reqres.in/api', true);
 
-          INSERT INTO key_value (environment_id, key, value)
-          VALUES (1, 'user', 'eve.holt');
+          INSERT INTO key_value (environment_id, key, value, hidden)
+          VALUES (1, 'user', 'eve.holt', true);
 
-          INSERT INTO key_value ( environment_id, key, value)
-          VALUES (2, 'host', 'reqres.in/api');
+          INSERT INTO key_value ( environment_id, key, value, hidden)
+          VALUES (2, 'host', 'reqres.in/api', true);
 
-          INSERT INTO key_value ( environment_id, key, value)
-          VALUES ( 2, 'user', 'whatever');
+          INSERT INTO key_value ( environment_id, key, value, hidden)
+          VALUES ( 2, 'user', 'whatever', false);
 
           |]

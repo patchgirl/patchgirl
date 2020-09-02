@@ -58,6 +58,7 @@ selectEnvironments accountId connection = do
           KeyValue { _keyValueId = pgEnv ^. pgEnvironmentWithKeyValueKeyValueId
                    , _keyValueKey = pgEnv ^. pgEnvironmentWithKeyValueKey
                    , _keyValueValue = pgEnv ^. pgEnvironmentWithKeyValueValue
+                   , _keyValueHidden = pgEnv ^. pgEnvironmentWithKeyValueHidden
                    }
       in
         Environment { _environmentId = pgEnv ^. pgEnvironmentWithKeyValueEnvironmentId
@@ -83,7 +84,8 @@ selectEnvironments accountId connection = do
             environment.name as environment_name,
             key_value.id as key_value_id,
             key,
-            value
+            value,
+            hidden
           FROM key_value
           JOIN environment ON (key_value.environment_id = environment.id)
           JOIN account_environment ON (account_environment.environment_id = environment.id)
@@ -259,8 +261,6 @@ deleteKeyValueDB keyValueId connection = do
 -- * upsert key values
 
 
-
-
 deleteKeyValuesDB :: Int -> PG.Connection -> IO ()
 deleteKeyValuesDB environmentId' connection = do
   _ <- PG.execute connection deleteKeyValuesQuery (PG.Only environmentId')
@@ -274,16 +274,15 @@ deleteKeyValuesDB environmentId' connection = do
 
 insertManyKeyValuesDB :: Int -> NewKeyValue -> PG.Connection -> IO KeyValue
 insertManyKeyValuesDB environmentId NewKeyValue {..} connection = do
-  [keyValue] <- PG.query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue)
+  [keyValue] <- PG.query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue, _newKeyValueHidden)
   return keyValue
   where
     insertKeyValueQuery =
       [sql|
-          INSERT INTO key_value (environment_id, key, value)
-          VALUES (?, ?, ?)
-          RETURNING id, key, value
+          INSERT INTO key_value (environment_id, key, value, hidden)
+          VALUES (?, ?, ?, ?)
+          RETURNING id, key, value, hidden
           |]
-
 
 updateKeyValuesHandler
   :: ( MonadReader Env m

@@ -196,11 +196,12 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
 
 
 convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.Storable Front.NewKeyValue Front.KeyValue
-convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue } =
+convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue, keyValueHidden } =
     Saved
         { id = keyValueId
         , key = keyValueKey
         , value = stringToTemplate keyValueValue
+        , hidden = keyValueHidden
         }
 
 
@@ -214,22 +215,23 @@ convertEnvironmentKeyValueFromFrontToBack storable =
                 |> String.join ""
     in
     case storable of
-        New { key, value } ->
+        New { key, value, hidden } ->
             { newKeyValueKey = key
             , newKeyValueValue = templatedStringsToString value
+            , newKeyValueHidden = hidden
             }
 
-        Saved { key, value } ->
+        Saved { key, value, hidden } ->
             { newKeyValueKey = key
             , newKeyValueValue = templatedStringsToString value
+            , newKeyValueHidden = hidden
             }
 
-        Edited2 _ { key, value } ->
+        Edited2 _ { key, value, hidden } ->
             { newKeyValueKey = key
             , newKeyValueValue = templatedStringsToString value
+            , newKeyValueHidden = hidden
             }
-
-
 
 
 -- * account

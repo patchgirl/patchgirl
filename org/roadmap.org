@@ -12,6 +12,7 @@
 
 ** TODO hide value env button
    SCHEDULED: <2020-09-02 mer.>
+** TODO encryption mode
 ** TODO Tangoscript: parse json
 ** TODO Scenario: cookie
 ** TODO Scenario: include scenario

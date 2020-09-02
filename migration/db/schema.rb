@@ -467,7 +467,8 @@ CREATE TABLE public.key_value (
     id integer NOT NULL,
     environment_id integer,
     key text NOT NULL,
-    value text NOT NULL
+    value text NOT NULL,
+    hidden boolean NOT NULL
 );
 
 

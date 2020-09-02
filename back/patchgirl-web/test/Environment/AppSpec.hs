@@ -70,8 +70,9 @@ spec =
 
 
     describe "get environments" $
-      it "should get environments bound to the account" $ \clientEnv ->
+      it "should get environments bound to the account" $ \clientEnv -> do
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           environmentId1 <- insertNewFakeEnvironment (newFakeEnvironment accountId "test1") connection
           _ <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test2") connection
@@ -80,10 +81,12 @@ spec =
                 [ NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId1
                                   , _newFakeKeyValueKey = "1k"
                                   , _newFakeKeyValueValue = "1v"
+                                  , _newFakeKeyValueHidden = False
                                   }
                 , NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId1
                                   , _newFakeKeyValueKey = "2k"
                                   , _newFakeKeyValueValue = "2v"
+                                  , _newFakeKeyValueHidden = True
                                   }
                 ]
           [keyValue1, keyValue2] <- mapM (`insertNewFakeKeyValue` connection) newFakeKeyValues
@@ -163,6 +166,7 @@ spec =
           let newKeyValues =
                 [ NewKeyValue { _newKeyValueKey = "key1"
                               , _newKeyValueValue = "value1"
+                              , _newKeyValueHidden = True
                               }
                 ]
           [ KeyValue { _keyValueKey, _keyValueValue } ] <- try clientEnv (updateKeyValues token environmentId newKeyValues)
@@ -195,6 +199,7 @@ spec =
             insertNewFakeKeyValue NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId
                                                   , _newFakeKeyValueKey = "key1"
                                                   , _newFakeKeyValueValue = "value1"
+                                                  , _newFakeKeyValueHidden = True
                                                   } connection
           try clientEnv (deleteKeyValue token environmentId _keyValueId )
           selectFakeKeyValues _keyValueId connection `shouldReturn` []

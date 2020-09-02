@@ -1136,6 +1136,7 @@ data NewFakeKeyValue =
   NewFakeKeyValue { _newFakeKeyValueEnvironmentId :: Int
                   , _newFakeKeyValueKey           :: String
                   , _newFakeKeyValueValue         :: String
+                  , _newFakeKeyValueHidden        :: Bool
                   }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
@@ -1146,9 +1147,9 @@ insertNewFakeKeyValue newFakeKeyValue connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO key_value (environment_id, key, value)
-          VALUES (?, ?, ?)
-          RETURNING id, key, value;
+          INSERT INTO key_value (environment_id, key, value, hidden)
+          VALUES (?, ?, ?, ?)
+          RETURNING id, key, value, hidden;
           |]
 
 
