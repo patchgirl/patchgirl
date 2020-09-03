@@ -18,6 +18,20 @@ type MainMenuName
     | RunnerStatusMenu
 
 
+-- * builder view
+
+
+type BuilderView
+    = EditView Uuid
+    | RunView Uuid
+
+getBuilderId : BuilderView -> Uuid
+getBuilderId builderView =
+    case builderView of
+        EditView id -> id
+        RunView id -> id
+
+
 -- * notification
 
 
@@ -194,6 +208,11 @@ type RequestNode
     | RequestFile RequestFileRecord
 
 
+getRequestNodeId : RequestNode -> Uuid
+getRequestNodeId requestNode =
+    case requestNode of
+        RequestFolder { id } -> id
+        RequestFile { id } -> id
 
 -- ** folder
 

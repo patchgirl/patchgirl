@@ -25,7 +25,7 @@ type alias Model a =
 -- * build request computation input
 
 
-buildRequestComputationInput : Model a -> RequestComputationInput
+buildRequestComputationInput : RequestFileRecord -> RequestComputationInput
 buildRequestComputationInput model =
     { method =
         editedOrNotEditedValue model.httpMethod

@@ -13,6 +13,7 @@ import Json.Decode as Json
 import List.Extra as List
 import Page exposing (..)
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
+import RequestBuilderApp.RequestBuilder.App2 as RequestBuilder2
 import RequestBuilderApp.RequestTree.App as RequestTree
 import RequestBuilderApp.RequestTree.Util as RequestTree
 import Util exposing (..)
@@ -29,6 +30,7 @@ type alias Model a =
         , requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid
         , displayedRequestId : Maybe Uuid
+        , displayedRequestBuilderView : Maybe BuilderView
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
@@ -42,6 +44,7 @@ type alias Model a =
 
 type Msg
     = BuilderMsg RequestBuilder.Msg
+    | BuilderMsg2 RequestBuilder2.Msg
     | TreeMsg RequestTree.Msg
     | EnvSelectionMsg Int
 
@@ -65,6 +68,13 @@ update msg model =
                     RequestTree.update subMsg model
             in
             ( newModel, Cmd.map TreeMsg newSubMsg )
+
+        BuilderMsg2 subMsg ->
+            let
+                ( newModel, newSubMsg ) =
+                    RequestBuilder2.update subMsg model
+            in
+            ( newModel, Cmd.map BuilderMsg2 newSubMsg )
 
         BuilderMsg subMsg ->
             case getBuilder model of
@@ -92,7 +102,6 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
-
 
 
 -- * util
@@ -230,7 +239,7 @@ builderView model fromScenarioId =
     case getBuilder model of
         Just builder ->
             el [ width (fillPortion 9), centerX, alignTop ]
-                (map BuilderMsg (RequestBuilder.view builder fromScenarioId))
+                (map BuilderMsg2 (RequestBuilder2.view model fromScenarioId))
 
         Nothing ->
             el [ width (fillPortion 9), centerX, alignTop ]

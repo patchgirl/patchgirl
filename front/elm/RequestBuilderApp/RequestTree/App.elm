@@ -15,6 +15,8 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Browser.Navigation as Navigation
 import HttpError exposing(..)
+import Element.Events exposing (..)
+import RequestBuilderApp.RequestTree.Util exposing(..)
 
 
 -- * model
@@ -25,9 +27,10 @@ type alias Model a =
         | requestCollection : RequestCollection
         , notification : Maybe Notification
         , displayedRequestNodeMenuId : Maybe Uuid
+        , displayedRequestId : Maybe Uuid
+        , displayedRequestBuilderView : Maybe BuilderView
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
-        , displayedRequestId : Maybe Uuid
         , navigationKey : Navigation.Key
     }
 
@@ -37,7 +40,8 @@ type alias Model a =
 
 type Msg
     = ToggleFolder Uuid
-    | ToggleMenu Uuid
+    | ToggleMenu (Maybe Uuid)
+    | ShowEditionMenu Uuid
       -- mkdir
     | GenerateRandomUUIDForFolder Uuid
     | AskMkdir Uuid Uuid
@@ -65,14 +69,19 @@ type Msg
     | PrintNotification Notification
 
 
-
 -- * update
 
 
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        ToggleMenu id ->
+        ToggleMenu mId ->
+            ({ model | displayedRequestNodeMenuId = mId }, Cmd.none)
+
+        ShowEditionMenu id ->
+            ({ model | displayedRequestBuilderView = Just (EditView id) }, Cmd.none)
+
+{-        ToggleMenu id ->
             let
                 newDisplayedRequestNodeMenuIndex =
                     case maybeExists model.displayedRequestNodeMenuId ((==) id) of
@@ -88,7 +97,7 @@ update msg model =
                         | displayedRequestNodeMenuId = newDisplayedRequestNodeMenuIndex
                     }
             in
-            ( newModel, Cmd.none )
+            ( newModel, Cmd.none ) -}
 
         ToggleFolder id ->
             let
@@ -269,12 +278,15 @@ update msg model =
                     }
 
                 newMsg =
-                    case model.displayedRequestId == Just id of
+                    Cmd.none
+                    {-
+                    case model.displayedRequestId == (Just id, _) of
                         True ->
                             Navigation.pushUrl model.navigationKey (href (ReqPage Nothing Nothing))
 
                         False ->
                             Cmd.none
+                            -}
 
             in
             ( newModel, newMsg )
@@ -425,160 +437,6 @@ createRootRequestFolderResultToMsg id result =
 -- ** tree manipulation
 
 
-getRequestNodeId : RequestNode -> Uuid
-getRequestNodeId requestNode =
-    case requestNode of
-        RequestFolder { id } ->
-            id
-
-        RequestFile { id } ->
-            id
-
-
-modifyRequestNode : Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
-modifyRequestNode id f requestNode =
-    case getRequestNodeId requestNode == id of
-        True ->
-            f requestNode
-
-        False ->
-            case requestNode of
-                RequestFile requestFile ->
-                    RequestFile requestFile
-
-                RequestFolder requestFolder ->
-                    RequestFolder
-                        { requestFolder
-                            | children =
-                                List.map (modifyRequestNode id f) requestFolder.children
-                        }
-
-
-deleteRequestNode : Uuid -> RequestNode -> List RequestNode
-deleteRequestNode idToDelete requestNode =
-    case getRequestNodeId requestNode == idToDelete of
-        True ->
-            []
-
-        False ->
-            case requestNode of
-                RequestFile requestFile ->
-                    [ RequestFile requestFile ]
-
-                RequestFolder requestFolder ->
-                    [ RequestFolder
-                        { requestFolder
-                            | children =
-                                List.concatMap (deleteRequestNode idToDelete) requestFolder.children
-                        }
-                    ]
-
-
-toggleFolder : RequestNode -> RequestNode
-toggleFolder node =
-    case node of
-        (RequestFile _) as file ->
-            file
-
-        RequestFolder folder ->
-            RequestFolder
-                { folder
-                    | open = not folder.open
-                }
-
-
-mkdir : Uuid -> RequestNode -> RequestNode
-mkdir id node =
-    case node of
-        (RequestFile _) as file ->
-            file
-
-        RequestFolder folder ->
-            RequestFolder
-                { folder
-                    | children = mkDefaultFolder id :: folder.children
-                    , open = True
-                }
-
-
-touch : Uuid -> RequestNode -> RequestNode
-touch id parentNode =
-    case parentNode of
-        (RequestFile _) as file ->
-            file
-
-        RequestFolder folder ->
-            RequestFolder
-                { folder
-                    | children = mkDefaultFile id :: folder.children
-                    , open = True
-                }
-
-
-displayRenameInput : RequestNode -> RequestNode
-displayRenameInput node =
-    case node of
-        RequestFolder folder ->
-            let
-                oldValue =
-                    notEditedValue folder.name
-            in
-            RequestFolder { folder | name = Edited oldValue oldValue }
-
-        RequestFile file ->
-            let
-                oldValue =
-                    notEditedValue file.name
-            in
-            RequestFile { file | name = Edited oldValue oldValue }
-
-
-rename : String -> RequestNode -> RequestNode
-rename newName node =
-    case node of
-        RequestFolder folder ->
-            RequestFolder { folder | name = NotEdited newName }
-
-        RequestFile file ->
-            RequestFile { file | name = NotEdited newName }
-
-
-tempRename : String -> RequestNode -> RequestNode
-tempRename newName node =
-    case node of
-        RequestFolder folder ->
-            RequestFolder { folder | name = changeEditedValue newName folder.name }
-
-        RequestFile file ->
-            RequestFile { file | name = changeEditedValue newName file.name }
-
-
-mkDefaultFolder : Uuid -> RequestNode
-mkDefaultFolder id =
-    RequestFolder
-        { id = id
-        , name = NotEdited "new folder"
-        , open = False
-        , children = []
-        }
-
-
-mkDefaultFile : Uuid -> RequestNode
-mkDefaultFile id =
-    RequestFile
-        { id = id
-        , name = NotEdited "new request"
-        , httpUrl = NotEdited ""
-        , httpMethod = NotEdited HttpGet
-        , httpHeaders = NotEdited []
-        , httpBody = NotEdited ""
-        , showResponseView = False
-        , whichResponseView = BodyResponseView
-        , requestComputationResult = Nothing
-        , runRequestIconAnimation = Animation.style []
-        }
-
-
 
 -- * view
 
@@ -650,7 +508,8 @@ fileReadView : Model a -> String -> Uuid -> Element Msg
 fileReadView model name id =
     let
         selected =
-            model.displayedRequestId == Just id
+            False
+            {- model.displayedRequestId == Just id -}
 
         color =
             case selected of
@@ -712,7 +571,7 @@ fileView id model name =
     row []
         [ modeView
         , Input.button []
-            { onPress = Just <| ToggleMenu id
+            { onPress = Nothing -- Just <| ToggleMenu id
             , label =
                 icon <|
                     case showMenu of
@@ -744,90 +603,41 @@ folderWithIconView name isOpen =
     iconWithText folderIconText name
 
 
-folderMenuView : Uuid -> Bool -> Element Msg
-folderMenuView id isOpen =
-    let
-        iconClass =
-            case isOpen of
-                True ->
-                    "more_horiz"
-
-                False ->
-                    "more_vert"
-
-        menuIcon =
-            icon iconClass
-
-        menuView =
-            row [ spacing 5 ]
-                [ Input.button []
-                    { onPress = Just <| ShowRenameInput id
-                    , label = editIcon
-                    }
-                , Input.button []
-                    { onPress = Just <| GenerateRandomUUIDForFolder id
-                    , label = createFolderIcon
-                    }
-                , Input.button []
-                    { onPress = Just <| GenerateRandomUUIDForFile id
-                    , label = createFileIcon
-                    }
-                , Input.button []
-                    { onPress = Just <| AskDelete id
-                    , label = deleteIcon
-                    }
-                ]
-    in
-    case isOpen of
-        True ->
-            row [] [ menuIcon, menuView ]
-
-        False ->
-            row [] [ menuIcon ]
-
-
-folderReadView : Uuid -> String -> Bool -> Element Msg
-folderReadView id name isOpen =
-    Input.button []
-        { onPress = Just <| ToggleFolder id
-        , label = folderWithIconView name isOpen
-        }
-
-
-folderEditView : Uuid -> String -> Element Msg
-folderEditView id name =
-    Input.text
-        [ Util.onEnterWithInput (AskRename id)
-        ]
-        { onChange = ChangeName id
-        , text = name
-        , placeholder = Nothing
-        , label = Input.labelHidden "rename folder"
-        }
-
-
 folderView : Uuid -> Model a -> Editable String -> List (Element Msg) -> Bool -> Element Msg
-folderView id model name folderChildrenView open =
+folderView id model eName folderChildrenView open =
     let
-        modeView =
-            case name of
-                NotEdited value ->
-                    folderReadView id value open
-
-                Edited oldValue newValue ->
-                    folderEditView id newValue
-
         showMenu =
             Just id == model.displayedRequestNodeMenuId
+
+        name =
+            editedOrNotEditedValue eName
+
+        folderReadView : Bool -> Element Msg
+        folderReadView isOpen =
+            Input.button []
+                { onPress = Just <| ToggleFolder id
+                , label = folderWithIconView name isOpen
+                }
+
+        folderMenuView : Element Msg
+        folderMenuView =
+            case showMenu of
+                True ->
+                    Input.button []
+                        { onPress = Just <| ShowEditionMenu id
+                        , label = editIcon
+                        }
+
+                False ->
+                    none
     in
     column [ width (fill |> maximum 300) ]
-        [ row []
-            [ modeView
-            , Input.button []
-                { onPress = Just <| ToggleMenu id
-                , label = folderMenuView id showMenu
-                }
-            ]
+        [ row [ onMouseEnter (ToggleMenu (Just id))
+              , onMouseLeave (ToggleMenu Nothing)
+              ]
+              [ folderReadView open
+              , folderMenuView
+              ]
         , case open of
             True ->
                 column [ spacing 10, paddingXY 20 10 ] folderChildrenView

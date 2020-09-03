@@ -128,6 +128,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
             , displayedRequestId = Nothing
+            , displayedRequestBuilderView = Nothing
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
             , displayedScenarioId = Nothing
