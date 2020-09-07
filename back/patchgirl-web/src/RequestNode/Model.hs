@@ -166,8 +166,9 @@ instance ToField UpdateRequestNode where
 -- * new root request file
 
 
-newtype NewRootRequestFile =
+data NewRootRequestFile =
   NewRootRequestFile { _newRootRequestFileId           :: UUID
+                     , _newRootRequestFileName         :: String
                      } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootRequestFile)
@@ -187,6 +188,7 @@ instance FromJSON NewRootRequestFile where
 data NewRequestFile =
   NewRequestFile { _newRequestFileId           :: UUID
                  , _newRequestFileParentNodeId :: UUID
+                 , _newRequestFileName         :: String
                  } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRequestFile)
@@ -203,8 +205,9 @@ instance FromJSON NewRequestFile where
 -- * new root request folder
 
 
-newtype NewRootRequestFolder =
-  NewRootRequestFolder { _newRootRequestFolderId           :: UUID
+data NewRootRequestFolder =
+  NewRootRequestFolder { _newRootRequestFolderId   :: UUID
+                       , _newRootRequestFolderName :: String
                        } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootRequestFolder)

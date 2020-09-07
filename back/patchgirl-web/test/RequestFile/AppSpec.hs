@@ -23,6 +23,7 @@ import           Helper.App
 import           PatchGirl.Client
 import           PatchGirl.Server
 
+
 -- * client
 
 
@@ -73,7 +74,7 @@ spec =
           _ <- try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile)
           fakeRequestFile <- selectFakeRequestFile UUID.nil connection
           fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Just folderId
-                                                      , _fakeRequestFileName       = "new request"
+                                                      , _fakeRequestFileName       = "test"
                                                       , _fakeRequestFileHttpUrl    = ""
                                                       , _fakeRequestFileHttpMethod = Get
                                                       , _fakeRequestFileHttpBody   = ""
@@ -96,7 +97,7 @@ spec =
           _ <- try clientEnv (createRootRequestFileHandler token requestCollectionId newRootRequestFile)
           fakeRequestFile <- selectFakeRequestFile UUID.nil connection
           fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Nothing
-                                                      , _fakeRequestFileName       = "new request"
+                                                      , _fakeRequestFileName       = "test"
                                                       , _fakeRequestFileHttpUrl    = ""
                                                       , _fakeRequestFileHttpMethod = Get
                                                       , _fakeRequestFileHttpBody   = ""
@@ -134,11 +135,12 @@ spec =
     mkNewRequestFile id parentId =
       NewRequestFile { _newRequestFileId           = id
                      , _newRequestFileParentNodeId = parentId
+                     , _newRequestFileName         = "test"
                      }
 
     mkNewRootRequestFile :: UUID -> NewRootRequestFile
     mkNewRootRequestFile id =
-      NewRootRequestFile { _newRootRequestFileId = id }
+      NewRootRequestFile { _newRootRequestFileId = id, _newRootRequestFileName = "test" }
 
     mkUpdateRequestFile :: UpdateRequestFile
     mkUpdateRequestFile =

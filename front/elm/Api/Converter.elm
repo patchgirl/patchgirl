@@ -29,15 +29,15 @@ convertRequestNodesFromBackToFront backRequestNodes =
         convertRequestNodeFromBackToFront backRequestNode =
             case backRequestNode of
                 Back.RequestFolder folder ->
-                    Front.RequestFolder
+                    Front.Folder
                         { id = folder.requestNodeId
                         , name = NotEdited folder.requestNodeName
                         , open = not <| List.isEmpty folder.requestNodeChildren
-                        , children = convertRequestNodesFromBackToFront folder.requestNodeChildren
+                        , children = Front.Children (convertRequestNodesFromBackToFront folder.requestNodeChildren)
                         }
 
                 Back.RequestFile file ->
-                    Front.RequestFile
+                    Front.File
                         { id = file.requestNodeId
                         , name = NotEdited file.requestNodeName
                         , httpUrl = NotEdited file.requestNodeHttpUrl

@@ -19,6 +19,7 @@ import RequestBuilderApp.RequestTree.Util as RequestTree
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Browser.Navigation as Navigation
+import Banner exposing (..)
 
 
 -- * model
@@ -30,12 +31,13 @@ type alias Model a =
         , requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid
         , displayedRequestId : Maybe Uuid
-        , displayedRequestBuilderView : Maybe BuilderView
+        , displayedRequestBuilderView : BuilderView Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
+        , requestNewNode : NewNode
     }
 
 
@@ -43,8 +45,7 @@ type alias Model a =
 
 
 type Msg
-    = BuilderMsg RequestBuilder.Msg
-    | BuilderMsg2 RequestBuilder2.Msg
+    = BuilderMsg2 RequestBuilder2.Msg
     | TreeMsg RequestTree.Msg
     | EnvSelectionMsg Int
 
@@ -75,33 +76,6 @@ update msg model =
                     RequestBuilder2.update subMsg model
             in
             ( newModel, Cmd.map BuilderMsg2 newSubMsg )
-
-        BuilderMsg subMsg ->
-            case getBuilder model of
-                Just builder ->
-                    let
-                        (RequestCollection requestCollectionId requestNodes) =
-                            model.requestCollection
-
-                        ( newBuilder, newSubMsg ) =
-                            RequestBuilder.update subMsg builder
-
-                        newBuilderTree =
-                            List.map (RequestTree.modifyRequestNode builder.id (changeFileBuilder newBuilder)) requestNodes
-
-                        newModel =
-                            { model
-                                | requestCollection = RequestCollection requestCollectionId newBuilderTree
-                                , notification = newBuilder.notification
-                            }
-
-                        newMsg =
-                            Cmd.map BuilderMsg newSubMsg
-                    in
-                    ( newModel, newMsg )
-
-                _ ->
-                    ( model, Cmd.none )
 
 
 -- * util
@@ -166,39 +140,23 @@ convertFromBuilderToFile builder =
 changeFileBuilder : RequestBuilder.Model -> RequestNode -> RequestNode
 changeFileBuilder builder node =
     case node of
-        RequestFolder f ->
-            RequestFolder f
+        Folder f ->
+            Folder f
 
-        RequestFile f ->
-            RequestFile (convertFromBuilderToFile builder)
+        File f ->
+            File (convertFromBuilderToFile builder)
 
 
 
 -- * view
 
 
-view : Model a -> Maybe Uuid -> Element Msg
-view model fromScenarioId =
-    let
-        enableRunnerBanner =
-            row [ width fill
-              , paddingXY 0 10
-              , centerY, centerX
-              , Background.color secondaryColor
-              , Font.color primaryColor
-              , Font.center
-              ]
-              [ el [ centerX ] (text "Offline mode - Run the ")
-              , link [ centerX ] { label = el [ Font.underline ] (text "Patchgirl Runner App")
-                                 , url = href (DocumentationPage PatchGirlRunnerAppDoc)
-                                 }
-              , el [ centerX ] (text " to have the best experience!")
-              ]
-    in
-    column [ width fill, spacing 10 ]
+view : Model a -> Element Msg
+view model =
+    column [ width fill, height fill, spacing 10 ]
         [ if not model.runnerRunning then enableRunnerBanner else none
         , wrappedRow
-              [ width fill
+              [ width fill, height fill
               , paddingXY 10 0
               , spacing 10
               ]
@@ -207,14 +165,15 @@ view model fromScenarioId =
                     , spacing 20
                     , centerX
                     , padding 20
-                    , width (fillPortion 1)
+                    , width (fillPortion 1), height fill
                     , Background.color white
                     , boxShadow
                     ]
                     [ el [] <| envSelectionView <| List.map .name model.environments
                     , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
                     ]
-              , builderView model fromScenarioId
+              , el [ width (fillPortion 9), height fill, centerX, alignTop ] <|
+                  map (BuilderMsg2) (RequestBuilder2.view model)
               ]
         ]
 
@@ -232,20 +191,3 @@ envSelectionView environmentNames =
             , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
                 (List.indexedMap entryView environmentNames)
             ]
-
-
-builderView : Model a -> Maybe Uuid -> Element Msg
-builderView model fromScenarioId =
-    case getBuilder model of
-        Just builder ->
-            el [ width (fillPortion 9), centerX, alignTop ]
-                (map BuilderMsg2 (RequestBuilder2.view model fromScenarioId))
-
-        Nothing ->
-            el [ width (fillPortion 9), centerX, alignTop ]
-                <| el ( [ centerX
-                        , alignTop
-                        , padding 20
-                        , spacing 10
-                        ] ++ boxAttrs
-                      ) (text "No request selected")

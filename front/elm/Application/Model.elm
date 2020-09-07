@@ -38,9 +38,10 @@ type alias Model =
 
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid
-    , displayedRequestBuilderView : Maybe BuilderView
+    , displayedRequestBuilderView : BuilderView Uuid
     , displayedRequestId : Maybe Uuid
     , requestCollection : RequestCollection
+    , requestNewNode : NewNode
 
     -- SQL
     , displayedPgNodeMenuId : Maybe Uuid

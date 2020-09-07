@@ -250,6 +250,7 @@ primaryButtonAttrs =
     , Border.rounded 5
     , Background.color secondaryColor
     , paddingXY 10 10
+    , Font.color primaryColor
     , mouseOver
           [ Background.color primaryColor
           , Font.color secondaryColor

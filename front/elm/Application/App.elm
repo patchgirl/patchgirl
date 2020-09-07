@@ -128,7 +128,8 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
             , displayedRequestId = Nothing
-            , displayedRequestBuilderView = Nothing
+            , displayedRequestBuilderView = LandingView DefaultView
+            , requestNewNode = { name = "", parentFolderId = Nothing }
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
             , displayedScenarioId = Nothing
@@ -283,8 +284,8 @@ updateModelWithPage page model =
     let
         newModel =
             case page of
-                ReqPage mId _ ->
-                    { model | displayedRequestId = mId }
+                ReqPage mId ->
+                    { model | displayedRequestBuilderView = mId }
 
                 PgPage mId ->
                     { model | displayedPgId = mId }
@@ -357,9 +358,10 @@ mainView model =
                    , height fill
                    , centerY
                    , spacing 10
-                   ] [ map MainNavBarMsg (MainNavBar.view model)
-                     , el [ width fill ] appView
-                     ]
+                   ]
+            [ map MainNavBarMsg (MainNavBar.view model)
+            , el [ width fill, height fill ] appView
+            ]
 
     in
         case model.page of
@@ -369,8 +371,8 @@ mainView model =
             NotFoundPage ->
                 appLayout <| el [ centerY, centerX ] (text "not found")
 
-            ReqPage _ mFromScenarioId ->
-                appLayout <| map BuilderAppMsg (RequestBuilderApp.view model mFromScenarioId)
+            ReqPage _ ->
+                appLayout <| map BuilderAppMsg (RequestBuilderApp.view model)
 
             PgPage _ ->
                 appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model)
@@ -744,26 +746,24 @@ subscriptions model =
 
                 requestNode :: rest ->
                     case requestNode of
-                        RequestFile file ->
+                        File file ->
                             file :: getRequestFiles rest
 
-                        RequestFolder { children } ->
-                            getRequestFiles children ++ getRequestFiles rest
+                        Folder { children } ->
+                            let
+                                (Children c) =
+                                    children
+                            in
+                            getRequestFiles c ++ getRequestFiles rest
 
         requestFiles =
             getRequestFiles requestNodes
 
-        builderMsg msg =
-            BuilderAppMsg (RequestBuilderApp.BuilderMsg msg)
-
-        buildersSubs =
-            List.map (Sub.map builderMsg) (List.map RequestBuilder.subscriptions requestFiles)
     in
     Sub.batch
         ([ Animation.subscription Animate [ model.loadingAnimation ]
          , Animation.subscription Animate [ model.notificationAnimation ]
          ]
-             ++ buildersSubs
              ++ [ Time.every 5000 (always CheckRunnerStatus) ]
              ++ [ Time.every 5000 (always NextDemo) ]
         )

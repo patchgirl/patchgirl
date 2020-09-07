@@ -63,6 +63,7 @@ insertRootRequestFile :: NewRootRequestFile -> Int -> PG.Connection -> IO ()
 insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootRequestFileId
+                                   , _newRootRequestFileName
                                    , requestCollectionId
                                    , _newRootRequestFileId
                                    )
@@ -80,7 +81,7 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
               http_headers,
               http_body
             )
-            VALUES (?, NULL, 'RequestFile', 'new request', '', 'Get', '{}', '')
+            VALUES (?, NULL, 'RequestFile', ?, '', 'Get', '{}', '')
           ) INSERT INTO request_collection_to_request_node (
               request_collection_id,
               request_node_id
@@ -94,7 +95,7 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
 
 insertRequestFile :: NewRequestFile -> PG.Connection -> IO ()
 insertRequestFile NewRequestFile {..} connection =
-  Monad.void $ PG.execute connection rawQuery (_newRequestFileId, _newRequestFileParentNodeId)
+  Monad.void $ PG.execute connection rawQuery (_newRequestFileId, _newRequestFileParentNodeId, _newRequestFileName)
   where
     rawQuery =
       [sql|
@@ -108,7 +109,7 @@ insertRequestFile NewRequestFile {..} connection =
             http_headers,
             http_body
           )
-          VALUES (?, ?, 'RequestFile', 'new request', '', 'Get', '{}', '')
+          VALUES (?, ?, 'RequestFile', ?, '', 'Get', '{}', '')
           |]
 
 
@@ -119,6 +120,7 @@ insertRootRequestFolder :: NewRootRequestFolder -> Int -> PG.Connection -> IO ()
 insertRootRequestFolder NewRootRequestFolder {..} requestCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootRequestFolderId
+                                   , _newRootRequestFolderName
                                    , requestCollectionId
                                    , _newRootRequestFolderId
                                    )
@@ -132,7 +134,7 @@ insertRootRequestFolder NewRootRequestFolder {..} requestCollectionId connection
               tag,
               name
             )
-            VALUES (?, NULL, 'RequestFolder', 'new folder')
+            VALUES (?, NULL, 'RequestFolder', ?)
           ) INSERT INTO request_collection_to_request_node (
               request_collection_id,
               request_node_id

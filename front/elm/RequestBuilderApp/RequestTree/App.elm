@@ -28,7 +28,7 @@ type alias Model a =
         , notification : Maybe Notification
         , displayedRequestNodeMenuId : Maybe Uuid
         , displayedRequestId : Maybe Uuid
-        , displayedRequestBuilderView : Maybe BuilderView
+        , displayedRequestBuilderView : BuilderView Uuid
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , navigationKey : Navigation.Key
@@ -41,7 +41,6 @@ type alias Model a =
 type Msg
     = ToggleFolder Uuid
     | ToggleMenu (Maybe Uuid)
-    | ShowEditionMenu Uuid
       -- mkdir
     | GenerateRandomUUIDForFolder Uuid
     | AskMkdir Uuid Uuid
@@ -77,9 +76,6 @@ update msg model =
     case msg of
         ToggleMenu mId ->
             ({ model | displayedRequestNodeMenuId = mId }, Cmd.none)
-
-        ShowEditionMenu id ->
-            ({ model | displayedRequestBuilderView = Just (EditView id) }, Cmd.none)
 
 {-        ToggleMenu id ->
             let
@@ -163,6 +159,7 @@ update msg model =
 
         AskTouch parentNodeId newId ->
             let
+                {-
                 (RequestCollection requestCollectionId requestNodes) =
                     model.requestCollection
 
@@ -173,6 +170,9 @@ update msg model =
 
                 newMsg =
                     Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId newRequestFile (newRequestFileResultToMsg parentNodeId newId)
+                        -}
+                newMsg =
+                    Cmd.none
             in
             ( model, newMsg )
 
@@ -300,6 +300,7 @@ update msg model =
 
         AskTouchRoot newId ->
             let
+                {-
                 (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
@@ -308,6 +309,8 @@ update msg model =
 
                 newMsg =
                     Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId newRootRequestFile (createRootRequestFileResultToMsg newId)
+                    -}
+                newMsg = Cmd.none
             in
             ( model, newMsg )
 
@@ -336,7 +339,7 @@ update msg model =
 
         AskMkdirRoot newId ->
             let
-                (RequestCollection requestCollectionId _) =
+{-                (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
                 newRootRequestFolder =
@@ -344,6 +347,8 @@ update msg model =
 
                 newMsg =
                     Client.postApiRequestCollectionByRequestCollectionIdRootRequestFolder "" "" requestCollectionId newRootRequestFolder (createRootRequestFolderResultToMsg newId)
+                    -}
+                newMsg = Cmd.none
             in
             ( model, newMsg )
 
@@ -476,10 +481,13 @@ nodeView model requestCollection =
 
         node :: tail ->
             case node of
-                RequestFolder { id, name, open, children } ->
+                Folder { id, name, open, children } ->
                     let
+                        (Children c) =
+                            children
+
                         folderChildrenView =
-                            nodeView model children
+                            nodeView model c
 
                         tailView =
                             nodeView model tail
@@ -489,7 +497,7 @@ nodeView model requestCollection =
                     in
                     currentFolderView :: tailView
 
-                RequestFile { id, name } ->
+                File { id, name } ->
                     let
                         tailView =
                             nodeView model tail
@@ -504,12 +512,38 @@ nodeView model requestCollection =
 -- ** file view
 
 
-fileReadView : Model a -> String -> Uuid -> Element Msg
-fileReadView model name id =
+fileView : Uuid -> Model a -> Editable String -> Element Msg
+fileView id model eName =
     let
+        showMenu =
+            model.displayedRequestNodeMenuId == Just id
+
+        folderMenuView : Element Msg
+        folderMenuView =
+            case showMenu of
+                True ->
+                    link []
+                        { url = href (ReqPage (EditView (DefaultEditView id)))
+                        , label = editIcon
+                        }
+
+                False ->
+                    none
+
+        name =
+            editedOrNotEditedValue eName
+
         selected =
             False
-            {- model.displayedRequestId == Just id -}
+            {-
+            case model.displayedRequestBuilderView of
+                Just (EditView i) ->
+                    i == id
+                Just (RunView i) ->
+                    i == id
+                _ ->
+                    False
+                    -}
 
         color =
             case selected of
@@ -521,110 +555,75 @@ fileReadView model name id =
                True -> Font.heavy
                False -> Font.regular
     in
-    link [ weight ]
-        { url = href (ReqPage (Just id) Nothing)
-        , label = el [] <| iconWithTextAndColor "label" name color
-        }
-
-fileEditView : String -> Uuid -> Element Msg
-fileEditView name id =
-    Input.text
-        [ Util.onEnterWithInput (AskRename id)
+    row [ onMouseEnter (ToggleMenu (Just id))
+        , onMouseLeave (ToggleMenu Nothing)
         ]
-        { onChange = ChangeName id
-        , text = name
-        , placeholder = Nothing
-        , label = Input.labelHidden "rename file"
-        }
-
-fileView : Uuid -> Model a -> Editable String -> Element Msg
-fileView id model name =
-    let
-        modeView =
-            case name of
-                NotEdited value ->
-                    fileReadView model value id
-
-                Edited oldValue newValue ->
-                    fileEditView newValue id
-
-        showMenu =
-            model.displayedRequestNodeMenuId == Just id
-
-        menuView =
-            case not showMenu of
-                True ->
-                    none
-
-                False ->
-                    row []
-                        [ Input.button []
-                            { onPress = Just <| ShowRenameInput id
-                            , label = editIcon
-                            }
-                        , Input.button []
-                            { onPress = Just <| AskDelete id
-                            , label = deleteIcon
-                            }
-                        ]
-    in
-    row []
-        [ modeView
-        , Input.button []
-            { onPress = Nothing -- Just <| ToggleMenu id
-            , label =
-                icon <|
-                    case showMenu of
-                        True ->
-                            "more_horiz"
-
-                        False ->
-                            "more_vert"
-            }
-        , menuView
+        [ link [ weight ]
+              { url = href (ReqPage (RunView id))
+              , label = el [] <| iconWithTextAndColor "label" name color
+              }
+        , folderMenuView
         ]
-
 
 
 -- ** folder view
 
 
-folderWithIconView : String -> Bool -> Element Msg
-folderWithIconView name isOpen =
-    let
-        folderIconText =
-            case isOpen of
-                False ->
-                    "keyboard_arrow_right"
-
-                True ->
-                    "keyboard_arrow_down"
-    in
-    iconWithText folderIconText name
-
-
 folderView : Uuid -> Model a -> Editable String -> List (Element Msg) -> Bool -> Element Msg
 folderView id model eName folderChildrenView open =
     let
+        folderWithIconView : Element Msg
+        folderWithIconView =
+            let
+                folderIconText =
+                    case open of
+                        False ->
+                            "keyboard_arrow_right"
+
+                        True ->
+                            "keyboard_arrow_down"
+            in
+            iconWithText folderIconText name
+
         showMenu =
             Just id == model.displayedRequestNodeMenuId
 
         name =
             editedOrNotEditedValue eName
 
+        selected =
+                {-
+            case model.displayedRequestBuilderView of
+                Just (EditView i) ->
+                    i == id
+                Just (RunView i) ->
+                    i == id
+                _ ->-}
+                    False
+
+        color =
+            case selected of
+                True -> primaryColor
+                False -> secondaryColor
+
+        weight =
+            case selected of
+               True -> Font.heavy
+               False -> Font.regular
+
         folderReadView : Bool -> Element Msg
         folderReadView isOpen =
-            Input.button []
+            Input.button [ weight ]
                 { onPress = Just <| ToggleFolder id
-                , label = folderWithIconView name isOpen
+                , label = folderWithIconView
                 }
 
         folderMenuView : Element Msg
         folderMenuView =
             case showMenu of
                 True ->
-                    Input.button []
-                        { onPress = Just <| ShowEditionMenu id
+                    link []
+                        { url = href (ReqPage (EditView (DefaultEditView id)))
                         , label = editIcon
                         }
 

@@ -15,7 +15,7 @@ findNode requestNodes id =
         find : RequestNode -> Maybe RequestNode
         find requestNode =
             case requestNode of
-                (RequestFile file) as node ->
+                (File file) as node ->
                     case file.id == id of
                         True ->
                             Just node
@@ -23,13 +23,17 @@ findNode requestNodes id =
                         False ->
                             Nothing
 
-                (RequestFolder folder) as node ->
+                (Folder folder) as node ->
                     case folder.id == id of
                         True ->
                             Just node
 
                         False ->
-                            findNode folder.children id
+                            let
+                                (Children children) =
+                                    folder.children
+                            in
+                            findNode children id
     in
     List.head <| catMaybes (List.map find requestNodes)
 
@@ -37,8 +41,17 @@ findNode requestNodes id =
 findFile : List RequestNode -> Uuid -> Maybe RequestFileRecord
 findFile requestNodes id =
     case findNode requestNodes id of
-        Just (RequestFile file) ->
+        Just (File file) ->
             Just file
+
+        _ ->
+            Nothing
+
+findFolder : List RequestNode -> Uuid -> Maybe RequestFolderRecord
+findFolder requestNodes id =
+    case findNode requestNodes id of
+        Just (Folder folder) ->
+            Just folder
 
         _ ->
             Nothing
@@ -46,10 +59,10 @@ findFile requestNodes id =
 getRequestNodeId : RequestNode -> Uuid
 getRequestNodeId requestNode =
     case requestNode of
-        RequestFolder { id } ->
+        Folder { id } ->
             id
 
-        RequestFile { id } ->
+        File { id } ->
             id
 
 
@@ -64,14 +77,18 @@ modifyRequestNode id f requestNode =
 
         False ->
             case requestNode of
-                RequestFile requestFile ->
-                    RequestFile requestFile
+                File requestFile ->
+                    File requestFile
 
-                RequestFolder requestFolder ->
-                    RequestFolder
-                        { requestFolder
+                Folder folder ->
+                    let
+                        (Children children) =
+                            folder.children
+                    in
+                    Folder
+                        { folder
                             | children =
-                                List.map (modifyRequestNode id f) requestFolder.children
+                                Children (List.map (modifyRequestNode id f) children)
                         }
 
 -- * delete
@@ -85,14 +102,18 @@ deleteRequestNode idToDelete requestNode =
 
         False ->
             case requestNode of
-                RequestFile requestFile ->
-                    [ RequestFile requestFile ]
+                File requestFile ->
+                    [ File requestFile ]
 
-                RequestFolder requestFolder ->
-                    [ RequestFolder
-                        { requestFolder
+                Folder folder ->
+                    let
+                        (Children children) =
+                            folder.children
+                    in
+                    [ Folder
+                        { folder
                             | children =
-                                List.concatMap (deleteRequestNode idToDelete) requestFolder.children
+                                Children (List.concatMap (deleteRequestNode idToDelete) children)
                         }
                     ]
 
@@ -103,11 +124,11 @@ deleteRequestNode idToDelete requestNode =
 toggleFolder : RequestNode -> RequestNode
 toggleFolder node =
     case node of
-        (RequestFile _) as file ->
+        (File _) as file ->
             file
 
-        RequestFolder folder ->
-            RequestFolder
+        Folder folder ->
+            Folder
                 { folder
                     | open = not folder.open
                 }
@@ -119,13 +140,17 @@ toggleFolder node =
 mkdir : Uuid -> RequestNode -> RequestNode
 mkdir id node =
     case node of
-        (RequestFile _) as file ->
+        (File _) as file ->
             file
 
-        RequestFolder folder ->
-            RequestFolder
+        Folder folder ->
+            let
+                (Children children) =
+                    folder.children
+            in
+            Folder
                 { folder
-                    | children = mkDefaultFolder id :: folder.children
+                    | children = Children (mkDefaultFolder id :: children)
                     , open = True
                 }
 
@@ -135,13 +160,17 @@ mkdir id node =
 touch : Uuid -> RequestNode -> RequestNode
 touch id parentNode =
     case parentNode of
-        (RequestFile _) as file ->
+        (File _) as file ->
             file
 
-        RequestFolder folder ->
-            RequestFolder
+        Folder folder ->
+            let
+                (Children children) =
+                    folder.children
+            in
+            Folder
                 { folder
-                    | children = mkDefaultFile id :: folder.children
+                    | children = Children (mkDefaultFile id :: children)
                     , open = True
                 }
 
@@ -151,40 +180,41 @@ touch id parentNode =
 displayRenameInput : RequestNode -> RequestNode
 displayRenameInput node =
     case node of
-        RequestFolder folder ->
+        Folder folder ->
             let
                 oldValue =
                     notEditedValue folder.name
             in
-            RequestFolder { folder | name = Edited oldValue oldValue }
+            Folder { folder | name = Edited oldValue oldValue }
 
-        RequestFile file ->
+        File file ->
             let
                 oldValue =
                     notEditedValue file.name
             in
-            RequestFile { file | name = Edited oldValue oldValue }
+            File { file | name = Edited oldValue oldValue }
 
 -- * rename
+
 
 rename : String -> RequestNode -> RequestNode
 rename newName node =
     case node of
-        RequestFolder folder ->
-            RequestFolder { folder | name = NotEdited newName }
+        Folder folder ->
+            Folder { folder | name = NotEdited newName }
 
-        RequestFile file ->
-            RequestFile { file | name = NotEdited newName }
+        File file ->
+            File { file | name = NotEdited newName }
 
 
 tempRename : String -> RequestNode -> RequestNode
 tempRename newName node =
     case node of
-        RequestFolder folder ->
-            RequestFolder { folder | name = changeEditedValue newName folder.name }
+        Folder folder ->
+            Folder { folder | name = changeEditedValue newName folder.name }
 
-        RequestFile file ->
-            RequestFile { file | name = changeEditedValue newName file.name }
+        File file ->
+            File { file | name = changeEditedValue newName file.name }
 
 
 -- * mk default
@@ -192,16 +222,16 @@ tempRename newName node =
 
 mkDefaultFolder : Uuid -> RequestNode
 mkDefaultFolder id =
-    RequestFolder
+    Folder
         { id = id
         , name = NotEdited "new folder"
         , open = False
-        , children = []
+        , children = Children []
         }
 
 mkDefaultFile : Uuid -> RequestNode
 mkDefaultFile id =
-    RequestFile
+    File
         { id = id
         , name = NotEdited "new request"
         , httpUrl = NotEdited ""

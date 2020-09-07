@@ -3,14 +3,14 @@ module Page exposing (Page(..), href, urlToPage, Documentation(..), documentatio
 import Url
 import Url.Parser as Url exposing ((</>))
 import Uuid exposing (Uuid)
+import Application.Type exposing (..)
 
 
 -- * model
 
-
 type Page
     = HomePage
-    | ReqPage (Maybe Uuid) (Maybe Uuid)
+    | ReqPage (BuilderView Uuid)
     | PgPage (Maybe Uuid)
     | EnvPage (Maybe Int)
     | ScenarioPage (Maybe Uuid) (Maybe Uuid)
@@ -103,9 +103,14 @@ urlParser =
     in
     Url.oneOf
         [ Url.map HomePage Url.top
-        , Url.map (\reqId scenarioId -> ReqPage (Just reqId) (Just scenarioId)) (appRoot </> Url.s "req" </> uuidParser </> uuidParser)
-        , Url.map (\id -> ReqPage (Just id) Nothing) (appRoot </> Url.s "req" </> uuidParser)
-        , Url.map (ReqPage Nothing Nothing) (appRoot </> Url.s "req")
+        -- req
+        , Url.map (ReqPage (LandingView DefaultView)) (appRoot </> Url.s "req")
+        , Url.map (ReqPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "req" </> Url.s "new-folder")
+        , Url.map (ReqPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "req" </> Url.s "new-file")
+        , Url.map (\reqId -> ReqPage (EditView (DefaultEditView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit")
+        , Url.map (\reqId -> ReqPage (EditView (DuplicateView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit" </> Url.s "duplicate")
+        , Url.map (\reqId -> ReqPage (RunView reqId)) (appRoot </> Url.s "req" </> Url.s "run" </> uuidParser)
+
         , Url.map (\id -> PgPage (Just id)) (appRoot </> Url.s "pg" </> uuidParser)
         , Url.map (PgPage Nothing) (appRoot </> Url.s "pg")
         , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> Url.int)
@@ -129,14 +134,30 @@ href page =
                 HomePage ->
                     []
 
-                ReqPage (Just reqId) (Just scenarioId) ->
-                    [ "app", "req", Uuid.toString reqId, Uuid.toString scenarioId ]
+                ReqPage builderView ->
+                    let
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
 
-                ReqPage (Just uuid) Nothing ->
-                    [ "app", "req", Uuid.toString uuid ]
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
 
-                ReqPage Nothing _ ->
-                    [ "app", "req" ]
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                EditView (DuplicateView id) ->
+                                    [ Uuid.toString id, "edit", "duplicate" ]
+
+                                RunView id ->
+                                    [ "run", Uuid.toString id ]
+
+                    in
+                    [ "app", "req" ] ++ mode
 
                 PgPage (Just uuid) ->
                     [ "app", "pg", Uuid.toString uuid ]

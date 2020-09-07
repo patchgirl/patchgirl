@@ -16,6 +16,7 @@ import Http as Http
 import Page exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
+import Banner exposing(..)
 
 
 
@@ -31,6 +32,7 @@ type alias Model a =
         , displayedScenarioId : Maybe Uuid
         , displayedSceneId : Maybe Uuid
         , displayedRequestId : Maybe Uuid
+        , displayedRequestBuilderView : BuilderView Uuid
         , displayedPgId : Maybe Uuid
         , displayedEnvId : Maybe Int
         , displayedDocumentation : Documentation
@@ -41,12 +43,7 @@ type alias Model a =
 
 
 type Msg
-    = OpenReqPage
-    | OpenPgPage
-    | OpenEnvPage
-    | OpenScenarioPage
-    | OpenDocumentationPage
-    | AskSignOut
+    = AskSignOut
     | SignOutSucceed Session
     | SignOutFailed
     | ShowMainMenuName MainMenuName
@@ -60,41 +57,6 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        OpenReqPage ->
-            let
-                newModel =
-                    { model | page = ReqPage Nothing Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenPgPage ->
-            let
-                newModel =
-                    { model | page = PgPage Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenEnvPage ->
-            let
-                newModel =
-                    { model | page = EnvPage Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenScenarioPage ->
-            let
-                newModel =
-                    { model | page = ScenarioPage Nothing Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenDocumentationPage ->
-            let
-                newModel =
-                    { model | page = DocumentationPage RequestDoc }
-            in
-            ( newModel, Cmd.none )
-
         AskSignOut ->
             let
                 newCmd =
@@ -159,21 +121,7 @@ view model =
               ]
         , case model.session of
               Visitor _ ->
-                  el [ width fill
-                     , paddingXY 0 10
-                     , centerY
-                     , Background.color secondaryColor
-                     , Font.color primaryColor
-                     , Font.center
-                     ] <|
-                      row [ centerX ]
-                          [ text "Sandbox mode - data will be reset every 5min, "
-                          , link []
-                              { url = githubOauthLink
-                              , label = el [ Font.underline ] (text "sign in")
-                              }
-                          , text " to keep your data!"
-                          ]
+                  sandboxBanner githubOauthLink
 
               _ ->
                   none
@@ -382,36 +330,27 @@ centerView model =
                 | iconSize = Just "25px"
                 , iconVerticalAlign = Just "sub"
             }
-
-        currentDisplayedBuilderId : Maybe Uuid
-        currentDisplayedBuilderId =
-            case model.page of
-                ReqPage mId _ ->
-                    mId
-
-                _ ->
-                    Nothing
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
+        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isScenarioPage model.page))
             { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
-            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
-            { url = href (ReqPage model.displayedRequestId Nothing)
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive (isReqPage model.page))
+            { url = href (ReqPage model.displayedRequestBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = " HTTP" })
             }
         , link
-            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive  (isPgPage model.page))
             { url = href (PgPage model.displayedPgId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
-        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isEnvPage model.page))
             { url = href (EnvPage model.displayedEnvId)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
-        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isDocumentationPage model.page))
             { url = href (DocumentationPage model.displayedDocumentation)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = " Documentation" })
             }
@@ -436,18 +375,17 @@ mainLinkAttribute =
     ]
 
 
-mainLinkAttributeWhenActive : Msg -> Bool -> List (Attribute Msg)
-mainLinkAttributeWhenActive event active =
-    [ Events.onClick event ]
-        ++ (case active of
-                True ->
-                    [ Background.color secondaryColor
-                    , Font.color primaryColor
-                    ]
+mainLinkAttributeWhenActive : Bool -> List (Attribute Msg)
+mainLinkAttributeWhenActive active =
+    case active of
+        True ->
+            [ Background.color secondaryColor
+            , Font.color primaryColor
+            ]
 
-                False ->
-                    []
-           )
+        False ->
+            []
+
 
 
 -- ** util
@@ -465,7 +403,7 @@ isScenarioPage page =
 isReqPage : Page -> Bool
 isReqPage page =
     case page of
-        ReqPage _ _ ->
+        ReqPage _ ->
             True
 
         _ ->

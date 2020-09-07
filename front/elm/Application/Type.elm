@@ -18,18 +18,63 @@ type MainMenuName
     | RunnerStatusMenu
 
 
+-- * node type
+
+
+type NodeType a b
+    = Folder a
+    | File b
+
+
 -- * builder view
 
 
-type BuilderView
-    = EditView Uuid
-    | RunView Uuid
+type BuilderView a
+    = LandingView WhichDefaultView
+    | EditView (WhichEditView a)
+    | RunView a
 
-getBuilderId : BuilderView -> Uuid
+type WhichDefaultView
+    = DefaultView
+    | CreateDefaultFolderView
+    | CreateDefaultFileView
+
+type WhichEditView a
+    = DefaultEditView a
+    | DuplicateView a
+
+mapEditView : (a -> b) -> WhichEditView a -> WhichEditView b
+mapEditView f whichEditView =
+    case whichEditView of
+        DefaultEditView x -> DefaultEditView (f x)
+        DuplicateView x -> DuplicateView (f x)
+
+andThenEditView : WhichEditView a -> (a -> WhichEditView b) -> WhichEditView b
+andThenEditView whichEditView f =
+    Debug.todo ""
+
+traverseEditViewMaybe : WhichEditView (Maybe a) -> Maybe (WhichEditView a)
+traverseEditViewMaybe whichEditView =
+    case whichEditView of
+        DefaultEditView Nothing -> Nothing
+        DuplicateView Nothing -> Nothing
+        DefaultEditView (Just x) -> Just (DefaultEditView x)
+        DuplicateView (Just x) -> Just (DuplicateView x)
+
+
+getBuilderId : BuilderView Uuid -> Maybe Uuid
 getBuilderId builderView =
     case builderView of
-        EditView id -> id
-        RunView id -> id
+        LandingView _ ->
+            Nothing
+
+        EditView whichEditView ->
+            Just <|
+                case whichEditView of
+                    DefaultEditView id -> id
+                    DuplicateView id -> id
+
+        RunView id -> Just id
 
 
 -- * notification
@@ -203,27 +248,26 @@ type RequestCollection
 -- ** request node
 
 
-type RequestNode
-    = RequestFolder RequestFolderRecord
-    | RequestFile RequestFileRecord
+type alias RequestNode = NodeType RequestFolderRecord RequestFileRecord
 
 
-getRequestNodeId : RequestNode -> Uuid
-getRequestNodeId requestNode =
+getRequestNodeIdAndName : RequestNode -> { id: Uuid, name: Editable String }
+getRequestNodeIdAndName requestNode =
     case requestNode of
-        RequestFolder { id } -> id
-        RequestFile { id } -> id
+        Folder { id, name } -> { id = id, name = name }
+        File { id, name } -> { id = id, name = name }
+
 
 -- ** folder
 
+type Children = Children (List RequestNode)
 
 type alias RequestFolderRecord =
     { id : Uuid
     , name : Editable String
     , open : Bool
-    , children : List RequestNode
+    , children : Children
     }
-
 
 
 -- ** file
@@ -249,6 +293,15 @@ type alias RequestFileRecord =
 type HttpResponseView
     = BodyResponseView
     | HeaderResponseView
+
+
+-- ** landing request folder
+
+
+type alias NewNode =
+    { name : String
+    , parentFolderId : Maybe Uuid
+    }
 
 
 -- * pg collection
@@ -773,6 +826,7 @@ latestValueOfStorable storable =
         New { key, value, hidden } -> { key = key, value = value, hidden = hidden }
         Saved { key, value, hidden } -> { key = key, value = value, hidden = hidden }
         Edited2 _ { key, value, hidden } -> { key = key, value = value, hidden = hidden }
+
 
 -- * tangoscript
 

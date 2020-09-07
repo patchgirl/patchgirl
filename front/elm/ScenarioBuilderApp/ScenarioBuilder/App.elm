@@ -815,7 +815,7 @@ httpDetailedSceneView model scene fileRecord =
             column [ width fill, spacing 15 ]
               [ row [ spacing 10, width fill ]
                     [ link [ alignLeft ]
-                          { url = href <| ReqPage (Just scene.nodeId) (Just model.id)
+                          { url = href <| ReqPage (RunView model.id)
                           , label = el [ Font.underline, Font.size 25 ] <|
                                     iconWithAttr { defaultIconAttribute
                                                      | icon = "public"
@@ -1103,10 +1103,13 @@ selectSceneModal sceneParentId requestCollection pgCollection =
 
                 node :: tail ->
                     case node of
-                        RequestFolder { id, name, open, children } ->
+                        Folder { id, name, open, children } ->
                             let
+                                (Children c) =
+                                    children
+
                                 folderChildrenView =
-                                    httpNodeView children
+                                    httpNodeView c
 
                                 tailView =
                                     httpNodeView tail
@@ -1116,7 +1119,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                             in
                             currentFolderView :: tailView
 
-                        RequestFile requestFileRecord ->
+                        File requestFileRecord ->
                             let
                                 tailView =
                                     httpNodeView tail
