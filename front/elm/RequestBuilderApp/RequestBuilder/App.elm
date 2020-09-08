@@ -46,7 +46,6 @@ type alias Model a =
         | notification : Maybe Notification
         , requestCollection : RequestCollection
         , displayedRequestNodeMenuId : Maybe Uuid
-        , displayedRequestId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , requestNewNode : NewNode
         , environments : List Environment

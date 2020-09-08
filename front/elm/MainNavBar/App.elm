@@ -31,7 +31,6 @@ type alias Model a =
         , runnerRunning : Bool
         , displayedScenarioId : Maybe Uuid
         , displayedSceneId : Maybe Uuid
-        , displayedRequestId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , displayedPgId : Maybe Uuid
         , displayedEnvId : Maybe Int

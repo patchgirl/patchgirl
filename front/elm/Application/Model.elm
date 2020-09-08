@@ -39,7 +39,6 @@ type alias Model =
     -- BUILDER APP
     , displayedRequestNodeMenuId : Maybe Uuid
     , displayedRequestBuilderView : BuilderView Uuid
-    , displayedRequestId : Maybe Uuid
     , requestCollection : RequestCollection
     , requestNewNode : NewNode
 

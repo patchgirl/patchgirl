@@ -33,7 +33,6 @@ type alias Model a =
         | notification : Maybe Notification
         , requestCollection : RequestCollection
         , requestNewNode : NewNode
-        , displayedRequestBuilderView : BuilderView Uuid
     }
 
 

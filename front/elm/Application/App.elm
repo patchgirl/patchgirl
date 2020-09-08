@@ -130,7 +130,6 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , sqlQuery = NotEdited ""
             , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
-            , displayedRequestId = Nothing
             , displayedRequestBuilderView = LandingView DefaultView
             , requestNewNode = { name = "", parentFolderId = Nothing }
             , scenarioCollection = scenarioCollection
