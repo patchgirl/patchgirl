@@ -89,14 +89,13 @@ view model =
               , spacing 10
               ]
               [ column
-                    [ alignTop
-                    , spacing 20
-                    , centerX
-                    , padding 20
-                    , width (fillPortion 1)
-                    , Background.color white
-                    , boxShadow
-                    ]
+                    ( box [ alignTop
+                        , spacing 20
+                        , centerX
+                        , padding 20
+                        , width (fillPortion 1)
+                        ]
+                    )
                     [ el [] <| envSelectionView <| List.map .name model.environments
                     , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
                     ]

@@ -619,7 +619,7 @@ view model =
     case model.displayedSceneId of
         Nothing ->
             wrappedRow [ height fill, width fill, spacing 20 ]
-                [ el [ width <| fillPortion 1, alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
                 , row [ width <| fillPortion 9, alignTop, spacing 20 ]
                     [ el [ width <| fillPortion 2, height fill ] scenesView
                     , el [ width <| fillPortion 8, height fill, alignRight ] none
@@ -628,7 +628,7 @@ view model =
 
         Just sceneId ->
             wrappedRow [ height fill, width fill, spacing 20 ]
-                [ el [ width <| fillPortion 1, alignTop, Background.color white, boxShadow, padding 20 ] scenarioSettingView
+                [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
                 , row [ width <| fillPortion 9, alignTop, spacing 20 ]
                     [ el [ width <| fillPortion 2, height fill ] scenesView
                     , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model sceneId)
@@ -684,14 +684,7 @@ sceneView model scene =
             in
             column [ centerX, spacing 10 ]
                 [ row
-                    ( [ Border.solid
-                      , Border.width 1
-                      , Border.rounded 5
-                      , Background.color white
-                      , Border.color black
-                      , boxShadow
-                      , centerX
-                      ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
+                    ( box [ Border.width 1, centerX ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
                     ) [ link [ padding 20, width fill, height fill ]
                            { url = href <| ScenarioPage (Just model.id) (Just scene.id)
                            , label =
@@ -749,26 +742,24 @@ detailedSceneView model sceneId =
     in
     case mSceneAndRecord of
         Nothing ->
-            el [ width fill
-               , height fill
-               , centerX
-               , alignTop
-               , spacing 40
-               , padding 20
-               , boxShadow
-               , Background.color white
-               ] none
+            el ( box [ width fill
+                     , height fill
+                     , centerX
+                     , alignTop
+                     , spacing 40
+                     , padding 20
+                     ]
+               ) none
 
         Just (scene, fileRecord) ->
-            column [ width fill
-               , height fill
-               , centerX
-               , alignTop
-               , spacing 40
-               , padding 20
-               , boxShadow
-               , Background.color white
-               ] <|
+            column ( box [ width fill
+                         , height fill
+                         , centerX
+                         , alignTop
+                         , spacing 40
+                         , padding 20
+                         ]
+                   ) <|
                 case fileRecord of
                     HttpRecord record ->
                         httpDetailedSceneView model scene record

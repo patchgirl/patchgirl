@@ -189,15 +189,14 @@ view model =
               , paddingXY 10 0
               , spacing 10
               ]
-              [ el
-                [ alignTop
-                , spacing 20
-                , centerX
-                , padding 20
-                , width (fillPortion 1)
-                , Background.color white
-                , boxShadow
-                ] <| el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
+              [ el ( box [ alignTop
+                         , spacing 20
+                         , centerX
+                         , padding 20
+                         , width (fillPortion 1)
+                         ]
+                   ) <|
+                    el [ paddingXY 10 0 ] (map ScenarioTreeMsg (ScenarioTree.view model))
               , builderView model
               ]
         ]
@@ -211,9 +210,8 @@ builderView model =
 
         Nothing ->
             el [ width (fillPortion 9), centerX, alignTop ]
-                <| el [ centerX
-                      , alignTop
-                      , padding 20
-                      , Background.color white
-                      , boxShadow
-                      ] (text "No scenario selected")
+                <| el ( box [ centerX
+                            , alignTop
+                            , padding 20
+                            ] ) <|
+                    text "No scenario selected"

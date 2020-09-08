@@ -284,20 +284,12 @@ latestValueOfStorable storable =
 view : Model -> Element Msg
 view model =
     wrappedRow [ alignTop, width fill, spacing 10 ]
-        [ el [ width (fillPortion 1)
-             , alignTop
-             , Background.color white
-             , boxShadow
-             , padding 20
-             ] (builderView model)
+        [ el ( box  [ width (fillPortion 1), alignTop, padding 20 ] ) <|
+              builderView model
         , case model.showResponseView of
               True ->
-                  el [ width (fillPortion 1)
-                     , Background.color white
-                     , boxShadow
-                     , alignTop
-                     , padding 30
-                     ] <| case (model.pgComputationOutput, model.showResponseView) of
+                  el ( box [ width (fillPortion 1), alignTop, padding 30 ] ) <|
+                      case (model.pgComputationOutput, model.showResponseView) of
                            (Just pgComputationOutput, True) ->
                                responseView pgComputationOutput
 

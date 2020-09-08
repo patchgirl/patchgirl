@@ -419,17 +419,13 @@ homeView model =
         mkScene : String -> String -> SceneToDemo -> Element Msg -> Bool -> Element Msg
         mkScene title icon sceneToDemo arrow selected =
             column [ centerX, spacing 10, Events.onMouseEnter (ChangeDemoScene sceneToDemo) ]
-                [ el [ Border.solid
-                     , Border.width 1
-                     , Border.rounded 5
-                     , Background.color white
-                     , case selected of
-                           True -> Border.color black
-                           False -> Border.color white
-                     , padding 20
-                     , boxShadow
-                     , centerX
-                     ] <|
+                [ el (box [ case selected of
+                                True -> Border.color black
+                                False -> Border.color white
+                          , padding 20
+                          , centerX
+                          ]
+                     ) <|
                       iconWithAttr { defaultIconAttribute
                                        | icon = icon
                                        , title = title
@@ -540,8 +536,8 @@ homeView model =
                                   , mkScene "POST new invoice" "public" Scene3 none (model.sceneToDemo == Scene3)
                                   ]
                               ]
-                        , column [ width fill, spacing 15, boxShadow, Background.color white, alignTop, padding 20, spacing 20 ]
-                            <| case model.sceneToDemo of
+                        , column ( box [ width fill, spacing 15, alignTop, padding 20, spacing 20 ] ) <|
+                            case model.sceneToDemo of
                                 Scene1 -> scene1View
                                 Scene2 -> scene2View
                                 Scene3 -> scene3View

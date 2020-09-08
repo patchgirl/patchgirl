@@ -318,12 +318,7 @@ deleteRequestNodeResultToMsg id result =
 
 view : WhichEditView RequestNode -> Model a -> Element Msg
 view whichEditView model =
-    el [ Background.color white
-       , boxShadow
-       , centerX
-       , spacing 20
-       , padding 30
-       ] <|
+    el ( box [ centerX, spacing 20, padding 30 ] ) <|
         case whichEditView of
             DefaultEditView requestNode ->
                 defaultEditView requestNode

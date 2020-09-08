@@ -367,9 +367,9 @@ hr attrs label =
 -- * box
 
 
-boxAttrs : List (Attribute a)
-boxAttrs =
-    Background.color white :: [boxShadow]
+box : List (Attribute a) -> List (Attribute a)
+box attrs =
+    Background.color white :: [ boxShadow, Border.rounded 5 ] ++ attrs
 
 
 -- ** box shadow

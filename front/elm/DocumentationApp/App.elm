@@ -137,12 +137,11 @@ view model =
             [ case contents of
                 Err str -> text ("can't generate documentation: " ++ str)
                 Ok docPages ->
-                    column [ Background.color white
-                           , boxShadow
-                           , spacing 20
-                           , padding 20
-                           , alignTop
-                           ] (mkMenu docPages)
+                    column ( box [ spacing 20
+                                 , padding 20
+                                 , alignTop
+                                 ]
+                           ) (mkMenu docPages)
             , contentView model.displayedDocumentation
             ]
 
@@ -155,10 +154,7 @@ contentView documentation =
     let
         doc : String -> Element msg
         doc markdown =
-            column [ boxShadow
-                   , Background.color white
-                   , padding 20
-                   ] (renderMarkdown markdown)
+            column ( box [ padding 20 ] ) (renderMarkdown markdown)
     in
     el [ width (fill |> maximum 800), centerX ] <|
         case documentation of

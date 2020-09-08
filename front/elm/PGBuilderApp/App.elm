@@ -189,14 +189,13 @@ view model =
               , paddingXY 10 0
               , spacing 10
               ]
-              [ column [ alignTop
-                       , spacing 20
-                       , centerX
-                       , padding 20
-                       , width (fillPortion 1)
-                       , Background.color white
-                       , boxShadow
-                       ]
+              [ column ( box [ alignTop
+                             , spacing 20
+                             , centerX
+                             , padding 20
+                             , width (fillPortion 1)
+                             ]
+                       )
                     [ el [] <| envSelectionView <| List.map .name model.environments
                     , el [ paddingXY 10 0 ] <| map TreeMsg (PgTree.view model)
                     ]
@@ -233,9 +232,9 @@ builderView model =
             el [ width (fillPortion 9)
                , centerX, centerY, alignTop
                ]
-                <| el ( [ centerX
-                        , alignTop
-                        , padding 20
-                        , spacing 10
-                        ] ++ boxAttrs
+                <| el (box [ centerX
+                           , alignTop
+                           , padding 20
+                           , spacing 10
+                           ]
                       ) (text "No postgres sql request selected")

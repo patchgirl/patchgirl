@@ -44,14 +44,13 @@ view maybeConfig =
             let
                 modalView =
                     column
-                        [ centerX
-                        , Background.color lightGrey
-                        , moveDown 100
-                        , padding 20
-                        , spacing 30
-                        , boxShadow
-                        , Border.rounded 5
-                        ]
+                        ( box [ centerX
+                              , Background.color lightGrey
+                              , moveDown 100
+                              , padding 20
+                              , spacing 30
+                              ]
+                        )
                         [ headerView config
                         , bodyView config
                         , footerView config

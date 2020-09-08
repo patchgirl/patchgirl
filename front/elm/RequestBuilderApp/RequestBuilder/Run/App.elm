@@ -361,16 +361,14 @@ view file model =
     in
     case file.showResponseView of
         False ->
-            column
-                [ width fill
-                , paddingXY 20 10
-                , spacing 10
-                , Background.color white
-                , boxShadow
-                , centerX
-                , padding 20
-                , width fill
-                ]
+            column ( box [ width fill
+                        , paddingXY 20 10
+                        , spacing 10
+                        , centerX
+                        , padding 20
+                        , width fill
+                        ]
+                   )
                 [ el [ alignRight ] closeBuilderView
                 , titleView model file
                 , el [ width fill ] builderView
@@ -379,24 +377,22 @@ view file model =
         True ->
             wrappedRow [ alignTop, width fill, spacing 10 ]
                 [ column
-                    [ width (fillPortion 1)
-                    , alignTop
-                    , spacing 10
-                    , Background.color white
-                    , boxShadow
-                    , padding 20
-                    ]
+                    ( box [ width (fillPortion 1)
+                         , alignTop
+                         , spacing 10
+                         , padding 20
+                         ]
+                    )
                     [ el [ alignRight ] closeBuilderView
                     , titleView model file
                     , el [ alignTop ] builderView
                     ]
                 , el
-                    [ width (fillPortion 1)
-                    , Background.color white
-                    , boxShadow
-                    , alignTop
-                    , padding 20
-                    ]
+                    ( box [ width (fillPortion 1)
+                         , alignTop
+                         , padding 20
+                         ]
+                    )
                     (responseView model file)
                 ]
 

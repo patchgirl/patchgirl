@@ -286,28 +286,21 @@ view model =
         , paddingXY 10 0
         , spacing 10
         ]
-        [ column
-            [ alignLeft
-            , alignTop
-            , spacing 20
-            , padding 20
-            , width (fillPortion 1)
-            , Background.color white
-            , boxShadow
-            ]
+        [ column ( box [ alignLeft
+                       , alignTop
+                       , spacing 20
+                       , padding 20
+                       , width (fillPortion 1)
+                       ]
+                 )
             [ addEnvButtonView
             , column [ spacing 10 ] envListView
             ]
         , el [ width (fillPortion 9)
              , centerX
              , alignTop
-             ]
-              <| el [ centerX
-                    , alignTop
-                    , padding 20
-                    , Background.color white
-                    , boxShadow
-                    ] keyValuesEditionView
+             ] <|
+            el ( box [ centerX, alignTop, padding 20 ] ) keyValuesEditionView
         ]
 
 
