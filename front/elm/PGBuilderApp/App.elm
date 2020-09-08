@@ -19,6 +19,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Api.RunnerGeneratedClient as Client
 import Browser.Navigation as Navigation
+import Banner exposing (..)
 
 
 -- * model
@@ -166,22 +167,6 @@ changeFileBuilder builder node =
 
 view : Model a -> Element Msg
 view model =
-    let
-        enableRunnerBanner =
-            row [ width fill
-              , paddingXY 0 10
-              , centerY, centerX
-              , Background.color secondaryColor
-              , Font.color primaryColor
-              , Font.center
-              ]
-              [ el [ centerX ] (text "Offline mode - Run the ")
-              , link [ centerX ] { label = el [ Font.underline ] (text "Patchgirl Runner App")
-                                 , url = href (DocumentationPage PatchGirlRunnerAppDoc)
-                                 }
-              , el [ centerX ] (text " to enable postgres requests!")
-              ]
-    in
     column [ width fill, spacing 10 ]
         [ if not model.runnerRunning then enableRunnerBanner else none
         , wrappedRow
