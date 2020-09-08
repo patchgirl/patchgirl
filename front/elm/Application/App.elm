@@ -16,7 +16,6 @@ import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
-import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import PGBuilderApp.App as PGBuilderApp
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp

@@ -1,7 +1,5 @@
 module RequestBuilderApp.RequestTree.App exposing (..)
 
---import RequestBuilderApp.RequestBuilder.App as RequestBuilder
-
 import Animation
 import Api.WebGeneratedClient as Client
 import Application.Type exposing (..)
@@ -25,13 +23,8 @@ import RequestBuilderApp.RequestTree.Util exposing(..)
 type alias Model a =
     { a
         | requestCollection : RequestCollection
-        , notification : Maybe Notification
         , displayedRequestNodeMenuId : Maybe Uuid
-        , displayedRequestId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
-        , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
-        , navigationKey : Navigation.Key
     }
 
 
@@ -41,7 +34,6 @@ type alias Model a =
 type Msg
     = ToggleMenu (Maybe Uuid)
     | ToggleFolder Uuid
-    | PrintNotification Notification
 
 
 -- * update
@@ -68,9 +60,6 @@ update msg model =
                     }
             in
             ( newModel, Cmd.none )
-
-        PrintNotification notification ->
-            ( { model | notification = Just notification }, Cmd.none )
 
 
 -- * view

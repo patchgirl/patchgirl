@@ -13,7 +13,6 @@ import Json.Decode as Json
 import List.Extra as List
 import Page exposing (..)
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
-import RequestBuilderApp.RequestBuilder.App2 as RequestBuilder2
 import RequestBuilderApp.RequestTree.App as RequestTree
 import RequestBuilderApp.RequestTree.Util as RequestTree
 import Util exposing (..)
@@ -45,7 +44,7 @@ type alias Model a =
 
 
 type Msg
-    = BuilderMsg2 RequestBuilder2.Msg
+    = BuilderMsg RequestBuilder.Msg
     | TreeMsg RequestTree.Msg
     | EnvSelectionMsg Int
 
@@ -70,82 +69,12 @@ update msg model =
             in
             ( newModel, Cmd.map TreeMsg newSubMsg )
 
-        BuilderMsg2 subMsg ->
+        BuilderMsg subMsg ->
             let
                 ( newModel, newSubMsg ) =
-                    RequestBuilder2.update subMsg model
+                    RequestBuilder.update subMsg model
             in
-            ( newModel, Cmd.map BuilderMsg2 newSubMsg )
-
-
--- * util
-
-
-getBuilder : Model a -> Maybe RequestBuilder.Model
-getBuilder model =
-    let
-        (RequestCollection requestCollectionId requestNodes) =
-            model.requestCollection
-
-        mFile : Maybe RequestFileRecord
-        mFile =
-            Maybe.andThen (RequestTree.findFile requestNodes) model.displayedRequestId
-    in
-    case (model.displayedRequestId, mFile ) of
-        ( Just _, Just file ) ->
-            let
-                keyValuesToRun =
-                    Application.getEnvironmentKeyValuesToRun model
-            in
-            Just (convertFromFileToBuilder file requestCollectionId keyValuesToRun model.runnerRunning model.notification)
-
-        _ ->
-            Nothing
-
-
-convertFromFileToBuilder : RequestFileRecord -> Int -> List (Storable NewKeyValue KeyValue) -> Bool -> Maybe Notification -> RequestBuilder.Model
-convertFromFileToBuilder file requestCollectionId keyValuesToRun runnerRunning notification =
-    { notification = notification
-    , id = file.id
-    , requestCollectionId = requestCollectionId
-    , keyValues = keyValuesToRun
-    , name = file.name
-    , httpUrl = file.httpUrl
-    , httpMethod = file.httpMethod
-    , httpHeaders = file.httpHeaders
-    , httpBody = file.httpBody
-    , requestComputationResult = file.requestComputationResult
-    , showResponseView = file.showResponseView
-    , whichResponseView = file.whichResponseView
-    , runRequestIconAnimation = file.runRequestIconAnimation
-    , runnerRunning = runnerRunning
-    }
-
-
-convertFromBuilderToFile : RequestBuilder.Model -> RequestFileRecord
-convertFromBuilderToFile builder =
-    { id = builder.id
-    , name = builder.name
-    , httpUrl = builder.httpUrl
-    , httpMethod = builder.httpMethod
-    , httpHeaders = builder.httpHeaders
-    , httpBody = builder.httpBody
-    , requestComputationResult = builder.requestComputationResult
-    , showResponseView = builder.showResponseView
-    , whichResponseView = builder.whichResponseView
-    , runRequestIconAnimation = builder.runRequestIconAnimation
-    }
-
-
-changeFileBuilder : RequestBuilder.Model -> RequestNode -> RequestNode
-changeFileBuilder builder node =
-    case node of
-        Folder f ->
-            Folder f
-
-        File f ->
-            File (convertFromBuilderToFile builder)
-
+            ( newModel, Cmd.map BuilderMsg newSubMsg )
 
 
 -- * view
@@ -173,7 +102,7 @@ view model =
                     , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
                     ]
               , el [ width (fillPortion 9), height fill, centerX, alignTop ] <|
-                  map (BuilderMsg2) (RequestBuilder2.view model)
+                  map BuilderMsg (RequestBuilder.view model)
               ]
         ]
 
