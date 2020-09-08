@@ -26,6 +26,7 @@ import Url as Url
 import Url.Parser as Url
 import Util exposing (..)
 import Time
+import Task
 import Http
 import Api.RunnerGeneratedClient as Client
 import Runner
@@ -109,6 +110,9 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
                 ]
                 initialNotificationAnimation
 
+        msg =
+            Task.perform (always CheckRunnerStatus) Time.now
+
         model =
             { session = session
             , page = page
@@ -143,8 +147,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , displayedDocumentation = RequestDoc
             }
     in
-    ( updateModelWithPage page model, Cmd.none )
-
+    ( updateModelWithPage page model, msg )
 
 
 -- * update
