@@ -73,15 +73,15 @@ convertPgNodesFromBackToFront backPgNodes =
         convertPgNodeFromBackToFront backPgNode =
             case backPgNode of
                 Back.PgFolder folder ->
-                    Front.PgFolder
+                    Front.Folder
                         { id = folder.pgNodeId
                         , name = NotEdited folder.pgNodeName
                         , open = not <| List.isEmpty folder.pgNodeChildren
-                        , children = convertPgNodesFromBackToFront folder.pgNodeChildren
+                        , children = Front.Children2 (convertPgNodesFromBackToFront folder.pgNodeChildren)
                         }
 
                 Back.PgFile file ->
-                    Front.PgFile
+                    Front.File
                         { id = file.pgNodeId
                         , name = NotEdited file.pgNodeName
                         , dbHost = NotEdited file.pgNodeHost

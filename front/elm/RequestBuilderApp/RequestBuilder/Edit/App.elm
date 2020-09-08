@@ -35,6 +35,7 @@ type alias Model a =
         , requestNewNode : NewNode
         , displayedRequestBuilderView : BuilderView Uuid
         , navigationKey : Navigation.Key
+        , page : Page
     }
 
 
@@ -321,17 +322,17 @@ view whichEditView model =
     el ( box [ centerX, spacing 20, padding 30 ] ) <|
         case whichEditView of
             DefaultEditView requestNode ->
-                defaultEditView requestNode
+                defaultEditView model requestNode
 
             DeleteView requestNode ->
-                deleteView requestNode
+                deleteView model requestNode
 
 
 -- ** default view
 
 
-defaultEditView : RequestNode -> Element Msg
-defaultEditView requestNode =
+defaultEditView : Model a -> RequestNode -> Element Msg
+defaultEditView model requestNode =
     let
         { id, name } =
             getRequestNodeIdAndName requestNode
@@ -381,7 +382,7 @@ defaultEditView requestNode =
     column [ spacing 20 ]
         [ row [ width fill, centerY ]
               [ el [ alignLeft ] title
-              , el [ alignRight ] closeBuilderView
+              , el [ alignRight ] (closeBuilderView model.page)
               ]
         , row [ spacing 20 ]
                   [ renameInput
@@ -395,8 +396,8 @@ defaultEditView requestNode =
 -- ** delete view
 
 
-deleteView : RequestNode -> Element Msg
-deleteView requestNode =
+deleteView : Model a -> RequestNode -> Element Msg
+deleteView model requestNode =
     let
         { id, name } =
             getRequestNodeIdAndName requestNode
@@ -422,7 +423,7 @@ deleteView requestNode =
     column [ spacing 20 ]
         [ row [ width fill, centerY ]
               [ el [ alignLeft ] title
-              , el [ alignRight ] closeBuilderView
+              , el [ alignRight ] (closeBuilderView model.page)
               ]
         , areYouSure
         , row [ centerX, spacing 20 ] [ noBtn, yesBtn ]

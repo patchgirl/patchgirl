@@ -1,4 +1,4 @@
-module RequestBuilderApp.RequestBuilder.Landing.App exposing (..)
+module PGBuilderApp.PGBuilder.Landing.App exposing (..)
 
 import Api.Converter as Client
 import Random
@@ -19,8 +19,8 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import RequestBuilderApp.RequestTree.Util as RequestTree
-import RequestBuilderApp.RequestTree.App as RequestTree
+import PGBuilderApp.PGTree.Util as PgTree
+import PGBuilderApp.PGTree.App as PgTree
 import BuilderUtil exposing (..)
 import Animation
 
@@ -31,9 +31,9 @@ import Animation
 type alias Model a =
     { a
         | notification : Maybe Notification
-        , requestCollection : RequestCollection
-        , requestNewNode : NewNode
-        , page: Page
+        , pgCollection : PgCollection
+        , pgNewNode : NewNode
+        , page : Page
     }
 
 
@@ -63,27 +63,27 @@ update msg model =
     case msg of
         ChangeName newName ->
             let
-                oldLandingRequestNewFolder =
-                    model.requestNewNode
+                oldLandingPgNewFolder =
+                    model.pgNewNode
 
-                newLandingRequestNewFolder =
-                    { oldLandingRequestNewFolder | name = newName }
+                newLandingPgNewFolder =
+                    { oldLandingPgNewFolder | name = newName }
 
                 newModel =
-                    { model | requestNewNode = newLandingRequestNewFolder }
+                    { model | pgNewNode = newLandingPgNewFolder }
             in
             (newModel, Cmd.none)
 
         SelectFolder mId ->
             let
-                oldLandingRequestNewNode =
-                    model.requestNewNode
+                oldLandingPgNewNode =
+                    model.pgNewNode
 
-                newLandingRequestNewNode =
-                    { oldLandingRequestNewNode | parentFolderId = mId }
+                newLandingPgNewNode =
+                    { oldLandingPgNewNode | parentFolderId = mId }
 
                 newModel =
-                    { model | requestNewNode = newLandingRequestNewNode }
+                    { model | pgNewNode = newLandingPgNewNode }
             in
             (newModel, Cmd.none)
 
@@ -96,50 +96,50 @@ update msg model =
 
         AskMkdir newNode newId ->
             let
-                (RequestCollection requestCollectionId requestNodes) =
-                    model.requestCollection
+                (PgCollection pgCollectionId pgNodes) =
+                    model.pgCollection
 
                 newMsg =
                     case newNode.parentFolderId of
                         Nothing ->
                             let
                                 payload =
-                                    { newRootRequestFolderId = newId
-                                    , newRootRequestFolderName = newNode.name
+                                    { newRootPgFolderId = newId
+                                    , newRootPgFolderName = newNode.name
                                     }
                             in
-                            Client.postApiRequestCollectionByRequestCollectionIdRootRequestFolder "" "" requestCollectionId payload (createRequestFolderResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFolder "" "" pgCollectionId payload (createPgFolderResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newRequestFolderId = newId
-                                    , newRequestFolderParentNodeId = folderId
-                                    , newRequestFolderName = newNode.name
+                                    { newPgFolderId = newId
+                                    , newPgFolderParentNodeId = folderId
+                                    , newPgFolderName = newNode.name
                                     }
                             in
-                            Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId payload (createRequestFolderResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdPgFolder "" "" pgCollectionId payload (createPgFolderResultToMsg newNode newId)
 
             in
             ( model, newMsg )
 
         Mkdir newNode newId ->
             let
-                (RequestCollection id requestNodes) =
-                    model.requestCollection
+                (PgCollection id pgNodes) =
+                    model.pgCollection
 
-                newRequestNodes =
+                newPgNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultFolder newNode newId ]
+                            pgNodes ++ [ mkDefaultFolder newNode newId ]
 
                         Just folderId ->
-                            List.map (RequestTree.modifyRequestNode folderId (mkdir newNode newId)) requestNodes
+                            List.map (PgTree.modifyPgNode folderId (mkdir newNode newId)) pgNodes
 
                 newModel =
                     { model
-                        | requestCollection =
-                            RequestCollection id newRequestNodes
+                        | pgCollection =
+                            PgCollection id newPgNodes
                     }
             in
             ( newModel, Cmd.none )
@@ -153,51 +153,62 @@ update msg model =
 
         AskTouch newNode newId ->
             let
-                (RequestCollection requestCollectionId requestNodes) =
-                    model.requestCollection
+                (PgCollection pgCollectionId pgNodes) =
+                    model.pgCollection
 
                 newMsg =
                     case newNode.parentFolderId of
                         Nothing ->
                             let
                                 payload =
-                                       { newRootRequestFileId = newId
-                                       , newRootRequestFileName = newNode.name
-                                       }
-
+                                    { newRootPgFileId = newId
+                                    , newRootPgFileName = newNode.name
+                                    , newRootPgFileSql = ""
+                                    , newRootPgFileHost = ""
+                                    , newRootPgFilePassword = ""
+                                    , newRootPgFilePort = ""
+                                    , newRootPgFileUser = ""
+                                    , newRootPgFileDbName = ""
+                                    }
                             in
-                            Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" pgCollectionId payload (createPgFileResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newRequestFileId = newId
-                                    , newRequestFileParentNodeId = folderId
-                                    , newRequestFileName = newNode.name
+                                    { newPgFileId = newId
+                                    , newPgFileParentNodeId = folderId
+                                    , newPgFileName = newNode.name
+                                    , newPgFileSql = ""
+                                    , newPgFileHost = ""
+                                    , newPgFilePassword = ""
+                                    , newPgFilePort = ""
+                                    , newPgFileUser = ""
+                                    , newPgFileDbName = ""
                                     }
                             in
-                            Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" pgCollectionId payload (createPgFileResultToMsg newNode newId)
 
             in
             ( model, newMsg )
 
         Touch newNode newId ->
             let
-                (RequestCollection id requestNodes) =
-                    model.requestCollection
+                (PgCollection id pgNodes) =
+                    model.pgCollection
 
-                newRequestNodes =
+                newPgNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultFile newNode newId ]
+                            pgNodes ++ [ mkDefaultFile newNode newId ]
 
                         Just folderId ->
-                            List.map (RequestTree.modifyRequestNode folderId (touch newNode newId)) requestNodes
+                            List.map (PgTree.modifyPgNode folderId (touch newNode newId)) pgNodes
 
                 newModel =
                     { model
-                        | requestCollection =
-                            RequestCollection id newRequestNodes
+                        | pgCollection =
+                            PgCollection id newPgNodes
                     }
             in
             ( newModel, Cmd.none )
@@ -212,7 +223,7 @@ update msg model =
 -- ** tree
 
 
-touch : NewNode -> Uuid -> RequestNode -> RequestNode
+touch : NewNode -> Uuid -> PgNode -> PgNode
 touch newNode id parentNode =
     case parentNode of
         (File _) as file ->
@@ -220,16 +231,16 @@ touch newNode id parentNode =
 
         Folder folder ->
             let
-                (Children children) =
+                (Children2 children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultFile newNode id :: children)
+                    | children = Children2 (mkDefaultFile newNode id :: children)
                     , open = True
                 }
 
-mkdir : NewNode -> Uuid -> RequestNode -> RequestNode
+mkdir : NewNode -> Uuid -> PgNode -> PgNode
 mkdir newNode id node =
     case node of
         (File _) as file ->
@@ -237,46 +248,46 @@ mkdir newNode id node =
 
         Folder folder ->
             let
-                (Children children) =
+                (Children2 children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultFolder newNode id :: children)
+                    | children = Children2 (mkDefaultFolder newNode id :: children)
                     , open = True
                 }
 
-mkDefaultFolder : NewNode -> Uuid -> RequestNode
+mkDefaultFolder : NewNode -> Uuid -> PgNode
 mkDefaultFolder newNode id =
     Folder
         { id = id
         , name = NotEdited newNode.name
         , open = False
-        , children = Children []
+        , children = Children2 []
         }
 
 
-mkDefaultFile : NewNode -> Uuid -> RequestNode
+mkDefaultFile : NewNode -> Uuid -> PgNode
 mkDefaultFile newNode id =
     File
         { id = id
         , name = NotEdited newNode.name
-        , httpUrl = NotEdited ""
-        , httpMethod = NotEdited HttpGet
-        , httpHeaders = NotEdited []
-        , httpBody = NotEdited ""
+        , dbHost = NotEdited ""
+        , dbPassword = NotEdited ""
+        , dbPort = NotEdited ""
+        , dbUser = NotEdited ""
+        , dbName = NotEdited ""
+        , sql = NotEdited ""
+        , pgComputationOutput = Nothing
         , showResponseView = False
-        , whichResponseView = BodyResponseView
-        , requestComputationResult = Nothing
-        , runRequestIconAnimation = Animation.style []
         }
 
 
 -- ** msg handling
 
 
-createRequestFileResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg
-createRequestFileResultToMsg newNode id result =
+createPgFileResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg
+createPgFileResultToMsg newNode id result =
     case result of
         Ok _ ->
             Touch newNode id
@@ -284,8 +295,8 @@ createRequestFileResultToMsg newNode id result =
         Err error ->
             PrintNotification <| AlertNotification "Could not create a new file, try reloading the page" (httpErrorToString error)
 
-createRequestFolderResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg
-createRequestFolderResultToMsg newNode id result =
+createPgFolderResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg
+createPgFolderResultToMsg newNode id result =
     case result of
         Ok _ ->
             Mkdir newNode id
@@ -329,24 +340,24 @@ defaultView =
                                        | title = " Create a new folder"
                                        , icon = "create_new_folder"
                                    }
-                , url = href (ReqPage (LandingView CreateDefaultFolderView))
+                , url = href (PgPage (LandingView CreateDefaultFolderView))
                 }
 
-        newRequestLink =
+        newPgLink =
             link primaryButtonAttrs
                 { label =
                       iconWithAttr { defaultIconAttribute
-                                       | title = " Create a new request"
+                                       | title = " Create a new pg"
                                        , icon = "note_add"
                                    }
-                , url = href (ReqPage (LandingView CreateDefaultFileView))
+                , url = href (PgPage (LandingView CreateDefaultFileView))
                 }
     in
     el [ centerX ]
         <| row [ spacing 20, centerY ]
               [ newFolderLink
               , text "or"
-              , newRequestLink
+              , newPgLink
               ]
 
 
@@ -357,12 +368,12 @@ createDefaultFolderView : Model a -> Element Msg
 createDefaultFolderView model =
     let
         createButton =
-            case String.isEmpty model.requestNewNode.name of
+            case String.isEmpty model.pgNewNode.name of
                 True -> none
                 False ->
                     Input.button primaryButtonAttrs
                         { onPress = Just <|
-                              GenerateRandomUUIDForFolder model.requestNewNode
+                              GenerateRandomUUIDForFolder model.pgNewNode
                         , label =
                             iconWithAttr { defaultIconAttribute
                                              | title = "Create folder"
@@ -373,7 +384,7 @@ createDefaultFolderView model =
         nameInput =
             Input.text []
                   { onChange = ChangeName
-                  , text = model.requestNewNode.name
+                  , text = model.pgNewNode.name
                   , placeholder = Just <| Input.placeholder [] (text "myFolder")
                   , label = Input.labelLeft [ centerY ] <| text "Folder name: "
                   }
@@ -399,15 +410,15 @@ createDefaultFileView : Model a -> Element Msg
 createDefaultFileView model =
     let
         createButton =
-            case String.isEmpty model.requestNewNode.name of
+            case String.isEmpty model.pgNewNode.name of
                 True -> none
                 False ->
                     Input.button primaryButtonAttrs
                         { onPress = Just <|
-                              GenerateRandomUUIDForFile model.requestNewNode
+                              GenerateRandomUUIDForFile model.pgNewNode
                         , label =
                             iconWithAttr { defaultIconAttribute
-                                             | title = "Create request"
+                                             | title = "Create pg"
                                              , icon = "note_add"
                                          }
                         }
@@ -415,12 +426,12 @@ createDefaultFileView model =
         nameInput =
             Input.text []
                   { onChange = ChangeName
-                  , text = model.requestNewNode.name
-                  , placeholder = Just <| Input.placeholder [] (text "myRequest")
-                  , label = Input.labelLeft [ centerY ] <| text "Request name: "
+                  , text = model.pgNewNode.name
+                  , placeholder = Just <| Input.placeholder [] (text "myPg")
+                  , label = Input.labelLeft [ centerY ] <| text "Pg name: "
                   }
         title =
-            el [ Font.size 25, Font.underline ] (text "Create new request")
+            el [ Font.size 25, Font.underline ] (text "Create new pg")
     in
     column [ spacing 20 ]
         [ row [ width fill, centerY ]
@@ -439,21 +450,21 @@ createDefaultFileView model =
 folderTreeView : Model a -> (Maybe Uuid -> msg) -> Element msg
 folderTreeView model selectFolderMsg =
     let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
+        (PgCollection _ pgNodes) =
+            model.pgCollection
 
         treeView =
             column [ spacing 10 ]
                 [ text "Select a folder:"
-                , folderView Nothing model (NotEdited "/") selectFolderMsg (nodeView model selectFolderMsg requestNodes)
+                , folderView Nothing model (NotEdited "/") selectFolderMsg (nodeView model selectFolderMsg pgNodes)
                 ]
     in
     treeView
 
 
-nodeView : Model a -> (Maybe Uuid -> msg) -> List RequestNode -> List (Element msg)
-nodeView model selectFolderMsg requestNodes =
-    case requestNodes of
+nodeView : Model a -> (Maybe Uuid -> msg) -> List PgNode -> List (Element msg)
+nodeView model selectFolderMsg pgNodes =
+    case pgNodes of
         [] ->
             []
 
@@ -462,7 +473,7 @@ nodeView model selectFolderMsg requestNodes =
                 File _ -> nodeView model selectFolderMsg tail
                 Folder { id, name, children } ->
                     let
-                        (Children c) =
+                        (Children2 c) =
                             children
 
                         folderChildrenView =
@@ -497,7 +508,7 @@ folderView mId model eName selectFolderMsg folderChildrenView =
                          }
 
         selected =
-            model.requestNewNode.parentFolderId == mId
+            model.pgNewNode.parentFolderId == mId
 
         selectedAttributes =
             case selected of

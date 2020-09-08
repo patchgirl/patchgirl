@@ -11,7 +11,7 @@ findNode pgNodes id =
         find : PgNode -> Maybe PgNode
         find pgNode =
             case pgNode of
-                (PgFile file) as node ->
+                (File file) as node ->
                     case file.id == id of
                         True ->
                             Just node
@@ -19,13 +19,17 @@ findNode pgNodes id =
                         False ->
                             Nothing
 
-                (PgFolder folder) as node ->
+                (Folder folder) as node ->
                     case folder.id == id of
                         True ->
                             Just node
 
                         False ->
-                            findNode folder.children id
+                            let
+                                (Children2 children) =
+                                    folder.children
+                            in
+                            findNode children id
     in
     List.head <| catMaybes (List.map find pgNodes)
 
@@ -33,7 +37,7 @@ findNode pgNodes id =
 findFile : List PgNode -> Uuid -> Maybe PgFileRecord
 findFile pgNodes id =
     case findNode pgNodes id of
-        Just (PgFile file) ->
+        Just (File file) ->
             Just file
 
         _ ->

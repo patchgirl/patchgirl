@@ -17,10 +17,20 @@ import Page exposing(..)
 -- ** close builder view
 
 
-closeBuilderView : Element a
-closeBuilderView =
+closeBuilderView : Page -> Element a
+closeBuilderView page =
+    let
+        exitLink =
+            case page of
+                ReqPage _ ->
+                    href (ReqPage (LandingView DefaultView))
+                PgPage _ ->
+                    href (PgPage (LandingView DefaultView))
+                _ ->
+                    href (PgPage (LandingView DefaultView))
+    in
     link []
-        { url = href (ReqPage (LandingView DefaultView))
+        { url = exitLink
         , label =
             iconWithAttr { defaultIconAttribute
                              | title = ""

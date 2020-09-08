@@ -260,7 +260,6 @@ getRequestNodeIdAndName requestNode =
 
 -- ** folder
 
-type Children = Children (List RequestNode)
 
 type alias RequestFolderRecord =
     { id : Uuid
@@ -268,6 +267,8 @@ type alias RequestFolderRecord =
     , open : Bool
     , children : Children
     }
+
+type Children = Children (List RequestNode)
 
 
 -- ** file
@@ -315,10 +316,9 @@ type PgCollection
 -- ** pg node
 
 
-type PgNode
-    = PgFolder PgFolderRecord
-    | PgFile PgFileRecord
+type Children2 = Children2 (List PgNode)
 
+type alias PgNode = NodeType PgFolderRecord PgFileRecord
 
 
 -- ** folder
@@ -328,7 +328,7 @@ type alias PgFolderRecord =
     { id : Uuid
     , name : Editable String
     , open : Bool
-    , children : List PgNode
+    , children : Children2
     }
 
 

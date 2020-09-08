@@ -47,6 +47,7 @@ type alias Model a =
         , environments : List Environment
         , selectedEnvironmentToRunIndex : Maybe Int
         , runnerRunning : Bool
+        , page : Page
     }
 
 
@@ -369,7 +370,7 @@ view file model =
                         , width fill
                         ]
                    )
-                [ el [ alignRight ] closeBuilderView
+                [ el [ alignRight ] (closeBuilderView model.page)
                 , titleView model file
                 , el [ width fill ] builderView
                 ]
@@ -383,7 +384,7 @@ view file model =
                          , padding 20
                          ]
                     )
-                    [ el [ alignRight ] closeBuilderView
+                    [ el [ alignRight ] (closeBuilderView model.page)
                     , titleView model file
                     , el [ alignTop ] builderView
                     ]

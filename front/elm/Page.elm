@@ -11,7 +11,7 @@ import Application.Type exposing (..)
 type Page
     = HomePage
     | ReqPage (BuilderView Uuid)
-    | PgPage (Maybe Uuid)
+    | PgPage (BuilderView Uuid)
     | EnvPage (Maybe Int)
     | ScenarioPage (Maybe Uuid) (Maybe Uuid)
     | NotFoundPage
@@ -103,7 +103,7 @@ urlParser =
     in
     Url.oneOf
         [ Url.map HomePage Url.top
-        -- req
+        -- http
         , Url.map (ReqPage (LandingView DefaultView)) (appRoot </> Url.s "req")
         , Url.map (ReqPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "req" </> Url.s "new-folder")
         , Url.map (ReqPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "req" </> Url.s "new-file")
@@ -111,8 +111,14 @@ urlParser =
         , Url.map (\reqId -> ReqPage (EditView (DeleteView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit" </> Url.s "delete")
         , Url.map (\reqId -> ReqPage (RunView reqId)) (appRoot </> Url.s "req" </> Url.s "run" </> uuidParser)
 
-        , Url.map (\id -> PgPage (Just id)) (appRoot </> Url.s "pg" </> uuidParser)
-        , Url.map (PgPage Nothing) (appRoot </> Url.s "pg")
+        -- pg
+        , Url.map (PgPage (LandingView DefaultView)) (appRoot </> Url.s "pg")
+        , Url.map (PgPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "pg" </> Url.s "new-folder")
+        , Url.map (PgPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "pg" </> Url.s "new-file")
+        , Url.map (\pgId -> PgPage (EditView (DefaultEditView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit")
+        , Url.map (\pgId -> PgPage (EditView (DeleteView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
+
         , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> Url.int)
         , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
         , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
@@ -159,11 +165,30 @@ href page =
                     in
                     [ "app", "req" ] ++ mode
 
-                PgPage (Just uuid) ->
-                    [ "app", "pg", Uuid.toString uuid ]
+                PgPage builderView ->
+                    let
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
 
-                PgPage Nothing ->
-                    [ "app", "pg" ]
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                EditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RunView id ->
+                                    [ "run", Uuid.toString id ]
+
+                    in
+                    [ "app", "pg" ] ++ mode
 
                 EnvPage Nothing ->
                     [ "app", "env" ]

@@ -16,7 +16,7 @@ import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
-import PGBuilderApp.App as PGBuilderApp
+import PGBuilderApp.App2 as PGBuilderApp
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
@@ -125,8 +125,10 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
             , displayedPgNodeMenuId = Nothing
+            , displayedPgBuilderView = LandingView DefaultView
             , displayedPgId = Nothing
             , pgCollection = pgCollection
+            , pgNewNode = { name = "", parentFolderId = Nothing }
             , sqlQuery = NotEdited ""
             , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
@@ -289,7 +291,7 @@ updateModelWithPage page model =
                     { model | displayedRequestBuilderView = mId }
 
                 PgPage mId ->
-                    { model | displayedPgId = mId }
+                    { model | displayedPgBuilderView = mId }
 
                 EnvPage mId ->
                     { model | displayedEnvId = mId }

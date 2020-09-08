@@ -18,7 +18,7 @@ import List.Extra as List
 import Modal exposing (Modal(..))
 import Random
 import RequestBuilderApp.RequestTree.Util as RequestTree
-import PGBuilderApp.App as PgBuilderApp
+--import PGBuilderApp.App as PgBuilderApp
 import PGBuilderApp.PGBuilder.App as PgBuilder
 import RequestComputation exposing (..)
 import Util exposing (..)
@@ -285,6 +285,8 @@ update msg model =
                                         (PgCollection collectionId _) =
                                             model.pgCollection
                                     in
+                                        Debug.todo ""
+                                            {-
                                     PgBuilderApp.convertFromFileToBuilder pgRecord collectionId model.keyValues Nothing
                                         |> PgBuilder.buildPgComputationPayload
                                         |> \(_, pgComputationInput) ->
@@ -295,7 +297,7 @@ update msg model =
                                                                       , scenePostscript =
                                                                           Client.convertTangoscriptFromFrontToBack postscript
                                                                       , scenePgInput = pgComputationInput
-                                                                      }
+                                                                      } -}
 
                         _ -> Nothing
 
@@ -941,7 +943,7 @@ pgDetailedSceneView model scene fileRecord =
             column [ width fill, spacing 15 ]
               [ row [ spacing 10, width fill ]
                     [ link [ alignLeft ]
-                          { url = href <| PgPage (Just fileRecord.id)
+                          { url = href <| PgPage (RunView fileRecord.id)
                           , label = el [ Font.underline, Font.size 25 ] <|
                                     iconWithAttr { defaultIconAttribute
                                                      | icon = "storage"
@@ -1152,10 +1154,13 @@ selectSceneModal sceneParentId requestCollection pgCollection =
 
                 node :: tail ->
                     case node of
-                        PgFolder { id, name, open, children } ->
+                        Folder { id, name, open, children } ->
                             let
+                                (Children2 c) =
+                                    children
+
                                 folderChildrenView =
-                                    pgNodeView children
+                                    pgNodeView c
 
                                 tailView =
                                     pgNodeView tail
@@ -1165,7 +1170,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                             in
                             currentFolderView :: tailView
 
-                        PgFile requestFileRecord ->
+                        File requestFileRecord ->
                             let
                                 tailView =
                                     pgNodeView tail

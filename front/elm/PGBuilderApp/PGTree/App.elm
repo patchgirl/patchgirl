@@ -279,7 +279,7 @@ update msg model =
                 newMsg =
                     case model.displayedPgId == Just id of
                         True ->
-                            Navigation.pushUrl model.navigationKey (href (PgPage Nothing))
+                            Navigation.pushUrl model.navigationKey (href (PgPage (LandingView DefaultView)))
 
                         False ->
                             Cmd.none
@@ -452,10 +452,10 @@ createRootPgFolderResultToMsg id result =
 getPgNodeId : PgNode -> Uuid
 getPgNodeId pgNode =
     case pgNode of
-        PgFolder { id } ->
+        Folder { id } ->
             id
 
-        PgFile { id } ->
+        File { id } ->
             id
 
 
@@ -467,14 +467,18 @@ modifyPgNode id f pgNode =
 
         False ->
             case pgNode of
-                PgFile pgFile ->
-                    PgFile pgFile
+                File pgFile ->
+                    File pgFile
 
-                PgFolder pgFolder ->
-                    PgFolder
-                        { pgFolder
+                Folder folder ->
+                    let
+                        (Children2 children) =
+                            folder.children
+                    in
+                    Folder
+                        { folder
                             | children =
-                                List.map (modifyPgNode id f) pgFolder.children
+                                Children2 (List.map (modifyPgNode id f) children)
                         }
 
 
@@ -486,14 +490,18 @@ deletePgNode idToDelete pgNode =
 
         False ->
             case pgNode of
-                PgFile pgFile ->
-                    [ PgFile pgFile ]
+                File pgFile ->
+                    [ File pgFile ]
 
-                PgFolder pgFolder ->
-                    [ PgFolder
+                Folder pgFolder ->
+                    let
+                        (Children2 children) =
+                            pgFolder.children
+                    in
+                    [ Folder
                         { pgFolder
                             | children =
-                                List.concatMap (deletePgNode idToDelete) pgFolder.children
+                                Children2 (List.concatMap (deletePgNode idToDelete) children)
                         }
                     ]
 
@@ -501,11 +509,11 @@ deletePgNode idToDelete pgNode =
 toggleFolder : PgNode -> PgNode
 toggleFolder node =
     case node of
-        (PgFile _) as file ->
+        (File _) as file ->
             file
 
-        PgFolder folder ->
-            PgFolder
+        Folder folder ->
+            Folder
                 { folder
                     | open = not folder.open
                 }
@@ -514,13 +522,17 @@ toggleFolder node =
 mkdir : Uuid -> PgNode -> PgNode
 mkdir id node =
     case node of
-        (PgFile _) as file ->
+        (File _) as file ->
             file
 
-        PgFolder folder ->
-            PgFolder
+        Folder folder ->
+            let
+                (Children2 children) =
+                    folder.children
+            in
+            Folder
                 { folder
-                    | children = mkDefaultFolder id :: folder.children
+                    | children = Children2 (mkDefaultFolder id :: children)
                     , open = True
                 }
 
@@ -528,13 +540,17 @@ mkdir id node =
 touch : Uuid -> PgNode -> PgNode
 touch id parentNode =
     case parentNode of
-        (PgFile _) as file ->
+        (File _) as file ->
             file
 
-        PgFolder folder ->
-            PgFolder
+        Folder folder ->
+            let
+                (Children2 children) =
+                    folder.children
+            in
+            Folder
                 { folder
-                    | children = mkDefaultFile id :: folder.children
+                    | children = Children2 (mkDefaultFile id :: children)
                     , open = True
                 }
 
@@ -542,54 +558,54 @@ touch id parentNode =
 displayRenameInput : PgNode -> PgNode
 displayRenameInput node =
     case node of
-        PgFolder folder ->
+        Folder folder ->
             let
                 oldValue =
                     notEditedValue folder.name
             in
-            PgFolder { folder | name = Edited oldValue oldValue }
+            Folder { folder | name = Edited oldValue oldValue }
 
-        PgFile file ->
+        File file ->
             let
                 oldValue =
                     notEditedValue file.name
             in
-            PgFile { file | name = Edited oldValue oldValue }
+            File { file | name = Edited oldValue oldValue }
 
 
 rename : String -> PgNode -> PgNode
 rename newName node =
     case node of
-        PgFolder folder ->
-            PgFolder { folder | name = NotEdited newName }
+        Folder folder ->
+            Folder { folder | name = NotEdited newName }
 
-        PgFile file ->
-            PgFile { file | name = NotEdited newName }
+        File file ->
+            File { file | name = NotEdited newName }
 
 
 tempRename : String -> PgNode -> PgNode
 tempRename newName node =
     case node of
-        PgFolder folder ->
-            PgFolder { folder | name = changeEditedValue newName folder.name }
+        Folder folder ->
+            Folder { folder | name = changeEditedValue newName folder.name }
 
-        PgFile file ->
-            PgFile { file | name = changeEditedValue newName file.name }
+        File file ->
+            File { file | name = changeEditedValue newName file.name }
 
 
 mkDefaultFolder : Uuid -> PgNode
 mkDefaultFolder id =
-    PgFolder
+    Folder
         { id = id
         , name = NotEdited "new folder"
         , open = False
-        , children = []
+        , children = Children2 []
         }
 
 
 mkDefaultFile : Uuid -> PgNode
 mkDefaultFile id =
-    PgFile
+    File
         { id = id
         , name = NotEdited "new pg file"
         , dbHost = NotEdited ""
@@ -641,10 +657,13 @@ nodeView model pgCollection =
 
         node :: tail ->
             case node of
-                PgFolder { id, name, open, children } ->
+                Folder { id, name, open, children } ->
                     let
+                        (Children2 c) =
+                            children
+
                         folderChildrenView =
-                            nodeView model children
+                            nodeView model c
 
                         tailView =
                             nodeView model tail
@@ -654,7 +673,7 @@ nodeView model pgCollection =
                     in
                     currentFolderView :: tailView
 
-                PgFile { id, name } ->
+                File { id, name } ->
                     let
                         tailView =
                             nodeView model tail
@@ -686,7 +705,7 @@ fileReadView model name id =
                False -> Font.regular
     in
     link [ weight ]
-        { url = href (PgPage (Just id))
+        { url = href (PgPage (RunView id))
         , label = el [] <| iconWithTextAndColor "label" name color
         }
 

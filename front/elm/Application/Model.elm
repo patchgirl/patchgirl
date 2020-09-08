@@ -44,8 +44,10 @@ type alias Model =
 
     -- SQL
     , displayedPgNodeMenuId : Maybe Uuid
+    , displayedPgBuilderView : BuilderView Uuid
     , displayedPgId : Maybe Uuid
     , pgCollection : PgCollection
+    , pgNewNode : NewNode
     , sqlQuery : Editable String
     , pgComputation : Maybe PgComputation
 
