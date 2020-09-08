@@ -143,7 +143,7 @@ fileView id model eName =
                     none
 
         name =
-            editedOrNotEditedValue eName
+            notEditedValue eName
 
         selected =
             getBuilderId model.displayedRequestBuilderView == Just id
@@ -192,7 +192,7 @@ folderView id model eName folderChildrenView open =
             Just id == model.displayedRequestNodeMenuId
 
         name =
-            editedOrNotEditedValue eName
+            notEditedValue eName
 
         selected =
             getBuilderId model.displayedRequestBuilderView == Just id
