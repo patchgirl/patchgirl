@@ -22,6 +22,7 @@ import HttpError exposing(..)
 import RequestBuilderApp.RequestTree.Util as RequestTree
 import RequestBuilderApp.RequestTree.App as RequestTree
 import BuilderUtil exposing(..)
+import Browser.Navigation as Navigation
 
 
 -- * model
@@ -33,6 +34,7 @@ type alias Model a =
         , requestCollection : RequestCollection
         , requestNewNode : NewNode
         , displayedRequestBuilderView : BuilderView Uuid
+        , navigationKey : Navigation.Key
     }
 
 
@@ -54,10 +56,13 @@ type Msg
     | Touch Uuid Uuid
     -- other
     | PrintNotification Notification
-    -- renaming
+    -- rename
     | UpdateName Uuid String -- while focus is on the input
     | AskRename Uuid String
     | Rename Uuid String
+    -- delete
+    | AskDelete Uuid
+    | Delete Uuid
 
 
 -- * update
@@ -234,6 +239,36 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
+        AskDelete id ->
+            let
+                (RequestCollection requestCollectionId _) =
+                    model.requestCollection
+
+                newMsg =
+                    Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id (deleteRequestNodeResultToMsg id)
+            in
+            ( model, newMsg )
+
+        Delete id ->
+            let
+                (RequestCollection requestCollectionId requestNodes) =
+                    model.requestCollection
+
+                newRequestNodes =
+                    List.concatMap (RequestTree.deleteRequestNode id) requestNodes
+
+                newModel =
+                    { model
+                        | requestCollection =
+                            RequestCollection requestCollectionId newRequestNodes
+                    }
+
+                newMsg =
+                    Navigation.pushUrl model.navigationKey (href (ReqPage (LandingView DefaultView)))
+
+            in
+            ( newModel, newMsg )
+
         PrintNotification notification ->
             ( { model | notification = Just notification }, Cmd.none )
 
@@ -268,17 +303,33 @@ renameNodeResultToMsg id newName result =
         Err error ->
             PrintNotification <| AlertNotification "Could not rename, try reloading the page!" (httpErrorToString error)
 
+deleteRequestNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
+deleteRequestNodeResultToMsg id result =
+    case result of
+        Ok _ ->
+            Delete id
+
+        Err error ->
+            PrintNotification <| AlertNotification "Could not delete, maybe this HTTP request is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
+
+
 -- * view
 
 
 view : WhichEditView RequestNode -> Model a -> Element Msg
 view whichEditView model =
-    case whichEditView of
-        DefaultEditView requestNode ->
-            defaultEditView requestNode
+    el [ Background.color white
+       , boxShadow
+       , centerX
+       , spacing 20
+       , padding 30
+       ] <|
+        case whichEditView of
+            DefaultEditView requestNode ->
+                defaultEditView requestNode
 
-        DuplicateView requestNode ->
-            none
+            DeleteView requestNode ->
+                deleteView requestNode
 
 
 -- ** default view
@@ -290,173 +341,94 @@ defaultEditView requestNode =
         { id, name } =
             getRequestNodeIdAndName requestNode
 
-        placeholder =
+        nodeType =
             case requestNode of
                 Folder _ -> "folder"
                 File _ -> "file"
 
         label =
             case requestNode of
-                Folder _ -> "Folder name:"
-                File _ -> "Request name:"
+                Folder _ -> "name: "
+                File _ -> "name: "
 
         renameBtn =
-            Input.button []
-                { onPress = Just <| AskRename id (editedOrNotEditedValue name)
-                , label = iconWithText "create_new_folder" "Rename"
+            Input.button primaryButtonAttrs
+                { onPress = Just <|
+                      AskRename id (editedOrNotEditedValue name)
+                , label =
+                    iconWithAttr { defaultIconAttribute
+                                     | title = " Save"
+                                     , icon = "save"
+                                 }
+                }
+
+        deleteBtn =
+            link primaryButtonAttrs
+                { label =
+                      iconWithAttr { defaultIconAttribute
+                                       | title = " Delete"
+                                       , icon = "delete"
+                                   }
+                , url = href (ReqPage (EditView (DeleteView id)))
                 }
 
         renameInput =
             Input.text []
                   { onChange = UpdateName id
                   , text = editedOrNotEditedValue name
-                  , placeholder = Just <| Input.placeholder [] (text placeholder)
+                  , placeholder = Just <| Input.placeholder [] (text nodeType)
                   , label = Input.labelLeft [ centerY ] <| text label
                   }
 
+        title =
+            el [ Font.size 25, Font.underline ] (text ("Edit " ++ nodeType ++ ": " ++ (editedOrNotEditedValue name)))
     in
-    el [ alignTop, centerX, padding 20 ]
-        <| column [ spacing 20 ]
-            [ row [ spacing 20 ]
+    column [ spacing 20 ]
+        [ row [ width fill, centerY ]
+              [ el [ alignLeft ] title
+              , el [ alignRight ] closeBuilderView
+              ]
+        , row [ spacing 20 ]
                   [ renameInput
                   , renameBtn
-                  , closeBuilderView
                   ]
-            , row [ spacing 20 ]
-                [ text "Duplicate"
-                ]
-            ]
-
-
-
--- ** create folder view
-
-
-createFolderView : Model a -> RequestNode -> Element Msg
-createFolderView model requestNode =
-    let
-
-        createFolderButton =
-            case model.requestNewNode.parentFolderId of
-                Nothing ->
-                    none
-
-                Just parentId ->
-                    Input.button []
-                        { onPress = Just (GenerateRandomUUIDForFolder parentId)
-                        , label = iconWithText "create_new_folder" "new folder"
-                        }
-
-        folderNameInput =
-            Input.text []
-                  { onChange = UpdateFolderName
-                  , text = model.requestNewNode.name
-                  , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-                  , label = Input.labelLeft [ centerY ] <| text "Folder name: "
-                  }
-    in
-    column []
-        [ row []
-              [ createFolderButton
-              , closeBuilderView
-              ]
-        , folderNameInput
-        , folderTreeView model SelectFolder
+        , el [ centerX ] (text "or ")
+        , row [ centerX ] [ deleteBtn ]
         ]
 
 
--- ** create default file view
+-- ** delete view
 
 
-createDefaultFileView : Model a -> Element Msg
-createDefaultFileView model =
+deleteView : RequestNode -> Element Msg
+deleteView requestNode =
     let
-        createFolderButton =
-            case model.requestNewNode.parentFolderId of
-                Nothing ->
-                    none
+        { id, name } =
+            getRequestNodeIdAndName requestNode
 
-                Just parentId ->
-                    Input.button []
-                        { onPress = Just (GenerateRandomUUIDForFile parentId)
-                        , label = iconWithText "create_new_file" "new file"
-                        }
+        areYouSure =
+            text "Are you sure you want to delete this?"
 
-        folderNameInput =
-            Input.text []
-                  { onChange = UpdateFileName
-                  , text = model.requestNewNode.name
-                  , placeholder = Just <| Input.placeholder [] (text "myApi.com/path?arg=someArg")
-                  , label = Input.labelLeft [ centerY ] <| text "Folder name: "
-                  }
-    in
-    column []
-        [ row []
-              [ createFolderButton
-              , closeBuilderView
-              ]
-        , folderNameInput
-        , folderTreeView model SelectFolder
-        ]
-
-
--- ** folder tree view
-
-
-folderTreeView : Model a -> (Uuid -> msg) -> Element msg
-folderTreeView model selectFolderMsg =
-    let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
-
-        treeView =
-            column [ spacing 10 ] (nodeView model selectFolderMsg requestNodes)
-    in
-    treeView
-
-
-nodeView : Model a -> (Uuid -> msg) -> List RequestNode -> List (Element msg)
-nodeView model selectFolderMsg requestCollection =
-    case requestCollection of
-        [] ->
-            []
-
-        node :: tail ->
-            case node of
-                Folder { id, name, open, children } ->
-                    let
-                        (Children c) =
-                            children
-
-                        folderChildrenView =
-                            nodeView model selectFolderMsg c
-
-                        tailView =
-                            nodeView model selectFolderMsg tail
-
-                        currentFolderView =
-                            folderView id model name selectFolderMsg folderChildrenView
-                    in
-                    currentFolderView :: tailView
-
-                File { id, name } ->
-                    []
-
-
--- ** folder view
-
-
-folderView : Uuid -> Model a -> Editable String -> (Uuid -> msg) -> List (Element msg) -> Element msg
-folderView id model eName selectFolderMsg folderChildrenView =
-    let
-        selectFolderBtn : Element msg
-        selectFolderBtn =
-            Input.button []
-                { onPress = Just (selectFolderMsg id)
-                , label = text (editedOrNotEditedValue eName)
+        yesBtn =
+            Input.button primaryButtonAttrs
+                { onPress = Just <| AskDelete id
+                , label = text "Yes"
                 }
+
+        noBtn =
+            link primaryButtonAttrs
+                { url = href (ReqPage (EditView (DefaultEditView id)))
+                , label = text "No"
+                }
+
+        title =
+            el [ Font.size 25, Font.underline ] <| text ("Delete " ++ (editedOrNotEditedValue name))
     in
-    column [ width (fill |> maximum 300) ]
-        [ selectFolderBtn
-        , column [ spacing 10, paddingXY 20 10 ] folderChildrenView
+    column [ spacing 20 ]
+        [ row [ width fill, centerY ]
+              [ el [ alignLeft ] title
+              , el [ alignRight ] closeBuilderView
+              ]
+        , areYouSure
+        , row [ centerX, spacing 20 ] [ noBtn, yesBtn ]
         ]

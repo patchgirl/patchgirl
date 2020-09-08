@@ -299,11 +299,11 @@ createRequestFolderResultToMsg newNode id result =
 view : WhichDefaultView -> Model a -> Element Msg
 view whichDefaultView model =
     el [ Background.color white
-           , boxShadow
-           , centerX
-           , spacing 20
-           , padding 30
-           ] <|
+       , boxShadow
+       , centerX
+       , spacing 20
+       , padding 30
+       ] <|
         case whichDefaultView of
             DefaultView ->
                 defaultView

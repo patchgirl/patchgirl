@@ -41,13 +41,13 @@ type WhichDefaultView
 
 type WhichEditView a
     = DefaultEditView a
-    | DuplicateView a
+    | DeleteView a
 
 mapEditView : (a -> b) -> WhichEditView a -> WhichEditView b
 mapEditView f whichEditView =
     case whichEditView of
         DefaultEditView x -> DefaultEditView (f x)
-        DuplicateView x -> DuplicateView (f x)
+        DeleteView x -> DeleteView (f x)
 
 andThenEditView : WhichEditView a -> (a -> WhichEditView b) -> WhichEditView b
 andThenEditView whichEditView f =
@@ -57,9 +57,9 @@ traverseEditViewMaybe : WhichEditView (Maybe a) -> Maybe (WhichEditView a)
 traverseEditViewMaybe whichEditView =
     case whichEditView of
         DefaultEditView Nothing -> Nothing
-        DuplicateView Nothing -> Nothing
+        DeleteView Nothing -> Nothing
         DefaultEditView (Just x) -> Just (DefaultEditView x)
-        DuplicateView (Just x) -> Just (DuplicateView x)
+        DeleteView (Just x) -> Just (DeleteView x)
 
 
 getBuilderId : BuilderView Uuid -> Maybe Uuid
@@ -72,7 +72,7 @@ getBuilderId builderView =
             Just <|
                 case whichEditView of
                     DefaultEditView id -> id
-                    DuplicateView id -> id
+                    DeleteView id -> id
 
         RunView id -> Just id
 

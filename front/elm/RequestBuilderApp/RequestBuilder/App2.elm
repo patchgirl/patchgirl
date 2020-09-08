@@ -35,6 +35,7 @@ import RequestBuilderApp.RequestTree.App as RequestTree
 import Application.Model as Application
 import RequestBuilderApp.RequestBuilder.Landing.App as Landing
 import RequestBuilderApp.RequestBuilder.Edit.App as Edit
+import RequestBuilderApp.RequestBuilder.Run.App as Run
 
 
 -- * model
@@ -61,7 +62,7 @@ type alias Model a =
 
 type Msg
     = LandingAppMsg Landing.Msg
-    | RunAppMsg -- RunMsg
+    | RunAppMsg Run.Msg
     | EditAppMsg Edit.Msg
 
 
@@ -85,8 +86,28 @@ update msg model =
             in
             (newModel, Cmd.map EditAppMsg newMsg)
 
-        _ ->
-            Debug.todo ""
+        RunAppMsg subMsg ->
+            let
+                (updatedModel, newRequestRecord, newMsg) =
+                    case getBuilder model of
+                        RunView (Just (File requestFileRecord)) ->
+                            Run.update subMsg model requestFileRecord
+                        _ ->
+                            Debug.todo ""
+
+                (RequestCollection requestCollectionId requestNodes) =
+                    model.requestCollection
+
+                newBuilderTree =
+                    List.map (RequestTree.modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
+
+                newModel =
+                    { updatedModel
+                        | requestCollection = RequestCollection requestCollectionId newBuilderTree
+                    }
+
+            in
+            ( newModel, Cmd.map RunAppMsg newMsg )
 
 
 -- * util
@@ -106,8 +127,7 @@ getBuilder model =
             EditView (mapEditView (RequestTree.findNode requestNodes) whichEditView)
 
         RunView id ->
-            RunView Nothing
-
+            RunView (RequestTree.findNode requestNodes id)
 
 
 -- * view
@@ -124,8 +144,11 @@ view model =
                 Nothing ->
                     text "404 - could not find edit view"
 
-                Just edit ->
-                    map EditAppMsg (Edit.view edit model)
+                Just nodeType ->
+                    map EditAppMsg (Edit.view nodeType model)
 
-        _ ->
-            Debug.todo ""
+        RunView (Just (File requestFileRecord)) ->
+            map RunAppMsg (Run.view requestFileRecord model)
+
+        RunView _ ->
+            text "404 - could not find run view"
