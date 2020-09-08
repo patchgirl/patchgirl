@@ -161,11 +161,11 @@ fileView id model eName =
     row [ onMouseEnter (ToggleMenu (Just id))
         , onMouseLeave (ToggleMenu Nothing)
         ]
-        [ link [ weight ]
-              { url = href (ReqPage (RunView id))
-              , label = el [] <| iconWithTextAndColor "label" name color
-              }
-        , folderMenuView
+        [ el [ onRight folderMenuView ] <|
+              link [ weight ]
+                  { url = href (ReqPage (RunView id))
+                  , label = el [] <| iconWithTextAndColor "label" name color
+                  }
         ]
 
 

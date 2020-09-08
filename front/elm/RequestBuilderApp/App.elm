@@ -156,7 +156,7 @@ view model =
     column [ width fill, height fill, spacing 10 ]
         [ if not model.runnerRunning then enableRunnerBanner else none
         , wrappedRow
-              [ width fill, height fill
+              [ width fill
               , paddingXY 10 0
               , spacing 10
               ]
@@ -165,7 +165,7 @@ view model =
                     , spacing 20
                     , centerX
                     , padding 20
-                    , width (fillPortion 1), height fill
+                    , width (fillPortion 1)
                     , Background.color white
                     , boxShadow
                     ]
