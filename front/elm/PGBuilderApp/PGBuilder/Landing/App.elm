@@ -226,8 +226,8 @@ update msg model =
 -- ** tree
 
 
-touch : NewNode -> Uuid -> PgNode -> PgNode
-touch newNode id parentNode =
+touchRequest : NewNode -> Uuid -> PgNode -> PgNode
+touchRequest newNode id parentNode =
     case parentNode of
         (File _) as file ->
             file

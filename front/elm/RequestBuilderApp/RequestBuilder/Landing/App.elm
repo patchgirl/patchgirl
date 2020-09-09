@@ -192,7 +192,7 @@ update msg model =
                             requestNodes ++ [ mkDefaultFile newNode newId ]
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (touch newNode newId)) requestNodes
+                            List.map (modifyRequestNode folderId (touchRequest newNode newId)) requestNodes
 
                 newModel =
                     { model
@@ -212,8 +212,8 @@ update msg model =
 -- ** tree
 
 
-touch : NewNode -> Uuid -> RequestNode -> RequestNode
-touch newNode id parentNode =
+touchRequest : NewNode -> Uuid -> RequestNode -> RequestNode
+touchRequest newNode id parentNode =
     case parentNode of
         (File _) as file ->
             file

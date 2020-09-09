@@ -182,7 +182,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode parentNodeId (touch newId)) requestNodes
+                    List.map (modifyRequestNode parentNodeId (touchRequest newId)) requestNodes
 
                 newModel =
                     { model

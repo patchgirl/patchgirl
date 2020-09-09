@@ -183,7 +183,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode parentNodeId (touch newId)) scenarioNodes
+                    List.map (modifyScenarioNode parentNodeId (touchRequest newId)) scenarioNodes
 
                 newModel =
                     { model
@@ -563,8 +563,8 @@ mkdirRequest id node =
                 }
 
 
-touch : Uuid -> ScenarioNode -> ScenarioNode
-touch id parentNode =
+touchRequest : Uuid -> ScenarioNode -> ScenarioNode
+touchRequest id parentNode =
     case parentNode of
         (ScenarioFile _) as file ->
             file

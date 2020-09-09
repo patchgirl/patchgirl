@@ -297,8 +297,8 @@ mkdirPg id node =
 -- ** touch
 
 
-touch : Uuid -> RequestNode -> RequestNode
-touch id parentNode =
+touchRequest : Uuid -> RequestNode -> RequestNode
+touchRequest id parentNode =
     case parentNode of
         (File _) as file ->
             file
