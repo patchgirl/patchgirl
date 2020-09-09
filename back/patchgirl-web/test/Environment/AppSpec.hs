@@ -28,11 +28,11 @@ import           PatchGirl.Server
 -- * client
 
 
-createEnvironment :: Auth.Token -> NewEnvironment -> ClientM UUID
+createEnvironment :: Auth.Token -> NewEnvironment -> ClientM ()
 getEnvironments :: Auth.Token -> ClientM [Environment]
 updateEnvironment :: Auth.Token -> UUID -> UpdateEnvironment -> ClientM ()
 deleteEnvironment :: Auth.Token -> UUID -> ClientM ()
-updateKeyValues :: Auth.Token -> UUID -> [NewKeyValue] -> ClientM [KeyValue]
+updateKeyValues :: Auth.Token -> UUID -> [NewKeyValue] -> ClientM ()
 deleteKeyValue :: Auth.Token -> UUID -> UUID -> ClientM ()
 createEnvironment
   :<|> getEnvironments
@@ -58,13 +58,13 @@ spec =
       it "should create an environment and bind it to an account" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           newEnvironment <- mkNewEnvironment
-          environmentId <- try clientEnv (createEnvironment token newEnvironment)
-          Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
+          try clientEnv (createEnvironment token newEnvironment)
+          Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment (_newEnvironmentId newEnvironment) connection
           _fakeEnvironmentName `shouldBe` "test"
           fakeAccountEnvironments <- selectFakeAccountEnvironments accountId connection
           let expectedFakeAccountEnvironment =
                 FakeAccountEnvironment { _fakeAccountEnvironmentAccountId = accountId
-                                       , _fakeAccountEnvironmentEnvironmentId = environmentId
+                                       , _fakeAccountEnvironmentEnvironmentId = _newEnvironmentId newEnvironment
                                        }
           fakeAccountEnvironments `shouldSatisfy` elem expectedFakeAccountEnvironment
 
@@ -163,7 +163,7 @@ spec =
       it "updates the environment key values" $ \clientEnv ->
         createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
-          try clientEnv (updateKeyValues token environmentId []) `shouldReturn` []
+          try clientEnv (updateKeyValues token environmentId [])
           selectFakeKeyValues environmentId connection `shouldReturn` []
 
           let newKeyValues =
@@ -173,9 +173,13 @@ spec =
                               , _newKeyValueHidden = True
                               }
                 ]
-          [ KeyValue { _keyValueKey, _keyValueValue } ] <- try clientEnv (updateKeyValues token environmentId newKeyValues)
-          _keyValueKey `shouldBe` "key1"
-          _keyValueValue `shouldBe` "value1"
+          try clientEnv (updateKeyValues token environmentId newKeyValues)
+          selectFakeKeyValues environmentId connection `shouldReturn` [ KeyValue { _keyValueId = UUID.nil
+                                                                                 , _keyValueKey = "key1"
+                                                                                 , _keyValueValue = "value1"
+                                                                                 , _keyValueHidden = True
+                                                                                 }
+                                                                      ]
 
 
 -- ** delete key values

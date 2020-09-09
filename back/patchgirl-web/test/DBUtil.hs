@@ -1172,7 +1172,7 @@ selectFakeKeyValues environmentId connection =
   where
     rawQuery =
       [sql|
-          SELECT id, environment_id, key, value
+          SELECT id, key, value, hidden
           FROM key_value
           WHERE environment_id = ?
           |]

@@ -11,6 +11,7 @@ module Environment.App where
 
 import           Control.Lens                     ((&))
 import           Control.Lens.Getter              ((^.))
+import qualified Control.Monad          as Monad
 import           Control.Lens.Setter              ((%~))
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
@@ -154,12 +155,12 @@ createEnvironmentHandler
   :: ( MonadReader Env m
      , MonadIO m
      )
-  => UUID -> NewEnvironment -> m UUID
+  => UUID -> NewEnvironment -> m ()
 createEnvironmentHandler accountId newEnvironment = do
   connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
   liftIO $
-    bindEnvironmentToAccount accountId environmentId connection >> return environmentId
+    bindEnvironmentToAccount accountId environmentId connection
 
 
 -- * update environment
@@ -293,7 +294,7 @@ updateKeyValuesHandler
   => UUID
   -> UUID
   -> [NewKeyValue]
-  -> m [KeyValue]
+  -> m ()
 updateKeyValuesHandler accountId environmentId' newKeyValues = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments accountId connection
@@ -302,6 +303,6 @@ updateKeyValuesHandler accountId environmentId' newKeyValues = do
   case environment of
     Just _ -> do
       liftIO $ deleteKeyValuesDB environmentId' connection
-      liftIO $ mapM (flip (insertManyKeyValuesDB environmentId') connection) newKeyValues
+      liftIO $ Monad.void $ mapM (flip (insertManyKeyValuesDB environmentId') connection) newKeyValues
     Nothing ->
       throwError err404

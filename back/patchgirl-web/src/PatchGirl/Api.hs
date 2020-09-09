@@ -155,24 +155,24 @@ scenarioCollectionApiServer =
 
 type EnvironmentApi auths =
   Flat (Auth auths CookieSession :> "api" :> "environment" :> (
-    ReqBody '[JSON] NewEnvironment :> Post '[JSON] UUID :<|> -- createEnvironment
+    ReqBody '[JSON] NewEnvironment :> Post '[JSON] () :<|> -- createEnvironment
     Get '[JSON] [Environment] :<|> -- getEnvironments
     Capture "environmentId" UUID :> (
       ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
       Delete '[JSON] () :<|>  -- deleteEnvironment
       "keyValue" :> (
-        ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] [KeyValue] :<|> -- updateKeyValues
+        ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] () :<|> -- updateKeyValues
         Capture "keyValueId" UUID :> Delete '[JSON] () -- deleteKeyValues
       )
     )
   ))
 
 environmentApiServer
-  :: (AuthResult CookieSession -> NewEnvironment -> AppM UUID)
+  :: (AuthResult CookieSession -> NewEnvironment -> AppM ())
   :<|> ((AuthResult CookieSession -> AppM [Environment])
   :<|> ((AuthResult CookieSession -> UUID -> UpdateEnvironment -> AppM ())
   :<|> ((AuthResult CookieSession -> UUID -> AppM ())
-  :<|> ((AuthResult CookieSession -> UUID -> [NewKeyValue] -> AppM [KeyValue])
+  :<|> ((AuthResult CookieSession -> UUID -> [NewKeyValue] -> AppM ())
   :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())))))
 environmentApiServer =
   authorizeWithAccountId createEnvironmentHandler
