@@ -121,7 +121,12 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            EditView (mapEditView (findPgNode nodes) whichEditView)
+            let
+                getChildren folder =
+                    let (PgChildren children) = folder.children
+                    in children
+            in
+            EditView (mapEditView (findNode nodes getChildren) whichEditView)
 
         RunView id ->
             RunView (findPgNode nodes id)

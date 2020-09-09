@@ -66,7 +66,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.tempRenamePg newName)) pgNodes
+                    List.map (Tree.modifyPgNode id (Tree.tempRename newName)) pgNodes
 
                 newModel =
                     { model
@@ -95,7 +95,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.renamePg newName)) pgNodes
+                    List.map (Tree.modifyPgNode id (Tree.rename newName)) pgNodes
 
                 newModel =
                     { model

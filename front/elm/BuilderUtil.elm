@@ -15,16 +15,22 @@ import Page exposing(..)
 
 -- * tree
 
+
 -- ** find
 
 
-findRequestNode : List RequestNode -> Uuid -> Maybe RequestNode
-findRequestNode requestNodes id =
+type alias Node a b = NodeType { a | id : Uuid } { b | id : Uuid }
+
+findNode : List (Node a b)
+         -> ({ a | id : Uuid } -> List (Node a b))
+         -> Uuid
+         -> Maybe (Node a b)
+findNode nodes getChildren id =
     let
-        find : RequestNode -> Maybe RequestNode
-        find requestNode =
-            case requestNode of
-                (File file) as node ->
+        find : (Node a b) -> Maybe (Node a b)
+        find node =
+            case node of
+                (File file) ->
                     case file.id == id of
                         True ->
                             Just node
@@ -32,19 +38,48 @@ findRequestNode requestNodes id =
                         False ->
                             Nothing
 
-                (Folder folder) as node ->
+                (Folder folder) ->
                     case folder.id == id of
                         True ->
                             Just node
 
                         False ->
-                            let
-                                (RequestChildren children) =
-                                    folder.children
-                            in
-                            findRequestNode children id
+                            findNode (getChildren folder) getChildren id
     in
-    List.head <| catMaybes (List.map find requestNodes)
+    List.head <| catMaybes (List.map find nodes)
+
+
+-- ** find request
+
+
+findRequestNode : List RequestNode -> Uuid -> Maybe RequestNode
+findRequestNode nodes id =
+    let
+        getChildren folder =
+            let
+                (RequestChildren children) =
+                    folder.children
+            in
+            children
+    in
+    findNode nodes getChildren id
+
+
+-- ** find pg
+
+
+findPgNode : List PgNode -> Uuid -> Maybe PgNode
+findPgNode nodes id =
+    let
+        getChildren folder =
+            let
+                (PgChildren children) =
+                    folder.children
+            in
+            children
+    in
+    findNode nodes getChildren id
+
 
 
 findRequestFile : List RequestNode -> Uuid -> Maybe RequestFileRecord
@@ -65,36 +100,6 @@ findRequestFolder requestNodes id =
         _ ->
             Nothing
 
-
-findPgNode : List PgNode -> Uuid -> Maybe PgNode
-findPgNode pgNodes id =
-    let
-        find : PgNode -> Maybe PgNode
-        find pgNode =
-            case pgNode of
-                (File file) as node ->
-                    case file.id == id of
-                        True ->
-                            Just node
-
-                        False ->
-                            Nothing
-
-                (Folder folder) as node ->
-                    case folder.id == id of
-                        True ->
-                            Just node
-
-                        False ->
-                            let
-                                (PgChildren children) =
-                                    folder.children
-                            in
-                            findPgNode children id
-    in
-    List.head <| catMaybes (List.map find pgNodes)
-
-
 findPgFile : List PgNode -> Uuid -> Maybe PgFileRecord
 findPgFile pgNodes id =
     case findPgNode pgNodes id of
@@ -113,31 +118,22 @@ findPgFolder pgNodes id =
         _ ->
             Nothing
 
-getRequestNodeId : RequestNode -> Uuid
-getRequestNodeId requestNode =
+
+-- ** get node Id
+
+
+getNodeId : Node a b -> Uuid
+getNodeId requestNode =
     case requestNode of
-        Folder { id } ->
-            id
-
-        File { id } ->
-            id
-
-getPgNodeId : PgNode -> Uuid
-getPgNodeId node =
-    case node of
-        Folder { id } ->
-            id
-
-        File { id } ->
-            id
-
+        Folder { id } -> id
+        File { id } -> id
 
 -- ** modify
 
 
 modifyPgNode : Uuid -> (PgNode -> PgNode) -> PgNode -> PgNode
 modifyPgNode id f requestNode =
-    case getPgNodeId requestNode == id of
+    case getNodeId requestNode == id of
         True ->
             f requestNode
 
@@ -159,7 +155,7 @@ modifyPgNode id f requestNode =
 
 modifyRequestNode : Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
 modifyRequestNode id f requestNode =
-    case getRequestNodeId requestNode == id of
+    case getNodeId requestNode == id of
         True ->
             f requestNode
 
@@ -184,7 +180,7 @@ modifyRequestNode id f requestNode =
 
 deleteRequestNode : Uuid -> RequestNode -> List RequestNode
 deleteRequestNode idToDelete requestNode =
-    case getRequestNodeId requestNode == idToDelete of
+    case getNodeId requestNode == idToDelete of
         True ->
             []
 
@@ -207,7 +203,7 @@ deleteRequestNode idToDelete requestNode =
 
 deletePgNode : Uuid -> PgNode -> List PgNode
 deletePgNode idToDelete pgNode =
-    case getPgNodeId pgNode == idToDelete of
+    case getNodeId pgNode == idToDelete of
         True ->
             []
 
@@ -232,29 +228,14 @@ deletePgNode idToDelete pgNode =
 -- ** toggle
 
 
-toggleRequestFolder : RequestNode -> RequestNode
-toggleRequestFolder node =
+toggleFolder : NodeType { a | open : Bool } b -> NodeType { a | open : Bool } b
+toggleFolder node =
     case node of
         (File _) as file ->
             file
 
         Folder folder ->
-            Folder
-                { folder
-                    | open = not folder.open
-                }
-
-togglePgFolder : PgNode -> PgNode
-togglePgFolder node =
-    case node of
-        (File _) as file ->
-            file
-
-        Folder folder ->
-            Folder
-                { folder
-                    | open = not folder.open
-                }
+            Folder { folder | open = not folder.open }
 
 
 -- ** mkdir
@@ -335,8 +316,10 @@ touchPg newNode parentNode =
 -- ** rename
 
 
-renameRequest : String -> RequestNode -> RequestNode
-renameRequest newName node =
+rename : String
+       -> NodeType { a | name : Editable String } { b | name : Editable String }
+       -> NodeType { a | name : Editable String } { b | name : Editable String }
+rename newName node =
     case node of
         Folder folder ->
             Folder { folder | name = NotEdited newName }
@@ -344,26 +327,10 @@ renameRequest newName node =
         File file ->
             File { file | name = NotEdited newName }
 
-renamePg : String -> PgNode -> PgNode
-renamePg newName node =
-    case node of
-        Folder folder ->
-            Folder { folder | name = NotEdited newName }
-
-        File file ->
-            File { file | name = NotEdited newName }
-
-tempRenameRequest : String -> RequestNode -> RequestNode
-tempRenameRequest newName node =
-    case node of
-        Folder folder ->
-            Folder { folder | name = changeEditedValue newName folder.name }
-
-        File file ->
-            File { file | name = changeEditedValue newName file.name }
-
-tempRenamePg : String -> PgNode -> PgNode
-tempRenamePg newName node =
+tempRename : String
+           -> NodeType { a | name : Editable String } { b | name : Editable String }
+           -> NodeType { a | name : Editable String } { b | name : Editable String }
+tempRename newName node =
     case node of
         Folder folder ->
             Folder { folder | name = changeEditedValue newName folder.name }

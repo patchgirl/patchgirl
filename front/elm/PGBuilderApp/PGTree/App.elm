@@ -51,7 +51,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (modifyPgNode id togglePgFolder) pgNodes
+                    List.map (modifyPgNode id toggleFolder) pgNodes
 
                 newModel =
                     { model
