@@ -47,7 +47,7 @@ createEnvironment
 
 
 spec :: Spec
-spec = focus $
+spec =
   withClient (mkApp defaultEnv) $ do
 
 

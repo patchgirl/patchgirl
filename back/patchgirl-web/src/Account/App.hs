@@ -192,31 +192,31 @@ resetVisitorSql connection = do
 
 
           INSERT INTO environment (id, name)
-          VALUES (1, 'prod');
+          VALUES ('98fa7543-aaaf-41a2-9b42-54129bd96551', 'prod');
 
           INSERT INTO environment (id, name)
-          VALUES (2, 'dev');
+          VALUES ('38668b92-647d-4108-92c8-b539fdc7a7bd', 'dev');
 
           INSERT INTO account_environment (account_id, environment_id)
-          VALUES ('00000000-0000-1000-a000-000000000000', 1);
+          VALUES ('00000000-0000-1000-a000-000000000000', '98fa7543-aaaf-41a2-9b42-54129bd96551');
 
           INSERT INTO account_environment (account_id, environment_id)
-          VALUES ('00000000-0000-1000-a000-000000000000', 2);
+          VALUES ('00000000-0000-1000-a000-000000000000', '38668b92-647d-4108-92c8-b539fdc7a7bd');
 
 
 -- ** key values
 
 
-          INSERT INTO key_value (environment_id, key, value, hidden)
-          VALUES (1, 'host', 'reqres.in/api', true);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('aea099bd-cbee-433c-a852-be9db08c607d', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'host', 'reqres.in/api', true);
 
-          INSERT INTO key_value (environment_id, key, value, hidden)
-          VALUES (1, 'user', 'eve.holt', true);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('05445705-8494-48ea-9535-616a7cfde992', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'user', 'eve.holt', true);
 
-          INSERT INTO key_value ( environment_id, key, value, hidden)
-          VALUES (2, 'host', 'reqres.in/api', true);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('1b983dbb-26d8-4fa6-b152-941ea3b0f905', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'host', 'reqres.in/api', true);
 
-          INSERT INTO key_value ( environment_id, key, value, hidden)
-          VALUES ( 2, 'user', 'whatever', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('e9279277-2215-411e-9198-af381744eb4a', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'user', 'whatever', false);
 
           |]

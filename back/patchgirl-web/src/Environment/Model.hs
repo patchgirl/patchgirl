@@ -17,6 +17,7 @@ module Environment.Model ( KeyValue(..)
                          , pgEnvironmentWithoutKeyValueEnvironmentId
                          , pgEnvironmentWithoutKeyValueEnvironmentName
                          , NewKeyValue(..)
+                         , newKeyValueId
                          , newKeyValueKey
                          , newKeyValueValue
                          , newKeyValueHidden
@@ -27,6 +28,7 @@ module Environment.Model ( KeyValue(..)
                          , UpdateEnvironment(..)
                          , updateEnvironmentName
                          , NewEnvironment(..)
+                         , newEnvironmentId
                          , newEnvironmentName
                          ) where
 
