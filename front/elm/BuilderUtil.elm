@@ -273,7 +273,7 @@ mkdirRequest id node =
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultFolder id :: children)
+                    | children = Children (mkDefaultRequestFolder id :: children)
                     , open = True
                 }
 
@@ -310,7 +310,7 @@ touchRequest id parentNode =
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultFile id :: children)
+                    | children = Children (mkDefaultRequestFile id :: children)
                     , open = True
                 }
 
@@ -332,32 +332,11 @@ touchPg newNode parentNode =
                 }
 
 
--- ** display rename input
-
-
-displayRenameInput : RequestNode -> RequestNode
-displayRenameInput node =
-    case node of
-        Folder folder ->
-            let
-                oldValue =
-                    notEditedValue folder.name
-            in
-            Folder { folder | name = Edited oldValue oldValue }
-
-        File file ->
-            let
-                oldValue =
-                    notEditedValue file.name
-            in
-            File { file | name = Edited oldValue oldValue }
-
-
 -- ** rename
 
 
-rename : String -> RequestNode -> RequestNode
-rename newName node =
+renameRequest : String -> RequestNode -> RequestNode
+renameRequest newName node =
     case node of
         Folder folder ->
             Folder { folder | name = NotEdited newName }
@@ -374,8 +353,8 @@ renamePg newName node =
         File file ->
             File { file | name = NotEdited newName }
 
-tempRename : String -> RequestNode -> RequestNode
-tempRename newName node =
+tempRenameRequest : String -> RequestNode -> RequestNode
+tempRenameRequest newName node =
     case node of
         Folder folder ->
             Folder { folder | name = changeEditedValue newName folder.name }
@@ -396,8 +375,8 @@ tempRenamePg newName node =
 -- ** mk default
 
 
-mkDefaultFolder : Uuid -> RequestNode
-mkDefaultFolder id =
+mkDefaultRequestFolder : Uuid -> RequestNode
+mkDefaultRequestFolder id =
     Folder
         { id = id
         , name = NotEdited "new folder"
@@ -414,8 +393,8 @@ mkDefaultPgFolder id =
         , children = Children2 []
         }
 
-mkDefaultFile : Uuid -> RequestNode
-mkDefaultFile id =
+mkDefaultRequestFile : Uuid -> RequestNode
+mkDefaultRequestFile id =
     File
         { id = id
         , name = NotEdited "new request"

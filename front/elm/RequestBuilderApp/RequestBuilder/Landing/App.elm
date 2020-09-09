@@ -131,7 +131,7 @@ update msg model =
                 newRequestNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultFolder newNode newId ]
+                            requestNodes ++ [ mkDefaultRequestFolder newNode newId ]
 
                         Just folderId ->
                             List.map (modifyRequestNode folderId (mkdirRequest newNode newId)) requestNodes
@@ -189,7 +189,7 @@ update msg model =
                 newRequestNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultFile newNode newId ]
+                            requestNodes ++ [ mkDefaultRequestFile newNode newId ]
 
                         Just folderId ->
                             List.map (modifyRequestNode folderId (touchRequest newNode newId)) requestNodes
@@ -225,7 +225,7 @@ touchRequest newNode id parentNode =
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultFile newNode id :: children)
+                    | children = Children (mkDefaultRequestFile newNode id :: children)
                     , open = True
                 }
 
@@ -242,12 +242,12 @@ mkdirRequest newNode id node =
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultFolder newNode id :: children)
+                    | children = Children (mkDefaultRequestFolder newNode id :: children)
                     , open = True
                 }
 
-mkDefaultFolder : NewNode -> Uuid -> RequestNode
-mkDefaultFolder newNode id =
+mkDefaultRequestFolder : NewNode -> Uuid -> RequestNode
+mkDefaultRequestFolder newNode id =
     Folder
         { id = id
         , name = NotEdited newNode.name
@@ -256,8 +256,8 @@ mkDefaultFolder newNode id =
         }
 
 
-mkDefaultFile : NewNode -> Uuid -> RequestNode
-mkDefaultFile newNode id =
+mkDefaultRequestFile : NewNode -> Uuid -> RequestNode
+mkDefaultRequestFile newNode id =
     File
         { id = id
         , name = NotEdited newNode.name

@@ -330,7 +330,7 @@ entryView mSelectedEnvId environment =
                 { onChange = ChangeName environment.id
                 , text = editedOrNotEditedValue environment.name
                 , placeholder = Just <| Input.placeholder [] (text "environment name")
-                , label = Input.labelHidden "rename environment"
+                , label = Input.labelHidden "renameRequest environment"
                 }
 
         modeView =

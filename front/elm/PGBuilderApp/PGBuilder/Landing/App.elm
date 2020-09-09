@@ -131,7 +131,7 @@ update msg model =
                 newPgNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            pgNodes ++ [ mkDefaultFolder newNode newId ]
+                            pgNodes ++ [ mkDefaultRequestFolder newNode newId ]
 
                         Just folderId ->
                             List.map (PgTree.modifyPgNode folderId (mkdirRequest newNode newId)) pgNodes
@@ -198,7 +198,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNode =
-                    mkDefaultFile newNode newId
+                    mkDefaultRequestFile newNode newId
 
                 newPgNodes =
                     case newNode.parentFolderId of
@@ -239,7 +239,7 @@ touchRequest newNode id parentNode =
             in
             Folder
                 { folder
-                    | children = Children2 (mkDefaultFile newNode id :: children)
+                    | children = Children2 (mkDefaultRequestFile newNode id :: children)
                     , open = True
                 }
 
@@ -256,12 +256,12 @@ mkdirRequest newNode id node =
             in
             Folder
                 { folder
-                    | children = Children2 (mkDefaultFolder newNode id :: children)
+                    | children = Children2 (mkDefaultRequestFolder newNode id :: children)
                     , open = True
                 }
 
-mkDefaultFolder : NewNode -> Uuid -> PgNode
-mkDefaultFolder newNode id =
+mkDefaultRequestFolder : NewNode -> Uuid -> PgNode
+mkDefaultRequestFolder newNode id =
     Folder
         { id = id
         , name = NotEdited newNode.name
@@ -270,8 +270,8 @@ mkDefaultFolder newNode id =
         }
 
 
-mkDefaultFile : NewNode -> Uuid -> PgNode
-mkDefaultFile newNode id =
+mkDefaultRequestFile : NewNode -> Uuid -> PgNode
+mkDefaultRequestFile newNode id =
     File
         { id = id
         , name = NotEdited newNode.name

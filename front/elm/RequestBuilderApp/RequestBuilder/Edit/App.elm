@@ -201,7 +201,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode id (tempRename newName)) requestNodes
+                    List.map (modifyRequestNode id (tempRenameRequest newName)) requestNodes
 
                 newModel =
                     { model
@@ -230,7 +230,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode id (rename newName)) requestNodes
+                    List.map (modifyRequestNode id (renameRequest newName)) requestNodes
 
                 newModel =
                     { model

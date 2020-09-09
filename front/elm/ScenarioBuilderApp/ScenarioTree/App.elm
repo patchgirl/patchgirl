@@ -219,7 +219,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode id (tempRename newName)) scenarioNodes
+                    List.map (modifyScenarioNode id (tempRenameRequest newName)) scenarioNodes
 
                 newModel =
                     { model
@@ -248,7 +248,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode id (rename newName)) scenarioNodes
+                    List.map (modifyScenarioNode id (renameRequest newName)) scenarioNodes
 
                 newModel =
                     { model
@@ -329,7 +329,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    scenarioNodes ++ [ mkDefaultFile newId ]
+                    scenarioNodes ++ [ mkDefaultRequestFile newId ]
 
                 newModel =
                     { model
@@ -369,7 +369,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    scenarioNodes ++ [ mkDefaultFolder newId ]
+                    scenarioNodes ++ [ mkDefaultRequestFolder newId ]
 
                 newModel =
                     { model
@@ -558,7 +558,7 @@ mkdirRequest id node =
         ScenarioFolder folder ->
             ScenarioFolder
                 { folder
-                    | children = mkDefaultFolder id :: folder.children
+                    | children = mkDefaultRequestFolder id :: folder.children
                     , open = True
                 }
 
@@ -572,7 +572,7 @@ touchRequest id parentNode =
         ScenarioFolder folder ->
             ScenarioFolder
                 { folder
-                    | children = mkDefaultFile id :: folder.children
+                    | children = mkDefaultRequestFile id :: folder.children
                     , open = True
                 }
 
@@ -595,8 +595,8 @@ displayRenameInput node =
             ScenarioFile { file | name = Edited oldValue oldValue }
 
 
-rename : String -> ScenarioNode -> ScenarioNode
-rename newName node =
+renameRequest : String -> ScenarioNode -> ScenarioNode
+renameRequest newName node =
     case node of
         ScenarioFolder folder ->
             ScenarioFolder { folder | name = NotEdited newName }
@@ -605,8 +605,8 @@ rename newName node =
             ScenarioFile { file | name = NotEdited newName }
 
 
-tempRename : String -> ScenarioNode -> ScenarioNode
-tempRename newName node =
+tempRenameRequest : String -> ScenarioNode -> ScenarioNode
+tempRenameRequest newName node =
     case node of
         ScenarioFolder folder ->
             ScenarioFolder { folder | name = changeEditedValue newName folder.name }
@@ -615,8 +615,8 @@ tempRename newName node =
             ScenarioFile { file | name = changeEditedValue newName file.name }
 
 
-mkDefaultFolder : Uuid -> ScenarioNode
-mkDefaultFolder id =
+mkDefaultRequestFolder : Uuid -> ScenarioNode
+mkDefaultRequestFolder id =
     ScenarioFolder
         { id = id
         , name = NotEdited defaultFolderName
@@ -625,8 +625,8 @@ mkDefaultFolder id =
         }
 
 
-mkDefaultFile : Uuid -> ScenarioNode
-mkDefaultFile id =
+mkDefaultRequestFile : Uuid -> ScenarioNode
+mkDefaultRequestFile id =
     ScenarioFile
         { id = id
         , environmentId = NotEdited Nothing
@@ -743,7 +743,7 @@ fileEditView name id =
         { onChange = ChangeName id
         , text = name
         , placeholder = Nothing
-        , label = Input.labelHidden "rename file"
+        , label = Input.labelHidden "renameRequest file"
         }
 
 
@@ -871,7 +871,7 @@ folderEditView id name =
         { onChange = ChangeName id
         , text = name
         , placeholder = Nothing
-        , label = Input.labelHidden "rename folder"
+        , label = Input.labelHidden "renameRequest folder"
         }
 
 
