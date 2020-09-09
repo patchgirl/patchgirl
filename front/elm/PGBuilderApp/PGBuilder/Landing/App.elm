@@ -350,7 +350,7 @@ defaultView =
             link primaryButtonAttrs
                 { label =
                       iconWithAttr { defaultIconAttribute
-                                       | title = " Create a new pg"
+                                       | title = " Create a new request"
                                        , icon = "note_add"
                                    }
                 , url = href (PgPage (LandingView CreateDefaultFileView))

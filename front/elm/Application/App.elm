@@ -16,7 +16,7 @@ import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
-import PGBuilderApp.App2 as PGBuilderApp
+import PGBuilderApp.App as PGBuilderApp
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp

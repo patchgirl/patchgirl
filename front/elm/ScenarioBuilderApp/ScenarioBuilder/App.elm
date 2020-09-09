@@ -18,8 +18,6 @@ import List.Extra as List
 import Modal exposing (Modal(..))
 import Random
 import RequestBuilderApp.RequestTree.Util as RequestTree
---import PGBuilderApp.App as PgBuilderApp
-import PGBuilderApp.PGBuilder.App as PgBuilder
 import RequestComputation exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
@@ -30,6 +28,7 @@ import StringTemplate exposing (..)
 import Dict exposing (Dict)
 import Runner
 import PGBuilderApp.PGTree.Util as PgTree
+import PGBuilderApp.PGBuilder.Run.App as PgBuilder
 import Browser.Navigation as Navigation
 import HttpError exposing(..)
 

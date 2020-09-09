@@ -1,4 +1,4 @@
-module PGBuilderApp.App2 exposing (..)
+module PGBuilderApp.App exposing (..)
 
 import Application.Model as Application
 import Application.Type exposing (..)
@@ -12,7 +12,7 @@ import Html.Events.Extra exposing (targetValueIntParse)
 import Json.Decode as Json
 import List.Extra as List
 import Page exposing (..)
-import PGBuilderApp.PGBuilder.App2 as PgBuilder
+import PGBuilderApp.PGBuilder.App as PgBuilder
 import PGBuilderApp.PGTree.App as Tree
 import PGBuilderApp.PGTree.Util as Tree
 import Util exposing (..)
