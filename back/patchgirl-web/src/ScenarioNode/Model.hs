@@ -163,7 +163,7 @@ data ScenarioNode
                    }
   | ScenarioFile { _scenarioNodeId            :: UUID
                  , _scenarioNodeName          :: String
-                 , _scenarioNodeEnvironmentId :: Maybe Int
+                 , _scenarioNodeEnvironmentId :: Maybe UUID
                  , _scenarioNodeScenes        :: [SceneActor]
                  }
   deriving (Eq, Show, Generic)
@@ -270,7 +270,7 @@ $(makeLenses ''UpdateScenarioNode)
 data NewRootScenarioFile =
   NewRootScenarioFile { _newRootScenarioFileId            :: UUID
                       , _newRootScenarioFileName          :: String
-                      , _newRootScenarioFileEnvironmentId :: Maybe Int
+                      , _newRootScenarioFileEnvironmentId :: Maybe UUID
                       } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootScenarioFile)
@@ -291,7 +291,7 @@ data NewScenarioFile =
   NewScenarioFile { _newScenarioFileId            :: UUID
                   , _newScenarioFileName          :: String
                   , _newScenarioFileParentNodeId  :: UUID
-                  , _newScenarioFileEnvironmentId :: Maybe Int
+                  , _newScenarioFileEnvironmentId :: Maybe UUID
                   } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewScenarioFile)
@@ -310,7 +310,7 @@ instance FromJSON NewScenarioFile where
 
 data UpdateScenarioFile =
   UpdateScenarioFile { _updateScenarioFileId            :: UUID
-                     , _updateScenarioFileEnvironmentId :: Maybe Int
+                     , _updateScenarioFileEnvironmentId :: Maybe UUID
                      } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''UpdateScenarioFile)

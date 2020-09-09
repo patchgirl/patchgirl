@@ -46,7 +46,7 @@ selectEnvironments accountId connection = do
     in
     return $ environmentsWithKeyValues ++ environmentsWithoutKeyValues
   where
-    convertPgEnvironmentsToHashMap :: [PGEnvironmentWithKeyValue] -> HashMap Int Environment
+    convertPgEnvironmentsToHashMap :: [PGEnvironmentWithKeyValue] -> HashMap UUID Environment
     convertPgEnvironmentsToHashMap pgEnvironments =
       foldl' (\acc pgEnv -> insertWith mergeValue (pgEnv ^. pgEnvironmentWithKeyValueEnvironmentId) (convertPGEnviromentToEnvironment pgEnv) acc) HashMap.empty pgEnvironments
 
@@ -119,21 +119,22 @@ getEnvironmentsHandler accountId = do
 -- * create environment
 
 
-insertEnvironment :: NewEnvironment -> PG.Connection -> IO Int
-insertEnvironment NewEnvironment { _newEnvironmentName } connection = do
-  [PG.Only id] <- PG.query connection insertEnvironmentQuery (PG.Only _newEnvironmentName)
+insertEnvironment :: NewEnvironment -> PG.Connection -> IO UUID
+insertEnvironment NewEnvironment {..} connection = do
+  [PG.Only id] <- PG.query connection insertEnvironmentQuery (_newEnvironmentId, _newEnvironmentName)
   return id
   where
     insertEnvironmentQuery =
       [sql|
           INSERT INTO environment (
+            id,
             name
           )
-          VALUES (?)
+          VALUES (?, ?)
           RETURNING id
           |]
 
-bindEnvironmentToAccount :: UUID -> Int -> PG.Connection -> IO ()
+bindEnvironmentToAccount :: UUID -> UUID -> PG.Connection -> IO ()
 bindEnvironmentToAccount accountId environmentId connection = do
   _ <- PG.execute connection bindEnvironmentToAccountQuery (accountId, environmentId)
   return ()
@@ -153,7 +154,7 @@ createEnvironmentHandler
   :: ( MonadReader Env m
      , MonadIO m
      )
-  => UUID -> NewEnvironment -> m Int
+  => UUID -> NewEnvironment -> m UUID
 createEnvironmentHandler accountId newEnvironment = do
   connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
@@ -169,7 +170,7 @@ updateEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID -> Int -> UpdateEnvironment -> m ()
+  => UUID -> UUID -> UpdateEnvironment -> m ()
 updateEnvironmentHandler accountId environmentId updateEnvironment = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments accountId connection
@@ -178,7 +179,7 @@ updateEnvironmentHandler accountId environmentId updateEnvironment = do
     True ->
       liftIO $ updateEnvironmentDB environmentId updateEnvironment connection
 
-updateEnvironmentDB :: Int -> UpdateEnvironment -> PG.Connection -> IO ()
+updateEnvironmentDB :: UUID -> UpdateEnvironment -> PG.Connection -> IO ()
 updateEnvironmentDB environmentId UpdateEnvironment { _updateEnvironmentName } connection = do
   _ <- PG.execute connection updateEnvironmentQuery (_updateEnvironmentName, environmentId)
   return ()
@@ -200,7 +201,7 @@ deleteEnvironmentHandler
      , MonadError ServerError m
      )
   => UUID
-  -> Int
+  -> UUID
   -> m ()
 deleteEnvironmentHandler accountId environmentId = do
   connection <- getDBConnection
@@ -210,7 +211,7 @@ deleteEnvironmentHandler accountId environmentId = do
     True ->
       liftIO $ deleteEnvironmentDB environmentId connection
 
-deleteEnvironmentDB :: Int -> PG.Connection -> IO ()
+deleteEnvironmentDB :: UUID -> PG.Connection -> IO ()
 deleteEnvironmentDB environmentId connection = do
   _ <- PG.execute connection deleteEnvironmentQuery $ PG.Only environmentId
   return ()
@@ -231,8 +232,8 @@ deleteKeyValueHandler
      , MonadError ServerError m
      )
   => UUID
-  -> Int
-  -> Int
+  -> UUID
+  -> UUID
   -> m ()
 deleteKeyValueHandler accountId environmentId' keyValueId' = do
   connection <- getDBConnection
@@ -246,7 +247,7 @@ deleteKeyValueHandler accountId environmentId' keyValueId' = do
       liftIO $ deleteKeyValueDB (keyValue ^. keyValueId) connection
     Nothing -> throwError err404
 
-deleteKeyValueDB :: Int -> PG.Connection -> IO ()
+deleteKeyValueDB :: UUID -> PG.Connection -> IO ()
 deleteKeyValueDB keyValueId connection = do
   _ <- PG.execute connection deleteKeyValueQuery $ PG.Only keyValueId
   return ()
@@ -261,7 +262,7 @@ deleteKeyValueDB keyValueId connection = do
 -- * upsert key values
 
 
-deleteKeyValuesDB :: Int -> PG.Connection -> IO ()
+deleteKeyValuesDB :: UUID -> PG.Connection -> IO ()
 deleteKeyValuesDB environmentId' connection = do
   _ <- PG.execute connection deleteKeyValuesQuery (PG.Only environmentId')
   return ()
@@ -272,15 +273,15 @@ deleteKeyValuesDB environmentId' connection = do
           WHERE environment_id = ?
           |]
 
-insertManyKeyValuesDB :: Int -> NewKeyValue -> PG.Connection -> IO KeyValue
+insertManyKeyValuesDB :: UUID -> NewKeyValue -> PG.Connection -> IO KeyValue
 insertManyKeyValuesDB environmentId NewKeyValue {..} connection = do
-  [keyValue] <- PG.query connection insertKeyValueQuery (environmentId, _newKeyValueKey, _newKeyValueValue, _newKeyValueHidden)
+  [keyValue] <- PG.query connection insertKeyValueQuery (environmentId, _newKeyValueId, _newKeyValueKey, _newKeyValueValue, _newKeyValueHidden)
   return keyValue
   where
     insertKeyValueQuery =
       [sql|
-          INSERT INTO key_value (environment_id, key, value, hidden)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO key_value (environment_id, id, key, value, hidden)
+          VALUES (?, ?, ?, ?, ?)
           RETURNING id, key, value, hidden
           |]
 
@@ -290,7 +291,7 @@ updateKeyValuesHandler
      , MonadError ServerError m
      )
   => UUID
-  -> Int
+  -> UUID
   -> [NewKeyValue]
   -> m [KeyValue]
 updateKeyValuesHandler accountId environmentId' newKeyValues = do

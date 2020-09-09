@@ -413,7 +413,7 @@ CREATE TABLE public.account (
 
 CREATE TABLE public.account_environment (
     account_id uuid NOT NULL,
-    environment_id integer NOT NULL
+    environment_id uuid NOT NULL
 );
 
 
@@ -434,29 +434,9 @@ CREATE TABLE public.ar_internal_metadata (
 --
 
 CREATE TABLE public.environment (
-    id integer NOT NULL,
+    id uuid NOT NULL,
     name text NOT NULL
 );
-
-
---
--- Name: environment_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.environment_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: environment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.environment_id_seq OWNED BY public.environment.id;
 
 
 --
@@ -464,32 +444,12 @@ ALTER SEQUENCE public.environment_id_seq OWNED BY public.environment.id;
 --
 
 CREATE TABLE public.key_value (
-    id integer NOT NULL,
-    environment_id integer,
+    id uuid NOT NULL,
+    environment_id uuid,
     key text NOT NULL,
     value text NOT NULL,
     hidden boolean NOT NULL
 );
-
-
---
--- Name: key_value_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.key_value_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: key_value_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.key_value_id_seq OWNED BY public.key_value.id;
 
 
 --
@@ -615,7 +575,7 @@ CREATE TABLE public.scenario_collection_to_scenario_node (
 CREATE TABLE public.scenario_node (
     id uuid NOT NULL,
     tag public.scenario_node_type NOT NULL,
-    environment_id integer,
+    environment_id uuid,
     name text NOT NULL,
     scenario_node_parent_id uuid,
     scene_node_id uuid,
@@ -677,20 +637,6 @@ CREATE SEQUENCE public.user_test_id_seq
 --
 
 ALTER SEQUENCE public.user_test_id_seq OWNED BY public.user_test.id;
-
-
---
--- Name: environment id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.environment ALTER COLUMN id SET DEFAULT nextval('public.environment_id_seq'::regclass);
-
-
---
--- Name: key_value id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.key_value ALTER COLUMN id SET DEFAULT nextval('public.key_value_id_seq'::regclass);
 
 
 --

@@ -717,7 +717,7 @@ data NewFakeScenarioFile =
                       , _newFakeScenarioFileParentId      :: Maybe UUID
                       , _newFakeScenarioFileName          :: String
                       , _newFakeScenarioFileSceneId       :: Maybe UUID
-                      , _newFakeScenarioFileEnvironmentId :: Int
+                      , _newFakeScenarioFileEnvironmentId :: UUID
                       }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
@@ -878,7 +878,7 @@ data FakeScenarioFile =
   FakeScenarioFile { _fakeScenarioFileParentId      :: Maybe UUID
                    , _fakeScenarioFileName          :: String
                    , _fakeScenarioFileSceneActorId  :: Maybe UUID
-                   , _fakeScenarioFileEnvironmentId :: Maybe Int
+                   , _fakeScenarioFileEnvironmentId :: Maybe UUID
                    }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
@@ -1071,7 +1071,7 @@ data NewFakeEnvironment =
                      }
   deriving (Eq, Show, Read, Generic, PG.ToRow)
 
-insertNewFakeEnvironment :: NewFakeEnvironment -> PG.Connection -> IO Int
+insertNewFakeEnvironment :: NewFakeEnvironment -> PG.Connection -> IO UUID
 insertNewFakeEnvironment NewFakeEnvironment { _newFakeEnvironmentAccountId, _newFakeEnvironmentName } connection = do
   [PG.Only fakeEnvironmentId] <- PG.query connection rawQuery (_newFakeEnvironmentName, _newFakeEnvironmentAccountId)
   return fakeEnvironmentId
@@ -1079,8 +1079,8 @@ insertNewFakeEnvironment NewFakeEnvironment { _newFakeEnvironmentAccountId, _new
     rawQuery =
       [sql|
           WITH new_env AS (
-            INSERT INTO environment (name)
-            VALUES (?)
+            INSERT INTO environment (id, name)
+            VALUES (gen_random_uuid(), ?)
             RETURNING id
           ), new_account_env AS (
             INSERT INTO account_environment (account_id, environment_id)
@@ -1093,12 +1093,12 @@ insertNewFakeEnvironment NewFakeEnvironment { _newFakeEnvironmentAccountId, _new
 
 
 data FakeEnvironment =
-  FakeEnvironment { _fakeEnvironmentId   :: Int
+  FakeEnvironment { _fakeEnvironmentId   :: UUID
                   , _fakeEnvironmentName :: String
                   }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
-selectFakeEnvironment :: Int -> PG.Connection -> IO (Maybe FakeEnvironment)
+selectFakeEnvironment :: UUID -> PG.Connection -> IO (Maybe FakeEnvironment)
 selectFakeEnvironment environmentId connection =
   PG.query connection rawQuery (PG.Only environmentId) <&> Maybe.listToMaybe
   where
@@ -1115,7 +1115,7 @@ selectFakeEnvironment environmentId connection =
 
 data FakeAccountEnvironment =
   FakeAccountEnvironment { _fakeAccountEnvironmentAccountId     :: UUID
-                         , _fakeAccountEnvironmentEnvironmentId :: Int
+                         , _fakeAccountEnvironmentEnvironmentId :: UUID
                          }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
@@ -1135,7 +1135,7 @@ selectFakeAccountEnvironments accountId connection =
 
 
 data NewFakeKeyValue =
-  NewFakeKeyValue { _newFakeKeyValueEnvironmentId :: Int
+  NewFakeKeyValue { _newFakeKeyValueEnvironmentId :: UUID
                   , _newFakeKeyValueKey           :: String
                   , _newFakeKeyValueValue         :: String
                   , _newFakeKeyValueHidden        :: Bool
@@ -1149,8 +1149,8 @@ insertNewFakeKeyValue newFakeKeyValue connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO key_value (environment_id, key, value, hidden)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES (gen_random_uuid(), ?, ?, ?, ?)
           RETURNING id, key, value, hidden;
           |]
 
@@ -1159,14 +1159,14 @@ insertNewFakeKeyValue newFakeKeyValue connection = do
 
 
 data FakeKeyValue =
-  FakeKeyValue { _fakeKeyValueId            :: Int
-               , _fakeKeyValueEnvironmentId :: Int
+  FakeKeyValue { _fakeKeyValueId            :: UUID
+               , _fakeKeyValueEnvironmentId :: UUID
                , _fakeKeyValueKey           :: String
                , _fakeKeyValueValue         :: String
                }
   deriving (Eq, Show, Read, Generic, PG.FromRow)
 
-selectFakeKeyValues :: Int -> PG.Connection -> IO [KeyValue]
+selectFakeKeyValues :: UUID -> PG.Connection -> IO [KeyValue]
 selectFakeKeyValues environmentId connection =
   PG.query connection rawQuery (PG.Only environmentId)
   where

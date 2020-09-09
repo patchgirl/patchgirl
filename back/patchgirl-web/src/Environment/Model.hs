@@ -37,13 +37,14 @@ import           Data.Aeson                 (FromJSON, ToJSON (..),
 import           Data.Aeson.Types           (genericParseJSON)
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Generics
+import Data.UUID (UUID)
 
 
 -- * key value
 
 
 data KeyValue =
-  KeyValue { _keyValueId    :: Int
+  KeyValue { _keyValueId    :: UUID
            , _keyValueKey   :: String
            , _keyValueValue :: String
            , _keyValueHidden :: Bool
@@ -64,7 +65,7 @@ $(makeLenses ''KeyValue)
 
 
 data Environment
-  = Environment { _environmentId        :: Int
+  = Environment { _environmentId        :: UUID
                 , _environmentName      :: String
                 , _environmentKeyValues :: [KeyValue]
                 } deriving (Eq, Show, Generic)
@@ -84,16 +85,16 @@ $(makeLenses ''Environment)
 
 
 data PGEnvironmentWithKeyValue =
-  PGEnvironmentWithKeyValue { _pgEnvironmentWithKeyValueEnvironmentId   :: Int
+  PGEnvironmentWithKeyValue { _pgEnvironmentWithKeyValueEnvironmentId   :: UUID
                             , _pgEnvironmentWithKeyValueEnvironmentName :: String
-                            , _pgEnvironmentWithKeyValueKeyValueId      :: Int
+                            , _pgEnvironmentWithKeyValueKeyValueId      :: UUID
                             , _pgEnvironmentWithKeyValueKey             :: String
                             , _pgEnvironmentWithKeyValueValue           :: String
                             , _pgEnvironmentWithKeyValueHidden          :: Bool
                             } deriving (Generic, PG.FromRow)
 
 data PGEnvironmentWithoutKeyValue =
-  PGEnvironmentWithoutKeyValue { _pgEnvironmentWithoutKeyValueEnvironmentId   :: Int
+  PGEnvironmentWithoutKeyValue { _pgEnvironmentWithoutKeyValueEnvironmentId   :: UUID
                                , _pgEnvironmentWithoutKeyValueEnvironmentName :: String
                                } deriving (Generic, PG.FromRow)
 
@@ -105,8 +106,9 @@ $(makeLenses ''PGEnvironmentWithoutKeyValue)
 -- * new environment
 
 
-newtype NewEnvironment
-  = NewEnvironment { _newEnvironmentName :: String
+data NewEnvironment
+  = NewEnvironment { _newEnvironmentId :: UUID
+                   , _newEnvironmentName :: String
                    } deriving (Eq, Show, Generic)
 
 instance FromJSON NewEnvironment where
@@ -142,7 +144,8 @@ instance FromJSON UpdateEnvironment where
 
 
 data NewKeyValue
-  = NewKeyValue { _newKeyValueKey   :: String
+  = NewKeyValue { _newKeyValueId   :: UUID
+                , _newKeyValueKey   :: String
                 , _newKeyValueValue :: String
                 , _newKeyValueHidden  :: Bool
                 }
@@ -157,6 +160,3 @@ instance ToJSON NewKeyValue where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 $(makeLenses ''NewKeyValue)
-
-
--- * scenario vars
