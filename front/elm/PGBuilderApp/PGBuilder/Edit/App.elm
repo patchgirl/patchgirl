@@ -43,27 +43,15 @@ type alias Model a =
 
 
 type Msg
-    -- mkdir
-    = SelectFolder Uuid
-    | UpdateFolderName String
-    | GenerateRandomUUIDForFolder Uuid
-    | AskMkdir Uuid Uuid
-    | Mkdir Uuid Uuid
-    | NoOp
-    -- touch
-    | UpdateFileName String
-    | GenerateRandomUUIDForFile Uuid
-    | AskTouch Uuid Uuid
-    | Touch Uuid Uuid
-    -- other
-    | PrintNotification Notification
     -- rename
-    | UpdateName Uuid String -- while focus is on the input
+    = UpdateName Uuid String -- while focus is on the input
     | AskRename Uuid String
     | Rename Uuid String
     -- delete
     | AskDelete Uuid
     | Delete Uuid
+    -- other
+    | PrintNotification Notification
 
 
 -- * update
@@ -72,129 +60,6 @@ type Msg
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
     case msg of
-        UpdateFolderName newName ->
-            let
-                oldLandingPgNewFolder =
-                    model.pgNewNode
-
-                newLandingPgNewFolder =
-                    { oldLandingPgNewFolder | name = newName }
-
-                newModel =
-                    { model | pgNewNode = newLandingPgNewFolder }
-            in
-            (newModel, Cmd.none)
-
-        SelectFolder id ->
-            let
-                oldLandingPgNewFolder =
-                    model.pgNewNode
-
-                newLandingPgNewFolder =
-                    { oldLandingPgNewFolder | parentFolderId = Just id }
-
-                newModel =
-                    { model | pgNewNode = newLandingPgNewFolder }
-            in
-            (newModel, Cmd.none)
-
-        GenerateRandomUUIDForFolder parentNodeId ->
-            let
-                newMsg =
-                    Random.generate (AskMkdir parentNodeId) Uuid.uuidGenerator
-            in
-            ( model, newMsg )
-
-        AskMkdir parentNodeId newId ->
-            let
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
-
-                newPgFolder =
-                    { newPgFolderId = newId
-                    , newPgFolderParentNodeId = parentNodeId
-                    , newPgFolderName = model.pgNewNode.name
-                    }
-
-                newMsg =
-                    Client.postApiPgCollectionByPgCollectionIdPgFolder "" "" pgCollectionId newPgFolder (createPgFolderResultToMsg parentNodeId newId)
-            in
-            ( model, newMsg )
-
-        Mkdir parentNodeId newId ->
-            let
-                (PgCollection id pgNodes) =
-                    model.pgCollection
-
-                newPgNodes =
-                    List.map (Tree.modifyPgNode parentNodeId (Tree.mkdirPg newId)) pgNodes
-
-                newModel =
-                    { model
-                        | pgCollection =
-                            PgCollection id newPgNodes
-                    }
-            in
-            ( newModel, Cmd.none )
-
-        UpdateFileName newName ->
-            let
-                oldLandingPgNewFile =
-                    model.pgNewNode
-
-                newLandingPgNewFile =
-                    { oldLandingPgNewFile | name = newName }
-
-                newModel =
-                    { model | pgNewNode = newLandingPgNewFile }
-            in
-            (newModel, Cmd.none)
-
-        GenerateRandomUUIDForFile parentNodeId ->
-            let
-                newMsg =
-                    Random.generate (AskTouch parentNodeId) Uuid.uuidGenerator
-            in
-            ( model, newMsg )
-
-        AskTouch parentNodeId newId ->
-            let
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
-
-                newPgFile =
-                    { newPgFileId = newId
-                    , newPgFileParentNodeId = parentNodeId
-                    }
-
-                    {-
-                newMsg =
-                    Client.postApiPgCollectionByPgCollectionIdPgFile "" "" pgCollectionId newPgFile (newPgFileResultToMsg parentNodeId newId)
-                    -}
-                newMsg =
-                    Cmd.none
-            in
-            ( model, newMsg )
-
-        Touch parentNodeId newId ->
-            let
-                (PgCollection id pgNodes) =
-                    model.pgCollection
-
-                newPgNodes =
-                    List.map (Tree.modifyPgNode parentNodeId (Tree.touchPg newId)) pgNodes
-
-                newModel =
-                    { model
-                        | pgCollection =
-                            PgCollection id newPgNodes
-                    }
-            in
-            ( newModel, Cmd.none )
-
-        NoOp ->
-            (model, Cmd.none)
-
         UpdateName id newName ->
             let
                 (PgCollection pgCollectionId pgNodes) =
@@ -276,24 +141,6 @@ update msg model =
 
 -- * util
 
-
-createPgFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
-createPgFolderResultToMsg parentNodeId id result =
-    case result of
-        Ok _ ->
-            Mkdir parentNodeId id
-
-        Err error ->
-            PrintNotification <| AlertNotification "Could not create folder, try reloading the page!" (httpErrorToString error)
-
-newPgFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
-newPgFileResultToMsg parentNodeId id result =
-    case result of
-        Ok _ ->
-            Touch parentNodeId id
-
-        Err error ->
-            PrintNotification <| AlertNotification "Could create a new file, try reloading the page" (httpErrorToString error)
 
 renameNodeResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 renameNodeResultToMsg id newName result =

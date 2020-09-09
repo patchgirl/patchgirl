@@ -305,8 +305,8 @@ touch id parentNode =
                     , open = True
                 }
 
-touchPg : Uuid -> PgNode -> PgNode
-touchPg id parentNode =
+touchPg : PgNode -> PgNode -> PgNode
+touchPg newNode parentNode =
     case parentNode of
         (File _) as file ->
             file
@@ -318,7 +318,7 @@ touchPg id parentNode =
             in
             Folder
                 { folder
-                    | children = Children2 (mkDefaultPgFile id :: children)
+                    | children = Children2 (newNode :: children)
                     , open = True
                 }
 

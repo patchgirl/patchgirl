@@ -356,6 +356,7 @@ builderView model file =
                            , paddingXY 10 10
                            ] (iconWithTextAndColorAndAttr "send" "Run" primaryColor [] )
                     }
+              , closeBuilderView model.page
               ]
         , row [ spacing 20 ]
               [ row [ width fill, spacing 30 ]

@@ -197,13 +197,16 @@ update msg model =
                 (PgCollection id pgNodes) =
                     model.pgCollection
 
+                newPgNode =
+                    mkDefaultFile newNode newId
+
                 newPgNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            pgNodes ++ [ mkDefaultFile newNode newId ]
+                            pgNodes ++ [ newPgNode ]
 
                         Just folderId ->
-                            List.map (PgTree.modifyPgNode folderId (PgTree.touchPg newId)) pgNodes
+                            List.map (PgTree.modifyPgNode folderId (PgTree.touchPg newPgNode)) pgNodes
 
                 newModel =
                     { model
