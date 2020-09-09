@@ -9,8 +9,8 @@ import Animation
 -- * find
 
 
-findNode : List RequestNode -> Uuid -> Maybe RequestNode
-findNode requestNodes id =
+findRequestNode : List RequestNode -> Uuid -> Maybe RequestNode
+findRequestNode requestNodes id =
     let
         find : RequestNode -> Maybe RequestNode
         find requestNode =
@@ -33,23 +33,71 @@ findNode requestNodes id =
                                 (Children children) =
                                     folder.children
                             in
-                            findNode children id
+                            findRequestNode children id
     in
     List.head <| catMaybes (List.map find requestNodes)
 
 
-findFile : List RequestNode -> Uuid -> Maybe RequestFileRecord
-findFile requestNodes id =
-    case findNode requestNodes id of
+findRequestFile : List RequestNode -> Uuid -> Maybe RequestFileRecord
+findRequestFile requestNodes id =
+    case findRequestNode requestNodes id of
         Just (File file) ->
             Just file
 
         _ ->
             Nothing
 
-findFolder : List RequestNode -> Uuid -> Maybe RequestFolderRecord
-findFolder requestNodes id =
-    case findNode requestNodes id of
+findRequestFolder : List RequestNode -> Uuid -> Maybe RequestFolderRecord
+findRequestFolder requestNodes id =
+    case findRequestNode requestNodes id of
+        Just (Folder folder) ->
+            Just folder
+
+        _ ->
+            Nothing
+
+
+findPgNode : List PgNode -> Uuid -> Maybe PgNode
+findPgNode pgNodes id =
+    let
+        find : PgNode -> Maybe PgNode
+        find pgNode =
+            case pgNode of
+                (File file) as node ->
+                    case file.id == id of
+                        True ->
+                            Just node
+
+                        False ->
+                            Nothing
+
+                (Folder folder) as node ->
+                    case folder.id == id of
+                        True ->
+                            Just node
+
+                        False ->
+                            let
+                                (Children2 children) =
+                                    folder.children
+                            in
+                            findPgNode children id
+    in
+    List.head <| catMaybes (List.map find pgNodes)
+
+
+findPgFile : List PgNode -> Uuid -> Maybe PgFileRecord
+findPgFile pgNodes id =
+    case findPgNode pgNodes id of
+        Just (File file) ->
+            Just file
+
+        _ ->
+            Nothing
+
+findPgFolder : List PgNode -> Uuid -> Maybe PgFolderRecord
+findPgFolder pgNodes id =
+    case findPgNode pgNodes id of
         Just (Folder folder) ->
             Just folder
 
@@ -65,9 +113,40 @@ getRequestNodeId requestNode =
         File { id } ->
             id
 
+getPgNodeId : PgNode -> Uuid
+getPgNodeId node =
+    case node of
+        Folder { id } ->
+            id
+
+        File { id } ->
+            id
+
 
 -- * modify
 
+
+modifyPgNode : Uuid -> (PgNode -> PgNode) -> PgNode -> PgNode
+modifyPgNode id f requestNode =
+    case getPgNodeId requestNode == id of
+        True ->
+            f requestNode
+
+        False ->
+            case requestNode of
+                File requestFile ->
+                    File requestFile
+
+                Folder folder ->
+                    let
+                        (Children2 children) =
+                            folder.children
+                    in
+                    Folder
+                        { folder
+                            | children =
+                                Children2 (List.map (modifyPgNode id f) children)
+                        }
 
 modifyRequestNode : Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
 modifyRequestNode id f requestNode =
@@ -117,12 +196,47 @@ deleteRequestNode idToDelete requestNode =
                         }
                     ]
 
+deletePgNode : Uuid -> PgNode -> List PgNode
+deletePgNode idToDelete pgNode =
+    case getPgNodeId pgNode == idToDelete of
+        True ->
+            []
+
+        False ->
+            case pgNode of
+                File pgFile ->
+                    [ File pgFile ]
+
+                Folder folder ->
+                    let
+                        (Children2 children) =
+                            folder.children
+                    in
+                    [ Folder
+                        { folder
+                            | children =
+                                Children2 (List.concatMap (deletePgNode idToDelete) children)
+                        }
+                    ]
+
 
 -- * toggle
 
 
-toggleFolder : RequestNode -> RequestNode
-toggleFolder node =
+toggleRequestFolder : RequestNode -> RequestNode
+toggleRequestFolder node =
+    case node of
+        (File _) as file ->
+            file
+
+        Folder folder ->
+            Folder
+                { folder
+                    | open = not folder.open
+                }
+
+togglePgFolder : PgNode -> PgNode
+togglePgFolder node =
     case node of
         (File _) as file ->
             file
@@ -154,6 +268,23 @@ mkdir id node =
                     , open = True
                 }
 
+mkdirPg : Uuid -> PgNode -> PgNode
+mkdirPg id node =
+    case node of
+        (File _) as file ->
+            file
+
+        Folder folder ->
+            let
+                (Children2 children) =
+                    folder.children
+            in
+            Folder
+                { folder
+                    | children = Children2 (mkDefaultPgFolder id :: children)
+                    , open = True
+                }
+
 -- * touch
 
 
@@ -173,6 +304,24 @@ touch id parentNode =
                     | children = Children (mkDefaultFile id :: children)
                     , open = True
                 }
+
+touchPg : Uuid -> PgNode -> PgNode
+touchPg id parentNode =
+    case parentNode of
+        (File _) as file ->
+            file
+
+        Folder folder ->
+            let
+                (Children2 children) =
+                    folder.children
+            in
+            Folder
+                { folder
+                    | children = Children2 (mkDefaultPgFile id :: children)
+                    , open = True
+                }
+
 
 -- * display rename input
 
@@ -194,6 +343,7 @@ displayRenameInput node =
             in
             File { file | name = Edited oldValue oldValue }
 
+
 -- * rename
 
 
@@ -206,9 +356,26 @@ rename newName node =
         File file ->
             File { file | name = NotEdited newName }
 
+renamePg : String -> PgNode -> PgNode
+renamePg newName node =
+    case node of
+        Folder folder ->
+            Folder { folder | name = NotEdited newName }
+
+        File file ->
+            File { file | name = NotEdited newName }
 
 tempRename : String -> RequestNode -> RequestNode
 tempRename newName node =
+    case node of
+        Folder folder ->
+            Folder { folder | name = changeEditedValue newName folder.name }
+
+        File file ->
+            File { file | name = changeEditedValue newName file.name }
+
+tempRenamePg : String -> PgNode -> PgNode
+tempRenamePg newName node =
     case node of
         Folder folder ->
             Folder { folder | name = changeEditedValue newName folder.name }
@@ -229,6 +396,15 @@ mkDefaultFolder id =
         , children = Children []
         }
 
+mkDefaultPgFolder : Uuid -> PgNode
+mkDefaultPgFolder id =
+    Folder
+        { id = id
+        , name = NotEdited "new folder"
+        , open = False
+        , children = Children2 []
+        }
+
 mkDefaultFile : Uuid -> RequestNode
 mkDefaultFile id =
     File
@@ -242,4 +418,19 @@ mkDefaultFile id =
         , whichResponseView = BodyResponseView
         , requestComputationResult = Nothing
         , runRequestIconAnimation = Animation.style []
+        }
+
+mkDefaultPgFile : Uuid -> PgNode
+mkDefaultPgFile id =
+    File
+        { id = id
+        , name = NotEdited ""
+        , dbHost = NotEdited ""
+        , dbPassword = NotEdited ""
+        , dbPort = NotEdited ""
+        , dbUser = NotEdited ""
+        , dbName = NotEdited ""
+        , sql = NotEdited ""
+        , pgComputationOutput = Nothing
+        , showResponseView = False
         }

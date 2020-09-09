@@ -526,10 +526,10 @@ findRecord model scene =
     in
     case scene.actorType of
         HttpActor ->
-            RequestTree.findFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+            RequestTree.findRequestFile requestNodes scene.nodeId |> Maybe.map HttpRecord
 
         PgActor ->
-            PgTree.findFile pgNodes scene.nodeId |> Maybe.map PgRecord
+            RequestTree.findPgFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
 
 -- * view

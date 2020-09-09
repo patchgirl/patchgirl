@@ -29,12 +29,12 @@ import Runner
 import HttpError exposing(..)
 import Interpolator exposing(..)
 import Browser.Navigation as Navigation
-import PGBuilderApp.PGTree.Util as Tree
+import RequestBuilderApp.RequestTree.Util as Tree
 import PGBuilderApp.PGTree.App as Tree
 import Application.Model as Application
 import PGBuilderApp.PGBuilder.Landing.App as Landing
---import RequestBuilderApp.RequestBuilder.Edit.App as Edit
---import RequestBuilderApp.RequestBuilder.Run.App as Run
+import PGBuilderApp.PGBuilder.Edit.App as Edit
+import PGBuilderApp.PGBuilder.Run.App as Run
 
 
 -- * model
@@ -60,8 +60,8 @@ type alias Model a =
 
 type Msg
     = LandingAppMsg Landing.Msg
---    | RunAppMsg Run.Msg
---    | EditAppMsg Edit.Msg
+    | EditAppMsg Edit.Msg
+    | RunAppMsg Run.Msg
 
 
 -- * update
@@ -77,7 +77,6 @@ update msg model =
             in
             (newModel, Cmd.map LandingAppMsg newMsg)
 
-{-
         EditAppMsg subMsg ->
             let
                 (newModel, newMsg) =
@@ -87,26 +86,26 @@ update msg model =
 
         RunAppMsg subMsg ->
             let
-                (updatedModel, newRequestRecord, newMsg) =
+                (updatedModel, newPgRecord, newMsg) =
                     case getBuilder model of
-                        RunView (Just (File requestFileRecord)) ->
-                            Run.update subMsg model requestFileRecord
+                        RunView (Just (File pgFileRecord)) ->
+                            Run.update subMsg model pgFileRecord
                         _ ->
                             Debug.todo ""
 
-                (RequestCollection requestCollectionId requestNodes) =
-                    model.requestCollection
+                (PgCollection pgCollectionId pgNodes) =
+                    model.pgCollection
 
                 newBuilderTree =
-                    List.map (RequestTree.modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
+                    List.map (Tree.modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
 
                 newModel =
                     { updatedModel
-                        | requestCollection = RequestCollection requestCollectionId newBuilderTree
+                        | pgCollection = PgCollection pgCollectionId newBuilderTree
                     }
 
             in
-            ( newModel, Cmd.map RunAppMsg newMsg )-}
+            ( newModel, Cmd.map RunAppMsg newMsg )
 
 
 -- * util
@@ -123,10 +122,10 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            EditView (mapEditView (Tree.findNode nodes) whichEditView)
+            EditView (mapEditView (Tree.findPgNode nodes) whichEditView)
 
         RunView id ->
-            RunView (Tree.findNode nodes id)
+            RunView (Tree.findPgNode nodes id)
 
 
 -- * view
@@ -138,8 +137,6 @@ view model =
         LandingView whichView ->
             map LandingAppMsg (Landing.view whichView model)
 
-        _ -> none
-{-
         EditView whichEditView ->
             case (traverseEditViewMaybe whichEditView) of
                 Nothing ->
@@ -148,9 +145,8 @@ view model =
                 Just nodeType ->
                     map EditAppMsg (Edit.view nodeType model)
 
-        RunView (Just (File requestFileRecord)) ->
-            map RunAppMsg (Run.view requestFileRecord model)
+        RunView (Just (File pgFileRecord)) ->
+            map RunAppMsg (Run.view model pgFileRecord)
 
         RunView _ ->
             text "404 - could not find run view"
--}

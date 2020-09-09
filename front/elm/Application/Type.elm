@@ -320,6 +320,12 @@ type Children2 = Children2 (List PgNode)
 
 type alias PgNode = NodeType PgFolderRecord PgFileRecord
 
+getPgNodeIdAndName : PgNode -> { id: Uuid, name: Editable String }
+getPgNodeIdAndName pgNode =
+    case pgNode of
+        Folder { id, name } -> { id = id, name = name }
+        File { id, name } -> { id = id, name = name }
+
 
 -- ** folder
 

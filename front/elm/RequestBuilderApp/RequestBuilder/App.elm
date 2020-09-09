@@ -61,8 +61,8 @@ type alias Model a =
 
 type Msg
     = LandingAppMsg Landing.Msg
-    | RunAppMsg Run.Msg
     | EditAppMsg Edit.Msg
+    | RunAppMsg Run.Msg
 
 
 -- * update
@@ -123,10 +123,10 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            EditView (mapEditView (RequestTree.findNode requestNodes) whichEditView)
+            EditView (mapEditView (RequestTree.findRequestNode requestNodes) whichEditView)
 
         RunView id ->
-            RunView (RequestTree.findNode requestNodes id)
+            RunView (RequestTree.findRequestNode requestNodes id)
 
 
 -- * view

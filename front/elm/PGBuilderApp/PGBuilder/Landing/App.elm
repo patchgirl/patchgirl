@@ -19,7 +19,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import PGBuilderApp.PGTree.Util as PgTree
+import RequestBuilderApp.RequestTree.Util as PgTree
 import PGBuilderApp.PGTree.App as PgTree
 import BuilderUtil exposing (..)
 import Animation
@@ -203,7 +203,7 @@ update msg model =
                             pgNodes ++ [ mkDefaultFile newNode newId ]
 
                         Just folderId ->
-                            List.map (PgTree.modifyPgNode folderId (touch newNode newId)) pgNodes
+                            List.map (PgTree.modifyPgNode folderId (PgTree.touchPg newId)) pgNodes
 
                 newModel =
                     { model

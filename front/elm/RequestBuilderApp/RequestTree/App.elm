@@ -51,7 +51,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode id toggleFolder) requestNodes
+                    List.map (modifyRequestNode id toggleRequestFolder) requestNodes
 
                 newModel =
                     { model
