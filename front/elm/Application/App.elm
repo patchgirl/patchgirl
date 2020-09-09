@@ -750,7 +750,7 @@ subscriptions model =
 
                         Folder { children } ->
                             let
-                                (Children c) =
+                                (RequestChildren c) =
                                     children
                             in
                             getRequestFiles c ++ getRequestFiles rest

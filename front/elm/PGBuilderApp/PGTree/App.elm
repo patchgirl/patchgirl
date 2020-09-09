@@ -84,7 +84,7 @@ nodeView model pgCollection =
             case node of
                 Folder { id, name, open, children } ->
                     let
-                        (Children2 c) =
+                        (PgChildren c) =
                             children
 
                         folderChildrenView =

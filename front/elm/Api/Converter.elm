@@ -33,7 +33,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         { id = folder.requestNodeId
                         , name = NotEdited folder.requestNodeName
                         , open = not <| List.isEmpty folder.requestNodeChildren
-                        , children = Front.Children (convertRequestNodesFromBackToFront folder.requestNodeChildren)
+                        , children = Front.RequestChildren (convertRequestNodesFromBackToFront folder.requestNodeChildren)
                         }
 
                 Back.RequestFile file ->
@@ -77,7 +77,7 @@ convertPgNodesFromBackToFront backPgNodes =
                         { id = folder.pgNodeId
                         , name = NotEdited folder.pgNodeName
                         , open = not <| List.isEmpty folder.pgNodeChildren
-                        , children = Front.Children2 (convertPgNodesFromBackToFront folder.pgNodeChildren)
+                        , children = Front.PgChildren (convertPgNodesFromBackToFront folder.pgNodeChildren)
                         }
 
                 Back.PgFile file ->

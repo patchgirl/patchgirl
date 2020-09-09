@@ -234,12 +234,12 @@ touchRequest newNode id parentNode =
 
         Folder folder ->
             let
-                (Children2 children) =
+                (PgChildren children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children2 (mkDefaultRequestFile newNode id :: children)
+                    | children = PgChildren (mkDefaultRequestFile newNode id :: children)
                     , open = True
                 }
 
@@ -251,12 +251,12 @@ mkdirRequest newNode id node =
 
         Folder folder ->
             let
-                (Children2 children) =
+                (PgChildren children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children2 (mkDefaultRequestFolder newNode id :: children)
+                    | children = PgChildren (mkDefaultRequestFolder newNode id :: children)
                     , open = True
                 }
 
@@ -266,7 +266,7 @@ mkDefaultRequestFolder newNode id =
         { id = id
         , name = NotEdited newNode.name
         , open = False
-        , children = Children2 []
+        , children = PgChildren []
         }
 
 
@@ -476,7 +476,7 @@ nodeView model selectFolderMsg pgNodes =
                 File _ -> nodeView model selectFolderMsg tail
                 Folder { id, name, children } ->
                     let
-                        (Children2 c) =
+                        (PgChildren c) =
                             children
 
                         folderChildrenView =

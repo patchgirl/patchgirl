@@ -84,7 +84,7 @@ nodeView model requestCollection =
             case node of
                 Folder { id, name, open, children } ->
                     let
-                        (Children c) =
+                        (RequestChildren c) =
                             children
 
                         folderChildrenView =

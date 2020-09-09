@@ -265,10 +265,10 @@ type alias RequestFolderRecord =
     { id : Uuid
     , name : Editable String
     , open : Bool
-    , children : Children
+    , children : RequestChildren
     }
 
-type Children = Children (List RequestNode)
+type RequestChildren = RequestChildren (List RequestNode)
 
 
 -- ** file
@@ -316,8 +316,6 @@ type PgCollection
 -- ** pg node
 
 
-type Children2 = Children2 (List PgNode)
-
 type alias PgNode = NodeType PgFolderRecord PgFileRecord
 
 getPgNodeIdAndName : PgNode -> { id: Uuid, name: Editable String }
@@ -334,9 +332,10 @@ type alias PgFolderRecord =
     { id : Uuid
     , name : Editable String
     , open : Bool
-    , children : Children2
+    , children : PgChildren
     }
 
+type PgChildren = PgChildren (List PgNode)
 
 
 -- ** file

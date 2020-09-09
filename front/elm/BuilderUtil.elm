@@ -39,7 +39,7 @@ findRequestNode requestNodes id =
 
                         False ->
                             let
-                                (Children children) =
+                                (RequestChildren children) =
                                     folder.children
                             in
                             findRequestNode children id
@@ -87,7 +87,7 @@ findPgNode pgNodes id =
 
                         False ->
                             let
-                                (Children2 children) =
+                                (PgChildren children) =
                                     folder.children
                             in
                             findPgNode children id
@@ -148,13 +148,13 @@ modifyPgNode id f requestNode =
 
                 Folder folder ->
                     let
-                        (Children2 children) =
+                        (PgChildren children) =
                             folder.children
                     in
                     Folder
                         { folder
                             | children =
-                                Children2 (List.map (modifyPgNode id f) children)
+                                PgChildren (List.map (modifyPgNode id f) children)
                         }
 
 modifyRequestNode : Uuid -> (RequestNode -> RequestNode) -> RequestNode -> RequestNode
@@ -170,13 +170,13 @@ modifyRequestNode id f requestNode =
 
                 Folder folder ->
                     let
-                        (Children children) =
+                        (RequestChildren children) =
                             folder.children
                     in
                     Folder
                         { folder
                             | children =
-                                Children (List.map (modifyRequestNode id f) children)
+                                RequestChildren (List.map (modifyRequestNode id f) children)
                         }
 
 -- ** delete
@@ -195,13 +195,13 @@ deleteRequestNode idToDelete requestNode =
 
                 Folder folder ->
                     let
-                        (Children children) =
+                        (RequestChildren children) =
                             folder.children
                     in
                     [ Folder
                         { folder
                             | children =
-                                Children (List.concatMap (deleteRequestNode idToDelete) children)
+                                RequestChildren (List.concatMap (deleteRequestNode idToDelete) children)
                         }
                     ]
 
@@ -218,13 +218,13 @@ deletePgNode idToDelete pgNode =
 
                 Folder folder ->
                     let
-                        (Children2 children) =
+                        (PgChildren children) =
                             folder.children
                     in
                     [ Folder
                         { folder
                             | children =
-                                Children2 (List.concatMap (deletePgNode idToDelete) children)
+                                PgChildren (List.concatMap (deletePgNode idToDelete) children)
                         }
                     ]
 
@@ -268,12 +268,12 @@ mkdirRequest id node =
 
         Folder folder ->
             let
-                (Children children) =
+                (RequestChildren children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultRequestFolder id :: children)
+                    | children = RequestChildren (mkDefaultRequestFolder id :: children)
                     , open = True
                 }
 
@@ -285,12 +285,12 @@ mkdirPg id node =
 
         Folder folder ->
             let
-                (Children2 children) =
+                (PgChildren children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children2 (mkDefaultPgFolder id :: children)
+                    | children = PgChildren (mkDefaultPgFolder id :: children)
                     , open = True
                 }
 
@@ -305,12 +305,12 @@ touchRequest id parentNode =
 
         Folder folder ->
             let
-                (Children children) =
+                (RequestChildren children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children (mkDefaultRequestFile id :: children)
+                    | children = RequestChildren (mkDefaultRequestFile id :: children)
                     , open = True
                 }
 
@@ -322,12 +322,12 @@ touchPg newNode parentNode =
 
         Folder folder ->
             let
-                (Children2 children) =
+                (PgChildren children) =
                     folder.children
             in
             Folder
                 { folder
-                    | children = Children2 (newNode :: children)
+                    | children = PgChildren (newNode :: children)
                     , open = True
                 }
 
@@ -381,7 +381,7 @@ mkDefaultRequestFolder id =
         { id = id
         , name = NotEdited "new folder"
         , open = False
-        , children = Children []
+        , children = RequestChildren []
         }
 
 mkDefaultPgFolder : Uuid -> PgNode
@@ -390,7 +390,7 @@ mkDefaultPgFolder id =
         { id = id
         , name = NotEdited "new folder"
         , open = False
-        , children = Children2 []
+        , children = PgChildren []
         }
 
 mkDefaultRequestFile : Uuid -> RequestNode

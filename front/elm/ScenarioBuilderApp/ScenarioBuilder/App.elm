@@ -1096,7 +1096,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                     case node of
                         Folder { id, name, open, children } ->
                             let
-                                (Children c) =
+                                (RequestChildren c) =
                                     children
 
                                 folderChildrenView =
@@ -1154,7 +1154,7 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                     case node of
                         Folder { id, name, open, children } ->
                             let
-                                (Children2 c) =
+                                (PgChildren c) =
                                     children
 
                                 folderChildrenView =
