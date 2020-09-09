@@ -19,7 +19,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import RequestBuilderApp.RequestTree.Util as RequestTree
+import BuilderUtil exposing (..)
 import RequestBuilderApp.RequestTree.App as RequestTree
 import BuilderUtil exposing(..)
 import Browser.Navigation as Navigation
@@ -127,7 +127,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (RequestTree.modifyRequestNode parentNodeId (RequestTree.mkdir newId)) requestNodes
+                    List.map (modifyRequestNode parentNodeId (mkdir newId)) requestNodes
 
                 newModel =
                     { model
@@ -182,7 +182,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (RequestTree.modifyRequestNode parentNodeId (RequestTree.touch newId)) requestNodes
+                    List.map (modifyRequestNode parentNodeId (touch newId)) requestNodes
 
                 newModel =
                     { model
@@ -201,7 +201,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (RequestTree.modifyRequestNode id (RequestTree.tempRename newName)) requestNodes
+                    List.map (modifyRequestNode id (tempRename newName)) requestNodes
 
                 newModel =
                     { model
@@ -230,7 +230,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (RequestTree.modifyRequestNode id (RequestTree.rename newName)) requestNodes
+                    List.map (modifyRequestNode id (rename newName)) requestNodes
 
                 newModel =
                     { model
@@ -256,7 +256,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.concatMap (RequestTree.deleteRequestNode id) requestNodes
+                    List.concatMap (deleteRequestNode id) requestNodes
 
                 newModel =
                     { model

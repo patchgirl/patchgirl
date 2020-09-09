@@ -30,7 +30,7 @@ import Runner
 import HttpError exposing(..)
 import Interpolator exposing(..)
 import Browser.Navigation as Navigation
-import RequestBuilderApp.RequestTree.Util as RequestTree
+import BuilderUtil exposing (..)
 import RequestBuilderApp.RequestTree.App as RequestTree
 import Application.Model as Application
 import RequestBuilderApp.RequestBuilder.Landing.App as Landing
@@ -98,7 +98,7 @@ update msg model =
                     model.requestCollection
 
                 newBuilderTree =
-                    List.map (RequestTree.modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
+                    List.map (modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
 
                 newModel =
                     { updatedModel
@@ -123,10 +123,10 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            EditView (mapEditView (RequestTree.findRequestNode requestNodes) whichEditView)
+            EditView (mapEditView (findRequestNode requestNodes) whichEditView)
 
         RunView id ->
-            RunView (RequestTree.findRequestNode requestNodes id)
+            RunView (findRequestNode requestNodes id)
 
 
 -- * view

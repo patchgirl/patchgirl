@@ -14,7 +14,7 @@ import List.Extra as List
 import Page exposing (..)
 import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import RequestBuilderApp.RequestTree.App as RequestTree
-import RequestBuilderApp.RequestTree.Util as RequestTree
+import BuilderUtil exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Browser.Navigation as Navigation

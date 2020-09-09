@@ -14,7 +14,7 @@ import Uuid exposing (Uuid)
 import Browser.Navigation as Navigation
 import HttpError exposing(..)
 import Element.Events exposing (..)
-import RequestBuilderApp.RequestTree.Util exposing(..)
+import BuilderUtil exposing (..)
 
 
 -- * model

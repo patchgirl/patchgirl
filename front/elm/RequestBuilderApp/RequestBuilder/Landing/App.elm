@@ -19,7 +19,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import RequestBuilderApp.RequestTree.Util as RequestTree
+import BuilderUtil exposing (..)
 import RequestBuilderApp.RequestTree.App as RequestTree
 import BuilderUtil exposing (..)
 import Animation
@@ -134,7 +134,7 @@ update msg model =
                             requestNodes ++ [ mkDefaultFolder newNode newId ]
 
                         Just folderId ->
-                            List.map (RequestTree.modifyRequestNode folderId (mkdir newNode newId)) requestNodes
+                            List.map (modifyRequestNode folderId (mkdir newNode newId)) requestNodes
 
                 newModel =
                     { model
@@ -192,7 +192,7 @@ update msg model =
                             requestNodes ++ [ mkDefaultFile newNode newId ]
 
                         Just folderId ->
-                            List.map (RequestTree.modifyRequestNode folderId (touch newNode newId)) requestNodes
+                            List.map (modifyRequestNode folderId (touch newNode newId)) requestNodes
 
                 newModel =
                     { model

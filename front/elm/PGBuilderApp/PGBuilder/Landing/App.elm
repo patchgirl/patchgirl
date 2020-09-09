@@ -19,7 +19,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import RequestBuilderApp.RequestTree.Util as PgTree
+import BuilderUtil as PgTree
 import PGBuilderApp.PGTree.App as PgTree
 import BuilderUtil exposing (..)
 import Animation

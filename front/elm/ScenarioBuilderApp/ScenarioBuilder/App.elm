@@ -17,17 +17,16 @@ import Http
 import List.Extra as List
 import Modal exposing (Modal(..))
 import Random
-import RequestBuilderApp.RequestTree.Util as RequestTree
 import RequestComputation exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import RequestComputation
+import BuilderUtil exposing (..)
 import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import Page exposing(..)
 import StringTemplate exposing (..)
 import Dict exposing (Dict)
 import Runner
-import PGBuilderApp.PGTree.Util as PgTree
 import PGBuilderApp.PGBuilder.Run.App as PgBuilder
 import Browser.Navigation as Navigation
 import HttpError exposing(..)
@@ -525,10 +524,10 @@ findRecord model scene =
     in
     case scene.actorType of
         HttpActor ->
-            RequestTree.findRequestFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+            findRequestFile requestNodes scene.nodeId |> Maybe.map HttpRecord
 
         PgActor ->
-            RequestTree.findPgFile pgNodes scene.nodeId |> Maybe.map PgRecord
+            findPgFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
 
 -- * view

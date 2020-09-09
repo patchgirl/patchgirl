@@ -14,7 +14,6 @@ import List.Extra as List
 import Page exposing (..)
 import PGBuilderApp.PGBuilder.App as PgBuilder
 import PGBuilderApp.PGTree.App as Tree
-import PGBuilderApp.PGTree.Util as Tree
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Api.RunnerGeneratedClient as Client

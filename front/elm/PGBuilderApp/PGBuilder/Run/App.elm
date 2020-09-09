@@ -21,7 +21,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import RequestBuilderApp.RequestTree.Util as RequestTree
+import BuilderUtil exposing (..)
 import PGBuilderApp.PGTree.App as PgTree
 import BuilderUtil exposing(..)
 import Browser.Navigation as Navigation

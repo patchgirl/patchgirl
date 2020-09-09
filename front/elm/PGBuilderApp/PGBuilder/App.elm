@@ -29,8 +29,7 @@ import Runner
 import HttpError exposing(..)
 import Interpolator exposing(..)
 import Browser.Navigation as Navigation
-import RequestBuilderApp.RequestTree.Util as Tree
-import PGBuilderApp.PGTree.App as Tree
+import BuilderUtil exposing (..)
 import Application.Model as Application
 import PGBuilderApp.PGBuilder.Landing.App as Landing
 import PGBuilderApp.PGBuilder.Edit.App as Edit
@@ -97,7 +96,7 @@ update msg model =
                     model.pgCollection
 
                 newBuilderTree =
-                    List.map (Tree.modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
+                    List.map (modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
 
                 newModel =
                     { updatedModel
@@ -122,10 +121,10 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            EditView (mapEditView (Tree.findPgNode nodes) whichEditView)
+            EditView (mapEditView (findPgNode nodes) whichEditView)
 
         RunView id ->
-            RunView (Tree.findPgNode nodes id)
+            RunView (findPgNode nodes id)
 
 
 -- * view

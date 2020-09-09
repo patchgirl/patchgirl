@@ -20,7 +20,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import RequestBuilderApp.RequestTree.Util as RequestTree
+import BuilderUtil exposing (..)
 import RequestBuilderApp.RequestTree.App as RequestTree
 import BuilderUtil exposing(..)
 import Browser.Navigation as Navigation
