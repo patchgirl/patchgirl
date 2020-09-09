@@ -21,7 +21,7 @@ type alias Model a =
         | scenarioCollection : ScenarioCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
+        , selectedEnvironmentToRunIndex : Maybe Uuid
         , displayedScenarioId : Maybe Uuid
         , navigationKey : Navigation.Key
     }

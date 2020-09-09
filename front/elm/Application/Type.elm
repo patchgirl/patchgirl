@@ -158,7 +158,7 @@ getSessionId session =
 
 
 type alias Environment =
-    { id : Int
+    { id : Uuid
     , name : Editable String
     , showRenameInput : Bool
     , keyValues : List (Storable NewKeyValue KeyValue)
@@ -200,7 +200,7 @@ type alias NewKeyValue =
     }
 
 type alias KeyValue =
-    { id : Int
+    { id : Uuid
     , key : String
     , value : StringTemplate
     , hidden : Bool
@@ -388,7 +388,7 @@ type alias ScenarioFolderRecord =
 
 type alias ScenarioFileRecord =
     { id : Uuid
-    , environmentId : Editable (Maybe Int)
+    , environmentId : Editable (Maybe Uuid)
     , name : Editable String
     , scenes : List Scene
     , whichResponseView : HttpResponseView

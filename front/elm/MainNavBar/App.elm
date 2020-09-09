@@ -33,7 +33,7 @@ type alias Model a =
         , displayedSceneId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , displayedPgBuilderView : BuilderView Uuid
-        , displayedEnvId : Maybe Int
+        , displayedEnvId : Maybe Uuid
         , displayedDocumentation : Documentation
     }
 

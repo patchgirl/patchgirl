@@ -61,9 +61,9 @@ type alias Model =
     , script : String
 
     -- ENVIRONMENT
-    , selectedEnvironmentToRunIndex : Maybe Int
-    , selectedEnvironmentToEditId : Maybe Int
-    , displayedEnvId : Maybe Int
+    , selectedEnvironmentToRunIndex : Maybe Uuid
+    , selectedEnvironmentToEditId : Maybe Uuid
+    , displayedEnvId : Maybe Uuid
     , environments : List Environment
 
     -- RUNNER
@@ -86,16 +86,18 @@ type SceneToDemo
 type alias GetEnvironment a =
     { a
         | environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
+        , selectedEnvironmentToRunIndex : Maybe Uuid
     }
 
 
 getEnvironmentToRun : GetEnvironment a -> Maybe Environment
 getEnvironmentToRun model =
     let
-        selectEnvironment : Int -> Maybe Environment
-        selectEnvironment idx =
-            List.getAt idx model.environments
+        selectEnvironment : Uuid -> Maybe Environment
+        selectEnvironment id =
+            model.environments
+                |> List.filter (\env -> env.id == id)
+                |> List.head
     in
     Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
 
@@ -110,7 +112,7 @@ getEnvironmentKeyValuesToRun model =
 getEnvironmentToEdit : Model -> Maybe Environment
 getEnvironmentToEdit model =
     let
-        selectEnvironment : Int -> Maybe Environment
+        selectEnvironment : Uuid -> Maybe Environment
         selectEnvironment id =
             List.find (\env -> env.id == id) model.environments
     in

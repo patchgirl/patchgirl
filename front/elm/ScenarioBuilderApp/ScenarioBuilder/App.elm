@@ -49,7 +49,7 @@ type alias Model =
     , displayedSceneId : Maybe Uuid
     , whichResponseView : HttpResponseView
     , environments : List Environment
-    , environmentId : Editable (Maybe Int)
+    , environmentId : Editable (Maybe Uuid)
     , runnerRunning : Bool
     , navigationKey : Navigation.Key
     }
@@ -74,8 +74,8 @@ type
     | UpdateScene Scene
     | SceneUpdated Scene
       -- scenario
-    | AskSaveScenario (Maybe Int)
-    | UpdateScenarioFile (Maybe Int)
+    | AskSaveScenario (Maybe Uuid)
+    | UpdateScenarioFile (Maybe Uuid)
     | AskRunScenario
     | ScenarioProcessed ScenarioOutput
       -- detailed view
@@ -85,7 +85,7 @@ type
     | SetPrescript Scene String
     | SetPostscript Scene String
       -- other
-    | SetEnvironmentId (Maybe Int)
+    | SetEnvironmentId (Maybe Uuid)
     | PrintNotification Notification
     | DoNothing
 
@@ -504,7 +504,7 @@ updateSceneResultToMsg scene result =
         Err err ->
             PrintNotification <| AlertNotification "Could not update the scene, try reloading the page!" (httpErrorToString err)
 
-updateScenarioResultToMsg : Maybe Int -> Result Http.Error () -> Msg
+updateScenarioResultToMsg : Maybe Uuid -> Result Http.Error () -> Msg
 updateScenarioResultToMsg newEnvironmentId result =
     case result of
         Ok () ->
@@ -554,12 +554,12 @@ view model =
         envSelectionView : Element Msg
         envSelectionView =
             let
-                noEnvironmentOption : Input.Option (Maybe Int) Msg
+                noEnvironmentOption : Input.Option (Maybe Uuid) Msg
                 noEnvironmentOption =
                     Input.option Nothing <|
                         el [ width fill ] (text "No environment")
 
-                option : Environment -> Input.Option (Maybe Int) Msg
+                option : Environment -> Input.Option (Maybe Uuid) Msg
                 option environment =
                     Input.option (Just environment.id) <|
                         el [ width fill ] (text <| editedOrNotEditedValue environment.name)

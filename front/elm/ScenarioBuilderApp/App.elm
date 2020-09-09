@@ -34,7 +34,7 @@ type alias Model a =
         , displayedScenarioId : Maybe Uuid
         , displayedSceneId : Maybe Uuid
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
+        , selectedEnvironmentToRunIndex : Maybe Uuid
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
     }

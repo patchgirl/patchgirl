@@ -31,7 +31,7 @@ type alias Model a =
         , displayedRequestNodeMenuId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
+        , selectedEnvironmentToRunIndex : Maybe Uuid
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
@@ -45,7 +45,7 @@ type alias Model a =
 type Msg
     = BuilderMsg RequestBuilder.Msg
     | TreeMsg RequestTree.Msg
-    | EnvSelectionMsg Int
+    | EnvSelectionMsg Uuid
 
 
 -- * update
@@ -54,10 +54,10 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        EnvSelectionMsg idx ->
+        EnvSelectionMsg id ->
             let
                 newModel =
-                    { model | selectedEnvironmentToRunIndex = Just idx }
+                    { model | selectedEnvironmentToRunIndex = Just id }
             in
             ( newModel, Cmd.none )
 
@@ -96,7 +96,7 @@ view model =
                         , width (fillPortion 1)
                         ]
                     )
-                    [ el [] <| envSelectionView <| List.map .name model.environments
+                    [ el [] <| envSelectionView model.environments
                     , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
                     ]
               , el [ width (fillPortion 9), height fill, centerX, alignTop ] <|
@@ -105,16 +105,17 @@ view model =
         ]
 
 
-envSelectionView : List (Editable String) -> Element Msg
-envSelectionView environmentNames =
+envSelectionView : List Environment -> Element Msg
+envSelectionView environments =
     let
-        entryView : Int -> Editable String -> Html.Html Msg
-        entryView idx envName =
-            Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
+        entryView : Environment -> Element Msg
+        entryView environment =
+            Debug.todo ""
+            --Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
     in
     html <|
         Html.div []
-            [ Html.label [] [ Html.text "Env: " ]
-            , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
-                (List.indexedMap entryView environmentNames)
+            [ Html.label [] [ Html.text "Environment: " ]
+--            , --Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
+              --  (List.indexedMap entryView environmentNames)
             ]

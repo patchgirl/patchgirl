@@ -79,10 +79,10 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             urlToPage url
 
         selectedEnvironmentToEditId =
-            Just 0
+            Nothing
 
         selectedEnvironmentToRunIndex =
-            Just 0
+            Nothing
 
         initialLoadingStyle =
             Animation.style [ Animation.opacity 0 ]

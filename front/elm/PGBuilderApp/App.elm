@@ -32,7 +32,7 @@ type alias Model a =
         , displayedPgBuilderView : BuilderView Uuid
         , displayedPgId : Maybe Uuid
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Int
+        , selectedEnvironmentToRunIndex : Maybe Uuid
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
@@ -46,7 +46,7 @@ type alias Model a =
 type Msg
     = BuilderMsg PgBuilder.Msg
     | TreeMsg Tree.Msg
-    | EnvSelectionMsg Int
+    | EnvSelectionMsg Uuid
 
 
 -- * update
@@ -55,10 +55,10 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        EnvSelectionMsg idx ->
+        EnvSelectionMsg id ->
             let
                 newModel =
-                    { model | selectedEnvironmentToRunIndex = Just idx }
+                    { model | selectedEnvironmentToRunIndex = Just id }
             in
             ( newModel, Cmd.none )
 
@@ -108,14 +108,4 @@ view model =
 
 envSelectionView : List (Editable String) -> Element Msg
 envSelectionView environmentNames =
-    let
-        entryView : Int -> Editable String -> Html.Html Msg
-        entryView idx envName =
-            Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
-    in
-    html <|
-        Html.div []
-            [ Html.label [] [ Html.text "Env: " ]
-            , Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
-                (List.indexedMap entryView environmentNames)
-            ]
+    none

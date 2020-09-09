@@ -15,6 +15,7 @@ import Util exposing (..)
 import StringTemplate exposing(..)
 import Browser.Navigation as Navigation
 import HttpError exposing (..)
+import Uuid exposing (Uuid)
 
 
 -- *  environment edition
@@ -28,14 +29,14 @@ type alias Model a =
         | environments : List Environment
         , session : Session
         , notification : Maybe Notification
-        , displayedEnvId : Maybe Int
+        , displayedEnvId : Maybe Uuid
         , navigationKey : Navigation.Key
     }
 
 
 defaultEnvironment : Environment
 defaultEnvironment =
-    { id = 0
+    { id = Debug.todo ""
     , name = NotEdited "new environment"
     , showRenameInput = False
     , keyValues = []
@@ -49,14 +50,14 @@ defaultEnvironment =
 type Msg
     = EnvironmentKeyValueEditionMsg KeyValueMsg
     | AskEnvironmentCreation String
-    | EnvironmentCreated Int String
-    | ChangeName Int String
-    | AskRename Int String
-    | EnvironmentRenamed Int String
-    | AskDelete Int
-    | EnvironmentDeleted Int
+    | EnvironmentCreated Uuid String
+    | ChangeName Uuid String
+    | AskRename Uuid String
+    | EnvironmentRenamed Uuid String
+    | AskDelete Uuid
+    | EnvironmentDeleted Uuid
     | PrintNotification Notification
-    | ShowRenameInput Int
+    | ShowRenameInput Uuid
 
 
 
@@ -69,7 +70,9 @@ update msg model =
         AskEnvironmentCreation name ->
             let
                 payload =
-                    Client.NewEnvironment { newEnvironmentName = name }
+                    { newEnvironmentId = Debug.todo ""
+                    , newEnvironmentName = name
+                    }
 
                 newMsg =
                     Client.postApiEnvironment "" (getCsrfToken model.session) payload (newEnvironmentResultToMsg name)
@@ -203,17 +206,17 @@ update msg model =
 -- ** util
 
 
-newEnvironmentResultToMsg : String -> Result Http.Error Int -> Msg
+newEnvironmentResultToMsg : String -> Result Http.Error () -> Msg
 newEnvironmentResultToMsg name result =
     case result of
-        Ok id ->
-            EnvironmentCreated id name
+        Ok () ->
+            EnvironmentCreated (Debug.todo "id") name
 
         Err err ->
             PrintNotification <| AlertNotification "Could not create a new environment, try reloading the page!" (httpErrorToString err)
 
 
-updateEnvironmentResultToMsg : Int -> String -> Result Http.Error () -> Msg
+updateEnvironmentResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 updateEnvironmentResultToMsg id name result =
     case result of
         Ok () ->
@@ -223,7 +226,7 @@ updateEnvironmentResultToMsg id name result =
             PrintNotification <| AlertNotification "Could not update environment, try reloading the page!" (httpErrorToString err)
 
 
-deleteEnvironmentResultToMsg : Int -> Result Http.Error () -> Msg
+deleteEnvironmentResultToMsg : Uuid -> Result Http.Error () -> Msg
 deleteEnvironmentResultToMsg id result =
     case result of
         Ok () ->
@@ -236,7 +239,7 @@ deleteEnvironmentResultToMsg id result =
 getEnvironmentToEdit : Model a -> Maybe Environment
 getEnvironmentToEdit model =
     let
-        selectEnvironment : Int -> Maybe Environment
+        selectEnvironment : Uuid -> Maybe Environment
         selectEnvironment id =
             List.find (\env -> env.id == id) model.environments
     in
@@ -304,7 +307,7 @@ view model =
         ]
 
 
-entryView : Maybe Int -> Environment -> Element Msg
+entryView : Maybe Uuid -> Environment -> Element Msg
 entryView mSelectedEnvId environment =
     let
         selected =
@@ -321,7 +324,7 @@ entryView mSelectedEnvId environment =
                False -> Font.regular
 
         readView =
-            link [ weight ] { url = href (EnvPage (Just environment.id))
+            link [ weight ] { url = href (EnvPage (Just (Debug.todo "")))--environment.id))
                     , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) color
                     }
 
@@ -377,7 +380,7 @@ type alias KeyValueModel a =
         | keyValues : List (Storable NewKeyValue KeyValue)
         , notification : Maybe Notification
         , name : Editable String
-        , id : Int
+        , id : Uuid
     }
 
 
@@ -394,16 +397,16 @@ newDefaultKeyValue =
 
 
 type KeyValueMsg
-    = PromptKey Int String
-    | PromptValue Int String
+    = PromptKey Uuid String
+    | PromptValue Uuid String
     | AddNewInput
     | AskSave
     | KeyValuesUpserted (List (Storable NewKeyValue KeyValue))
-    | AskDeleteKeyValue Int
-    | KeyDeleted Int
-    | DeleteNewKeyValue Int
+    | AskDeleteKeyValue Uuid
+    | KeyDeleted Uuid
+    | DeleteNewKeyValue Uuid
     | PrintNotification2 Notification
-    | ToggleValueVisibility Int
+    | ToggleValueVisibility Uuid
 
 
 -- ** update
@@ -412,10 +415,10 @@ type KeyValueMsg
 updateKeyValue : KeyValueMsg -> ( Model a, Environment ) -> ( Model a, Environment, Cmd KeyValueMsg )
 updateKeyValue msg ( model, environment ) =
     case msg of
-        PromptKey idx newKey ->
+        PromptKey id newKey ->
             let
                 newKeyValues =
-                    List.updateAt idx (changeKey newKey) environment.keyValues
+                    List.updateIf (\current -> True) (changeKey newKey) environment.keyValues
 
                 newEnvironment =
                     { environment | keyValues = newKeyValues }
@@ -425,7 +428,7 @@ updateKeyValue msg ( model, environment ) =
         PromptValue idx newValue ->
             let
                 newKeyValues =
-                    List.updateAt idx (changeValue (stringToTemplate newValue)) environment.keyValues
+                    List.updateIf (\current -> True) (changeValue (stringToTemplate newValue)) environment.keyValues
 
                 newEnvironment =
                     { environment | keyValues = newKeyValues }
@@ -445,7 +448,7 @@ updateKeyValue msg ( model, environment ) =
         DeleteNewKeyValue idx ->
             let
                 newKeyValues =
-                    List.removeAt idx environment.keyValues
+                    List.filter (always True) environment.keyValues
 
                 newEnvironment =
                     { environment | keyValues = newKeyValues }
@@ -492,10 +495,10 @@ updateKeyValue msg ( model, environment ) =
             , Cmd.none
             )
 
-        ToggleValueVisibility idx ->
+        ToggleValueVisibility id ->
             let
                 newKeyValues =
-                    List.updateAt idx toggleValueVisibility environment.keyValues
+                    List.updateIf (always True) toggleValueVisibility environment.keyValues
 
                 newEnvironment =
                     { environment | keyValues = newKeyValues }
@@ -507,21 +510,17 @@ updateKeyValue msg ( model, environment ) =
 -- ** util
 
 
-updateKeyValuesResultToMsg : Result Http.Error (List Client.KeyValue) -> KeyValueMsg
+updateKeyValuesResultToMsg : Result Http.Error () -> KeyValueMsg
 updateKeyValuesResultToMsg result =
     case result of
-        Ok backKeyValues ->
-            let
-                keyValues =
-                    List.map Client.convertEnvironmentKeyValueFromBackToFront backKeyValues
-            in
-            KeyValuesUpserted keyValues
+        Ok () ->
+            KeyValuesUpserted (Debug.todo "") --keyValues
 
         Err err ->
             PrintNotification2 <| AlertNotification "Could not update key value, try reloading the page!" (httpErrorToString err)
 
 
-deleteKeyValueResultToMsg : Int -> Result Http.Error () -> KeyValueMsg
+deleteKeyValueResultToMsg : Uuid -> Result Http.Error () -> KeyValueMsg
 deleteKeyValueResultToMsg id result =
     case result of
         Ok () ->
@@ -531,7 +530,7 @@ deleteKeyValueResultToMsg id result =
             PrintNotification2 <| AlertNotification "Could not delete key value, try reloading the page" (httpErrorToString err)
 
 
-removeKeyValueWithId : Int -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
+removeKeyValueWithId : Uuid -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
 removeKeyValueWithId id keyValues =
     let
         fold : Storable NewKeyValue KeyValue -> List (Storable NewKeyValue KeyValue) -> List (Storable NewKeyValue KeyValue)
@@ -634,7 +633,7 @@ envKeyValueView model =
     in
     column [ spacing 30 ]
         [ titleView model
-        , column [ spacing 5 ] (List.indexedMap viewKeyValue model.keyValues)
+        , column [ spacing 5 ] (List.map (viewKeyValue (Debug.todo "id")) model.keyValues)
         , el [ centerX ] addNewKeyValueView
         ]
 
@@ -692,7 +691,7 @@ mainActionButtonsView =
 -- *** key value entry view
 
 
-viewKeyValue : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
+viewKeyValue : Uuid -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
 viewKeyValue idx sKeyValue =
     let
         { key, value, hidden } =
@@ -730,7 +729,7 @@ viewKeyValue idx sKeyValue =
 -- *** delete view
 
 
-deleteView : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
+deleteView : Uuid -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
 deleteView idx sKeyValue =
     case sKeyValue of
         New new ->
@@ -755,7 +754,7 @@ deleteView idx sKeyValue =
 -- *** hide view
 
 
-hideView : Int -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
+hideView : Uuid -> Storable NewKeyValue KeyValue -> Element KeyValueMsg
 hideView idx sKeyValue =
     let
         label =

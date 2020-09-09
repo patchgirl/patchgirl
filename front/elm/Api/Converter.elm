@@ -216,19 +216,22 @@ convertEnvironmentKeyValueFromFrontToBack storable =
     in
     case storable of
         New { key, value, hidden } ->
-            { newKeyValueKey = key
+            { newKeyValueId = Debug.todo "id"
+            , newKeyValueKey = key
             , newKeyValueValue = templatedStringsToString value
             , newKeyValueHidden = hidden
             }
 
         Saved { key, value, hidden } ->
-            { newKeyValueKey = key
+            { newKeyValueId = Debug.todo "id"
+            , newKeyValueKey = key
             , newKeyValueValue = templatedStringsToString value
             , newKeyValueHidden = hidden
             }
 
         Edited2 _ { key, value, hidden } ->
-            { newKeyValueKey = key
+            { newKeyValueId = Debug.todo "id"
+            , newKeyValueKey = key
             , newKeyValueValue = templatedStringsToString value
             , newKeyValueHidden = hidden
             }

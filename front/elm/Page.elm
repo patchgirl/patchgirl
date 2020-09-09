@@ -12,7 +12,7 @@ type Page
     = HomePage
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
-    | EnvPage (Maybe Int)
+    | EnvPage (Maybe Uuid)
     | ScenarioPage (Maybe Uuid) (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
@@ -119,8 +119,11 @@ urlParser =
         , Url.map (\pgId -> PgPage (EditView (DeleteView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "delete")
         , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
 
-        , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> Url.int)
+        -- env
+        , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> uuidParser)
         , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
+
+        -- scenario
         , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
         , Url.map (\id -> ScenarioPage (Just id) Nothing) (appRoot </> Url.s "scenario" </> uuidParser)
         , Url.map (ScenarioPage Nothing Nothing) (appRoot </> Url.s "scenario")
@@ -194,7 +197,7 @@ href page =
                     [ "app", "env" ]
 
                 EnvPage (Just id) ->
-                    [ "app", "env", String.fromInt id ]
+                    [ "app", "env", Uuid.toString id ]
 
                 ScenarioPage mUuid1 mUuid2  ->
                     let
