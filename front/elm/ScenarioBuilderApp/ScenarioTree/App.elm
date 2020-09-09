@@ -139,7 +139,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode parentNodeId (mkdir newId)) scenarioNodes
+                    List.map (modifyScenarioNode parentNodeId (mkdirRequest newId)) scenarioNodes
 
                 newModel =
                     { model
@@ -549,8 +549,8 @@ toggleFolder node =
                 }
 
 
-mkdir : Uuid -> ScenarioNode -> ScenarioNode
-mkdir id node =
+mkdirRequest : Uuid -> ScenarioNode -> ScenarioNode
+mkdirRequest id node =
     case node of
         (ScenarioFile _) as file ->
             file

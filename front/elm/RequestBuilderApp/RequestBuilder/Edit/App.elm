@@ -127,7 +127,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode parentNodeId (mkdir newId)) requestNodes
+                    List.map (modifyRequestNode parentNodeId (mkdirRequest newId)) requestNodes
 
                 newModel =
                     { model

@@ -260,8 +260,8 @@ togglePgFolder node =
 -- ** mkdir
 
 
-mkdir : Uuid -> RequestNode -> RequestNode
-mkdir id node =
+mkdirRequest : Uuid -> RequestNode -> RequestNode
+mkdirRequest id node =
     case node of
         (File _) as file ->
             file

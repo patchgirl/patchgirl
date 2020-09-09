@@ -134,7 +134,7 @@ update msg model =
                             requestNodes ++ [ mkDefaultFolder newNode newId ]
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (mkdir newNode newId)) requestNodes
+                            List.map (modifyRequestNode folderId (mkdirRequest newNode newId)) requestNodes
 
                 newModel =
                     { model
@@ -229,8 +229,8 @@ touch newNode id parentNode =
                     , open = True
                 }
 
-mkdir : NewNode -> Uuid -> RequestNode -> RequestNode
-mkdir newNode id node =
+mkdirRequest : NewNode -> Uuid -> RequestNode -> RequestNode
+mkdirRequest newNode id node =
     case node of
         (File _) as file ->
             file

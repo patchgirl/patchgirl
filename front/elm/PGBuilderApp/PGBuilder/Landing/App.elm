@@ -134,7 +134,7 @@ update msg model =
                             pgNodes ++ [ mkDefaultFolder newNode newId ]
 
                         Just folderId ->
-                            List.map (PgTree.modifyPgNode folderId (mkdir newNode newId)) pgNodes
+                            List.map (PgTree.modifyPgNode folderId (mkdirRequest newNode newId)) pgNodes
 
                 newModel =
                     { model
@@ -243,8 +243,8 @@ touch newNode id parentNode =
                     , open = True
                 }
 
-mkdir : NewNode -> Uuid -> PgNode -> PgNode
-mkdir newNode id node =
+mkdirRequest : NewNode -> Uuid -> PgNode -> PgNode
+mkdirRequest newNode id node =
     case node of
         (File _) as file ->
             file
