@@ -32,7 +32,7 @@ import Browser.Navigation as Navigation
 import BuilderUtil exposing (..)
 import Application.Model as Application
 import EnvironmentEdition.Builder.Landing.App as Landing
---import EnvironmentEdition.Builder.Edit.App as Edit
+import EnvironmentEdition.Builder.Edit.App as Edit
 --import EnvironmentEdition.Builder.Run.App as Run
 
 
@@ -58,7 +58,7 @@ type alias Model a =
 
 type Msg
     = LandingAppMsg Landing.Msg
---    | EditAppMsg Edit.Msg
+    | EditAppMsg Edit.Msg
 --    | RunAppMsg Run.Msg
 
 
@@ -74,14 +74,14 @@ update msg model =
                     Landing.update subMsg model
             in
             (newModel, Cmd.map LandingAppMsg newMsg)
-{-
+
         EditAppMsg subMsg ->
             let
                 (newModel, newMsg) =
                     Edit.update subMsg model
             in
             (newModel, Cmd.map EditAppMsg newMsg)
-
+{-
         RunAppMsg subMsg ->
             let
                 (updatedModel, newPgRecord, newMsg) =
@@ -138,16 +138,18 @@ view model =
         LandingView whichView ->
             map LandingAppMsg (Landing.view whichView model)
 
-        _ ->
-            none
-{-
         EditView whichEditView ->
             case (traverseEditViewMaybe whichEditView) of
                 Nothing ->
                     text "404 - could not find edit view"
 
-                Just nodeType ->
-                    map EditAppMsg (Edit.view nodeType model)
+                Just environment ->
+                    map EditAppMsg (Edit.view environment model)
+
+        _ ->
+            none
+
+{-
 
         RunView (Just (File pgFileRecord)) ->
             map RunAppMsg (Run.view model pgFileRecord)

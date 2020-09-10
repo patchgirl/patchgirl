@@ -61,6 +61,21 @@ nodeView model environment =
         selected =
              getBuilderId model.displayedEnvironmentBuilderView == Just environment.id
 
+        showMenu =
+            model.displayedEnvironmentNodeMenuId == Just environment.id
+
+        menuView : Element Msg
+        menuView =
+            case showMenu of
+                True ->
+                    link []
+                        { url = href (EnvPage2 (EditView (DefaultEditView environment.id)))
+                        , label = editIcon
+                        }
+
+                False ->
+                    none
+
         color =
             case selected of
                 True -> primaryColor
@@ -72,9 +87,14 @@ nodeView model environment =
                False -> Font.regular
 
         linkView =
-            link [ weight ]
-                { url = href (EnvPage2 (EditView (DefaultEditView environment.id)))
-                , label = el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue environment.name) color
-                }
+            el [ onMouseEnter (ToggleMenu (Just environment.id))
+               , onMouseLeave (ToggleMenu Nothing)
+               , weight
+               , onRight menuView
+               ] <|
+                link []
+                    { url = href (EnvPage2 (RunView environment.id))
+                    , label = el [] <| iconWithTextAndColor "label" (notEditedValue environment.name) color
+                    }
     in
     linkView
