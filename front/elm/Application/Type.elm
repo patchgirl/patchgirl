@@ -77,6 +77,15 @@ getBuilderId builderView =
         RunView id -> Just id
 
 
+-- * new node
+
+
+type alias NewNode =
+    { name : String
+    , parentFolderId : Maybe Uuid
+    }
+
+
 -- * notification
 
 
@@ -294,15 +303,6 @@ type alias RequestFileRecord =
 type HttpResponseView
     = BodyResponseView
     | HeaderResponseView
-
-
--- ** landing request folder
-
-
-type alias NewNode =
-    { name : String
-    , parentFolderId : Maybe Uuid
-    }
 
 
 -- * pg collection

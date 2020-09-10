@@ -13,6 +13,7 @@ type Page
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
     | EnvPage (Maybe Uuid)
+    | EnvPage2 (BuilderView Uuid)
     | ScenarioPage (Maybe Uuid) (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
@@ -119,6 +120,13 @@ urlParser =
         , Url.map (\pgId -> PgPage (EditView (DeleteView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "delete")
         , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
 
+        -- env 2
+        , Url.map (EnvPage2 (LandingView DefaultView)) (appRoot </> Url.s "environment2")
+        , Url.map (EnvPage2 (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "environment2" </> Url.s "new-folder")
+        , Url.map (EnvPage2 (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment2" </> Url.s "new-file")
+        , Url.map (\envId -> EnvPage2 (EditView (DefaultEditView envId))) (appRoot </> Url.s "environment2" </> uuidParser </> Url.s "edit")
+        , Url.map (\envId -> EnvPage2 (EditView (DeleteView envId))) (appRoot </> Url.s "environment2" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+
         -- env
         , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> uuidParser)
         , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
@@ -192,6 +200,31 @@ href page =
 
                     in
                     [ "app", "pg" ] ++ mode
+
+                EnvPage2 builderView ->
+                    let
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
+
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                EditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RunView id ->
+                                    [ "run", Uuid.toString id ]
+
+                    in
+                    [ "app", "environment2" ] ++ mode
 
                 EnvPage Nothing ->
                     [ "app", "env" ]

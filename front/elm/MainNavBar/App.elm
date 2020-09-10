@@ -33,7 +33,7 @@ type alias Model a =
         , displayedSceneId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , displayedPgBuilderView : BuilderView Uuid
-        , displayedEnvId : Maybe Uuid
+        , displayedEnvironmentBuilderView : BuilderView Uuid
         , displayedDocumentation : Documentation
     }
 
@@ -346,7 +346,7 @@ centerView model =
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isEnvPage model.page))
-            { url = href (EnvPage model.displayedEnvId)
+            { url = href (EnvPage2 model.displayedEnvironmentBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isDocumentationPage model.page))

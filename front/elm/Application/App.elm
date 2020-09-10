@@ -11,6 +11,7 @@ import Element.Font as Font
 import Element.Events as Events
 import Element.Border as Border
 import EnvironmentEdition.App as EnvironmentEdition
+import EnvironmentEdition.App2 as EnvironmentEdition2
 import Element.Input as Input
 import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
@@ -60,6 +61,7 @@ type Msg
     | BuilderAppMsg RequestBuilderApp.Msg
     | PGBuilderAppMsg PGBuilderApp.Msg
     | EnvironmentEditionMsg EnvironmentEdition.Msg
+    | EnvironmentEditionMsg2 EnvironmentEdition2.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
     | TangoScriptMsg TangoScriptApp.Msg
     | MainNavBarMsg MainNavBar.Msg
@@ -142,7 +144,10 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , displayedEnvId = Nothing
+            , displayedEnvironmentBuilderView = LandingView DefaultView
+            , displayedEnvironmentNodeMenuId = Nothing
             , environments = environments
+            , newEnvironmentName = ""
             , runnerRunning = False
             , displayedDocumentation = RequestDoc
             }
@@ -220,6 +225,13 @@ update msg model =
             in
             (newModel, (Cmd.map PGBuilderAppMsg newMsg))
 
+        EnvironmentEditionMsg2 subMsg ->
+            let
+                ( newModel, newMsg ) =
+                    EnvironmentEdition2.update subMsg model
+            in
+            (newModel, (Cmd.map EnvironmentEditionMsg2 newMsg))
+
         EnvironmentEditionMsg subMsg ->
             case EnvironmentEdition.update subMsg model of
                 ( newModel, newSubMsg ) ->
@@ -296,6 +308,9 @@ updateModelWithPage page model =
                 EnvPage mId ->
                     { model | displayedEnvId = mId }
 
+                EnvPage2 mId ->
+                    { model | displayedEnvironmentBuilderView = mId }
+
                 ScenarioPage mId1 mId2  ->
                     { model
                         | displayedScenarioId = mId1
@@ -305,7 +320,14 @@ updateModelWithPage page model =
                 DocumentationPage documentation ->
                     { model | displayedDocumentation = documentation }
 
-                _ -> model
+                HomePage ->
+                    model
+
+                NotFoundPage ->
+                    model
+
+                TangoScriptPage ->
+                    model
     in
     { newModel | page = page }
 
@@ -382,6 +404,9 @@ mainView model =
 
             EnvPage _ ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
+
+            EnvPage2 _ ->
+                appLayout <| map EnvironmentEditionMsg2 (EnvironmentEdition2.view model)
 
             ScenarioPage _ _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)

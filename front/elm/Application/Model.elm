@@ -64,6 +64,9 @@ type alias Model =
     , selectedEnvironmentToRunIndex : Maybe Uuid
     , selectedEnvironmentToEditId : Maybe Uuid
     , displayedEnvId : Maybe Uuid
+    , displayedEnvironmentBuilderView : BuilderView Uuid
+    , displayedEnvironmentNodeMenuId : Maybe Uuid
+    , newEnvironmentName : String
     , environments : List Environment
 
     -- RUNNER
