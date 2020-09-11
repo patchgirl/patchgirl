@@ -346,7 +346,7 @@ centerView model =
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isEnvPage model.page))
-            { url = href (EnvPage2 model.displayedEnvironmentBuilderView)
+            { url = href (EnvPage model.displayedEnvironmentBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isDocumentationPage model.page))
@@ -411,7 +411,7 @@ isReqPage page =
 isEnvPage : Page -> Bool
 isEnvPage page =
     case page of
-        EnvPage2 _ ->
+        EnvPage _ ->
             True
 
         _ ->

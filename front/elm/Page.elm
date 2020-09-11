@@ -12,7 +12,7 @@ type Page
     = HomePage
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
-    | EnvPage2 (BuilderView Uuid)
+    | EnvPage (BuilderView Uuid)
     | ScenarioPage (Maybe Uuid) (Maybe Uuid)
     | NotFoundPage
     | DocumentationPage Documentation
@@ -120,12 +120,12 @@ urlParser =
         , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
 
         -- env 2
-        , Url.map (EnvPage2 (LandingView DefaultView)) (appRoot </> Url.s "environment2")
-        , Url.map (EnvPage2 (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "environment2" </> Url.s "new-folder")
-        , Url.map (EnvPage2 (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment2" </> Url.s "new-file")
-        , Url.map (\envId -> EnvPage2 (EditView (DefaultEditView envId))) (appRoot </> Url.s "environment2" </> uuidParser </> Url.s "edit")
-        , Url.map (\envId -> EnvPage2 (EditView (DeleteView envId))) (appRoot </> Url.s "environment2" </> uuidParser </> Url.s "edit" </> Url.s "delete")
-        , Url.map (\envId -> EnvPage2 (RunView envId)) (appRoot </> Url.s "environment2" </> Url.s "run" </> uuidParser)
+        , Url.map (EnvPage (LandingView DefaultView)) (appRoot </> Url.s "environment")
+        , Url.map (EnvPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "environment" </> Url.s "new-folder")
+        , Url.map (EnvPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment" </> Url.s "new-file")
+        , Url.map (\envId -> EnvPage (EditView (DefaultEditView envId))) (appRoot </> Url.s "environment" </> uuidParser </> Url.s "edit")
+        , Url.map (\envId -> EnvPage (EditView (DeleteView envId))) (appRoot </> Url.s "environment" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\envId -> EnvPage (RunView envId)) (appRoot </> Url.s "environment" </> Url.s "run" </> uuidParser)
 
         -- scenario
         , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
@@ -197,7 +197,7 @@ href page =
                     in
                     [ "app", "pg" ] ++ mode
 
-                EnvPage2 builderView ->
+                EnvPage builderView ->
                     let
                         mode =
                             case builderView of
@@ -220,7 +220,7 @@ href page =
                                     [ "run", Uuid.toString id ]
 
                     in
-                    [ "app", "environment2" ] ++ mode
+                    [ "app", "environment" ] ++ mode
 
                 ScenarioPage mUuid1 mUuid2  ->
                     let

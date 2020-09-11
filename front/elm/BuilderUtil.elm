@@ -425,10 +425,10 @@ closeBuilderView page =
                     href (ReqPage (LandingView DefaultView))
                 PgPage _ ->
                     href (PgPage (LandingView DefaultView))
-                EnvPage2 _ ->
-                    href (EnvPage2 (LandingView DefaultView))
+                EnvPage _ ->
+                    href (EnvPage (LandingView DefaultView))
                 _ ->
-                    href (EnvPage2 (LandingView DefaultView))
+                    href (EnvPage (LandingView DefaultView))
 
     in
     link []

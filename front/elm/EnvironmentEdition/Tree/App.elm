@@ -69,7 +69,7 @@ nodeView model environment =
             case showMenu of
                 True ->
                     link []
-                        { url = href (EnvPage2 (EditView (DefaultEditView environment.id)))
+                        { url = href (EnvPage (EditView (DefaultEditView environment.id)))
                         , label = editIcon
                         }
 
@@ -93,7 +93,7 @@ nodeView model environment =
                , onRight menuView
                ] <|
                 link []
-                    { url = href (EnvPage2 (RunView environment.id))
+                    { url = href (EnvPage (RunView environment.id))
                     , label = el [] <| iconWithTextAndColor "label" (notEditedValue environment.name) color
                     }
     in

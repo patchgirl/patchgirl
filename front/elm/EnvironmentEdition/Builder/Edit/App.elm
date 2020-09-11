@@ -126,7 +126,7 @@ update msg model =
                     }
 
                 newMsg =
-                    Navigation.pushUrl model.navigationKey (href (EnvPage2 (LandingView DefaultView)))
+                    Navigation.pushUrl model.navigationKey (href (EnvPage (LandingView DefaultView)))
 
             in
             ( newModel, newMsg )
@@ -203,7 +203,7 @@ defaultEditView model environment =
                                        | title = " Delete"
                                        , icon = "delete"
                                    }
-                , url = href (EnvPage2 (EditView (DeleteView environment.id)))
+                , url = href (EnvPage (EditView (DeleteView environment.id)))
                 }
 
         renameInput =
@@ -248,7 +248,7 @@ deleteView model environment =
 
         noBtn =
             link primaryButtonAttrs
-                { url = href (EnvPage2 (EditView (DefaultEditView environment.id)))
+                { url = href (EnvPage (EditView (DefaultEditView environment.id)))
                 , label = text "No"
                 }
 

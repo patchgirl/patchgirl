@@ -158,7 +158,7 @@ defaultView =
                                        | title = " Create a new Environment"
                                        , icon = "note_add"
                                    }
-                , url = href (EnvPage2 (LandingView CreateDefaultFileView))
+                , url = href (EnvPage (LandingView CreateDefaultFileView))
                 }
     in
     el [ centerX ] newPgLink

@@ -299,7 +299,7 @@ updateModelWithPage page model =
                 PgPage mId ->
                     { model | displayedPgBuilderView = mId }
 
-                EnvPage2 mId ->
+                EnvPage mId ->
                     { model | displayedEnvironmentBuilderView = mId }
 
                 ScenarioPage mId1 mId2  ->
@@ -393,7 +393,7 @@ mainView model =
             PgPage _ ->
                 appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model)
 
-            EnvPage2 _ ->
+            EnvPage _ ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
             ScenarioPage _ _ ->
