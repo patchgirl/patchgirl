@@ -82,7 +82,7 @@ update msg model =
 
 view : Model a -> Element Msg
 view model =
-    column [ width fill, height fill, spacing 10 ]
+    column [ width fill, spacing 10 ]
         [ if not model.runnerRunning then enableRunnerBanner else none
         , wrappedRow
               [ width fill
