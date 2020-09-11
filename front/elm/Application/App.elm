@@ -11,7 +11,7 @@ import Element.Font as Font
 import Element.Events as Events
 import Element.Border as Border
 --import EnvironmentEdition.App as EnvironmentEdition
-import EnvironmentEdition.App2 as EnvironmentEdition2
+import EnvironmentEdition.App as EnvironmentEdition
 import Element.Input as Input
 import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
@@ -60,8 +60,7 @@ type Msg
     | DocumentationMsg DocumentationApp.Msg
     | BuilderAppMsg RequestBuilderApp.Msg
     | PGBuilderAppMsg PGBuilderApp.Msg
---    | EnvironmentEditionMsg EnvironmentEdition.Msg
-    | EnvironmentEditionMsg2 EnvironmentEdition2.Msg
+    | EnvironmentEditionMsg EnvironmentEdition.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
     | TangoScriptMsg TangoScriptApp.Msg
     | MainNavBarMsg MainNavBar.Msg
@@ -225,12 +224,12 @@ update msg model =
             in
             (newModel, (Cmd.map PGBuilderAppMsg newMsg))
 
-        EnvironmentEditionMsg2 subMsg ->
+        EnvironmentEditionMsg subMsg ->
             let
                 ( newModel, newMsg ) =
-                    EnvironmentEdition2.update subMsg model
+                    EnvironmentEdition.update subMsg model
             in
-            (newModel, (Cmd.map EnvironmentEditionMsg2 newMsg))
+            (newModel, (Cmd.map EnvironmentEditionMsg newMsg))
 
         ScenarioMsg subMsg ->
             case ScenarioBuilderApp.update subMsg model of
@@ -394,11 +393,8 @@ mainView model =
             PgPage _ ->
                 appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model)
 
---            EnvPage _ ->
---                appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
-
             EnvPage2 _ ->
-                appLayout <| map EnvironmentEditionMsg2 (EnvironmentEdition2.view model)
+                appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
             ScenarioPage _ _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)

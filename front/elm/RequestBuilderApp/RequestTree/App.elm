@@ -39,11 +39,11 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> ( Model a, Cmd Msg )
+update : Msg -> Model a -> Model a
 update msg model =
     case msg of
         ToggleMenu mId ->
-            ({ model | displayedRequestNodeMenuId = mId }, Cmd.none)
+            { model | displayedRequestNodeMenuId = mId }
 
         ToggleFolder id ->
             let
@@ -59,7 +59,7 @@ update msg model =
                             RequestCollection requestCollectionId newRequestNodes
                     }
             in
-            ( newModel, Cmd.none )
+            newModel
 
 
 -- * view

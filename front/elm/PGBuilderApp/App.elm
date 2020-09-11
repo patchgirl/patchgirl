@@ -65,10 +65,10 @@ update msg model =
 
         TreeMsg subMsg ->
             let
-                ( newModel, newSubMsg ) =
+                newModel =
                     Tree.update subMsg model
             in
-            ( newModel, Cmd.map TreeMsg newSubMsg )
+            ( newModel, Cmd.none )
 
         BuilderMsg subMsg ->
             let
