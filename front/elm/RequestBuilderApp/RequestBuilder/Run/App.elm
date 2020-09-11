@@ -369,8 +369,7 @@ view file model =
                         , width fill
                         ]
                    )
-                [ el [ alignRight ] (closeBuilderView model.page)
-                , titleView model file
+                [ titleView model file
                 , el [ width fill ] builderView
                 ]
 
@@ -409,6 +408,7 @@ titleView model file =
     row [ paddingXY 0 10, spacing 10, width fill ]
         [ el [] <| iconWithTextAndColor "label" name secondaryColor
         , el [ alignRight ] (mainActionButtonsView model file)
+        , closeBuilderView model.page
         ]
 
 

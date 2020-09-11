@@ -5,6 +5,7 @@ import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
+import Element.Input as Input
 import Html as Html
 import Html.Attributes as Html
 import Html.Events as Html
@@ -45,7 +46,7 @@ type alias Model a =
 type Msg
     = BuilderMsg RequestBuilder.Msg
     | TreeMsg RequestTree.Msg
-    | EnvSelectionMsg Uuid
+    | SelectEnvironment Uuid
 
 
 -- * update
@@ -54,7 +55,7 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        EnvSelectionMsg id ->
+        SelectEnvironment id ->
             let
                 newModel =
                     { model | selectedEnvironmentToRunIndex = Just id }
@@ -88,34 +89,23 @@ view model =
               , paddingXY 10 0
               , spacing 10
               ]
-              [ column
-                    ( box [ alignTop
-                        , spacing 20
-                        , centerX
-                        , padding 20
-                        , width (fillPortion 1)
-                        ]
-                    )
-                    [ el [] <| envSelectionView model.environments
-                    , el [ paddingXY 10 0 ] (map TreeMsg (RequestTree.view model))
+              [ column [ spacing 20, alignTop ]
+                    [ el ( box [ alignTop
+                               , spacing 20
+                               , centerX
+                               , padding 20
+                               , width (fillPortion 1)
+                               ]
+                         ) <| environmentSelectionView model.environments model.selectedEnvironmentToRunIndex SelectEnvironment
+                    , el ( box [ alignTop
+                               , spacing 20
+                               , centerX
+                               , padding 20
+                               , width (fillPortion 1)
+                               ]
+                         ) <| map TreeMsg (RequestTree.view model)
                     ]
               , el [ width (fillPortion 9), height fill, centerX, alignTop ] <|
                   map BuilderMsg (RequestBuilder.view model)
               ]
         ]
-
-
-envSelectionView : List Environment -> Element Msg
-envSelectionView environments =
-    let
-        entryView : Environment -> Element Msg
-        entryView environment =
-            Debug.todo ""
-            --Html.option [ Html.value (String.fromInt idx) ] [ Html.text (editedOrNotEditedValue envName) ]
-    in
-    html <|
-        Html.div []
-            [ Html.label [] [ Html.text "Environment: " ]
---            , --Html.select [ Html.on "change" (Json.map EnvSelectionMsg targetValueIntParse) ]
-              --  (List.indexedMap entryView environmentNames)
-            ]

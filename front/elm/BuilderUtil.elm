@@ -394,7 +394,26 @@ mkDefaultPgFile id =
 -- * view
 
 
--- ** close builder view
+-- ** environment selection
+
+
+environmentSelectionView : List Environment -> Maybe Uuid -> (Uuid -> a) -> Element a
+environmentSelectionView environments selectedEnvironmentToRunIndex msg =
+    let
+        entryView environment =
+            Input.option environment.id (text (notEditedValue environment.name))
+
+    in
+    Input.radio [ padding 20, spacing 10 ]
+        { onChange = msg
+        , selected = selectedEnvironmentToRunIndex
+        , label = Input.labelAbove [] (text "Environment:")
+        , options =
+              List.map entryView environments
+        }
+
+
+-- ** close builder
 
 
 closeBuilderView : Page -> Element a

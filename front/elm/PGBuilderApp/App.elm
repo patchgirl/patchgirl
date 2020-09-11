@@ -14,6 +14,7 @@ import List.Extra as List
 import Page exposing (..)
 import PGBuilderApp.PGBuilder.App as PgBuilder
 import PGBuilderApp.PGTree.App as Tree
+import BuilderUtil exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
 import Api.RunnerGeneratedClient as Client
@@ -46,7 +47,7 @@ type alias Model a =
 type Msg
     = BuilderMsg PgBuilder.Msg
     | TreeMsg Tree.Msg
-    | EnvSelectionMsg Uuid
+    | SelectEnvironment Uuid
 
 
 -- * update
@@ -55,7 +56,7 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        EnvSelectionMsg id ->
+        SelectEnvironment id ->
             let
                 newModel =
                     { model | selectedEnvironmentToRunIndex = Just id }
@@ -89,23 +90,23 @@ view model =
               , paddingXY 10 0
               , spacing 10
               ]
-              [ column
-                    ( box [ alignTop
-                        , spacing 20
-                        , centerX
-                        , padding 20
-                        , width (fillPortion 1)
-                        ]
-                    )
-                    [ el [] <| envSelectionView <| List.map .name model.environments
-                    , el [ paddingXY 10 0 ] (map TreeMsg (Tree.view model))
+              [ column [ spacing 20, alignTop ]
+                    [ el ( box [ alignTop
+                               , spacing 20
+                               , centerX
+                               , padding 20
+                               , width (fillPortion 1)
+                               ]
+                         ) <| environmentSelectionView model.environments model.selectedEnvironmentToRunIndex SelectEnvironment
+                    , el ( box [ alignTop
+                               , spacing 20
+                               , centerX
+                               , padding 20
+                               , width (fillPortion 1)
+                               ]
+                         ) <| map TreeMsg (Tree.view model)
                     ]
               , el [ width (fillPortion 9), height fill, centerX, alignTop ] <|
                   map BuilderMsg (PgBuilder.view model)
               ]
         ]
-
-
-envSelectionView : List (Editable String) -> Element Msg
-envSelectionView environmentNames =
-    none

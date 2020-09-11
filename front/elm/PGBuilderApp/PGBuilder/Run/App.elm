@@ -351,13 +351,16 @@ builderView model file =
               , Input.button [ alignRight ]
                     { onPress = Just <| AskRun
                     , label =
-                        el [ Border.solid
-                           , Border.color secondaryColor
-                           , Border.width 1
-                           , Border.rounded 5
-                           , Background.color secondaryColor
-                           , paddingXY 10 10
-                           ] (iconWithTextAndColorAndAttr "send" "Run" primaryColor [] )
+                        el (primaryButtonAttrs ++ [ mouseOver
+                                                        [ Background.color primaryColor
+                                                        , Font.color black
+                                                        ]
+                                                  ] ) <|
+                            iconWithAttr { defaultIconAttribute
+                                              | icon = "send"
+                                              , primIconColor = Just primaryColor
+                                              , title = "Run"
+                                         }
                     }
               , closeBuilderView model.page
               ]
