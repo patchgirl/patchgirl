@@ -327,9 +327,10 @@ instance FromJSON UpdateScenarioFile where
 -- * new root scenario folder
 
 
-newtype NewRootScenarioFolder =
+data NewRootScenarioFolder =
   NewRootScenarioFolder { _newRootScenarioFolderId           :: UUID
-                       } deriving (Eq, Show, Generic, ToRow)
+                        , _newRootScenarioFolderName :: String
+                        } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootScenarioFolder)
 

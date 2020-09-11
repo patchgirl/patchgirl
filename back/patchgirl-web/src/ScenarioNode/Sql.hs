@@ -150,6 +150,7 @@ updateScenarioFileDB UpdateScenarioFile{..} accountId connection =
 insertRootScenarioFolder :: NewRootScenarioFolder -> UUID -> PG.Connection -> IO Int.Int64
 insertRootScenarioFolder NewRootScenarioFolder {..} scenarioCollectionId connection =
   PG.execute connection rawQuery ( _newRootScenarioFolderId
+                                 , _newRootScenarioFolderName
                                  , scenarioCollectionId
                                  , _newRootScenarioFolderId
                                  )
@@ -163,7 +164,7 @@ insertRootScenarioFolder NewRootScenarioFolder {..} scenarioCollectionId connect
               tag,
               name
             )
-            VALUES (?, NULL, 'ScenarioFolder', 'new folder')
+            VALUES (?, NULL, 'ScenarioFolder', ?)
           ) INSERT INTO scenario_collection_to_scenario_node (
               scenario_collection_id,
               scenario_node_id

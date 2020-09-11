@@ -91,7 +91,7 @@ spec =
           _ <- try clientEnv (createRootScenarioFolder token scenarioCollectionId newRootScenarioFolder)
           fakeScenarioFolder <- selectFakeScenarioFolder UUID.nil connection
           fakeScenarioFolder `shouldBe`  FakeScenarioFolder { _fakeScenarioFolderParentId = Nothing
-                                                            , _fakeScenarioFolderName       = "new folder"
+                                                            , _fakeScenarioFolderName       = "test"
                                                             }
 
   where
@@ -104,4 +104,6 @@ spec =
 
     mkNewRootScenarioFolder :: UUID -> NewRootScenarioFolder
     mkNewRootScenarioFolder id =
-      NewRootScenarioFolder { _newRootScenarioFolderId = id }
+      NewRootScenarioFolder { _newRootScenarioFolderId = id
+                            , _newRootScenarioFolderName = "test"
+                            }
