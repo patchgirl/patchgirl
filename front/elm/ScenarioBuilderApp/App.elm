@@ -112,7 +112,7 @@ getBuilder model =
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
             in
-            Just (convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun)
+            Just (convertFromFileToBuilder file model scenarioCollectionId (Debug.todo ""))--keyValuesToRun)
 
         _ ->
             Nothing
@@ -121,7 +121,7 @@ convertFromFileToBuilder :
     ScenarioFileRecord
     -> Model a
     -> Uuid
-    -> List (Storable NewKeyValue KeyValue)
+    -> List KeyValue
     -> ScenarioBuilder.Model
 convertFromFileToBuilder file model scenarioCollectionId keyValuesToRun =
     { notification = model.notification

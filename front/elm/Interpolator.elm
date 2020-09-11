@@ -21,7 +21,7 @@ type InterpolatedString
 -- * interpolate
 
 
-interpolate : List (Storable NewKeyValue KeyValue) -> StringTemplate -> List InterpolatedString
+interpolate : List KeyValue -> StringTemplate -> List InterpolatedString
 interpolate envKeyValues stringTemplate =
     let
         interpolateSingle : Template -> InterpolatedString
@@ -34,8 +34,7 @@ interpolate envKeyValues stringTemplate =
                     let
                         keyValues =
                             envKeyValues
-                                |> List.map latestValueOfStorable
-                                |> List.map (\r -> (r.key, (r.value, r.hidden)))
+                                |> List.map (\r -> (editedOrNotEditedValue r.key, (editedOrNotEditedValue r.value, editedOrNotEditedValue r.hidden)))
                                 |> Dict.fromList
                     in
                     case Dict.get str keyValues of
@@ -118,7 +117,7 @@ onlyInterpolatedStringAsElement interpolatedStrings =
 -- * display wrapper
 
 
-showFullInterpolation : String -> List (Storable NewKeyValue KeyValue) -> String -> Element a
+showFullInterpolation : String -> List KeyValue -> String -> Element a
 showFullInterpolation class keyValues str =
     let
         template =
@@ -138,7 +137,7 @@ showFullInterpolation class keyValues str =
                , htmlAttribute (Html.class class)
                ] value
 
-showOnlyInterpolation : List (Storable NewKeyValue KeyValue) -> String -> Element a
+showOnlyInterpolation : List KeyValue -> String -> Element a
 showOnlyInterpolation keyValues str =
     let
         template =

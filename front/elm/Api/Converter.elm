@@ -195,18 +195,17 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
 -- * environment key values
 
 
-convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.Storable Front.NewKeyValue Front.KeyValue
+convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.KeyValue
 convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue, keyValueHidden } =
-    Saved
-        { id = keyValueId
-        , key = keyValueKey
-        , value = stringToTemplate keyValueValue
-        , hidden = keyValueHidden
-        }
+    { id = keyValueId
+    , key = NotEdited keyValueKey
+    , value = NotEdited (stringToTemplate keyValueValue)
+    , hidden = NotEdited keyValueHidden
+    }
 
 
-convertEnvironmentKeyValueFromFrontToBack : Front.Storable Front.NewKeyValue Front.KeyValue -> Back.NewKeyValue
-convertEnvironmentKeyValueFromFrontToBack storable =
+convertEnvironmentKeyValueFromFrontToBack : Front.KeyValue -> Back.NewKeyValue
+convertEnvironmentKeyValueFromFrontToBack { id, key, value, hidden } =
     let
         templatedStringsToString : StringTemplate -> String
         templatedStringsToString templatedStrings =
@@ -214,27 +213,11 @@ convertEnvironmentKeyValueFromFrontToBack storable =
                 |> List.map templateAsString
                 |> String.join ""
     in
-    case storable of
-        New { key, value, hidden } ->
-            { newKeyValueId = Debug.todo "id"
-            , newKeyValueKey = key
-            , newKeyValueValue = templatedStringsToString value
-            , newKeyValueHidden = hidden
-            }
-
-        Saved { key, value, hidden } ->
-            { newKeyValueId = Debug.todo "id"
-            , newKeyValueKey = key
-            , newKeyValueValue = templatedStringsToString value
-            , newKeyValueHidden = hidden
-            }
-
-        Edited2 _ { key, value, hidden } ->
-            { newKeyValueId = Debug.todo "id"
-            , newKeyValueKey = key
-            , newKeyValueValue = templatedStringsToString value
-            , newKeyValueHidden = hidden
-            }
+    { newKeyValueId = id
+    , newKeyValueKey = editedOrNotEditedValue key
+    , newKeyValueValue = templatedStringsToString (editedOrNotEditedValue value)
+    , newKeyValueHidden = (editedOrNotEditedValue hidden)
+    }
 
 
 -- * account

@@ -10,7 +10,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Events as Events
 import Element.Border as Border
-import EnvironmentEdition.App as EnvironmentEdition
+--import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentEdition.App2 as EnvironmentEdition2
 import Element.Input as Input
 import MainNavBar.App as MainNavBar
@@ -60,7 +60,7 @@ type Msg
     | DocumentationMsg DocumentationApp.Msg
     | BuilderAppMsg RequestBuilderApp.Msg
     | PGBuilderAppMsg PGBuilderApp.Msg
-    | EnvironmentEditionMsg EnvironmentEdition.Msg
+--    | EnvironmentEditionMsg EnvironmentEdition.Msg
     | EnvironmentEditionMsg2 EnvironmentEdition2.Msg
     | ScenarioMsg ScenarioBuilderApp.Msg
     | TangoScriptMsg TangoScriptApp.Msg
@@ -232,11 +232,6 @@ update msg model =
             in
             (newModel, (Cmd.map EnvironmentEditionMsg2 newMsg))
 
-        EnvironmentEditionMsg subMsg ->
-            case EnvironmentEdition.update subMsg model of
-                ( newModel, newSubMsg ) ->
-                    (newModel, (Cmd.map EnvironmentEditionMsg newSubMsg))
-
         ScenarioMsg subMsg ->
             case ScenarioBuilderApp.update subMsg model of
                 ( newModel, newSubMsg ) ->
@@ -304,9 +299,6 @@ updateModelWithPage page model =
 
                 PgPage mId ->
                     { model | displayedPgBuilderView = mId }
-
-                EnvPage mId ->
-                    { model | displayedEnvId = mId }
 
                 EnvPage2 mId ->
                     { model | displayedEnvironmentBuilderView = mId }
@@ -402,8 +394,8 @@ mainView model =
             PgPage _ ->
                 appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model)
 
-            EnvPage _ ->
-                appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
+--            EnvPage _ ->
+--                appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
             EnvPage2 _ ->
                 appLayout <| map EnvironmentEditionMsg2 (EnvironmentEdition2.view model)

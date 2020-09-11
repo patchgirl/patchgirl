@@ -44,7 +44,7 @@ type alias Model =
     , pgCollection : PgCollection
     , scenarioCollectionId : Uuid
     , scenes : List Scene
-    , keyValues : List (Storable NewKeyValue KeyValue)
+    , keyValues : List KeyValue
     , name : Editable String
     , displayedSceneId : Maybe Uuid
     , whichResponseView : HttpResponseView
@@ -305,8 +305,10 @@ update msg model =
                         |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
                         |> Maybe.map .keyValues
                         |> Maybe.withDefault []
-                        |> List.map toLatestKeyValue
-                        |> List.map (\{key, value} -> (key, Client.convertStringTemplateFromFrontToBack value))
+                        |> List.map (\{key, value} -> ( editedOrNotEditedValue key
+                                                      , Client.convertStringTemplateFromFrontToBack (editedOrNotEditedValue value)
+                                                      )
+                                    )
                         |> Dict.fromList
 
                 mScenes : Maybe (List Client.SceneFile)

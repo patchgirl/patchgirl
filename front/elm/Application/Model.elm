@@ -105,7 +105,7 @@ getEnvironmentToRun model =
     Maybe.andThen selectEnvironment model.selectedEnvironmentToRunIndex
 
 
-getEnvironmentKeyValuesToRun : GetEnvironment a -> List (Storable NewKeyValue KeyValue)
+getEnvironmentKeyValuesToRun : GetEnvironment a -> List KeyValue
 getEnvironmentKeyValuesToRun model =
     getEnvironmentToRun model
         |> Maybe.map .keyValues

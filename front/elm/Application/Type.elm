@@ -170,50 +170,25 @@ type alias Environment =
     { id : Uuid
     , name : Editable String
     , showRenameInput : Bool
-    , keyValues : List (Storable NewKeyValue KeyValue)
+    , keyValues : List KeyValue
     }
-
-toLatestKeyValue : Storable NewKeyValue KeyValue
-                 -> { key : String
-                    , value : StringTemplate
-                    , hidden : Bool
-                    }
-toLatestKeyValue storable =
-    case storable of
-        New { key, value, hidden } ->
-            { key = key
-            , value = value
-            , hidden = hidden
-            }
-
-        Saved { key, value, hidden } ->
-            { key = key
-            , value = value
-            , hidden = hidden
-            }
-
-        Edited2 _ { key, value, hidden } ->
-            { key = key
-            , value = value
-            , hidden = hidden
-            }
-
 
 -- * key value
 
 
-type alias NewKeyValue =
-    { key : String
-    , value : StringTemplate
-    , hidden : Bool
-    }
-
 type alias KeyValue =
     { id : Uuid
-    , key : String
-    , value : StringTemplate
-    , hidden : Bool
+    , key : Editable String
+    , value : Editable StringTemplate
+    , hidden : Editable Bool
     }
+
+isKeyValueDirty : KeyValue -> Bool
+isKeyValueDirty keyValue =
+    [ isDirty keyValue.key
+    , isDirty keyValue.value
+    , isDirty keyValue.hidden
+    ] |> List.any identity
 
 
 -- * template
@@ -799,38 +774,14 @@ changeEditedValue newValue editable =
         False ->
             Edited oldValue newValue
 
+cleanEditable : Editable a -> Editable a
+cleanEditable editable =
+    case editable of
+        Edited old new ->
+            NotEdited new
 
--- * storable
-{-
-   model that have a state difference when they are saved or edited
-   typically any model that has an `id` field
--}
-
-
-type Storable a b
-    = New a
-    | Saved b
-    | Edited2 b b
-
-
-isStorableDirty : Storable a b -> Bool
-isStorableDirty storable =
-    case storable of
-        New _ ->
-            True
-
-        Edited2 _ _ ->
-            True
-
-        Saved _ ->
-            False
-
-latestValueOfStorable : Storable NewKeyValue KeyValue -> { key : String, value : StringTemplate, hidden : Bool }
-latestValueOfStorable storable =
-    case storable of
-        New { key, value, hidden } -> { key = key, value = value, hidden = hidden }
-        Saved { key, value, hidden } -> { key = key, value = value, hidden = hidden }
-        Edited2 _ { key, value, hidden } -> { key = key, value = value, hidden = hidden }
+        notEdited ->
+            notEdited
 
 
 -- * tangoscript

@@ -33,7 +33,7 @@ import BuilderUtil exposing (..)
 import Application.Model as Application
 import EnvironmentEdition.Builder.Landing.App as Landing
 import EnvironmentEdition.Builder.Edit.App as Edit
---import EnvironmentEdition.Builder.Run.App as Run
+import EnvironmentEdition.Builder.Run.App as Run
 
 
 -- * model
@@ -59,7 +59,7 @@ type alias Model a =
 type Msg
     = LandingAppMsg Landing.Msg
     | EditAppMsg Edit.Msg
---    | RunAppMsg Run.Msg
+    | RunAppMsg Run.Msg
 
 
 -- * update
@@ -81,30 +81,25 @@ update msg model =
                     Edit.update subMsg model
             in
             (newModel, Cmd.map EditAppMsg newMsg)
-{-
+
         RunAppMsg subMsg ->
             let
-                (updatedModel, newPgRecord, newMsg) =
+                (updatedModel, newEnvironment, newMsg) =
                     case getBuilder model of
-                        RunView (Just (File pgFileRecord)) ->
-                            Run.update subMsg model pgFileRecord
+                        RunView (Just environment) ->
+                            Run.update subMsg model environment
                         _ ->
                             Debug.todo ""
 
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
-
-                newBuilderTree =
-                    List.map (modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
+                mNewEnvs =
+                    List.updateIf (\elem -> elem.id == newEnvironment.id) (always newEnvironment) model.environments
 
                 newModel =
-                    { updatedModel
-                        | pgCollection = PgCollection pgCollectionId newBuilderTree
-                    }
+                    { updatedModel | environments = mNewEnvs }
+
 
             in
             ( newModel, Cmd.map RunAppMsg newMsg )
--}
 
 
 -- * util
@@ -125,8 +120,7 @@ getBuilder model =
             EditView (mapEditView findEnv whichEditView)
 
         RunView id ->
-            Debug.todo ""
-            --RunView (findPgNode nodes id)
+            RunView (findEnv id)
 
 
 -- * view
@@ -146,14 +140,8 @@ view model =
                 Just environment ->
                     map EditAppMsg (Edit.view environment model)
 
-        _ ->
-            none
-
-{-
-
-        RunView (Just (File pgFileRecord)) ->
-            map RunAppMsg (Run.view model pgFileRecord)
+        RunView (Just environment) ->
+            map RunAppMsg (Run.view model environment)
 
         RunView _ ->
             text "404 - could not find run view"
--}

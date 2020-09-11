@@ -12,7 +12,6 @@ type Page
     = HomePage
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
-    | EnvPage (Maybe Uuid)
     | EnvPage2 (BuilderView Uuid)
     | ScenarioPage (Maybe Uuid) (Maybe Uuid)
     | NotFoundPage
@@ -126,10 +125,7 @@ urlParser =
         , Url.map (EnvPage2 (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment2" </> Url.s "new-file")
         , Url.map (\envId -> EnvPage2 (EditView (DefaultEditView envId))) (appRoot </> Url.s "environment2" </> uuidParser </> Url.s "edit")
         , Url.map (\envId -> EnvPage2 (EditView (DeleteView envId))) (appRoot </> Url.s "environment2" </> uuidParser </> Url.s "edit" </> Url.s "delete")
-
-        -- env
-        , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> uuidParser)
-        , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
+        , Url.map (\envId -> EnvPage2 (RunView envId)) (appRoot </> Url.s "environment2" </> Url.s "run" </> uuidParser)
 
         -- scenario
         , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
@@ -225,12 +221,6 @@ href page =
 
                     in
                     [ "app", "environment2" ] ++ mode
-
-                EnvPage Nothing ->
-                    [ "app", "env" ]
-
-                EnvPage (Just id) ->
-                    [ "app", "env", Uuid.toString id ]
 
                 ScenarioPage mUuid1 mUuid2  ->
                     let

@@ -160,7 +160,7 @@ update msg model file =
 
         AskRun ->
             let
-                keyValuesToRun : List (Storable NewKeyValue KeyValue)
+                keyValuesToRun : List KeyValue
                 keyValuesToRun =
                     Application.getEnvironmentKeyValuesToRun model
 
@@ -301,7 +301,7 @@ isBuilderDirty request =
             , request.httpBody
             ]
 
-buildRequestToRun : List (Storable NewKeyValue KeyValue) -> RequestFileRecord -> Model a -> Cmd Msg
+buildRequestToRun : List KeyValue -> RequestFileRecord -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues file model =
     let
         request : RequestComputationInput
@@ -311,8 +311,7 @@ buildRequestToRun envKeyValues file model =
         backRequestComputationInput =
             ( Client.convertRequestComputationInputFromFrontToBack request
             , envKeyValues
-                |> List.map latestValueOfStorable
-                |> List.map (\{ key, value } -> (key, value))
+                |> List.map (\{ key, value } -> (editedOrNotEditedValue key, editedOrNotEditedValue value))
                 |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                 |> Dict.fromList
             )
@@ -348,7 +347,7 @@ remoteComputationDoneToMsg result =
 view : RequestFileRecord -> Model a -> Element Msg
 view file model =
     let
-        keyValuesToRun : List (Storable NewKeyValue KeyValue)
+        keyValuesToRun : List KeyValue
         keyValuesToRun =
             Application.getEnvironmentKeyValuesToRun model
 
@@ -514,7 +513,7 @@ responseView model file =
 -- ** url
 
 
-urlView : Model a -> RequestFileRecord -> List (Storable NewKeyValue KeyValue) -> Element Msg
+urlView : Model a -> RequestFileRecord -> List KeyValue -> Element Msg
 urlView model file keyValues =
     el [ alignLeft, width fill ] <|
         row [ width fill, spacing 30 ]
@@ -553,7 +552,7 @@ methodView model file =
 -- ** header
 
 
-headersView : Model a -> RequestFileRecord -> List (Storable NewKeyValue KeyValue) -> Element Msg
+headersView : Model a -> RequestFileRecord -> List KeyValue -> Element Msg
 headersView model file keyValues =
     let
         headerInputs =
@@ -581,7 +580,7 @@ headersView model file keyValues =
                     ]
 
 
-headerView : Model a -> RequestFileRecord -> List (Storable NewKeyValue KeyValue) -> Int -> ( String, String ) -> Element Msg
+headerView : Model a -> RequestFileRecord -> List KeyValue -> Int -> ( String, String ) -> Element Msg
 headerView model file keyValues idx ( headerKey, headerValue ) =
     row [ width fill, spacing 10 ]
         [ row [ width fill, spacing 30 ]
@@ -616,7 +615,7 @@ headerView model file keyValues idx ( headerKey, headerValue ) =
 -- ** body
 
 
-bodyView : Model a -> RequestFileRecord -> List (Storable NewKeyValue KeyValue) -> Element Msg
+bodyView : Model a -> RequestFileRecord -> List KeyValue -> Element Msg
 bodyView model file keyValues =
     wrappedRow [ width fill, spacing 30 ]
         [ Input.multiline []

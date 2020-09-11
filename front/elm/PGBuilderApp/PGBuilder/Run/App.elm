@@ -201,7 +201,7 @@ update msg model file =
 -- * util
 
 
-keyValuesToRun : Model a -> List (Storable NewKeyValue KeyValue)
+keyValuesToRun : Model a -> List KeyValue
 keyValuesToRun model =
     Application.getEnvironmentKeyValuesToRun model
 
@@ -284,12 +284,15 @@ parseHeaders headers =
     String.lines headers |> List.map parseRawHeader
 
 
-latestValueOfStorable : Storable NewKeyValue KeyValue -> (String, StringTemplate)
-latestValueOfStorable storable =
+latestValueOfStorable : KeyValue -> (String, StringTemplate)
+latestValueOfStorable editable =
+    Debug.todo ""
+    {-
     case storable of
         New { key, value } -> (key, value)
         Saved { key, value } -> (key, value)
         Edited2 _ { key, value } -> (key, value)
+        -}
 
 
 -- * view

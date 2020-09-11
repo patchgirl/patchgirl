@@ -411,7 +411,7 @@ isReqPage page =
 isEnvPage : Page -> Bool
 isEnvPage page =
     case page of
-        EnvPage _ ->
+        EnvPage2 _ ->
             True
 
         _ ->
