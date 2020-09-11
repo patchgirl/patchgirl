@@ -103,9 +103,9 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    Client.NewRootScenarioFolder { newRootScenarioFolderId = newId
-                                          --newRootScenarioFolderName = newNode.name
-                                    }
+                                     { newRootScenarioFolderId = newId
+                                     , newRootScenarioFolderName = newNode.name
+                                     }
                             in
                             Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFolder "" "" scenarioCollectionId payload (createScenarioFolderResultToMsg newNode newId)
 
