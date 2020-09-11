@@ -160,14 +160,22 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    Debug.todo ""
+                                    { newRootScenarioFileId = newId
+                                    , newRootScenarioFileName = newNode.name
+                                    , newRootScenarioFileEnvironmentId = Nothing
+                                    }
+
                             in
                             Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFile "" "" scenarioCollectionId payload (createScenarioFileResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    Debug.todo ""
+                                    { newScenarioFileId = newId
+                                    , newScenarioFileName = newNode.name
+                                    , newScenarioFileParentNodeId = folderId
+                                    , newScenarioFileEnvironmentId = Nothing
+                                    }
                             in
                             Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFile "" "" scenarioCollectionId payload (createScenarioFileResultToMsg newNode newId)
 
