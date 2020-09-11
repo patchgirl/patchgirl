@@ -13,7 +13,7 @@ type Page
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
     | EnvPage (BuilderView Uuid)
-    | ScenarioPage (Maybe Uuid) (Maybe Uuid)
+    | ScenarioPage (RichBuilderView Uuid (Maybe Uuid))
     | NotFoundPage
     | DocumentationPage Documentation
     | TangoScriptPage
@@ -119,7 +119,7 @@ urlParser =
         , Url.map (\pgId -> PgPage (EditView (DeleteView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "delete")
         , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
 
-        -- env 2
+        -- env
         , Url.map (EnvPage (LandingView DefaultView)) (appRoot </> Url.s "environment")
         , Url.map (EnvPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "environment" </> Url.s "new-folder")
         , Url.map (EnvPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment" </> Url.s "new-file")
@@ -128,9 +128,14 @@ urlParser =
         , Url.map (\envId -> EnvPage (RunView envId)) (appRoot </> Url.s "environment" </> Url.s "run" </> uuidParser)
 
         -- scenario
-        , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
-        , Url.map (\id -> ScenarioPage (Just id) Nothing) (appRoot </> Url.s "scenario" </> uuidParser)
-        , Url.map (ScenarioPage Nothing Nothing) (appRoot </> Url.s "scenario")
+        , Url.map (ScenarioPage (RichLandingView DefaultView)) (appRoot </> Url.s "scenario")
+        , Url.map (ScenarioPage (RichLandingView CreateDefaultFolderView)) (appRoot </> Url.s "scenario" </> Url.s "new-folder")
+        , Url.map (ScenarioPage (RichLandingView CreateDefaultFileView)) (appRoot </> Url.s "scenario" </> Url.s "new-file")
+        , Url.map (\envId -> ScenarioPage (RichEditView (DefaultEditView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit")
+        , Url.map (\envId -> ScenarioPage (RichEditView (DeleteView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\envId -> ScenarioPage (RichRunView envId Nothing)) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser)
+
+        -- other
         , Url.map (\documentation -> DocumentationPage documentation) (appRoot </> Url.s "documentation" </> documentationParser)
         , Url.map (TangoScriptPage) (appRoot </> Url.s "tangoscript")
         ]
@@ -222,14 +227,30 @@ href page =
                     in
                     [ "app", "environment" ] ++ mode
 
-                ScenarioPage mUuid1 mUuid2  ->
+                ScenarioPage builderView  ->
                     let
-                        uuidToStr mUuid =
-                            mUuid
-                                |> Maybe.map Uuid.toString
-                                |> Maybe.withDefault ""
+                        mode =
+                            case builderView of
+                                RichLandingView DefaultView ->
+                                    []
+
+                                RichLandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                RichLandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                RichEditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                RichEditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RichRunView id mId ->
+                                    [ "run", Uuid.toString id ]
+
                     in
-                    [ "app", "scenario", uuidToStr mUuid1, uuidToStr mUuid2 ]
+                    [ "app", "scenario" ] ++ mode
 
                 TangoScriptPage ->
                     [ "app", "tangoscript" ]

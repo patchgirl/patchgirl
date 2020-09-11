@@ -121,19 +121,18 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
         convertScenarioNodeFromBackToFront backScenarioNode =
             case backScenarioNode of
                 Back.ScenarioFolder folder ->
-                    Front.ScenarioFolder
+                    Front.Folder
                         { id = folder.scenarioNodeId
                         , name = NotEdited folder.scenarioNodeName
-                        , children = convertScenarioNodesFromBackToFront folder.scenarioNodeChildren
+                        , children = Front.ScenarioChildren (convertScenarioNodesFromBackToFront folder.scenarioNodeChildren)
                         , open = not (List.isEmpty folder.scenarioNodeChildren)
                         }
 
                 Back.ScenarioFile file ->
-                    Front.ScenarioFile
+                    Front.File
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
                         , scenes = List.map convertSceneActorFromBackToFront file.scenarioNodeScenes
-                        , whichResponseView = BodyResponseView
                         , environmentId = NotEdited file.scenarioNodeEnvironmentId
                         }
     in

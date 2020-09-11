@@ -29,7 +29,7 @@ type alias Model a =
         , page : Page
         , showMainMenuName : Maybe MainMenuName
         , runnerRunning : Bool
-        , displayedScenarioId : Maybe Uuid
+        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
         , displayedSceneId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , displayedPgBuilderView : BuilderView Uuid
@@ -332,7 +332,7 @@ centerView model =
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
         [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isScenarioPage model.page))
-            { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
+            { url = href (ScenarioPage model.displayedScenarioBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
@@ -393,7 +393,7 @@ mainLinkAttributeWhenActive active =
 isScenarioPage : Page -> Bool
 isScenarioPage page =
     case page of
-        ScenarioPage _ _ ->
+        ScenarioPage _ ->
             True
 
         _ ->

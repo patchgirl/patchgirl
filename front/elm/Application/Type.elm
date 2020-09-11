@@ -77,6 +77,30 @@ getBuilderId builderView =
         RunView id -> Just id
 
 
+-- * rich builder view
+
+
+type RichBuilderView a b
+    = RichLandingView WhichDefaultView
+    | RichEditView (WhichEditView a)
+    | RichRunView a b
+
+
+getRichBuilderId : RichBuilderView Uuid (Maybe Uuid) -> Maybe Uuid
+getRichBuilderId builderView =
+    case builderView of
+        RichLandingView _ ->
+            Nothing
+
+        RichEditView whichEditView ->
+            Just <|
+                case whichEditView of
+                    DefaultEditView id -> id
+                    DeleteView id -> id
+
+        RichRunView id _ -> Just id
+
+
 -- * new node
 
 
@@ -340,10 +364,7 @@ type ScenarioCollection
 -- ** scenario node
 
 
-type ScenarioNode
-    = ScenarioFolder ScenarioFolderRecord
-    | ScenarioFile ScenarioFileRecord
-
+type alias ScenarioNode = NodeType ScenarioFolderRecord ScenarioFileRecord
 
 
 -- ** scenario folder record
@@ -352,10 +373,11 @@ type ScenarioNode
 type alias ScenarioFolderRecord =
     { id : Uuid
     , name : Editable String
-    , children : List ScenarioNode
+    , children : ScenarioChildren
     , open : Bool
     }
 
+type ScenarioChildren = ScenarioChildren (List ScenarioNode)
 
 
 -- ** scenario file record
@@ -366,7 +388,6 @@ type alias ScenarioFileRecord =
     , environmentId : Editable (Maybe Uuid)
     , name : Editable String
     , scenes : List Scene
-    , whichResponseView : HttpResponseView
     }
 
 

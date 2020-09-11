@@ -18,10 +18,10 @@ import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
 import PGBuilderApp.App as PGBuilderApp
-import ScenarioBuilderApp.App as ScenarioBuilderApp
+import ScenarioBuilderApp.App2 as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
-import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
+--import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import Url as Url
 import Url.Parser as Url
 import Util exposing (..)
@@ -137,6 +137,8 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , requestNewNode = { name = "", parentFolderId = Nothing }
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
+            , displayedScenarioBuilderView = RichLandingView DefaultView
+            , scenarioNewNode = { name = "", parentFolderId = Nothing }
             , displayedScenarioId = Nothing
             , displayedSceneId = Nothing
             , script = ""
@@ -293,20 +295,17 @@ updateModelWithPage page model =
     let
         newModel =
             case page of
-                ReqPage mId ->
-                    { model | displayedRequestBuilderView = mId }
+                ReqPage builder ->
+                    { model | displayedRequestBuilderView = builder }
 
-                PgPage mId ->
-                    { model | displayedPgBuilderView = mId }
+                PgPage builder ->
+                    { model | displayedPgBuilderView = builder }
 
-                EnvPage mId ->
-                    { model | displayedEnvironmentBuilderView = mId }
+                EnvPage builder ->
+                    { model | displayedEnvironmentBuilderView = builder }
 
-                ScenarioPage mId1 mId2  ->
-                    { model
-                        | displayedScenarioId = mId1
-                        , displayedSceneId = mId2
-                    }
+                ScenarioPage builder  ->
+                    { model | displayedScenarioBuilderView = builder }
 
                 DocumentationPage documentation ->
                     { model | displayedDocumentation = documentation }
@@ -350,8 +349,6 @@ view model =
         bodyAttr =
             (Background.color lightGrey)
                 :: loadingAnimation
-                ++ [ inFront (modalView model)
-                   ]
 
         body =
             layout bodyAttr (mainView model)
@@ -396,7 +393,7 @@ mainView model =
             EnvPage _ ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
-            ScenarioPage _ _ ->
+            ScenarioPage _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
 
             DocumentationPage _ ->
@@ -511,7 +508,7 @@ homeView model =
                            [ Background.color secondaryColor
                            , Font.color primaryColor
                            ]
-                     ] { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
+                     ] { url = href (ScenarioPage model.displayedScenarioBuilderView)
                        , label = el [ centerY, centerX ] <| text "Try it!"
                        }
                 ]
@@ -720,25 +717,8 @@ set("userId", get("userId"));"""
 
 
 
--- ** modal view
 
 
-modalView : Model -> Element Msg
-modalView model =
-    let
-        scenarioBuilderMsg msg =
-            ScenarioMsg (ScenarioBuilderApp.ScenarioBuilderMsg msg)
-
-        modalConfig =
-            let
-                scenarioModal =
-                    \(SelectNewSceneModal withSceneParent) ->
-                        Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectSceneModal withSceneParent model.requestCollection model.pgCollection))
-            in
-            Maybe.andThen scenarioModal model.whichModal
-
-    in
-    Modal.view modalConfig
 
 
 -- * subscriptions

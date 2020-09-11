@@ -65,6 +65,22 @@ findRequestNode nodes id =
     findNode nodes getChildren id
 
 
+-- ** find scenario
+
+
+findScenarioNode : List ScenarioNode -> Uuid -> Maybe ScenarioNode
+findScenarioNode nodes id =
+    let
+        getChildren folder =
+            let
+                (ScenarioChildren children) =
+                    folder.children
+            in
+            children
+    in
+    findNode nodes getChildren id
+
+
 -- ** find pg
 
 
@@ -175,6 +191,28 @@ modifyRequestNode id f requestNode =
                                 RequestChildren (List.map (modifyRequestNode id f) children)
                         }
 
+modifyScenarioNode : Uuid -> (ScenarioNode -> ScenarioNode) -> ScenarioNode -> ScenarioNode
+modifyScenarioNode id f node =
+    case getNodeId node == id of
+        True ->
+            f node
+
+        False ->
+            case node of
+                File file ->
+                    File file
+
+                Folder folder ->
+                    let
+                        (ScenarioChildren children) =
+                            folder.children
+                    in
+                    Folder
+                        { folder
+                            | children =
+                                ScenarioChildren (List.map (modifyScenarioNode id f) children)
+                        }
+
 -- ** delete
 
 
@@ -258,6 +296,23 @@ mkdirRequest id node =
                     , open = True
                 }
 
+mkdirScenario : Uuid -> ScenarioNode -> ScenarioNode
+mkdirScenario id node =
+    case node of
+        (File _) as file ->
+            file
+
+        Folder folder ->
+            let
+                (ScenarioChildren children) =
+                    folder.children
+            in
+            Folder
+                { folder
+                    | children = ScenarioChildren (mkDefaultScenarioFolder id :: children)
+                    , open = True
+                }
+
 mkdirPg : Uuid -> PgNode -> PgNode
 mkdirPg id node =
     case node of
@@ -292,6 +347,23 @@ touchRequest id parentNode =
             Folder
                 { folder
                     | children = RequestChildren (mkDefaultRequestFile id :: children)
+                    , open = True
+                }
+
+touchScenario : ScenarioNode -> ScenarioNode -> ScenarioNode
+touchScenario newNode parentNode =
+    case parentNode of
+        (File _) as file ->
+            file
+
+        Folder folder ->
+            let
+                (ScenarioChildren children) =
+                    folder.children
+            in
+            Folder
+                { folder
+                    | children = ScenarioChildren (newNode :: children)
                     , open = True
                 }
 
@@ -351,6 +423,15 @@ mkDefaultRequestFolder id =
         , children = RequestChildren []
         }
 
+mkDefaultScenarioFolder : Uuid -> ScenarioNode
+mkDefaultScenarioFolder id =
+    Folder
+        { id = id
+        , name = NotEdited "new folder"
+        , open = False
+        , children = ScenarioChildren []
+        }
+
 mkDefaultPgFolder : Uuid -> PgNode
 mkDefaultPgFolder id =
     Folder
@@ -388,6 +469,15 @@ mkDefaultPgFile id =
         , sql = NotEdited ""
         , pgComputationOutput = Nothing
         , showResponseView = False
+        }
+
+mkDefaultScenarioFile : Uuid -> ScenarioNode
+mkDefaultScenarioFile id =
+    File
+        { id = id
+        , environmentId = NotEdited Nothing
+        , name = NotEdited ""
+        , scenes = []
         }
 
 
@@ -428,7 +518,7 @@ closeBuilderView page =
                 EnvPage _ ->
                     href (EnvPage (LandingView DefaultView))
                 _ ->
-                    href (EnvPage (LandingView DefaultView))
+                    href (ScenarioPage (RichLandingView DefaultView))
 
     in
     link []

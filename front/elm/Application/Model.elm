@@ -54,7 +54,9 @@ type alias Model =
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid
+    , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
     , displayedScenarioId : Maybe Uuid
+    , scenarioNewNode : NewNode
     , displayedSceneId : Maybe Uuid
 
     -- TANGOSCRIPT APP
