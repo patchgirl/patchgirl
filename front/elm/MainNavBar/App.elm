@@ -10,9 +10,9 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html as Html
+import Html
 import Html.Attributes as Html
-import Http as Http
+import Http
 import Page exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
@@ -95,11 +95,7 @@ update msg model =
 deleteSessionSignOutResultToMsg : Result Http.Error Client.Session -> Msg
 deleteSessionSignOutResultToMsg result =
     case result of
-        Ok session ->
-            let
-                newSession =
-                    Client.convertSessionFromBackToFront session
-            in
+        Ok _ ->
             SignOutSucceed
 
         Err _ ->
@@ -441,6 +437,6 @@ githubOauthLink : String
 githubOauthLink =
     let
       prod = "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
-      dev = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
+--      dev = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
     in
         prod

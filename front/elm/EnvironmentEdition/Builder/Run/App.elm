@@ -13,7 +13,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html as Html
+import Html
 import Html.Attributes as Html
 import Html.Events as Html
 import Http

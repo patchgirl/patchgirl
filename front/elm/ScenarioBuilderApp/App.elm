@@ -5,7 +5,7 @@ import Application.Type exposing (..)
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
-import Html as Html
+import Html
 import Html.Attributes as Html
 import Html.Events as Html
 import Html.Events.Extra exposing (targetValueIntParse)

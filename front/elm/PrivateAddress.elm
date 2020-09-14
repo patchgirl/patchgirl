@@ -1,8 +1,8 @@
 module PrivateAddress exposing (..)
 
-import IP as IP
-import Regex as Regex
-import Subnet as Subnet
+import IP
+import Regex
+import Subnet
 
 
 isPrivateAddress : String -> Bool

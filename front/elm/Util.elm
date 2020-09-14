@@ -4,7 +4,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Html as Html
+import Html
 import Html.Attributes as Html
 import Html.Events as Html
 import Json.Decode as Json

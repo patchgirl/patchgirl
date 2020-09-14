@@ -186,11 +186,6 @@ folderView id model eName folderChildrenView open =
         selected =
             getBuilderId model.displayedPgBuilderView == Just id
 
-        color =
-            case selected of
-                True -> primaryColor
-                False -> secondaryColor
-
         weight =
             case selected of
                True -> Font.heavy

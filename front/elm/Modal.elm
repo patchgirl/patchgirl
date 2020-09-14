@@ -2,7 +2,6 @@ module Modal exposing (Config, Modal(..), map, view)
 
 import Element exposing (..)
 import Element.Background as Background
-import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input

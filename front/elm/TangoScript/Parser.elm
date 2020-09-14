@@ -7,11 +7,11 @@ module TangoScript.Parser exposing ( parseTangoscript
                                    )
 
 import Parser as P exposing((|.), (|=), Step, Parser)
-import Parser.Expression as P exposing (OperatorTable)
+import Parser.Expression as P
 import Set exposing (Set)
 import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 import Application.Type exposing(..)
-import Dict exposing (Dict)
+import Dict
 
 
 -- * parse

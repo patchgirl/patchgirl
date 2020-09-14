@@ -16,12 +16,14 @@ import NoUnused.CustomTypeConstructorArgs as NoUnusued
 import NoUnused.Dependencies
 import NoUnused.Parameters
 import NoUnused.Patterns
+import NoUnused.Variables
 
 config : List Rule
 config =
     [ NoUnused.Dependencies.rule
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
+    , NoUnused.Variables.rule
     --, NoUnusued.rule
 
     ]

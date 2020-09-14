@@ -1,4 +1,5 @@
-module ScenarioBuilderApp.ScenarioTree.App exposing (..)
+module ScenarioBuilderApp.ScenarioTree.App
+    exposing (..)
 
 import Animation
 import Api.WebGeneratedClient as Client
@@ -185,11 +186,6 @@ folderView id model eName folderChildrenView open =
 
         selected =
             getRichBuilderId model.displayedScenarioBuilderView == Just id
-
-        color =
-            case selected of
-                True -> primaryColor
-                False -> secondaryColor
 
         weight =
             case selected of
