@@ -18,7 +18,7 @@ import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
 import PGBuilderApp.App as PGBuilderApp
-import ScenarioBuilderApp.App2 as ScenarioBuilderApp
+import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
 --import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder

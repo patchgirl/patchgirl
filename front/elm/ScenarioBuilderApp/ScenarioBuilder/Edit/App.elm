@@ -20,7 +20,7 @@ import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
 import BuilderUtil as Tree
-import ScenarioBuilderApp.ScenarioTree.App2 as Tree
+import ScenarioBuilderApp.ScenarioTree.App as Tree
 import BuilderUtil exposing(..)
 import Browser.Navigation as Navigation
 
