@@ -8,7 +8,6 @@
         "direct": {
             "Punie/elm-parser-extras": "1.0.0",
             "ThinkAlexandria/elm-pretty-print-json": "1.0.1",
-            "andre-dietrich/parser-combinators": "3.1.0",
             "bartavelle/json-helpers": "2.0.2",
             "danyx23/elm-uuid": "2.1.2",
             "dillonkearns/elm-markdown": "4.0.2",
