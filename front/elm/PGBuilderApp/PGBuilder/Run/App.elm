@@ -70,6 +70,7 @@ type Msg
     | SaveSuccessfully
 
 
+
 -- * update
 
 
@@ -211,7 +212,7 @@ buildPgComputationPayload file model =
     let
         keyValuesInput =
             keyValuesToRun model
-                |> List.map latestValueOfStorable
+                |> List.map (\{ key, value } -> (editedOrNotEditedValue key, editedOrNotEditedValue value))
                 |> List.map (Tuple.mapSecond Client.convertStringTemplateFromFrontToBack)
                 |> Dict.fromList
 
@@ -282,17 +283,6 @@ parseHeaders headers =
                     ( "", "" )
     in
     String.lines headers |> List.map parseRawHeader
-
-
-latestValueOfStorable : KeyValue -> (String, StringTemplate)
-latestValueOfStorable editable =
-    Debug.todo ""
-    {-
-    case storable of
-        New { key, value } -> (key, value)
-        Saved { key, value } -> (key, value)
-        Edited2 _ { key, value } -> (key, value)
-        -}
 
 
 -- * view

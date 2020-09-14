@@ -49,6 +49,8 @@ type alias Model a =
         , notification : Maybe Notification
         , requestCollection : RequestCollection
         , pgCollection : PgCollection
+        , pgNewNode : NewNode
+        , displayedPgBuilderView : BuilderView Uuid
         , scenarioCollection : ScenarioCollection
         , scenarioNewNode : NewNode
         , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
@@ -297,11 +299,9 @@ update msg model file mDisplayedSceneId =
                                         (PgCollection collectionId _) =
                                             model.pgCollection
                                     in
-                                        Debug.todo ""
-                                            {-
-                                    PgBuilderApp.convertFromFileToBuilder pgRecord collectionId model.keyValues Nothing
-                                        |> PgBuilder.buildPgComputationPayload
-                                        |> \(_, pgComputationInput) ->
+                                    PgBuilder.buildPgComputationPayload pgRecord model
+                                        |> Tuple.second
+                                        |> \pgComputationInput ->
                                            Just <| Client.PgSceneFile { sceneId = scene.id
                                                                       , sceneFileId = scene.nodeId
                                                                       , scenePrescript =
@@ -309,7 +309,7 @@ update msg model file mDisplayedSceneId =
                                                                       , scenePostscript =
                                                                           Client.convertTangoscriptFromFrontToBack postscript
                                                                       , scenePgInput = pgComputationInput
-                                                                      } -}
+                                                                      }
 
                         _ -> Nothing
 

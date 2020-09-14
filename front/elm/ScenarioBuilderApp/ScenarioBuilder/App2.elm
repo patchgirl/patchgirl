@@ -48,6 +48,8 @@ type alias Model a =
         , pgCollection : PgCollection
         , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection
+        , pgNewNode : NewNode
+        , displayedPgBuilderView : BuilderView Uuid
         , displayedScenarioNodeMenuId : Maybe Uuid
         , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
         , scenarioNewNode : NewNode

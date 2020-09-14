@@ -29,6 +29,8 @@ type alias Model a =
         | notification : Maybe Notification
         , session : Session
         , whichModal : Maybe Modal
+        , pgNewNode : NewNode
+        , displayedPgBuilderView : BuilderView Uuid
         , requestCollection : RequestCollection
         , pgCollection : PgCollection
         , scenarioCollection : ScenarioCollection
