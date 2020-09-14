@@ -22,7 +22,7 @@ import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
 --import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
-import Url as Url
+import Url
 import Url.Parser as Url
 import Util exposing (..)
 import Time
@@ -727,9 +727,6 @@ set("userId", get("userId"));"""
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
-
         getRequestFiles : List RequestNode -> List RequestFileRecord
         getRequestFiles nodes =
             case nodes of
@@ -747,10 +744,6 @@ subscriptions model =
                                     children
                             in
                             getRequestFiles c ++ getRequestFiles rest
-
-        requestFiles =
-            getRequestFiles requestNodes
-
     in
     Sub.batch
         ([ Animation.subscription Animate [ model.loadingAnimation ]

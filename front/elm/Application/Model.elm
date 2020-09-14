@@ -6,7 +6,7 @@ import Browser.Navigation as Navigation
 import List.Extra as List
 import Modal exposing (Modal)
 import Page exposing (..)
-import Url as Url
+import Url
 import Uuid exposing (Uuid)
 
 
