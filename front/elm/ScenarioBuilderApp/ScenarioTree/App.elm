@@ -560,7 +560,7 @@ fileView id model name =
                 NotEdited value ->
                     fileReadView model value id
 
-                Edited oldValue newValue ->
+                Edited _ newValue ->
                     fileEditView newValue id
 
         showMenu =
@@ -688,7 +688,7 @@ folderView id model name folderChildrenView open =
                 NotEdited value ->
                     folderReadView id value open
 
-                Edited oldValue newValue ->
+                Edited _ newValue ->
                     folderEditView id newValue
 
         showMenu =
