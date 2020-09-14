@@ -13,8 +13,13 @@ when inside the directory containing this file.
 
 import Review.Rule exposing (Rule)
 import NoUnused.CustomTypeConstructorArgs as NoUnusued
+import NoUnused.Dependencies
+import NoUnused.Parameters
 
 config : List Rule
 config =
-    [ --NoUnusued.rule
+    [ NoUnused.Dependencies.rule
+    , NoUnused.Parameters.rule
+    --, NoUnusued.rule
+
     ]

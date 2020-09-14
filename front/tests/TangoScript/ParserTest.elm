@@ -390,7 +390,7 @@ tangoTests =
       , input = """
                  var b = postgresResponse[0];
                 """
-      , expect = Ok [ Let "b" (LAccessOp LPgSimpleResponse (LInt 0))
+      , expect = Ok [ Let "b" (LAccessOp LPgRichResponse (LInt 0))
                     ]
       }
     ]
@@ -441,7 +441,7 @@ checkExprParser : ParserTest (List P.DeadEnd) Expr -> Test
 checkExprParser { message, input, expect } =
     test message <|
         \_ ->
-            case Debug.log "foo" <| P.run exprParser input of
+            case P.run exprParser input of
                 Ok _ as ok ->
                     Expect.equal ok expect
 
