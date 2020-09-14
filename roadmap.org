@@ -37,7 +37,7 @@ long json response body won't show scrollbars in the input so we have to scroll 
 
 * Refacto
 
-
+** TODO setup elm-review to remove dead code
 ** TODO restructure patchgirl-web module
 it takes almost 8Gb to compile because of the way the models are
 ** TODO weeder to remove deadcode https://github.com/ocharles/weeder

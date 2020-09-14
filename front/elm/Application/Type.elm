@@ -259,13 +259,6 @@ type RequestCollection
 type alias RequestNode = NodeType RequestFolderRecord RequestFileRecord
 
 
-getRequestNodeIdAndName : RequestNode -> { id: Uuid, name: Editable String }
-getRequestNodeIdAndName requestNode =
-    case requestNode of
-        Folder { id, name } -> { id = id, name = name }
-        File { id, name } -> { id = id, name = name }
-
-
 -- ** folder
 
 
@@ -316,12 +309,6 @@ type PgCollection
 
 
 type alias PgNode = NodeType PgFolderRecord PgFileRecord
-
-getPgNodeIdAndName : PgNode -> { id: Uuid, name: Editable String }
-getPgNodeIdAndName pgNode =
-    case pgNode of
-        Folder { id, name } -> { id = id, name = name }
-        File { id, name } -> { id = id, name = name }
 
 
 -- ** folder

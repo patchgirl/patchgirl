@@ -1,4 +1,4 @@
-module PGBuilderApp.PGBuilder.Edit.App exposing (..)
+module ScenarioBuilderApp.ScenarioBuilder.Edit.App exposing (..)
 
 import Api.Converter as Client
 import Random
@@ -20,7 +20,7 @@ import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
 import BuilderUtil as Tree
-import PGBuilderApp.PGTree.App as Tree
+import ScenarioBuilderApp.ScenarioTree.App2 as Tree
 import BuilderUtil exposing(..)
 import Browser.Navigation as Navigation
 
@@ -31,9 +31,9 @@ import Browser.Navigation as Navigation
 type alias Model a =
     { a
         | notification : Maybe Notification
-        , pgCollection : PgCollection
-        , pgNewNode : NewNode
-        , displayedPgBuilderView : BuilderView Uuid
+        , scenarioCollection : ScenarioCollection
+        , scenarioNewNode : NewNode
+        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
         , navigationKey : Navigation.Key
         , page : Page
     }
@@ -62,75 +62,75 @@ update msg model =
     case msg of
         UpdateName id newName ->
             let
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
+                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                    model.scenarioCollection
 
-                newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.tempRename newName)) pgNodes
+                newScenarioNodes =
+                    List.map (modifyScenarioNode id (tempRename newName)) scenarioNodes
 
                 newModel =
                     { model
-                        | pgCollection =
-                            PgCollection pgCollectionId newPgNodes
+                        | scenarioCollection =
+                            ScenarioCollection scenarioCollectionId newScenarioNodes
                     }
             in
             ( newModel, Cmd.none )
 
         AskRename id newName ->
             let
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
+                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                    model.scenarioCollection
 
                 payload =
-                    Client.UpdatePgNode { updatePgNodeName = newName }
+                    Client.UpdateScenarioNode { updateScenarioNodeName = newName }
 
                 newMsg =
-                    Client.putApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" pgCollectionId id payload (renameNodeResultToMsg id newName)
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id payload (renameNodeResultToMsg id newName)
             in
             ( model, newMsg )
 
         Rename id newName ->
             let
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
+                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                    model.scenarioCollection
 
-                newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.rename newName)) pgNodes
+                newScenarioNodes =
+                    List.map (Tree.modifyScenarioNode id (Tree.rename newName)) scenarioNodes
 
                 newModel =
                     { model
-                        | pgCollection =
-                            PgCollection pgCollectionId newPgNodes
+                        | scenarioCollection =
+                            ScenarioCollection scenarioCollectionId newScenarioNodes
                     }
             in
             ( newModel, Cmd.none )
 
         AskDelete id ->
             let
-                (PgCollection pgCollectionId _) =
-                    model.pgCollection
+                (ScenarioCollection scenarioCollectionId _) =
+                    model.scenarioCollection
 
                 newMsg =
-                    Client.deleteApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" pgCollectionId id (deletePgNodeResultToMsg id)
+                    Client.deleteApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id (deleteScenarioNodeResultToMsg id)
             in
             ( model, newMsg )
 
         Delete id ->
             let
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
+                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                    model.scenarioCollection
 
-                newPgNodes =
-                    List.concatMap (Tree.deletePgNode id) pgNodes
+                newScenarioNodes =
+                    List.concatMap (deleteScenarioNode id) scenarioNodes
 
                 newModel =
                     { model
-                        | pgCollection =
-                            PgCollection pgCollectionId newPgNodes
+                        | scenarioCollection =
+                            ScenarioCollection scenarioCollectionId newScenarioNodes
                     }
 
                 newMsg =
-                    Navigation.pushUrl model.navigationKey (href (PgPage (LandingView DefaultView)))
+                    Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichLandingView DefaultView)))
 
             in
             ( newModel, newMsg )
@@ -151,46 +151,46 @@ renameNodeResultToMsg id newName result =
         Err error ->
             PrintNotification <| AlertNotification "Could not rename, try reloading the page!" (httpErrorToString error)
 
-deletePgNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
-deletePgNodeResultToMsg id result =
+deleteScenarioNodeResultToMsg : Uuid -> Result Http.Error () -> Msg
+deleteScenarioNodeResultToMsg id result =
     case result of
         Ok _ ->
             Delete id
 
         Err error ->
-            PrintNotification <| AlertNotification "Could not delete, maybe this HTTP pg is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
+            PrintNotification <| AlertNotification "Could not delete, maybe this HTTP scenario is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
 
 -- * view
 
 
-view : WhichEditView PgNode -> Model a -> Element Msg
+view : WhichEditView ScenarioNode -> Model a -> Element Msg
 view whichEditView model =
     el ( box [ centerX, spacing 20, padding 30 ] ) <|
         case whichEditView of
-            DefaultEditView pgNode ->
-                defaultEditView model pgNode
+            DefaultEditView scenarioNode ->
+                defaultEditView model scenarioNode
 
-            DeleteView pgNode ->
-                deleteView model pgNode
+            DeleteView scenarioNode ->
+                deleteView model scenarioNode
 
 
 -- ** default view
 
 
-defaultEditView : Model a -> PgNode -> Element Msg
-defaultEditView model pgNode =
+defaultEditView : Model a -> ScenarioNode -> Element Msg
+defaultEditView model scenarioNode =
     let
         { id, name } =
-            getNodeIdAndName pgNode
+            getNodeIdAndName scenarioNode
 
         nodeType =
-            case pgNode of
+            case scenarioNode of
                 Folder _ -> "folder"
                 File _ -> "file"
 
         label =
-            case pgNode of
+            case scenarioNode of
                 Folder _ -> "name: "
                 File _ -> "name: "
 
@@ -212,7 +212,7 @@ defaultEditView model pgNode =
                                        | title = " Delete"
                                        , icon = "delete"
                                    }
-                , url = href (PgPage (EditView (DeleteView id)))
+                , url = href (ScenarioPage (RichEditView (DeleteView id)))
                 }
 
         renameInput =
@@ -243,11 +243,11 @@ defaultEditView model pgNode =
 -- ** delete view
 
 
-deleteView : Model a -> PgNode -> Element Msg
-deleteView model pgNode =
+deleteView : Model a -> ScenarioNode -> Element Msg
+deleteView model scenarioNode =
     let
         { id, name } =
-            getNodeIdAndName pgNode
+            getNodeIdAndName scenarioNode
 
         areYouSure =
             text "Are you sure you want to delete this?"
@@ -260,7 +260,7 @@ deleteView model pgNode =
 
         noBtn =
             link primaryButtonAttrs
-                { url = href (PgPage (EditView (DefaultEditView id)))
+                { url = href (ScenarioPage (RichEditView (DefaultEditView id)))
                 , label = text "No"
                 }
 

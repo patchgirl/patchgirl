@@ -262,6 +262,29 @@ deletePgNode idToDelete pgNode =
                         }
                     ]
 
+deleteScenarioNode : Uuid -> ScenarioNode -> List ScenarioNode
+deleteScenarioNode idToDelete scenarioNode =
+    case getNodeId scenarioNode == idToDelete of
+        True ->
+            []
+
+        False ->
+            case scenarioNode of
+                File scenarioFile ->
+                    [ File scenarioFile ]
+
+                Folder folder ->
+                    let
+                        (ScenarioChildren children) =
+                            folder.children
+                    in
+                    [ Folder
+                        { folder
+                            | children =
+                                ScenarioChildren (List.concatMap (deleteScenarioNode idToDelete) children)
+                        }
+                    ]
+
 
 -- ** toggle
 
@@ -479,6 +502,16 @@ mkDefaultScenarioFile id =
         , name = NotEdited ""
         , scenes = []
         }
+
+-- ** get node id & name
+
+
+getNodeIdAndName : NodeType { a | name : Editable String, id : Uuid } { b | name : Editable String, id : Uuid }
+                 -> { id : Uuid, name: Editable String }
+getNodeIdAndName node =
+    case node of
+        Folder { id, name } -> { id = id, name = name }
+        File { id, name } -> { id = id, name = name }
 
 
 -- * view

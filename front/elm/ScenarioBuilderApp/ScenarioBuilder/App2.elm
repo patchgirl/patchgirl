@@ -32,8 +32,9 @@ import Browser.Navigation as Navigation
 import BuilderUtil exposing (..)
 import Application.Model as Application
 import ScenarioBuilderApp.ScenarioBuilder.Landing.App as Landing
---import SCENARIOBuilderApp.SCENARIOBuilder.Edit.App as Edit
---import SCENARIOBuilderApp.SCENARIOBuilder.Run.App as Run
+import ScenarioBuilderApp.ScenarioBuilder.Edit.App as Edit
+import ScenarioBuilderApp.ScenarioBuilder.Run.App as Run
+import Modal exposing (Modal(..))
 
 
 -- * model
@@ -41,7 +42,11 @@ import ScenarioBuilderApp.ScenarioBuilder.Landing.App as Landing
 
 type alias Model a =
     { a
-        | notification : Maybe Notification
+        | session : Session
+        , notification : Maybe Notification
+        , requestCollection : RequestCollection
+        , pgCollection : PgCollection
+        , whichModal : Maybe Modal
         , scenarioCollection : ScenarioCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
         , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
@@ -59,8 +64,8 @@ type alias Model a =
 
 type Msg
     = LandingAppMsg Landing.Msg
---    | EditAppMsg Edit.Msg
---    | RunAppMsg Run.Msg
+    | EditAppMsg Edit.Msg
+    | RunAppMsg Run.Msg
 
 
 -- * update
@@ -75,6 +80,36 @@ update msg model =
                     Landing.update subMsg model
             in
             (newModel, Cmd.map LandingAppMsg newMsg)
+
+        EditAppMsg subMsg ->
+            let
+                (newModel, newMsg) =
+                    Edit.update subMsg model
+            in
+            (newModel, Cmd.map EditAppMsg newMsg)
+
+        RunAppMsg subMsg ->
+            let
+                (updatedModel, newScenarioRecord, newMsg) =
+                    case getBuilder model of
+                        RichRunView (Just (File scenarioFileRecord)) mId ->
+                            Run.update subMsg model scenarioFileRecord mId
+                        _ ->
+                            Debug.todo ""
+
+                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                    model.scenarioCollection
+
+                newBuilderTree =
+                    List.map (modifyScenarioNode newScenarioRecord.id (always (File newScenarioRecord))) scenarioNodes
+
+                newModel =
+                    { updatedModel
+                        | scenarioCollection = ScenarioCollection scenarioCollectionId newBuilderTree
+                    }
+
+            in
+            ( newModel, Cmd.map RunAppMsg newMsg )
 
 
 
@@ -111,7 +146,7 @@ view model =
     case getBuilder model of
         RichLandingView whichView ->
             map LandingAppMsg (Landing.view whichView model)
-{-
+
         RichEditView whichEditView ->
             case (traverseEditViewMaybe whichEditView) of
                 Nothing ->
@@ -120,11 +155,9 @@ view model =
                 Just nodeType ->
                     map EditAppMsg (Edit.view nodeType model)
 
-        RunView (Just (File pgFileRecord)) ->
-            map RunAppMsg (Run.view model pgFileRecord)
 
-        RunView _ ->
+        RichRunView (Just (File scenarioFileRecord)) mDisplayedSceneId ->
+            map RunAppMsg (Run.view model scenarioFileRecord mDisplayedSceneId)
+
+        RichRunView _ _ ->
             text "404 - could not find run view"
--}
-
-        _ -> none

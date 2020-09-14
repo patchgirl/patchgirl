@@ -29,6 +29,8 @@ type alias Model a =
         | notification : Maybe Notification
         , session : Session
         , whichModal : Maybe Modal
+        , requestCollection : RequestCollection
+        , pgCollection : PgCollection
         , scenarioCollection : ScenarioCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
         , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
@@ -64,8 +66,8 @@ update msg model =
             in
             ( newModel, Cmd.map BuilderMsg newSubMsg )
 
-        _ ->
-            (model, Cmd.none)
+        TreeMsg subMsg->
+            (Tree.update subMsg model, Cmd.none)
 
 
 -- * view

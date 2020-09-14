@@ -335,7 +335,7 @@ defaultEditView : Model a -> RequestNode -> Element Msg
 defaultEditView model requestNode =
     let
         { id, name } =
-            getRequestNodeIdAndName requestNode
+            getNodeIdAndName requestNode
 
         nodeType =
             case requestNode of
@@ -400,7 +400,7 @@ deleteView : Model a -> RequestNode -> Element Msg
 deleteView model requestNode =
     let
         { id, name } =
-            getRequestNodeIdAndName requestNode
+            getNodeIdAndName requestNode
 
         areYouSure =
             text "Are you sure you want to delete this?"
