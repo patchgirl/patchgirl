@@ -49,10 +49,6 @@ mapEditView f whichEditView =
         DefaultEditView x -> DefaultEditView (f x)
         DeleteView x -> DeleteView (f x)
 
-andThenEditView : WhichEditView a -> (a -> WhichEditView b) -> WhichEditView b
-andThenEditView whichEditView f =
-    Debug.todo ""
-
 traverseEditViewMaybe : WhichEditView (Maybe a) -> Maybe (WhichEditView a)
 traverseEditViewMaybe whichEditView =
     case whichEditView of

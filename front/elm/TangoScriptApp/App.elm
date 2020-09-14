@@ -69,17 +69,16 @@ view model =
                   , spellcheck = False
                   }
               ]
-        , column [ width fill, centerX, spacing 10 ]
-            (case astResult of
+        , el [ width fill, centerX, spacing 10 ] <|
+            case astResult of
               Ok ast ->
-                  [ astView (astAsString ast)
-                  , compatibilityView ast
-                  ]
+                  astView (astAsString ast)
+
 
               Err errors ->
-                  [ astView (P.deadEndsToString errors)
-                  ])
+                 astView (P.deadEndsToString errors)
         ]
+
 
 astView : String -> Element Msg
 astView ast =
@@ -88,16 +87,6 @@ astView ast =
         , text = ast
         , placeholder = Nothing
         , label = Input.labelAbove [] (text "Abstract syntax tree:")
-        , spellcheck = False
-        }
-
-compatibilityView : TangoAst -> Element Msg
-compatibilityView tangoAst =
-    Input.multiline [ width fill, centerX ]
-        { onChange = always DoNothing
-        , text = "" -- check tangoAst |> List.map showError |> String.join "\n"
-        , placeholder = Nothing
-        , label = Input.labelAbove [] (text "Errors:")
         , spellcheck = False
         }
 
