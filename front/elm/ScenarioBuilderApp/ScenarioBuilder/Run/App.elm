@@ -136,7 +136,7 @@ update msg model file mDisplayedSceneId =
                     model.scenarioCollection
 
                 newMsg =
-                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) id payload (createSceneResultToMsg sceneActorParentId fileNodeId newSceneId actorType)
+                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) file.id payload (createSceneResultToMsg sceneActorParentId fileNodeId newSceneId actorType)
             in
             ( model, file, newMsg )
 
@@ -193,11 +193,8 @@ update msg model file mDisplayedSceneId =
 
         AskDeleteScene sceneId ->
             let
-                (ScenarioCollection id _) =
-                    model.scenarioCollection
-
                 newMsg =
-                    Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) id sceneId (deleteSceneResultToMsg sceneId)
+                    Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id sceneId (deleteSceneResultToMsg sceneId)
             in
             ( model, file, newMsg )
 
@@ -231,11 +228,8 @@ update msg model file mDisplayedSceneId =
                     , updateScenePostscript = editedOrNotEditedValue scene.postscriptStr
                     }
 
-                (ScenarioCollection id _) =
-                    model.scenarioCollection
-
                 newMsg =
-                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) id scene.id payload (updateSceneResultToMsg scene)
+                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id scene.id payload (updateSceneResultToMsg scene)
             in
             ( model, file, newMsg )
 
@@ -261,16 +255,13 @@ update msg model file mDisplayedSceneId =
 
         AskSaveScenario newEnvironmentId ->
             let
-                (ScenarioCollection id _) =
-                    model.scenarioCollection
-
                 payload =
                     { updateScenarioFileId = file.id
                     , updateScenarioFileEnvironmentId = newEnvironmentId
                     }
 
                 newMsg =
-                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) id payload (updateScenarioResultToMsg newEnvironmentId)
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) file.id payload (updateScenarioResultToMsg newEnvironmentId)
             in
             (model, file, newMsg)
 
@@ -283,9 +274,6 @@ update msg model file mDisplayedSceneId =
 
         AskRunScenario ->
             let
-                (ScenarioCollection id _) =
-                    model.scenarioCollection
-
                 sceneToSceneInput : Scene -> Maybe Client.SceneFile
                 sceneToSceneInput scene =
                     case (scene.prescriptAst, scene.postscriptAst, findRecord model scene) of
@@ -350,7 +338,7 @@ update msg model file mDisplayedSceneId =
                     mScenes
                         |> Maybe.map
                            (\scenes ->
-                                { scenarioInputId = id
+                                { scenarioInputId = file.id
                                 , scenarioInputScenes = scenes
                                 , scenarioInputEnvVars = environmentKeyValues
                                 }
@@ -563,6 +551,17 @@ findRecord model scene =
 view : Model a -> ScenarioFileRecord -> Maybe Uuid -> Element Msg
 view model file mDisplayedSceneId =
     let
+        closeNewSceneView : Element Msg
+        closeNewSceneView =
+            Input.button []
+                { onPress = Just CloseModal
+                , label =
+                    iconWithAttr { defaultIconAttribute
+                                     | title = ""
+                                     , icon = "clear"
+                                 }
+                }
+
         scenesView =
             case file.scenes of
                 [] ->
@@ -643,24 +642,35 @@ view model file mDisplayedSceneId =
                 , envSelectionView
                 ]
     in
-    case mDisplayedSceneId of
-        Nothing ->
-            wrappedRow [ height fill, width fill, spacing 20 ]
-                [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
-                , row [ width <| fillPortion 9, alignTop, spacing 20 ]
-                    [ el [ width <| fillPortion 2, height fill ] scenesView
-                    , el [ width <| fillPortion 8, height fill, alignRight ] none
-                    ]
+    case model.whichModal of
+        Just id ->
+            column (box [ padding 30, centerX ])
+                [ row [ width fill ]
+                      [ el [ centerX ] <| text "coucou"
+                      , el [ alignRight ] closeNewSceneView
+                      ]
+                , selectSceneView model file Nothing
                 ]
 
-        Just sceneId ->
-            wrappedRow [ height fill, width fill, spacing 20 ]
-                [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
-                , row [ width <| fillPortion 9, alignTop, spacing 20 ]
-                    [ el [ width <| fillPortion 2, height fill ] scenesView
-                    , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model file sceneId)
-                    ]
-                ]
+        Nothing ->
+            case mDisplayedSceneId of
+                Nothing ->
+                    wrappedRow [ height fill, width fill, spacing 20 ]
+                        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
+                        , row [ width <| fillPortion 9, alignTop, spacing 20 ]
+                            [ el [ width <| fillPortion 2, height fill ] scenesView
+                            , el [ width <| fillPortion 8, height fill, alignRight ] none
+                            ]
+                        ]
+
+                Just sceneId ->
+                    wrappedRow [ height fill, width fill, spacing 20 ]
+                        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
+                        , row [ width <| fillPortion 9, alignTop, spacing 20 ]
+                            [ el [ width <| fillPortion 2, height fill ] scenesView
+                            , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model file sceneId)
+                            ]
+                        ]
 
 
 -- ** scene view
@@ -1093,31 +1103,23 @@ labelInputView labelText =
 
 
 selectSceneView : Model a -> ScenarioFileRecord -> Maybe Uuid -> Element Msg
-selectSceneView model file mFatherScene =
-    text "coucou"
-
-
--- * modal
-
-
-selectSceneModal : Maybe Uuid -> RequestCollection -> PgCollection -> Modal.Config Msg
-selectSceneModal sceneParentId requestCollection pgCollection =
+selectSceneView model file sceneParentId =
     let
         (RequestCollection _ requestNodes) =
-            requestCollection
+            model.requestCollection
 
         (PgCollection _ pgNodes) =
-            pgCollection
+            model.pgCollection
 
         treeView =
-            row [ width fill ]
+            row [ padding 20, centerX ]
                 [ column [ spacing 30, width (fillPortion 1) ]
                       [ el [ centerX, Font.size 23 ] (text "Http request")
-                      , column [ spacing 10] (httpNodeView requestNodes)
+                      , column [ spacing 10, centerX ] (httpNodeView requestNodes)
                       ]
                 , column [ spacing 30, width (fillPortion 1), alignTop ]
                       [ el [ centerX, Font.size 23 ] (text "Postgres query")
-                      , column [ spacing 10] (pgNodeView pgNodes)
+                      , column [ spacing 10, centerX ] (pgNodeView pgNodes)
                       ]
                 ]
 
@@ -1237,16 +1239,4 @@ selectSceneModal sceneParentId requestCollection pgCollection =
                         none
                 ]
     in
-    { closeMessage = CloseModal
-    , header = text "Add either an http request or a postgres query"
-    , body = Just treeView
-    , footer = Nothing
-    }
-
-confirmDeleteFolderModal : Modal.Config Msg
-confirmDeleteFolderModal =
-    { closeMessage = CloseModal
-    , header = text "confirm delete folder"
-    , body = Nothing
-    , footer = Nothing
-    }
+        treeView

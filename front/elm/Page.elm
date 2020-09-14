@@ -133,6 +133,7 @@ urlParser =
         , Url.map (ScenarioPage (RichLandingView CreateDefaultFileView)) (appRoot </> Url.s "scenario" </> Url.s "new-file")
         , Url.map (\envId -> ScenarioPage (RichEditView (DefaultEditView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit")
         , Url.map (\envId -> ScenarioPage (RichEditView (DeleteView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\envId sceneId -> ScenarioPage (RichRunView envId (Just sceneId))) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser </> uuidParser)
         , Url.map (\envId -> ScenarioPage (RichRunView envId Nothing)) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser)
 
         -- other
@@ -246,8 +247,11 @@ href page =
                                 RichEditView (DeleteView id) ->
                                     [ Uuid.toString id, "edit", "delete" ]
 
-                                RichRunView id mId ->
+                                RichRunView id Nothing ->
                                     [ "run", Uuid.toString id ]
+
+                                RichRunView id (Just sceneId) ->
+                                    [ "run", Uuid.toString id, Uuid.toString sceneId ]
 
                     in
                     [ "app", "scenario" ] ++ mode
