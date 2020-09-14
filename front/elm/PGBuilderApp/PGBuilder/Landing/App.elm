@@ -96,7 +96,7 @@ update msg model =
 
         AskMkdir newNode newId ->
             let
-                (PgCollection pgCollectionId pgNodes) =
+                (PgCollection pgCollectionId _) =
                     model.pgCollection
 
                 newMsg =
@@ -153,7 +153,7 @@ update msg model =
 
         AskTouch newNode newId ->
             let
-                (PgCollection pgCollectionId pgNodes) =
+                (PgCollection pgCollectionId _) =
                     model.pgCollection
 
                 newMsg =

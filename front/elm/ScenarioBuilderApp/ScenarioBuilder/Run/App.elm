@@ -134,9 +134,6 @@ update msg model file mDisplayedSceneId =
                     , newScenePostscript = ""
                     }
 
-                (ScenarioCollection id _) =
-                    model.scenarioCollection
-
                 newMsg =
                     Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) file.id payload (createSceneResultToMsg sceneActorParentId fileNodeId newSceneId actorType)
             in
@@ -295,10 +292,6 @@ update msg model file mDisplayedSceneId =
                                                                          }
 
                                 PgRecord pgRecord ->
-                                    let
-                                        (PgCollection collectionId _) =
-                                            model.pgCollection
-                                    in
                                     PgBuilder.buildPgComputationPayload pgRecord model
                                         |> Tuple.second
                                         |> \pgComputationInput ->
@@ -643,7 +636,7 @@ view model file mDisplayedSceneId =
                 ]
     in
     case model.whichModal of
-        Just id ->
+        Just _ ->
             column (box [ padding 30, centerX ])
                 [ row [ width fill ]
                       [ el [ centerX ] <| text "coucou"
@@ -706,7 +699,7 @@ sceneView model file mDisplayedSceneId scene =
     case findRecord model scene of
         Just fileRecord ->
             let
-                { id, name } =
+                { name } =
                     case fileRecord of
                         HttpRecord r -> { id = r.id, name = r.name }
                         PgRecord r -> { id = r.id, name = r.name }
@@ -811,7 +804,7 @@ detailedSceneView model file sceneId =
 httpDetailedSceneView : ScenarioFileRecord -> Scene -> RequestFileRecord -> List (Element Msg)
 httpDetailedSceneView file scene fileRecord =
     let
-        { method, headers, url, body } =
+        { method, url } =
             buildRequestComputationInput fileRecord
 
         methodAndUrl =
@@ -899,7 +892,7 @@ httpDetailedSceneView file scene fileRecord =
                 HttpSceneFailed httpException ->
                     text <| "This request failed because of: " ++ httpExceptionToString httpException
 
-                PgSceneFailed error ->
+                PgSceneFailed _ ->
                     none
 
                 HttpPostscriptFailed _ scriptException ->
@@ -923,7 +916,7 @@ httpDetailedSceneView file scene fileRecord =
                                   headersResponseView requestComputationOutput (always DoNothing)
                         ]
 
-                PgSceneOk pgComputation ->
+                PgSceneOk _ ->
                     none
 
 
@@ -1022,7 +1015,7 @@ pgDetailedSceneView scene fileRecord =
                 PgPostscriptFailed _ scriptException ->
                     text <| "Postscript failed because of: " ++ scriptExceptionToString scriptException
 
-                HttpSceneOk requestComputationOutput ->
+                HttpSceneOk _ ->
                     none
 
                 PgSceneOk pgComputation ->

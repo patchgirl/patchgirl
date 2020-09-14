@@ -107,7 +107,7 @@ update msg model =
 
         AskMkdir parentNodeId newId ->
             let
-                (RequestCollection requestCollectionId requestNodes) =
+                (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
                 newRequestFolder =
@@ -159,9 +159,6 @@ update msg model =
 
         AskTouch parentNodeId newId ->
             let
-                (RequestCollection requestCollectionId requestNodes) =
-                    model.requestCollection
-
                 newRequestFile =
                     { newRequestFileId = newId
                     , newRequestFileParentNodeId = parentNodeId
@@ -213,7 +210,7 @@ update msg model =
 
         AskRename id newName ->
             let
-                (RequestCollection requestCollectionId requestNodes) =
+                (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
                 payload =

@@ -470,7 +470,10 @@ showPGValue pgValue =
         PgString str -> text str
         PgInt int -> text (String.fromInt int)
         PgFloat float -> text (String.fromFloat float)
-        PgBool bool -> text "true"
+        PgBool bool ->
+            case bool of
+                True -> text "true"
+                False -> text "false"
         PgNull -> text "NULL"
 
 

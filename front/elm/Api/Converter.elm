@@ -595,7 +595,7 @@ convertProcFromFrontToBack frontProc =
 convertExpressionFromBackToFront : Back.Expr -> Front.Expr
 convertExpressionFromBackToFront backEx =
     case backEx of
-        Back.LJson json -> Debug.todo "json"
+        Back.LJson _ -> Debug.todo "json"
         Back.LList xs -> List.map convertExpressionFromBackToFront xs |> Front.LList
         Back.LBool x -> Front.LBool x
         Back.LInt x -> Front.LInt x

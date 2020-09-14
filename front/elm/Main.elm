@@ -30,7 +30,7 @@ decodeLoadedData json =
         Ok userData ->
             userData
 
-        Err str ->
+        Err _ ->
             Debug.todo "failed to load user data, try reloading the page"
 
 

@@ -95,7 +95,7 @@ update msg model =
 
         AskMkdir newNode newId ->
             let
-                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                (ScenarioCollection scenarioCollectionId _) =
                     model.scenarioCollection
 
                 newMsg =
@@ -152,7 +152,7 @@ update msg model =
 
         AskTouch newNode newId ->
             let
-                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                (ScenarioCollection scenarioCollectionId _) =
                     model.scenarioCollection
 
                 newMsg =

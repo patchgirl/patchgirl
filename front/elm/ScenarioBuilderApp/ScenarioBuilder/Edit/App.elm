@@ -78,7 +78,7 @@ update msg model =
 
         AskRename id newName ->
             let
-                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                (ScenarioCollection scenarioCollectionId _) =
                     model.scenarioCollection
 
                 payload =

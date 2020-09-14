@@ -723,7 +723,7 @@ scriptExceptionToString scriptException =
         AccessOutOfBound ->
             "Access out of bound"
 
-        CantAccessElem expr1 expr2 ->
+        CantAccessElem expr1 _ ->
             "Cant access elem: [" ++ exprToString expr1 ++ "]"
 
 -- * editable
@@ -781,7 +781,7 @@ changeEditedValue newValue editable =
 cleanEditable : Editable a -> Editable a
 cleanEditable editable =
     case editable of
-        Edited old new ->
+        Edited _ new ->
             NotEdited new
 
         notEdited ->

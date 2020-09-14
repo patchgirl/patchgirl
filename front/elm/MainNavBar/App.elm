@@ -102,7 +102,7 @@ deleteSessionSignOutResultToMsg result =
             in
             SignOutSucceed
 
-        Err error ->
+        Err _ ->
             SignOutFailed
 
 

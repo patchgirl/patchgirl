@@ -78,7 +78,7 @@ update msg model =
 
         AskRename id newName ->
             let
-                (PgCollection pgCollectionId pgNodes) =
+                (PgCollection pgCollectionId _) =
                     model.pgCollection
 
                 payload =
