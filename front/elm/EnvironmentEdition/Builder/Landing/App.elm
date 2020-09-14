@@ -106,9 +106,9 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
+        PrintNotification notification ->
+            ( { model | notification = Just notification }, Cmd.none )
 
-        _ ->
-            (model, Cmd.none)
 
 -- * util
 

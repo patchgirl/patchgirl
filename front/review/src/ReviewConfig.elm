@@ -16,4 +16,5 @@ import NoUnused.CustomTypeConstructorArgs as NoUnusued
 
 config : List Rule
 config =
-    [NoUnusued.rule]
+    [ --NoUnusued.rule
+    ]

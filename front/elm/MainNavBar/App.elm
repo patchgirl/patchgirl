@@ -43,7 +43,7 @@ type alias Model a =
 
 type Msg
     = AskSignOut
-    | SignOutSucceed Session
+    | SignOutSucceed
     | SignOutFailed
     | ShowMainMenuName MainMenuName
     | HideMainMenuName
@@ -66,7 +66,7 @@ update msg model =
         SignOutFailed ->
             ( model, Cmd.none )
 
-        SignOutSucceed _ ->
+        SignOutSucceed ->
             let
                 newMsg =
                     Navigation.load "https://patchgirl.io/"
@@ -100,7 +100,7 @@ deleteSessionSignOutResultToMsg result =
                 newSession =
                     Client.convertSessionFromBackToFront session
             in
-            SignOutSucceed newSession
+            SignOutSucceed
 
         Err error ->
             SignOutFailed
