@@ -649,7 +649,7 @@ view model file mDisplayedSceneId =
                       [ el [ centerX ] <| text "coucou"
                       , el [ alignRight ] closeNewSceneView
                       ]
-                , selectSceneView model file Nothing
+                , selectSceneView model Nothing
                 ]
 
         Nothing ->
@@ -799,17 +799,17 @@ detailedSceneView model file sceneId =
                    ) <|
                 case fileRecord of
                     HttpRecord record ->
-                        httpDetailedSceneView model file scene record
+                        httpDetailedSceneView file scene record
 
                     PgRecord record ->
-                        pgDetailedSceneView model file scene record
+                        pgDetailedSceneView scene record
 
 
 -- *** http detailed scene view
 
 
-httpDetailedSceneView : Model a -> ScenarioFileRecord -> Scene -> RequestFileRecord -> List (Element Msg)
-httpDetailedSceneView model file scene fileRecord =
+httpDetailedSceneView : ScenarioFileRecord -> Scene -> RequestFileRecord -> List (Element Msg)
+httpDetailedSceneView file scene fileRecord =
     let
         { method, headers, url, body } =
             buildRequestComputationInput fileRecord
@@ -947,8 +947,8 @@ httpDetailedSceneView model file scene fileRecord =
 -- *** pg detailed scene view
 
 
-pgDetailedSceneView : Model a -> ScenarioFileRecord -> Scene -> PgFileRecord -> List (Element Msg)
-pgDetailedSceneView model file scene fileRecord =
+pgDetailedSceneView : Scene -> PgFileRecord -> List (Element Msg)
+pgDetailedSceneView scene fileRecord =
     let
         sqlText =
             editedOrNotEditedValue fileRecord.sql
@@ -1102,8 +1102,8 @@ labelInputView labelText =
 -- ** select scene view
 
 
-selectSceneView : Model a -> ScenarioFileRecord -> Maybe Uuid -> Element Msg
-selectSceneView model file sceneParentId =
+selectSceneView : Model a -> Maybe Uuid -> Element Msg
+selectSceneView model sceneParentId =
     let
         (RequestCollection _ requestNodes) =
             model.requestCollection

@@ -353,10 +353,10 @@ view file model =
 
         builderView =
             column [ width fill, spacing 20 ]
-                [ urlView model file keyValuesToRun
-                , methodView model file
-                , headersView model file keyValuesToRun
-                , bodyView model file keyValuesToRun
+                [ urlView file keyValuesToRun
+                , methodView file
+                , headersView file keyValuesToRun
+                , bodyView file keyValuesToRun
                 ]
     in
     case file.showResponseView of
@@ -392,7 +392,7 @@ view file model =
                          , padding 20
                          ]
                     )
-                    (responseView model file)
+                    (responseView file)
                 ]
 
 
@@ -407,13 +407,13 @@ titleView model file =
     in
     row [ paddingXY 0 10, spacing 10, width fill ]
         [ el [] <| iconWithTextAndColor "label" name secondaryColor
-        , el [ alignRight ] (mainActionButtonsView model file)
+        , el [ alignRight ] (mainActionButtonsView file)
         , closeBuilderView model.page
         ]
 
 
-mainActionButtonsView : Model a -> RequestFileRecord -> Element Msg
-mainActionButtonsView model file =
+mainActionButtonsView : RequestFileRecord -> Element Msg
+mainActionButtonsView file =
     let
         rowParam =
             [ centerY
@@ -457,8 +457,8 @@ mainActionButtonsView model file =
 -- ** response
 
 
-responseView : Model a -> RequestFileRecord -> Element Msg
-responseView model file =
+responseView : RequestFileRecord -> Element Msg
+responseView file =
     let
         errorAttributes =
             [ centerX
@@ -513,8 +513,8 @@ responseView model file =
 -- ** url
 
 
-urlView : Model a -> RequestFileRecord -> List KeyValue -> Element Msg
-urlView model file keyValues =
+urlView : RequestFileRecord -> List KeyValue -> Element Msg
+urlView file keyValues =
     el [ alignLeft, width fill ] <|
         row [ width fill, spacing 30 ]
             [ Input.text [ Util.onEnter AskRun ]
@@ -530,8 +530,8 @@ urlView model file keyValues =
 -- ** method
 
 
-methodView : Model a -> RequestFileRecord -> Element Msg
-methodView model file =
+methodView : RequestFileRecord -> Element Msg
+methodView file =
     Input.radioRow [ padding 10, spacing 10 ]
         { onChange = SetHttpMethod
         , selected = Just <| editedOrNotEditedValue file.httpMethod
@@ -552,11 +552,11 @@ methodView model file =
 -- ** header
 
 
-headersView : Model a -> RequestFileRecord -> List KeyValue -> Element Msg
-headersView model file keyValues =
+headersView : RequestFileRecord -> List KeyValue -> Element Msg
+headersView file keyValues =
     let
         headerInputs =
-            List.indexedMap (headerView model file keyValues) (editedOrNotEditedValue file.httpHeaders)
+            List.indexedMap (headerView keyValues) (editedOrNotEditedValue file.httpHeaders)
 
         addHeaderButton =
             Input.button [ centerX ]
@@ -580,8 +580,8 @@ headersView model file keyValues =
                     ]
 
 
-headerView : Model a -> RequestFileRecord -> List KeyValue -> Int -> ( String, String ) -> Element Msg
-headerView model file keyValues idx ( headerKey, headerValue ) =
+headerView : List KeyValue -> Int -> ( String, String ) -> Element Msg
+headerView keyValues idx ( headerKey, headerValue ) =
     row [ width fill, spacing 10 ]
         [ row [ width fill, spacing 30 ]
               [ Input.text [ Util.onEnter AskRun ]
@@ -615,8 +615,8 @@ headerView model file keyValues idx ( headerKey, headerValue ) =
 -- ** body
 
 
-bodyView : Model a -> RequestFileRecord -> List KeyValue -> Element Msg
-bodyView model file keyValues =
+bodyView : RequestFileRecord -> List KeyValue -> Element Msg
+bodyView file keyValues =
     wrappedRow [ width fill, spacing 30 ]
         [ Input.multiline []
               { onChange = SetHttpBody

@@ -196,8 +196,8 @@ folderView id model eName folderChildrenView open =
                True -> Font.heavy
                False -> Font.regular
 
-        folderReadView : Bool -> Element Msg
-        folderReadView isOpen =
+        folderReadView : Element Msg
+        folderReadView =
             Input.button [ weight ]
                 { onPress = Just <| ToggleFolder id
                 , label = folderWithIconView
@@ -219,7 +219,7 @@ folderView id model eName folderChildrenView open =
         [ row [ onMouseEnter (ToggleMenu (Just id))
               , onMouseLeave (ToggleMenu Nothing)
               ]
-              [ folderReadView open
+              [ folderReadView
               , folderMenuView
               ]
         , case open of
