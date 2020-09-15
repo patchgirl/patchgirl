@@ -9,7 +9,8 @@ import           Data.Aeson
 import           Data.UUID                          (UUID)
 import qualified Database.PostgreSQL.Simple.FromRow as PG
 import           GHC.Generics
-import           PgNode.Model
+
+import           PatchGirl.Web.PgNode.Model
 
 
 -- * Model

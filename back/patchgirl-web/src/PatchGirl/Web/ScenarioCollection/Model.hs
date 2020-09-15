@@ -10,7 +10,8 @@ import           Data.Aeson
 import           Data.UUID                          (UUID)
 import qualified Database.PostgreSQL.Simple.FromRow as PG
 import           GHC.Generics
-import           ScenarioNode.Model
+
+import           PatchGirl.Web.ScenarioNode.Model
 
 -- * Model
 

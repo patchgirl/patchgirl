@@ -6,13 +6,13 @@ import           Control.Monad.Except     (MonadError)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import           Control.Monad.Reader     (MonadReader)
 import           Data.UUID                (UUID)
-import           DB
-
-import           PatchGirl
-import           ScenarioCollection.Model
-import           ScenarioCollection.Sql
-import           ScenarioNode.Sql
 import           Servant
+
+import           PatchGirl.Web.PatchGirl
+import           PatchGirl.Web.ScenarioCollection.Model
+import           PatchGirl.Web.ScenarioCollection.Sql
+import           PatchGirl.Web.ScenarioNode.Sql
+import           PatchGirl.Web.DB
 
 
 -- * handler

@@ -6,7 +6,7 @@ import           Data.UUID                        (UUID)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 
-import           PgNode.Model
+import           PatchGirl.Web.PgNode.Model
 
 
 -- * select pg nodes from pg collection id

@@ -28,10 +28,10 @@ import           Servant.Client
 import qualified Test.Hspec                       as Hspec
 
 
-import           CaseInsensitive
-import           PatchGirl.Internal.Env
-import           Session.Model
-import           DB
+import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.Internal.Env
+import           PatchGirl.Web.Session.Model
+import           PatchGirl.Web.DB
 
 
 -- * helper

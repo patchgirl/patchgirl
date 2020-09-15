@@ -23,12 +23,13 @@ import           Data.List                        (find)
 import           Data.UUID                        (UUID)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
-import           DB
-import           Environment.Model
-import           PatchGirl
 import           Prelude                          hiding (id)
 import           Servant                          (err404, throwError)
 import           Servant.Server                   (ServerError)
+
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.PatchGirl
 
 
 -- * environment

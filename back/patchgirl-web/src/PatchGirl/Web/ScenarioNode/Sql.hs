@@ -6,8 +6,8 @@ import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified GHC.Int                          as Int
 
-import           ScenarioCollection.Sql
-import           ScenarioNode.Model
+import           PatchGirl.Web.ScenarioCollection.Sql
+import           PatchGirl.Web.ScenarioNode.Model
 
 
 -- * select scenario nodes from account id

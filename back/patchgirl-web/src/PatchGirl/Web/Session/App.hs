@@ -20,12 +20,7 @@ import qualified Data.Text                           as T
 import           Data.Text.Encoding                  (decodeUtf8)
 import           Data.UUID                           (UUID)
 import qualified Data.UUID                           as UUID
-import           DB
-
-import           Account.Sql
-import           CaseInsensitive
-import           Github.App
-import           PatchGirl
+import           Web.Cookie                          (setCookieValue)
 import           Servant
 import           Servant.Auth.Server                 (AuthResult (..),
                                                       CookieSettings,
@@ -33,8 +28,13 @@ import           Servant.Auth.Server                 (AuthResult (..),
                                                       acceptLogin, clearSession,
                                                       makeXsrfCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()
-import           Session.Model
-import           Web.Cookie                          (setCookieValue)
+
+import           PatchGirl.Web.Account.Sql
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.Github.App
+import           PatchGirl.Web.PatchGirl
+import           PatchGirl.Web.Session.Model
 
 
 visitorId :: UUID

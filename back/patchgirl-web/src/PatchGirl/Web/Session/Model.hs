@@ -2,7 +2,6 @@
 
 module PatchGirl.Web.Session.Model where
 
-import           CaseInsensitive
 import           Data.Aeson          (FromJSON (..), ToJSON (..),
                                       genericParseJSON, genericToJSON,
                                       parseJSON)
@@ -12,6 +11,7 @@ import           Data.UUID
 import           GHC.Generics        (Generic)
 import           Servant.Auth.Server (FromJWT, ToJWT)
 
+import           PatchGirl.Web.CaseInsensitive
 
 -- * whoami
 

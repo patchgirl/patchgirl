@@ -18,11 +18,11 @@ import qualified Data.Maybe             as Maybe
 import           Data.UUID
 import qualified Servant
 
-import           DB
-import           PatchGirl
-import           PgCollection.Sql
-import           PgNode.Model
-import           PgNode.Sql
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.PatchGirl
+import           PatchGirl.Web.PgCollection.Sql
+import           PatchGirl.Web.PgNode.Model
+import           PatchGirl.Web.PgNode.Sql
 
 
 -- * update pg node

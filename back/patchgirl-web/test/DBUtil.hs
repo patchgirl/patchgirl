@@ -22,19 +22,18 @@ import qualified Database.PostgreSQL.Simple.Types     as PG
 
 import           GHC.Generics
 
-import           CaseInsensitive
-import           Environment.Model
-import           Http
-import           PgCollection.Model
-import           PgNode.Model
-import           RequestCollection.Model
-import           RequestNode.Model
-import           ScenarioCollection.Model
-import           ScenarioNode.Model
-
-import           PgNode.Sql
-import           RequestNode.Sql
-import           ScenarioNode.Sql
+import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.Http
+import           PatchGirl.Web.PgCollection.Model
+import           PatchGirl.Web.PgNode.Model
+import           PatchGirl.Web.RequestCollection.Model
+import           PatchGirl.Web.RequestNode.Model
+import           PatchGirl.Web.ScenarioCollection.Model
+import           PatchGirl.Web.ScenarioNode.Model
+import           PatchGirl.Web.PgNode.Sql
+import           PatchGirl.Web.RequestNode.Sql
+import           PatchGirl.Web.ScenarioNode.Sql
 
 
 -- * account

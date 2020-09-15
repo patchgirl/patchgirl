@@ -34,29 +34,29 @@ import           Servant.Auth.Server                   (Auth, AuthResult (..),
                                                         CookieSettings,
                                                         JWTSettings, SetCookie,
                                                         throwAll)
-
-import           Account.App
-import           Environment.App
-import           Environment.Model
-import           Github.App
-import           Health.App
-import           PatchGirl.Web.Model
-import           PgCollection.App
-import           PgCollection.Model
-import           PgNode.App
-import           PgNode.Model
-import           RequestCollection.App
-import           RequestCollection.Model
-import           RequestNode.App
-import           RequestNode.Model
-import           ScenarioCollection.App
-import           ScenarioCollection.Model
-import           ScenarioNode.App
-import           ScenarioNode.Model
 import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
-import           Session.App
-import           Session.Model
-import           Test
+
+import           PatchGirl.Web.Account.App
+import           PatchGirl.Web.Environment.App
+import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.Github.App
+import           PatchGirl.Web.Health.App
+import           PatchGirl.Web.Model
+import           PatchGirl.Web.PgCollection.App
+import           PatchGirl.Web.PgCollection.Model
+import           PatchGirl.Web.PgNode.App
+import           PatchGirl.Web.PgNode.Model
+import           PatchGirl.Web.RequestCollection.App
+import           PatchGirl.Web.RequestCollection.Model
+import           PatchGirl.Web.RequestNode.App
+import           PatchGirl.Web.RequestNode.Model
+import           PatchGirl.Web.ScenarioCollection.App
+import           PatchGirl.Web.ScenarioCollection.Model
+import           PatchGirl.Web.ScenarioNode.App
+import           PatchGirl.Web.ScenarioNode.Model
+import           PatchGirl.Web.Session.App
+import           PatchGirl.Web.Session.Model
+import           PatchGirl.Web.Test
 
 
 type WebApi auths =

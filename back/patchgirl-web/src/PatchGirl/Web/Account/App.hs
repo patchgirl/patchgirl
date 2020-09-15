@@ -12,9 +12,10 @@ import           Control.Monad.Reader             (MonadReader)
 import           Control.Monad.Trans              (liftIO)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
-import           DB
 import qualified GHC.Int                          as Int
-import           PatchGirl
+
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.PatchGirl
 
 
 -- * handler

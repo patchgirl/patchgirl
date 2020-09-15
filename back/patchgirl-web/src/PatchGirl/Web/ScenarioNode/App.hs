@@ -16,17 +16,17 @@ import           Data.UUID
 import qualified Database.PostgreSQL.Simple as PG
 import qualified Servant
 
-import           DB
-import           PatchGirl
-import           PgCollection.Sql
-import           PgNode.App
-import           PgNode.Sql
-import           RequestCollection.Sql
-import           RequestNode.App
-import           RequestNode.Sql
-import           ScenarioCollection.Sql
-import           ScenarioNode.Model
-import           ScenarioNode.Sql
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.PatchGirl
+import           PatchGirl.Web.PgCollection.Sql
+import           PatchGirl.Web.PgNode.App
+import           PatchGirl.Web.PgNode.Sql
+import           PatchGirl.Web.RequestCollection.Sql
+import           PatchGirl.Web.RequestNode.App
+import           PatchGirl.Web.RequestNode.Sql
+import           PatchGirl.Web.ScenarioCollection.Sql
+import           PatchGirl.Web.ScenarioNode.Model
+import           PatchGirl.Web.ScenarioNode.Sql
 
 
 -- * update scenario node

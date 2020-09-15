@@ -10,7 +10,7 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
 
-import           DB
+import           PatchGirl.Web.DB
 import           PatchGirl.Web.Internal.Env
 
 

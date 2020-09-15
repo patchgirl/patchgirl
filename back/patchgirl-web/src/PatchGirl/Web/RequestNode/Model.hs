@@ -25,7 +25,8 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
-import           Http
+
+import           PatchGirl.Web.Http
 
 
 -- * request node

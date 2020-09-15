@@ -7,7 +7,7 @@ import           Data.UUID
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 
-import           RequestNode.Model
+import           PatchGirl.Web.RequestNode.Model
 
 
 -- * select request nodes from request collection id
