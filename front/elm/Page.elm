@@ -3,17 +3,17 @@ module Page exposing (Page(..), href, urlToPage, Documentation(..), documentatio
 import Url
 import Url.Parser as Url exposing ((</>))
 import Uuid exposing (Uuid)
+import Application.Type exposing (..)
 
 
 -- * model
 
-
 type Page
     = HomePage
-    | ReqPage (Maybe Uuid) (Maybe Uuid)
-    | PgPage (Maybe Uuid)
-    | EnvPage (Maybe Int)
-    | ScenarioPage (Maybe Uuid) (Maybe Uuid)
+    | ReqPage (BuilderView Uuid)
+    | PgPage (BuilderView Uuid)
+    | EnvPage (BuilderView Uuid)
+    | ScenarioPage (RichBuilderView Uuid (Maybe Uuid))
     | NotFoundPage
     | DocumentationPage Documentation
     | TangoScriptPage
@@ -103,16 +103,40 @@ urlParser =
     in
     Url.oneOf
         [ Url.map HomePage Url.top
-        , Url.map (\reqId scenarioId -> ReqPage (Just reqId) (Just scenarioId)) (appRoot </> Url.s "req" </> uuidParser </> uuidParser)
-        , Url.map (\id -> ReqPage (Just id) Nothing) (appRoot </> Url.s "req" </> uuidParser)
-        , Url.map (ReqPage Nothing Nothing) (appRoot </> Url.s "req")
-        , Url.map (\id -> PgPage (Just id)) (appRoot </> Url.s "pg" </> uuidParser)
-        , Url.map (PgPage Nothing) (appRoot </> Url.s "pg")
-        , Url.map (\id -> EnvPage (Just id)) (appRoot </> Url.s "env" </> Url.int)
-        , Url.map (EnvPage Nothing) (appRoot </> Url.s "env")
-        , Url.map (\id1 id2 -> ScenarioPage (Just id1) (Just id2) ) (appRoot </> Url.s "scenario" </> uuidParser </> uuidParser)
-        , Url.map (\id -> ScenarioPage (Just id) Nothing) (appRoot </> Url.s "scenario" </> uuidParser)
-        , Url.map (ScenarioPage Nothing Nothing) (appRoot </> Url.s "scenario")
+        -- http
+        , Url.map (ReqPage (LandingView DefaultView)) (appRoot </> Url.s "req")
+        , Url.map (ReqPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "req" </> Url.s "new-folder")
+        , Url.map (ReqPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "req" </> Url.s "new-file")
+        , Url.map (\reqId -> ReqPage (EditView (DefaultEditView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit")
+        , Url.map (\reqId -> ReqPage (EditView (DeleteView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\reqId -> ReqPage (RunView reqId)) (appRoot </> Url.s "req" </> Url.s "run" </> uuidParser)
+
+        -- pg
+        , Url.map (PgPage (LandingView DefaultView)) (appRoot </> Url.s "pg")
+        , Url.map (PgPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "pg" </> Url.s "new-folder")
+        , Url.map (PgPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "pg" </> Url.s "new-file")
+        , Url.map (\pgId -> PgPage (EditView (DefaultEditView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit")
+        , Url.map (\pgId -> PgPage (EditView (DeleteView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
+
+        -- env
+        , Url.map (EnvPage (LandingView DefaultView)) (appRoot </> Url.s "environment")
+        , Url.map (EnvPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "environment" </> Url.s "new-folder")
+        , Url.map (EnvPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment" </> Url.s "new-file")
+        , Url.map (\envId -> EnvPage (EditView (DefaultEditView envId))) (appRoot </> Url.s "environment" </> uuidParser </> Url.s "edit")
+        , Url.map (\envId -> EnvPage (EditView (DeleteView envId))) (appRoot </> Url.s "environment" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\envId -> EnvPage (RunView envId)) (appRoot </> Url.s "environment" </> Url.s "run" </> uuidParser)
+
+        -- scenario
+        , Url.map (ScenarioPage (RichLandingView DefaultView)) (appRoot </> Url.s "scenario")
+        , Url.map (ScenarioPage (RichLandingView CreateDefaultFolderView)) (appRoot </> Url.s "scenario" </> Url.s "new-folder")
+        , Url.map (ScenarioPage (RichLandingView CreateDefaultFileView)) (appRoot </> Url.s "scenario" </> Url.s "new-file")
+        , Url.map (\envId -> ScenarioPage (RichEditView (DefaultEditView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit")
+        , Url.map (\envId -> ScenarioPage (RichEditView (DeleteView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\envId sceneId -> ScenarioPage (RichRunView envId (Just sceneId))) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser </> uuidParser)
+        , Url.map (\envId -> ScenarioPage (RichRunView envId Nothing)) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser)
+
+        -- other
         , Url.map (\documentation -> DocumentationPage documentation) (appRoot </> Url.s "documentation" </> documentationParser)
         , Url.map (TangoScriptPage) (appRoot </> Url.s "tangoscript")
         ]
@@ -129,35 +153,108 @@ href page =
                 HomePage ->
                     []
 
-                ReqPage (Just reqId) (Just scenarioId) ->
-                    [ "app", "req", Uuid.toString reqId, Uuid.toString scenarioId ]
-
-                ReqPage (Just uuid) Nothing ->
-                    [ "app", "req", Uuid.toString uuid ]
-
-                ReqPage Nothing _ ->
-                    [ "app", "req" ]
-
-                PgPage (Just uuid) ->
-                    [ "app", "pg", Uuid.toString uuid ]
-
-                PgPage Nothing ->
-                    [ "app", "pg" ]
-
-                EnvPage Nothing ->
-                    [ "app", "env" ]
-
-                EnvPage (Just id) ->
-                    [ "app", "env", String.fromInt id ]
-
-                ScenarioPage mUuid1 mUuid2  ->
+                ReqPage builderView ->
                     let
-                        uuidToStr mUuid =
-                            mUuid
-                                |> Maybe.map Uuid.toString
-                                |> Maybe.withDefault ""
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
+
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                EditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RunView id ->
+                                    [ "run", Uuid.toString id ]
+
                     in
-                    [ "app", "scenario", uuidToStr mUuid1, uuidToStr mUuid2 ]
+                    [ "app", "req" ] ++ mode
+
+                PgPage builderView ->
+                    let
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
+
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                EditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RunView id ->
+                                    [ "run", Uuid.toString id ]
+
+                    in
+                    [ "app", "pg" ] ++ mode
+
+                EnvPage builderView ->
+                    let
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
+
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                EditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RunView id ->
+                                    [ "run", Uuid.toString id ]
+
+                    in
+                    [ "app", "environment" ] ++ mode
+
+                ScenarioPage builderView  ->
+                    let
+                        mode =
+                            case builderView of
+                                RichLandingView DefaultView ->
+                                    []
+
+                                RichLandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                RichLandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                RichEditView (DefaultEditView id) ->
+                                    [ Uuid.toString id, "edit" ]
+
+                                RichEditView (DeleteView id) ->
+                                    [ Uuid.toString id, "edit", "delete" ]
+
+                                RichRunView id Nothing ->
+                                    [ "run", Uuid.toString id ]
+
+                                RichRunView id (Just sceneId) ->
+                                    [ "run", Uuid.toString id, Uuid.toString sceneId ]
+
+                    in
+                    [ "app", "scenario" ] ++ mode
 
                 TangoScriptPage ->
                     [ "app", "tangoscript" ]

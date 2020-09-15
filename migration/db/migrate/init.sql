@@ -125,19 +125,19 @@ CREATE TABLE scene_node(
 
 
 CREATE TABLE environment(
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     name TEXT NOT NULL
 );
 
 CREATE TABLE account_environment(
     account_id UUID REFERENCES account(id) ON DELETE CASCADE,
-    environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
+    environment_id UUID REFERENCES environment(id) ON DELETE CASCADE,
     PRIMARY KEY (account_id, environment_id)
 );
 
 CREATE TABLE key_value(
-    id SERIAL PRIMARY KEY,
-    environment_id INTEGER REFERENCES environment(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY,
+    environment_id UUID REFERENCES environment(id) ON DELETE CASCADE,
     key TEXT NOT NULL,
     value TEXT NOT NULL,
     hidden BOOLEAN NOT NULL
@@ -152,7 +152,7 @@ CREATE TYPE scenario_node_type AS ENUM ('ScenarioFolder', 'ScenarioFile');
 CREATE TABLE scenario_node(
   id UUID PRIMARY KEY,
   tag scenario_node_type NOT NULL,
-  environment_id INTEGER REFERENCES environment(id),
+  environment_id UUID REFERENCES environment(id),
   name TEXT NOT NULL,
   scenario_node_parent_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
   scene_node_id UUID REFERENCES scene_node(id) ON DELETE CASCADE

@@ -4,7 +4,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Html as Html
+import Html
 import Html.Attributes as Html
 import Html.Events as Html
 import Json.Decode as Json
@@ -250,6 +250,7 @@ primaryButtonAttrs =
     , Border.rounded 5
     , Background.color secondaryColor
     , paddingXY 10 10
+    , Font.color primaryColor
     , mouseOver
           [ Background.color primaryColor
           , Font.color secondaryColor
@@ -366,9 +367,9 @@ hr attrs label =
 -- * box
 
 
-boxAttrs : List (Attribute a)
-boxAttrs =
-    Background.color white :: [boxShadow]
+box : List (Attribute a) -> List (Attribute a)
+box attrs =
+    Background.color white :: [ boxShadow, Border.rounded 5 ] ++ attrs
 
 
 -- ** box shadow

@@ -23,7 +23,7 @@ import qualified Network.HTTP.Simple         as Http
 import qualified Network.HTTP.Types          as Http
 
 import           Env
-import           Http
+import           PatchGirl.Web.Http
 import           Interpolator
 import           Log
 import           RequestComputation.Model

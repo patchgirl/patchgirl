@@ -10,22 +10,23 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Events as Events
 import Element.Border as Border
+--import EnvironmentEdition.App as EnvironmentEdition
 import EnvironmentEdition.App as EnvironmentEdition
 import Element.Input as Input
 import MainNavBar.App as MainNavBar
 import Modal exposing (Modal(..))
 import Page exposing (..)
 import RequestBuilderApp.App as RequestBuilderApp
-import RequestBuilderApp.RequestBuilder.App as RequestBuilder
 import PGBuilderApp.App as PGBuilderApp
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
-import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
-import Url as Url
+--import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
+import Url
 import Url.Parser as Url
 import Util exposing (..)
 import Time
+import Task
 import Http
 import Api.RunnerGeneratedClient as Client
 import Runner
@@ -79,10 +80,10 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             urlToPage url
 
         selectedEnvironmentToEditId =
-            Just 0
+            Nothing
 
         selectedEnvironmentToRunIndex =
-            Just 0
+            Nothing
 
         initialLoadingStyle =
             Animation.style [ Animation.opacity 0 ]
@@ -109,6 +110,9 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
                 ]
                 initialNotificationAnimation
 
+        msg =
+            Task.perform (always CheckRunnerStatus) Time.now
+
         model =
             { session = session
             , page = page
@@ -122,27 +126,34 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , showMainMenuName = Nothing
             , requestCollection = requestCollection
             , displayedPgNodeMenuId = Nothing
+            , displayedPgBuilderView = LandingView DefaultView
             , displayedPgId = Nothing
             , pgCollection = pgCollection
+            , pgNewNode = { name = "", parentFolderId = Nothing }
             , sqlQuery = NotEdited ""
             , pgComputation = Nothing
             , displayedRequestNodeMenuId = Nothing
-            , displayedRequestId = Nothing
+            , displayedRequestBuilderView = LandingView DefaultView
+            , requestNewNode = { name = "", parentFolderId = Nothing }
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
+            , displayedScenarioBuilderView = RichLandingView DefaultView
+            , scenarioNewNode = { name = "", parentFolderId = Nothing }
             , displayedScenarioId = Nothing
             , displayedSceneId = Nothing
             , script = ""
             , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , displayedEnvId = Nothing
+            , displayedEnvironmentBuilderView = LandingView DefaultView
+            , displayedEnvironmentNodeMenuId = Nothing
             , environments = environments
+            , newEnvironmentName = ""
             , runnerRunning = False
             , displayedDocumentation = RequestDoc
             }
     in
-    ( updateModelWithPage page model, Cmd.none )
-
+    ( updateModelWithPage page model, msg )
 
 
 -- * update
@@ -216,9 +227,11 @@ update msg model =
             (newModel, (Cmd.map PGBuilderAppMsg newMsg))
 
         EnvironmentEditionMsg subMsg ->
-            case EnvironmentEdition.update subMsg model of
-                ( newModel, newSubMsg ) ->
-                    (newModel, (Cmd.map EnvironmentEditionMsg newSubMsg))
+            let
+                ( newModel, newMsg ) =
+                    EnvironmentEdition.update subMsg model
+            in
+            (newModel, (Cmd.map EnvironmentEditionMsg newMsg))
 
         ScenarioMsg subMsg ->
             case ScenarioBuilderApp.update subMsg model of
@@ -282,25 +295,29 @@ updateModelWithPage page model =
     let
         newModel =
             case page of
-                ReqPage mId _ ->
-                    { model | displayedRequestId = mId }
+                ReqPage builder ->
+                    { model | displayedRequestBuilderView = builder }
 
-                PgPage mId ->
-                    { model | displayedPgId = mId }
+                PgPage builder ->
+                    { model | displayedPgBuilderView = builder }
 
-                EnvPage mId ->
-                    { model | displayedEnvId = mId }
+                EnvPage builder ->
+                    { model | displayedEnvironmentBuilderView = builder }
 
-                ScenarioPage mId1 mId2  ->
-                    { model
-                        | displayedScenarioId = mId1
-                        , displayedSceneId = mId2
-                    }
+                ScenarioPage builder  ->
+                    { model | displayedScenarioBuilderView = builder }
 
                 DocumentationPage documentation ->
                     { model | displayedDocumentation = documentation }
 
-                _ -> model
+                HomePage ->
+                    model
+
+                NotFoundPage ->
+                    model
+
+                TangoScriptPage ->
+                    model
     in
     { newModel | page = page }
 
@@ -332,8 +349,6 @@ view model =
         bodyAttr =
             (Background.color lightGrey)
                 :: loadingAnimation
-                ++ [ inFront (modalView model)
-                   ]
 
         body =
             layout bodyAttr (mainView model)
@@ -356,9 +371,10 @@ mainView model =
                    , height fill
                    , centerY
                    , spacing 10
-                   ] [ map MainNavBarMsg (MainNavBar.view model)
-                     , el [ width fill ] appView
-                     ]
+                   ]
+            [ map MainNavBarMsg (MainNavBar.view model)
+            , el [ width fill, height fill ] appView
+            ]
 
     in
         case model.page of
@@ -368,8 +384,8 @@ mainView model =
             NotFoundPage ->
                 appLayout <| el [ centerY, centerX ] (text "not found")
 
-            ReqPage _ mFromScenarioId ->
-                appLayout <| map BuilderAppMsg (RequestBuilderApp.view model mFromScenarioId)
+            ReqPage _ ->
+                appLayout <| map BuilderAppMsg (RequestBuilderApp.view model)
 
             PgPage _ ->
                 appLayout <| map PGBuilderAppMsg (PGBuilderApp.view model)
@@ -377,7 +393,7 @@ mainView model =
             EnvPage _ ->
                 appLayout <| map EnvironmentEditionMsg (EnvironmentEdition.view model)
 
-            ScenarioPage _ _ ->
+            ScenarioPage _ ->
                 appLayout <| map ScenarioMsg (ScenarioBuilderApp.view model)
 
             DocumentationPage _ ->
@@ -415,17 +431,13 @@ homeView model =
         mkScene : String -> String -> SceneToDemo -> Element Msg -> Bool -> Element Msg
         mkScene title icon sceneToDemo arrow selected =
             column [ centerX, spacing 10, Events.onMouseEnter (ChangeDemoScene sceneToDemo) ]
-                [ el [ Border.solid
-                     , Border.width 1
-                     , Border.rounded 5
-                     , Background.color white
-                     , case selected of
-                           True -> Border.color black
-                           False -> Border.color white
-                     , padding 20
-                     , boxShadow
-                     , centerX
-                     ] <|
+                [ el (box [ case selected of
+                                True -> Border.color black
+                                False -> Border.color white
+                          , padding 20
+                          , centerX
+                          ]
+                     ) <|
                       iconWithAttr { defaultIconAttribute
                                        | icon = icon
                                        , title = title
@@ -496,7 +508,7 @@ homeView model =
                            [ Background.color secondaryColor
                            , Font.color primaryColor
                            ]
-                     ] { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
+                     ] { url = href (ScenarioPage model.displayedScenarioBuilderView)
                        , label = el [ centerY, centerX ] <| text "Try it!"
                        }
                 ]
@@ -536,8 +548,8 @@ homeView model =
                                   , mkScene "POST new invoice" "public" Scene3 none (model.sceneToDemo == Scene3)
                                   ]
                               ]
-                        , column [ width fill, spacing 15, boxShadow, Background.color white, alignTop, padding 20, spacing 20 ]
-                            <| case model.sceneToDemo of
+                        , column ( box [ width fill, spacing 15, alignTop, padding 20, spacing 20 ] ) <|
+                            case model.sceneToDemo of
                                 Scene1 -> scene1View
                                 Scene2 -> scene2View
                                 Scene3 -> scene3View
@@ -705,25 +717,8 @@ set("userId", get("userId"));"""
 
 
 
--- ** modal view
 
 
-modalView : Model -> Element Msg
-modalView model =
-    let
-        scenarioBuilderMsg msg =
-            ScenarioMsg (ScenarioBuilderApp.ScenarioBuilderMsg msg)
-
-        modalConfig =
-            let
-                scenarioModal =
-                    \(SelectNewSceneModal withSceneParent) ->
-                        Just (Modal.map scenarioBuilderMsg (ScenarioBuilder.selectSceneModal withSceneParent model.requestCollection model.pgCollection))
-            in
-            Maybe.andThen scenarioModal model.whichModal
-
-    in
-    Modal.view modalConfig
 
 
 -- * subscriptions
@@ -732,9 +727,6 @@ modalView model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
-
         getRequestFiles : List RequestNode -> List RequestFileRecord
         getRequestFiles nodes =
             case nodes of
@@ -743,26 +735,20 @@ subscriptions model =
 
                 requestNode :: rest ->
                     case requestNode of
-                        RequestFile file ->
+                        File file ->
                             file :: getRequestFiles rest
 
-                        RequestFolder { children } ->
-                            getRequestFiles children ++ getRequestFiles rest
-
-        requestFiles =
-            getRequestFiles requestNodes
-
-        builderMsg msg =
-            BuilderAppMsg (RequestBuilderApp.BuilderMsg msg)
-
-        buildersSubs =
-            List.map (Sub.map builderMsg) (List.map RequestBuilder.subscriptions requestFiles)
+                        Folder { children } ->
+                            let
+                                (RequestChildren c) =
+                                    children
+                            in
+                            getRequestFiles c ++ getRequestFiles rest
     in
     Sub.batch
         ([ Animation.subscription Animate [ model.loadingAnimation ]
          , Animation.subscription Animate [ model.notificationAnimation ]
          ]
-             ++ buildersSubs
              ++ [ Time.every 5000 (always CheckRunnerStatus) ]
              ++ [ Time.every 5000 (always NextDemo) ]
         )

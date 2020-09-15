@@ -6,14 +6,10 @@ module RequestBuilderApp.RequestBuilder.ResponseView
 
 import Application.Type exposing (..)
 import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
 import Element.Input as Input
 import Util exposing (..)
 import Dict
 import Json.Print as Json
-
 
 
 -- * status

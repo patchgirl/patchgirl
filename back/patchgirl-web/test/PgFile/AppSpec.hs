@@ -20,8 +20,11 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Client
-import           PatchGirl.Server
+import           PatchGirl.Web.Server
+import           PatchGirl.Web.Api
+import           PatchGirl.Web.PgCollection.Model
+import           PatchGirl.Web.PgNode.Model
+
 
 -- * client
 

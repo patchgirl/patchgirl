@@ -29,15 +29,15 @@ convertRequestNodesFromBackToFront backRequestNodes =
         convertRequestNodeFromBackToFront backRequestNode =
             case backRequestNode of
                 Back.RequestFolder folder ->
-                    Front.RequestFolder
+                    Front.Folder
                         { id = folder.requestNodeId
                         , name = NotEdited folder.requestNodeName
                         , open = not <| List.isEmpty folder.requestNodeChildren
-                        , children = convertRequestNodesFromBackToFront folder.requestNodeChildren
+                        , children = Front.RequestChildren (convertRequestNodesFromBackToFront folder.requestNodeChildren)
                         }
 
                 Back.RequestFile file ->
-                    Front.RequestFile
+                    Front.File
                         { id = file.requestNodeId
                         , name = NotEdited file.requestNodeName
                         , httpUrl = NotEdited file.requestNodeHttpUrl
@@ -73,15 +73,15 @@ convertPgNodesFromBackToFront backPgNodes =
         convertPgNodeFromBackToFront backPgNode =
             case backPgNode of
                 Back.PgFolder folder ->
-                    Front.PgFolder
+                    Front.Folder
                         { id = folder.pgNodeId
                         , name = NotEdited folder.pgNodeName
                         , open = not <| List.isEmpty folder.pgNodeChildren
-                        , children = convertPgNodesFromBackToFront folder.pgNodeChildren
+                        , children = Front.PgChildren (convertPgNodesFromBackToFront folder.pgNodeChildren)
                         }
 
                 Back.PgFile file ->
-                    Front.PgFile
+                    Front.File
                         { id = file.pgNodeId
                         , name = NotEdited file.pgNodeName
                         , dbHost = NotEdited file.pgNodeHost
@@ -121,19 +121,18 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
         convertScenarioNodeFromBackToFront backScenarioNode =
             case backScenarioNode of
                 Back.ScenarioFolder folder ->
-                    Front.ScenarioFolder
+                    Front.Folder
                         { id = folder.scenarioNodeId
                         , name = NotEdited folder.scenarioNodeName
-                        , children = convertScenarioNodesFromBackToFront folder.scenarioNodeChildren
+                        , children = Front.ScenarioChildren (convertScenarioNodesFromBackToFront folder.scenarioNodeChildren)
                         , open = not (List.isEmpty folder.scenarioNodeChildren)
                         }
 
                 Back.ScenarioFile file ->
-                    Front.ScenarioFile
+                    Front.File
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
                         , scenes = List.map convertSceneActorFromBackToFront file.scenarioNodeScenes
-                        , whichResponseView = BodyResponseView
                         , environmentId = NotEdited file.scenarioNodeEnvironmentId
                         }
     in
@@ -195,18 +194,17 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
 -- * environment key values
 
 
-convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.Storable Front.NewKeyValue Front.KeyValue
+convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.KeyValue
 convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue, keyValueHidden } =
-    Saved
-        { id = keyValueId
-        , key = keyValueKey
-        , value = stringToTemplate keyValueValue
-        , hidden = keyValueHidden
-        }
+    { id = keyValueId
+    , key = NotEdited keyValueKey
+    , value = NotEdited (stringToTemplate keyValueValue)
+    , hidden = NotEdited keyValueHidden
+    }
 
 
-convertEnvironmentKeyValueFromFrontToBack : Front.Storable Front.NewKeyValue Front.KeyValue -> Back.NewKeyValue
-convertEnvironmentKeyValueFromFrontToBack storable =
+convertEnvironmentKeyValueFromFrontToBack : Front.KeyValue -> Back.NewKeyValue
+convertEnvironmentKeyValueFromFrontToBack { id, key, value, hidden } =
     let
         templatedStringsToString : StringTemplate -> String
         templatedStringsToString templatedStrings =
@@ -214,24 +212,11 @@ convertEnvironmentKeyValueFromFrontToBack storable =
                 |> List.map templateAsString
                 |> String.join ""
     in
-    case storable of
-        New { key, value, hidden } ->
-            { newKeyValueKey = key
-            , newKeyValueValue = templatedStringsToString value
-            , newKeyValueHidden = hidden
-            }
-
-        Saved { key, value, hidden } ->
-            { newKeyValueKey = key
-            , newKeyValueValue = templatedStringsToString value
-            , newKeyValueHidden = hidden
-            }
-
-        Edited2 _ { key, value, hidden } ->
-            { newKeyValueKey = key
-            , newKeyValueValue = templatedStringsToString value
-            , newKeyValueHidden = hidden
-            }
+    { newKeyValueId = id
+    , newKeyValueKey = editedOrNotEditedValue key
+    , newKeyValueValue = templatedStringsToString (editedOrNotEditedValue value)
+    , newKeyValueHidden = (editedOrNotEditedValue hidden)
+    }
 
 
 -- * account
@@ -610,7 +595,7 @@ convertProcFromFrontToBack frontProc =
 convertExpressionFromBackToFront : Back.Expr -> Front.Expr
 convertExpressionFromBackToFront backEx =
     case backEx of
-        Back.LJson json -> Debug.todo "json"
+        Back.LJson _ -> Debug.todo "json"
         Back.LList xs -> List.map convertExpressionFromBackToFront xs |> Front.LList
         Back.LBool x -> Front.LBool x
         Back.LInt x -> Front.LInt x

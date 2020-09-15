@@ -20,8 +20,10 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Client
-import           PatchGirl.Server
+import           PatchGirl.Web.Server
+import           PatchGirl.Web.Api
+import           PatchGirl.Web.ScenarioCollection.Model
+import           PatchGirl.Web.ScenarioNode.Model
 
 
 -- * client
@@ -91,7 +93,7 @@ spec =
           _ <- try clientEnv (createRootScenarioFolder token scenarioCollectionId newRootScenarioFolder)
           fakeScenarioFolder <- selectFakeScenarioFolder UUID.nil connection
           fakeScenarioFolder `shouldBe`  FakeScenarioFolder { _fakeScenarioFolderParentId = Nothing
-                                                            , _fakeScenarioFolderName       = "new folder"
+                                                            , _fakeScenarioFolderName       = "test"
                                                             }
 
   where
@@ -104,4 +106,6 @@ spec =
 
     mkNewRootScenarioFolder :: UUID -> NewRootScenarioFolder
     mkNewRootScenarioFolder id =
-      NewRootScenarioFolder { _newRootScenarioFolderId = id }
+      NewRootScenarioFolder { _newRootScenarioFolderId = id
+                            , _newRootScenarioFolderName = "test"
+                            }

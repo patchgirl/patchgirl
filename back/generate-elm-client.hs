@@ -32,9 +32,22 @@ import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
 import           Servant.Foreign           hiding (Static)
 
-import           PatchGirl.Client          (deriveWithSingleFieldObject,
-                                            deriveWithTaggedObject)
-import qualified PatchGirl.Client          as Web
+
+import           PatchGirl.Web.CaseInsensitive          as Web
+import           PatchGirl.Web.ElmOption                (deriveWithSingleFieldObject, deriveWithTaggedObject)
+import           PatchGirl.Web.Environment.Model        as Web
+import           PatchGirl.Web.Github.App               as Web
+import           PatchGirl.Web.Health.App               as Web
+import           PatchGirl.Web.Http                     as Web
+import           PatchGirl.Web.Api            as Web
+import           PatchGirl.Web.Internal.Env   as Web
+import           PatchGirl.Web.PgCollection.Model       as Web
+import           PatchGirl.Web.PgNode.Model             as Web
+import           PatchGirl.Web.RequestCollection.Model  as Web
+import           PatchGirl.Web.RequestNode.Model        as Web
+import           PatchGirl.Web.ScenarioCollection.Model as Web
+import           PatchGirl.Web.ScenarioNode.Model       as Web
+import           PatchGirl.Web.Session.Model            as Web
 
 import qualified Api                       as Runner
 import qualified Interpolator              as Runner
@@ -104,7 +117,7 @@ webCustomCode = T.unlines
   , "import Http"
   , "import String"
   , "import Url.Builder"
-  , "import Uuid as Uuid"
+  , "import Uuid"
   , ""
   , "type alias UUID = Uuid.Uuid"
   , ""
@@ -145,7 +158,7 @@ runnerCustomCode = T.unlines
   , "import Http"
   , "import String"
   , "import Url.Builder"
-  , "import Uuid as Uuid"
+  , "import Uuid"
   , "import Api.WebGeneratedClient exposing(..)"
   , ""
   , "type alias UUID = Uuid.Uuid"

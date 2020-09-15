@@ -10,12 +10,13 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html as Html
+import Html
 import Html.Attributes as Html
-import Http as Http
+import Http
 import Page exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
+import Banner exposing(..)
 
 
 
@@ -28,11 +29,11 @@ type alias Model a =
         , page : Page
         , showMainMenuName : Maybe MainMenuName
         , runnerRunning : Bool
-        , displayedScenarioId : Maybe Uuid
+        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
         , displayedSceneId : Maybe Uuid
-        , displayedRequestId : Maybe Uuid
-        , displayedPgId : Maybe Uuid
-        , displayedEnvId : Maybe Int
+        , displayedRequestBuilderView : BuilderView Uuid
+        , displayedPgBuilderView : BuilderView Uuid
+        , displayedEnvironmentBuilderView : BuilderView Uuid
         , displayedDocumentation : Documentation
     }
 
@@ -41,13 +42,8 @@ type alias Model a =
 
 
 type Msg
-    = OpenReqPage
-    | OpenPgPage
-    | OpenEnvPage
-    | OpenScenarioPage
-    | OpenDocumentationPage
-    | AskSignOut
-    | SignOutSucceed Session
+    = AskSignOut
+    | SignOutSucceed
     | SignOutFailed
     | ShowMainMenuName MainMenuName
     | HideMainMenuName
@@ -60,41 +56,6 @@ type Msg
 update : Msg -> Model a -> ( Model a, Cmd Msg )
 update msg model =
     case msg of
-        OpenReqPage ->
-            let
-                newModel =
-                    { model | page = ReqPage Nothing Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenPgPage ->
-            let
-                newModel =
-                    { model | page = PgPage Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenEnvPage ->
-            let
-                newModel =
-                    { model | page = EnvPage Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenScenarioPage ->
-            let
-                newModel =
-                    { model | page = ScenarioPage Nothing Nothing }
-            in
-            ( newModel, Cmd.none )
-
-        OpenDocumentationPage ->
-            let
-                newModel =
-                    { model | page = DocumentationPage RequestDoc }
-            in
-            ( newModel, Cmd.none )
-
         AskSignOut ->
             let
                 newCmd =
@@ -105,7 +66,7 @@ update msg model =
         SignOutFailed ->
             ( model, Cmd.none )
 
-        SignOutSucceed _ ->
+        SignOutSucceed ->
             let
                 newMsg =
                     Navigation.load "https://patchgirl.io/"
@@ -134,14 +95,10 @@ update msg model =
 deleteSessionSignOutResultToMsg : Result Http.Error Client.Session -> Msg
 deleteSessionSignOutResultToMsg result =
     case result of
-        Ok session ->
-            let
-                newSession =
-                    Client.convertSessionFromBackToFront session
-            in
-            SignOutSucceed newSession
+        Ok _ ->
+            SignOutSucceed
 
-        Err error ->
+        Err _ ->
             SignOutFailed
 
 
@@ -159,21 +116,7 @@ view model =
               ]
         , case model.session of
               Visitor _ ->
-                  el [ width fill
-                     , paddingXY 0 10
-                     , centerY
-                     , Background.color secondaryColor
-                     , Font.color primaryColor
-                     , Font.center
-                     ] <|
-                      row [ centerX ]
-                          [ text "Sandbox mode - data will be reset every 5min, "
-                          , link []
-                              { url = githubOauthLink
-                              , label = el [ Font.underline ] (text "sign in")
-                              }
-                          , text " to keep your data!"
-                          ]
+                  sandboxBanner githubOauthLink
 
               _ ->
                   none
@@ -382,36 +325,27 @@ centerView model =
                 | iconSize = Just "25px"
                 , iconVerticalAlign = Just "sub"
             }
-
-        currentDisplayedBuilderId : Maybe Uuid
-        currentDisplayedBuilderId =
-            case model.page of
-                ReqPage mId _ ->
-                    mId
-
-                _ ->
-                    Nothing
     in
     row [ centerX, centerY, paddingXY 10 0, height fill ]
-        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenScenarioPage (isScenarioPage model.page))
-            { url = href (ScenarioPage model.displayedScenarioId model.displayedSceneId)
+        [ link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isScenarioPage model.page))
+            { url = href (ScenarioPage model.displayedScenarioBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "local_movies", title = " Scenario" })
             }
         , link
-            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenReqPage (isReqPage model.page))
-            { url = href (ReqPage model.displayedRequestId Nothing)
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive (isReqPage model.page))
+            { url = href (ReqPage model.displayedRequestBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "public", title = " HTTP" })
             }
         , link
-            (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenPgPage (isPgPage model.page))
-            { url = href (PgPage model.displayedPgId)
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive  (isPgPage model.page))
+            { url = href (PgPage model.displayedPgBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
-        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenEnvPage (isEnvPage model.page))
-            { url = href (EnvPage model.displayedEnvId)
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isEnvPage model.page))
+            { url = href (EnvPage model.displayedEnvironmentBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
             }
-        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive OpenDocumentationPage (isDocumentationPage model.page))
+        , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isDocumentationPage model.page))
             { url = href (DocumentationPage model.displayedDocumentation)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "help", title = " Documentation" })
             }
@@ -436,18 +370,17 @@ mainLinkAttribute =
     ]
 
 
-mainLinkAttributeWhenActive : Msg -> Bool -> List (Attribute Msg)
-mainLinkAttributeWhenActive event active =
-    [ Events.onClick event ]
-        ++ (case active of
-                True ->
-                    [ Background.color secondaryColor
-                    , Font.color primaryColor
-                    ]
+mainLinkAttributeWhenActive : Bool -> List (Attribute Msg)
+mainLinkAttributeWhenActive active =
+    case active of
+        True ->
+            [ Background.color secondaryColor
+            , Font.color primaryColor
+            ]
 
-                False ->
-                    []
-           )
+        False ->
+            []
+
 
 
 -- ** util
@@ -456,7 +389,7 @@ mainLinkAttributeWhenActive event active =
 isScenarioPage : Page -> Bool
 isScenarioPage page =
     case page of
-        ScenarioPage _ _ ->
+        ScenarioPage _ ->
             True
 
         _ ->
@@ -465,7 +398,7 @@ isScenarioPage page =
 isReqPage : Page -> Bool
 isReqPage page =
     case page of
-        ReqPage _ _ ->
+        ReqPage _ ->
             True
 
         _ ->
@@ -504,6 +437,6 @@ githubOauthLink : String
 githubOauthLink =
     let
       prod = "https://github.com/login/oauth/authorize?client_id=be31b06e738f5956573c&scope=user:email&redirect_uri=https://patchgirl.io"
-      dev = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
+--      dev = "https://github.com/login/oauth/authorize?client_id=aca37e4fb27953755695&scope=user:email&redirect_uri=https://dev.patchgirl.io"
     in
         prod

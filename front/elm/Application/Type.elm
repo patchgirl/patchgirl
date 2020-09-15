@@ -18,6 +18,94 @@ type MainMenuName
     | RunnerStatusMenu
 
 
+-- * node type
+
+
+type NodeType a b
+    = Folder a
+    | File b
+
+
+-- * builder view
+
+
+type BuilderView a
+    = LandingView WhichDefaultView
+    | EditView (WhichEditView a)
+    | RunView a
+
+type WhichDefaultView
+    = DefaultView
+    | CreateDefaultFolderView
+    | CreateDefaultFileView
+
+type WhichEditView a
+    = DefaultEditView a
+    | DeleteView a
+
+mapEditView : (a -> b) -> WhichEditView a -> WhichEditView b
+mapEditView f whichEditView =
+    case whichEditView of
+        DefaultEditView x -> DefaultEditView (f x)
+        DeleteView x -> DeleteView (f x)
+
+traverseEditViewMaybe : WhichEditView (Maybe a) -> Maybe (WhichEditView a)
+traverseEditViewMaybe whichEditView =
+    case whichEditView of
+        DefaultEditView Nothing -> Nothing
+        DeleteView Nothing -> Nothing
+        DefaultEditView (Just x) -> Just (DefaultEditView x)
+        DeleteView (Just x) -> Just (DeleteView x)
+
+
+getBuilderId : BuilderView Uuid -> Maybe Uuid
+getBuilderId builderView =
+    case builderView of
+        LandingView _ ->
+            Nothing
+
+        EditView whichEditView ->
+            Just <|
+                case whichEditView of
+                    DefaultEditView id -> id
+                    DeleteView id -> id
+
+        RunView id -> Just id
+
+
+-- * rich builder view
+
+
+type RichBuilderView a b
+    = RichLandingView WhichDefaultView
+    | RichEditView (WhichEditView a)
+    | RichRunView a b
+
+
+getRichBuilderId : RichBuilderView Uuid (Maybe Uuid) -> Maybe Uuid
+getRichBuilderId builderView =
+    case builderView of
+        RichLandingView _ ->
+            Nothing
+
+        RichEditView whichEditView ->
+            Just <|
+                case whichEditView of
+                    DefaultEditView id -> id
+                    DeleteView id -> id
+
+        RichRunView id _ -> Just id
+
+
+-- * new node
+
+
+type alias NewNode =
+    { name : String
+    , parentFolderId : Maybe Uuid
+    }
+
+
 -- * notification
 
 
@@ -99,53 +187,28 @@ getSessionId session =
 
 
 type alias Environment =
-    { id : Int
+    { id : Uuid
     , name : Editable String
     , showRenameInput : Bool
-    , keyValues : List (Storable NewKeyValue KeyValue)
+    , keyValues : List KeyValue
     }
-
-toLatestKeyValue : Storable NewKeyValue KeyValue
-                 -> { key : String
-                    , value : StringTemplate
-                    , hidden : Bool
-                    }
-toLatestKeyValue storable =
-    case storable of
-        New { key, value, hidden } ->
-            { key = key
-            , value = value
-            , hidden = hidden
-            }
-
-        Saved { key, value, hidden } ->
-            { key = key
-            , value = value
-            , hidden = hidden
-            }
-
-        Edited2 _ { key, value, hidden } ->
-            { key = key
-            , value = value
-            , hidden = hidden
-            }
-
 
 -- * key value
 
 
-type alias NewKeyValue =
-    { key : String
-    , value : StringTemplate
-    , hidden : Bool
+type alias KeyValue =
+    { id : Uuid
+    , key : Editable String
+    , value : Editable StringTemplate
+    , hidden : Editable Bool
     }
 
-type alias KeyValue =
-    { id : Int
-    , key : String
-    , value : StringTemplate
-    , hidden : Bool
-    }
+isKeyValueDirty : KeyValue -> Bool
+isKeyValueDirty keyValue =
+    [ isDirty keyValue.key
+    , isDirty keyValue.value
+    , isDirty keyValue.hidden
+    ] |> List.any identity
 
 
 -- * template
@@ -189,10 +252,7 @@ type RequestCollection
 -- ** request node
 
 
-type RequestNode
-    = RequestFolder RequestFolderRecord
-    | RequestFile RequestFileRecord
-
+type alias RequestNode = NodeType RequestFolderRecord RequestFileRecord
 
 
 -- ** folder
@@ -202,9 +262,10 @@ type alias RequestFolderRecord =
     { id : Uuid
     , name : Editable String
     , open : Bool
-    , children : List RequestNode
+    , children : RequestChildren
     }
 
+type RequestChildren = RequestChildren (List RequestNode)
 
 
 -- ** file
@@ -243,10 +304,7 @@ type PgCollection
 -- ** pg node
 
 
-type PgNode
-    = PgFolder PgFolderRecord
-    | PgFile PgFileRecord
-
+type alias PgNode = NodeType PgFolderRecord PgFileRecord
 
 
 -- ** folder
@@ -256,9 +314,10 @@ type alias PgFolderRecord =
     { id : Uuid
     , name : Editable String
     , open : Bool
-    , children : List PgNode
+    , children : PgChildren
     }
 
+type PgChildren = PgChildren (List PgNode)
 
 
 -- ** file
@@ -288,10 +347,7 @@ type ScenarioCollection
 -- ** scenario node
 
 
-type ScenarioNode
-    = ScenarioFolder ScenarioFolderRecord
-    | ScenarioFile ScenarioFileRecord
-
+type alias ScenarioNode = NodeType ScenarioFolderRecord ScenarioFileRecord
 
 
 -- ** scenario folder record
@@ -300,10 +356,11 @@ type ScenarioNode
 type alias ScenarioFolderRecord =
     { id : Uuid
     , name : Editable String
-    , children : List ScenarioNode
+    , children : ScenarioChildren
     , open : Bool
     }
 
+type ScenarioChildren = ScenarioChildren (List ScenarioNode)
 
 
 -- ** scenario file record
@@ -311,10 +368,9 @@ type alias ScenarioFolderRecord =
 
 type alias ScenarioFileRecord =
     { id : Uuid
-    , environmentId : Editable (Maybe Int)
+    , environmentId : Editable (Maybe Uuid)
     , name : Editable String
     , scenes : List Scene
-    , whichResponseView : HttpResponseView
     }
 
 
@@ -667,7 +723,7 @@ scriptExceptionToString scriptException =
         AccessOutOfBound ->
             "Access out of bound"
 
-        CantAccessElem expr1 expr2 ->
+        CantAccessElem expr1 _ ->
             "Cant access elem: [" ++ exprToString expr1 ++ "]"
 
 -- * editable
@@ -722,38 +778,15 @@ changeEditedValue newValue editable =
         False ->
             Edited oldValue newValue
 
+cleanEditable : Editable a -> Editable a
+cleanEditable editable =
+    case editable of
+        Edited _ new ->
+            NotEdited new
 
--- * storable
-{-
-   model that have a state difference when they are saved or edited
-   typically any model that has an `id` field
--}
+        notEdited ->
+            notEdited
 
-
-type Storable a b
-    = New a
-    | Saved b
-    | Edited2 b b
-
-
-isStorableDirty : Storable a b -> Bool
-isStorableDirty storable =
-    case storable of
-        New _ ->
-            True
-
-        Edited2 _ _ ->
-            True
-
-        Saved _ ->
-            False
-
-latestValueOfStorable : Storable NewKeyValue KeyValue -> { key : String, value : StringTemplate, hidden : Bool }
-latestValueOfStorable storable =
-    case storable of
-        New { key, value, hidden } -> { key = key, value = value, hidden = hidden }
-        Saved { key, value, hidden } -> { key = key, value = value, hidden = hidden }
-        Edited2 _ { key, value, hidden } -> { key = key, value = value, hidden = hidden }
 
 -- * tangoscript
 

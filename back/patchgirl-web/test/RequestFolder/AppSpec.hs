@@ -20,8 +20,11 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Client
-import           PatchGirl.Server
+import           PatchGirl.Web.Api
+import           PatchGirl.Web.RequestCollection.Model
+import           PatchGirl.Web.RequestNode.Model
+
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -89,7 +92,7 @@ spec =
           _ <- try clientEnv (createRootRequestFolder token requestCollectionId newRootRequestFolder)
           fakeRequestFolder <- selectFakeRequestFolder UUID.nil connection
           fakeRequestFolder `shouldBe`  FakeRequestFolder { _fakeRequestFolderParentId = Nothing
-                                                          , _fakeRequestFolderName       = "new folder"
+                                                          , _fakeRequestFolderName       = "test"
                                                           }
 
   where
@@ -102,4 +105,4 @@ spec =
 
     mkNewRootRequestFolder :: UUID -> NewRootRequestFolder
     mkNewRootRequestFolder id =
-      NewRootRequestFolder { _newRootRequestFolderId = id }
+      NewRootRequestFolder { _newRootRequestFolderId = id, _newRootRequestFolderName = "test" }

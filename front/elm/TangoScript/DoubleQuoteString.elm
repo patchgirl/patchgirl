@@ -1,7 +1,6 @@
 module TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 
 import Char
-import Html
 import Parser exposing (..)
 
 

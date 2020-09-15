@@ -2,7 +2,6 @@ module Modal exposing (Config, Modal(..), map, view)
 
 import Element exposing (..)
 import Element.Background as Background
-import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
@@ -44,14 +43,13 @@ view maybeConfig =
             let
                 modalView =
                     column
-                        [ centerX
-                        , Background.color lightGrey
-                        , moveDown 100
-                        , padding 20
-                        , spacing 30
-                        , boxShadow
-                        , Border.rounded 5
-                        ]
+                        ( box [ centerX
+                              , Background.color lightGrey
+                              , moveDown 100
+                              , padding 20
+                              , spacing 30
+                              ]
+                        )
                         [ headerView config
                         , bodyView config
                         , footerView config

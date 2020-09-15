@@ -8,23 +8,17 @@
 
 * Features
 
-** TODO Notification system
 ** TODO Tangoscript: parse json
 ** TODO Scenario: cookie
 ** TODO Scenario: include scenario
+** TODO Request: description field
 
 
 * Improvements
 
 
 ** TODO Scenario: prettify "add a scene to your scenario" button
-   SCHEDULED: <2020-08-27 jeu.>
-** TODO Scenario: scene details in URL
-   SCHEDULED: <2020-08-27 jeu.>
-** TODO SQL: sql input handles newlines
-   SCHEDULED: <2020-08-27 jeu.>
 ** TODO Scenario: reset data
-   SCHEDULED: <2020-08-27 jeu.>
 ** TODO Tree: duplicate entry for file
 ** TODO Scenario: select scene modal
 ** TODO Tangoscript: documentation for the language
@@ -42,10 +36,9 @@ long json response body won't show scrollbars in the input so we have to scroll 
 
 * Refacto
 
-
+** TODO setup elm-review to remove dead code
 ** TODO restructure patchgirl-web module
-it takes almost 8Gb to compile because of the way the models are organized
-
+it takes almost 8Gb to compile because of the way the models are
 ** TODO weeder to remove deadcode https://github.com/ocharles/weeder
 ** TODO stan to clean project
 ** TODO env id as UUID

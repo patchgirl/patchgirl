@@ -27,8 +27,11 @@ import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
 import           Servant.Client
 import qualified Test.Hspec                       as Hspec
 
-import           PatchGirl.Client hiding (Http)
-import           DB
+
+import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.Internal.Env
+import           PatchGirl.Web.Session.Model
+import           PatchGirl.Web.DB
 
 
 -- * helper

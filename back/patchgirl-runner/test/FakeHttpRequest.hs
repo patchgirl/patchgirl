@@ -22,7 +22,7 @@ import           Servant
 import           Env
 import           Helper.App
 import           Interpolator
-import           PatchGirl.Client
+import           PatchGirl.Web.Http
 import           RequestComputation.Model
 import           Server
 

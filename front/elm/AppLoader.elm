@@ -11,7 +11,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Http
 import Json.Encode as E
-import Url as Url
+import Url
 import Url.Parser as Url
 import Url.Parser.Query as Query
 import Util exposing (..)

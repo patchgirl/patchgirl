@@ -1,3 +1,5 @@
+
+
 module StringTemplate exposing ( stringTemplateToString
                                , stringToTemplate
                                , stringTemplateParser
@@ -6,7 +8,6 @@ module StringTemplate exposing ( stringTemplateToString
 import Application.Type exposing (..)
 import Parser as P exposing((|.), (|=), Step, Parser)
 import Set
-import Result
 
 
 stringTemplateToString : StringTemplate -> String

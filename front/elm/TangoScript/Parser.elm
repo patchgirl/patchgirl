@@ -7,11 +7,11 @@ module TangoScript.Parser exposing ( parseTangoscript
                                    )
 
 import Parser as P exposing((|.), (|=), Step, Parser)
-import Parser.Expression as P exposing (OperatorTable)
+import Parser.Expression as P
 import Set exposing (Set)
 import TangoScript.DoubleQuoteString exposing(doubleQuoteString)
 import Application.Type exposing(..)
-import Dict exposing (Dict)
+import Dict
 
 
 -- * parse
@@ -269,8 +269,8 @@ promoteToAccessOpParser expr =
                     , P.succeed Nothing
                     ]
 
-        promote : Expr -> Maybe Expr -> Parser Expr
-        promote var mIndex =
+        promote : Maybe Expr -> Parser Expr
+        promote mIndex =
             case mIndex of
                 Just index ->
                     promoteToAccessOpParser (LAccessOp expr index)
@@ -278,7 +278,7 @@ promoteToAccessOpParser expr =
                     P.succeed expr
 
     in
-    maybeIndexParser |> P.andThen (promote expr)
+    maybeIndexParser |> P.andThen promote
 
 
 -- ** json

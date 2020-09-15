@@ -3,29 +3,14 @@ module RequestComputation
              )
 
 import Application.Type exposing (..)
-import Combine
 import List.Extra as List
-import Regex
 import StringTemplate exposing(..)
-
-
--- * model
-
-
-type alias Model a =
-    { a
-        | httpUrl : Editable String
-        , httpMethod : Editable HttpMethod
-        , httpHeaders : Editable (List ( String, String ))
-        , httpBody : Editable String
-    }
-
 
 
 -- * build request computation input
 
 
-buildRequestComputationInput : Model a -> RequestComputationInput
+buildRequestComputationInput : RequestFileRecord -> RequestComputationInput
 buildRequestComputationInput model =
     { method =
         editedOrNotEditedValue model.httpMethod
