@@ -21,10 +21,10 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Server
-import           PatchGirl.Api
-import           ScenarioCollection.Model
-import           ScenarioNode.Model
+import           PatchGirl.Web.Server
+import           PatchGirl.Web.Api
+import           PatchGirl.Web.ScenarioCollection.Model
+import           PatchGirl.Web.ScenarioNode.Model
 
 
 -- * client

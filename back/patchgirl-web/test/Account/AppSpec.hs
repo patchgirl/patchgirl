@@ -17,11 +17,11 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Server
-import           PgCollection.Sql
-import           RequestCollection.Sql
-import           ScenarioCollection.Sql
-import           PatchGirl.Api
+import           PatchGirl.Web.Server
+import           PatchGirl.Web.PgCollection.Sql
+import           PatchGirl.Web.RequestCollection.Sql
+import           PatchGirl.Web.ScenarioCollection.Sql
+import           PatchGirl.Web.Api
 
 
 -- * client

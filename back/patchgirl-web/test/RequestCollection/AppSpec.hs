@@ -16,9 +16,9 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Server
-import           PatchGirl.Api
-import           RequestCollection.Model
+import           PatchGirl.Web.Server
+import           PatchGirl.Web.Api
+import           PatchGirl.Web.RequestCollection.Model
 
 
 -- * client

@@ -21,9 +21,9 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Server
-import           Environment.Model
-import           PatchGirl.Api
+import           PatchGirl.Web.Server
+import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.Api
 
 
 -- * client
