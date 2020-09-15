@@ -21,7 +21,17 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple.Types     as PG
 
 import           GHC.Generics
-import           PatchGirl.Client
+
+import           CaseInsensitive
+import           Environment.Model
+import           Http
+import           PgCollection.Model
+import           PgNode.Model
+import           RequestCollection.Model
+import           RequestNode.Model
+import           ScenarioCollection.Model
+import           ScenarioNode.Model
+
 import           PgNode.Sql
 import           RequestNode.Sql
 import           ScenarioNode.Sql

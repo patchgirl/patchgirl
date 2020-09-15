@@ -20,7 +20,10 @@ import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Client
+import           PatchGirl.Api
+import           RequestCollection.Model
+import           RequestNode.Model
+
 import           PatchGirl.Server
 
 

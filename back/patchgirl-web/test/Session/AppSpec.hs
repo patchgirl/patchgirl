@@ -14,8 +14,9 @@ import           Servant.Client      (ClientM, client)
 import           Test.Hspec
 
 import           Helper.App
-import           PatchGirl.Client
 import           PatchGirl.Server
+import           PatchGirl.Api
+import           Session.Model
 
 
 -- * client

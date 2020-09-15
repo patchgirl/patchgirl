@@ -114,19 +114,19 @@ resetVisitorSql connection = do
           VALUES ('58954f35-49ac-45b7-bcf6-c8df1af4b12c', NULL, 'RequestFolder', 'users');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'list users', 'https://{{host}}/users', 'Get', ARRAY[('key1','value1')]::header_type[], '');
+          VALUES ('e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'list users', 'https://{{apiHost}}/users', 'Get', ARRAY[('key1','value1')]::header_type[], '');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('e5324e42-76e5-4fa4-8243-0348dba8c1a8', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'single user', 'https://{{host}}/users/2', 'Get', ARRAY[]::header_type[], '');
+          VALUES ('e5324e42-76e5-4fa4-8243-0348dba8c1a8', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'single user', 'https://{{apiHost}}/users/2', 'Get', ARRAY[]::header_type[], '');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('5ff67d3c-28a2-4aa1-b474-4b10dabd2852', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'create user', 'https://{{host}}/users', 'Post', ARRAY[('key1','value1')]::header_type[], '');
+          VALUES ('5ff67d3c-28a2-4aa1-b474-4b10dabd2852', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'create user', 'https://{{apiHost}}/users', 'Post', ARRAY[('key1','value1')]::header_type[], '');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'update user', 'https://{{host}}/users/2', 'Put', ARRAY[]::header_type[], '');
+          VALUES ('718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'update user', 'https://{{apiHost}}/users/2', 'Put', ARRAY[]::header_type[], '');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete user', 'https://{{host}}/users/2', 'Delete', ARRAY[]::header_type[], '');
+          VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete user', 'https://{{apiHost}}/users/2', 'Delete', ARRAY[]::header_type[], '');
 
 
 -- *** session/
@@ -136,13 +136,13 @@ resetVisitorSql connection = do
           VALUES ('da0a3654-5e30-471f-ba03-f87760976981', NULL, 'RequestFolder', 'session');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login successful', 'https://{{host}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
+          VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login successful', 'https://{{apiHost}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
   "email": "{{user}}@reqres.in",
   "password": "cityslicka"
 }');
 
           INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-          VALUES ('6a55626d-d1ec-4255-851d-2b8e18f4bdc4', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login unsuccessful', 'https://{{host}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '');
+          VALUES ('6a55626d-d1ec-4255-851d-2b8e18f4bdc4', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login unsuccessful', 'https://{{apiHost}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 
 -- ** pg
@@ -152,10 +152,10 @@ resetVisitorSql connection = do
           VALUES ('cb2c1df8-68f0-4a61-b7c7-f75194604976', NULL, 'PgFolder', 'users');
 
           INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-          VALUES ('0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'all users',  'SELECT * FROM user_test;', 'localhost', '', '5432', '', '');
+          VALUES ('0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'all users',  'SELECT * FROM user_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
           INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-          VALUES ('aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'single users',  'SELECT * FROM user_test where id = 1 ;', 'localhost', '', '5432', '', '');
+          VALUES ('aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'single users',  'SELECT * FROM user_test where id = 1 ;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 
 -- ** request collection
@@ -208,15 +208,35 @@ resetVisitorSql connection = do
 
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('aea099bd-cbee-433c-a852-be9db08c607d', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'host', 'reqres.in/api', true);
+          VALUES ('aea099bd-cbee-433c-a852-be9db08c607d', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'apiHost', 'reqres.in/api', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('1b983dbb-26d8-4fa6-b152-941ea3b0f905', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'apiHost', 'localhost', false);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('05445705-8494-48ea-9535-616a7cfde992', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'user', 'eve.holt', true);
+          VALUES ('7d45afa0-2a02-4046-b43b-b79d7f79ec1a', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbHost', 'myPosgresHost', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('4416da3e-36c3-49fa-a88e-7895415d427a', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbHost', 'localhost', true);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('1b983dbb-26d8-4fa6-b152-941ea3b0f905', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'host', 'reqres.in/api', true);
+          VALUES ('4cd293ac-a33b-4a67-b8da-c38d1f99c449', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPort', '5432', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('5b658544-2e89-4bcf-a1da-3f76886821ac', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPort', '5432', true);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('e9279277-2215-411e-9198-af381744eb4a', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'user', 'whatever', false);
+          VALUES ('8e395078-f8f0-4913-9542-6e3fc5ba6170', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbUser', 'postgres', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('4d149735-a4d8-4b80-8307-4549040e938c', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbUser', 'postgres', true);
+
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('16fb37db-ffa0-45c3-98f3-0dfeb1f7c69e', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPassword', 'somePassw0rd!', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('5f6bc4e3-0818-48c3-aef9-068c7e6aa886', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPassword', '', true);
+
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('c439e158-b927-457e-a0c5-48e14bb81ed5', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbName', 'myDB', false);
+          INSERT INTO key_value (id, environment_id, key, value, hidden)
+          VALUES ('0e7f4708-1a0f-4dab-91f2-9761e746dd9e', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbName', 'test', true);
+
+
 
           |]
