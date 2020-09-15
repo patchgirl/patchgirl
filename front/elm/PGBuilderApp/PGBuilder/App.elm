@@ -85,26 +85,29 @@ update msg model =
 
         RunAppMsg subMsg ->
             let
-                (updatedModel, newPgRecord, newMsg) =
+                (newModel, newMsg) =
                     case getBuilder model of
                         RunView (Just (File pgFileRecord)) ->
-                            Run.update subMsg model pgFileRecord
+                            let
+                                (updatedModel, newPgRecord, updatedMsg) =
+                                    Run.update subMsg model pgFileRecord
+
+                                (PgCollection pgCollectionId pgNodes) =
+                                    model.pgCollection
+
+                                newBuilderTree =
+                                    List.map (modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
+                            in
+                            ( { updatedModel | pgCollection = PgCollection pgCollectionId newBuilderTree }
+                            , Cmd.map RunAppMsg updatedMsg
+                            )
+
                         _ ->
-                            Debug.todo ""
+                            (model, Cmd.none)
 
-                (PgCollection pgCollectionId pgNodes) =
-                    model.pgCollection
-
-                newBuilderTree =
-                    List.map (modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
-
-                newModel =
-                    { updatedModel
-                        | pgCollection = PgCollection pgCollectionId newBuilderTree
-                    }
 
             in
-            ( newModel, Cmd.map RunAppMsg newMsg )
+            ( newModel, newMsg )
 
 
 -- * util

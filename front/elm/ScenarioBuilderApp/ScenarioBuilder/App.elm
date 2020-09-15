@@ -92,26 +92,29 @@ update msg model =
 
         RunAppMsg subMsg ->
             let
-                (updatedModel, newScenarioRecord, newMsg) =
+                (newModel, newMsg) =
                     case getBuilder model of
                         RichRunView (Just (File scenarioFileRecord)) mId ->
-                            Run.update subMsg model scenarioFileRecord mId
+                            let
+                                (updatedModel, newScenarioRecord, updatedMsg) =
+                                    Run.update subMsg model scenarioFileRecord mId
+
+                                (ScenarioCollection scenarioCollectionId scenarioNodes) =
+                                    model.scenarioCollection
+
+                                newBuilderTree =
+                                    List.map (modifyScenarioNode newScenarioRecord.id (always (File newScenarioRecord))) scenarioNodes
+                            in
+                            ( { updatedModel | scenarioCollection = ScenarioCollection scenarioCollectionId newBuilderTree }
+                            , Cmd.map RunAppMsg updatedMsg
+                            )
+
                         _ ->
-                            Debug.todo ""
+                            (model, Cmd.none)
 
-                (ScenarioCollection scenarioCollectionId scenarioNodes) =
-                    model.scenarioCollection
-
-                newBuilderTree =
-                    List.map (modifyScenarioNode newScenarioRecord.id (always (File newScenarioRecord))) scenarioNodes
-
-                newModel =
-                    { updatedModel
-                        | scenarioCollection = ScenarioCollection scenarioCollectionId newBuilderTree
-                    }
 
             in
-            ( newModel, Cmd.map RunAppMsg newMsg )
+            ( newModel, newMsg )
 
 
 

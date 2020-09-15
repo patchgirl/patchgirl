@@ -87,26 +87,27 @@ update msg model =
 
         RunAppMsg subMsg ->
             let
-                (updatedModel, newRequestRecord, newMsg) =
+                 (newModel, newMsg) =
                     case getBuilder model of
                         RunView (Just (File requestFileRecord)) ->
-                            Run.update subMsg model requestFileRecord
+                            let
+                                (updatedModel, newRequestRecord, updatedMsg) =
+                                    Run.update subMsg model requestFileRecord
+
+                                (RequestCollection requestCollectionId requestNodes) =
+                                    model.requestCollection
+
+                                newBuilderTree =
+                                    List.map (modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
+                            in
+                            ( { updatedModel | requestCollection = RequestCollection requestCollectionId newBuilderTree }
+                            , Cmd.map RunAppMsg updatedMsg
+                            )
+
                         _ ->
-                            Debug.todo ""
-
-                (RequestCollection requestCollectionId requestNodes) =
-                    model.requestCollection
-
-                newBuilderTree =
-                    List.map (modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
-
-                newModel =
-                    { updatedModel
-                        | requestCollection = RequestCollection requestCollectionId newBuilderTree
-                    }
-
+                            ( model, Cmd.none )
             in
-            ( newModel, Cmd.map RunAppMsg newMsg )
+            ( newModel, newMsg )
 
 
 -- * util

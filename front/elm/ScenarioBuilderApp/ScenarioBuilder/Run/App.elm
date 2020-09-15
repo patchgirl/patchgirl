@@ -254,13 +254,16 @@ update msg model file mDisplayedSceneId =
 
         AskSaveScenario newEnvironmentId ->
             let
+                (ScenarioCollection scenarioId _) =
+                    model.scenarioCollection
+
                 payload =
                     { updateScenarioFileId = file.id
                     , updateScenarioFileEnvironmentId = newEnvironmentId
                     }
 
                 newMsg =
-                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) file.id payload (updateScenarioResultToMsg newEnvironmentId)
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) scenarioId payload (updateScenarioResultToMsg newEnvironmentId)
             in
             (model, file, newMsg)
 

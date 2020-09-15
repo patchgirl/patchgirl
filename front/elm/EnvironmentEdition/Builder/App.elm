@@ -84,22 +84,25 @@ update msg model =
 
         RunAppMsg subMsg ->
             let
-                (updatedModel, newEnvironment, newMsg) =
+                (newModel, newMsg) =
                     case getBuilder model of
                         RunView (Just environment) ->
-                            Run.update subMsg model environment
+                            let
+                                (updatedModel, newEnvironment, updatedMsg) =
+                                    Run.update subMsg model environment
+
+                                mNewEnvs =
+                                    List.updateIf (\elem -> elem.id == newEnvironment.id) (always newEnvironment) model.environments
+
+                            in
+                            ( { updatedModel | environments = mNewEnvs }
+                            , Cmd.map RunAppMsg updatedMsg
+                            )
+
                         _ ->
-                            Debug.todo ""
-
-                mNewEnvs =
-                    List.updateIf (\elem -> elem.id == newEnvironment.id) (always newEnvironment) model.environments
-
-                newModel =
-                    { updatedModel | environments = mNewEnvs }
-
-
+                            (model, Cmd.none)
             in
-            ( newModel, Cmd.map RunAppMsg newMsg )
+            ( newModel, newMsg )
 
 
 -- * util
