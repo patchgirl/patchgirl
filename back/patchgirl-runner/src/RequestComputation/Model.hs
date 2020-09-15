@@ -17,6 +17,7 @@ import qualified Network.HTTP.Simple as Http
 import qualified Network.HTTP.Types  as Http
 
 import           Interpolator
+import           PatchGirl.Web.Http
 
 
 -- * http response

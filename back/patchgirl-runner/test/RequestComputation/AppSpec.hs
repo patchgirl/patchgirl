@@ -17,7 +17,7 @@ import           Test.Hspec
 import           Api
 import           FakeHttpRequest
 import           Helper.App
-import           Http
+import           PatchGirl.Web.Http
 import           Interpolator
 import           RequestComputation.Model
 

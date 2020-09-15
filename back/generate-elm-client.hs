@@ -32,24 +32,22 @@ import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
 import           Servant.Foreign           hiding (Static)
 
---import           PatchGirl.Client          (deriveWithSingleFieldObject,
---                                            deriveWithTaggedObject)
 
-import           CaseInsensitive          as Web
-import           ElmOption                as Web
-import           Environment.Model        as Web
-import           Github.App               as Web
-import           Health.App               as Web
-import           Http                     as Web
-import           PatchGirl.Api            as Web
-import           PatchGirl.Internal.Env   as Web
-import           PgCollection.Model       as Web
-import           PgNode.Model             as Web
-import           RequestCollection.Model  as Web
-import           RequestNode.Model        as Web
-import           ScenarioCollection.Model as Web
-import           ScenarioNode.Model       as Web
-import           Session.Model            as Web
+import           PatchGirl.Web.CaseInsensitive          as Web
+import           PatchGirl.Web.ElmOption                (deriveWithSingleFieldObject, deriveWithTaggedObject)
+import           PatchGirl.Web.Environment.Model        as Web
+import           PatchGirl.Web.Github.App               as Web
+import           PatchGirl.Web.Health.App               as Web
+import           PatchGirl.Web.Http                     as Web
+import           PatchGirl.Web.PatchGirl.Api            as Web
+import           PatchGirl.Web.PatchGirl.Internal.Env   as Web
+import           PatchGirl.Web.PgCollection.Model       as Web
+import           PatchGirl.Web.PgNode.Model             as Web
+import           PatchGirl.Web.RequestCollection.Model  as Web
+import           PatchGirl.Web.RequestNode.Model        as Web
+import           PatchGirl.Web.ScenarioCollection.Model as Web
+import           PatchGirl.Web.ScenarioNode.Model       as Web
+import           PatchGirl.Web.Session.Model            as Web
 
 import qualified Api                       as Runner
 import qualified Interpolator              as Runner
