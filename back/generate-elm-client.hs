@@ -39,8 +39,8 @@ import           PatchGirl.Web.Environment.Model        as Web
 import           PatchGirl.Web.Github.App               as Web
 import           PatchGirl.Web.Health.App               as Web
 import           PatchGirl.Web.Http                     as Web
-import           PatchGirl.Web.PatchGirl.Api            as Web
-import           PatchGirl.Web.PatchGirl.Internal.Env   as Web
+import           PatchGirl.Web.Api            as Web
+import           PatchGirl.Web.Internal.Env   as Web
 import           PatchGirl.Web.PgCollection.Model       as Web
 import           PatchGirl.Web.PgNode.Model             as Web
 import           PatchGirl.Web.RequestCollection.Model  as Web
