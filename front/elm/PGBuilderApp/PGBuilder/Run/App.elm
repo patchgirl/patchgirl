@@ -430,11 +430,9 @@ responseView pgComputationOutput =
 
                 PgTuplesOk rows ->
                     let
-                        headerRow : List String
-                        headerRow =
-                            case rows of
-                                header :: _ -> List.map Tuple.first header
-                                _ -> []
+                        headerRow : Row -> List String
+                        headerRow header =
+                            List.map Tuple.first header
 
                         rowView : Row -> Element a
                         rowView someRow =
@@ -458,10 +456,15 @@ responseView pgComputationOutput =
                                 ]
 
                     in
-                        column [ width fill, spacing 10 ]
-                            [ row [ width fill ] (List.map tableHeaderView headerRow)
-                            , column [ width fill ] (List.map rowView rows)
-                            ]
+                        column [ width fill, spacing 10 ] <|
+                            case rows of
+                                [] ->
+                                    [ el [ centerX] (text "Empty response") ]
+
+                                (header :: _) as nonEmptyRows ->
+                                    [ row [ width fill ] (List.map tableHeaderView (headerRow header))
+                                    , column [ width fill ] (List.map rowView nonEmptyRows)
+                                    ]
 
 
 showPGValue : PgValue -> Element a
