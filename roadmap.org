@@ -8,7 +8,6 @@
 
 * Features
 
-** TODO Notification system
 ** TODO Tangoscript: parse json
 ** TODO Scenario: cookie
 ** TODO Scenario: include scenario
