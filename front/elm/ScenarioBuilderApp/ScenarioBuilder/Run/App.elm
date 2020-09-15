@@ -637,9 +637,9 @@ view model file mDisplayedSceneId =
     in
     case model.whichModal of
         Just _ ->
-            column (box [ padding 30, centerX ])
+            column (box [ padding 30, spacing 20, centerX ])
                 [ row [ width fill ]
-                      [ el [ centerX ] <| text "coucou"
+                      [ el [ centerX, Font.size 25, Font.underline ] <| text "Select a request to use a scene"
                       , el [ alignRight ] closeNewSceneView
                       ]
                 , selectSceneView model Nothing
@@ -1107,11 +1107,23 @@ selectSceneView model sceneParentId =
         treeView =
             row [ padding 20, centerX ]
                 [ column [ spacing 30, width (fillPortion 1) ]
-                      [ el [ centerX, Font.size 23 ] (text "Http request")
+                      [ el [ centerX, Font.size 23 ] <|
+                            iconWithAttr { defaultIconAttribute
+                                             | iconSize = Just "25px"
+                                             , iconVerticalAlign = Just "sub"
+                                             , icon = "public"
+                                             , title = " HTTP"
+                                         }
                       , column [ spacing 10, centerX ] (httpNodeView requestNodes)
                       ]
                 , column [ spacing 30, width (fillPortion 1), alignTop ]
-                      [ el [ centerX, Font.size 23 ] (text "Postgres query")
+                      [ el [ centerX, Font.size 23 ] <|
+                            iconWithAttr { defaultIconAttribute
+                                             | iconSize = Just "25px"
+                                             , iconVerticalAlign = Just "sub"
+                                             , icon = "storage"
+                                             , title = " Postgres"
+                                         }
                       , column [ spacing 10, centerX ] (pgNodeView pgNodes)
                       ]
                 ]
