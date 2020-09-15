@@ -44,9 +44,10 @@ library:
 executables:
   patchgirl-runner-exe:
     source-dirs:
-      - src
       - app
     main: Main.hs
+    dependencies:
+      - patchgirl-runner
 
 dependencies:
   - patchgirl-web

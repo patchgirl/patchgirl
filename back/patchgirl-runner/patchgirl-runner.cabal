@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 82c82116223dc54007517e711a2f5b4c4e05112d252978b9fbfd3c4290962b7e
+-- hash: 56fe8edfc7c09f58af53aae505f6db01570b5da71494e63acb2199aa9bb61563
 
 name:           patchgirl-runner
 version:        0.0.0
@@ -66,24 +66,8 @@ library
 executable patchgirl-runner-exe
   main-is: Main.hs
   other-modules:
-      Api
-      Env
-      Health.App
-      Interpolator
-      Lib
-      Log
-      Model
-      PgSqlComputation.App
-      PgSqlComputation.Model
-      RequestComputation.App
-      RequestComputation.Model
-      ScenarioComputation.App
-      ScenarioComputation.Model
-      Server
-      TangoScript
       Paths_patchgirl_runner
   hs-source-dirs:
-      src
       app
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf TypeApplications
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
@@ -101,6 +85,7 @@ executable patchgirl-runner-exe
     , http-types
     , lens
     , mtl
+    , patchgirl-runner
     , patchgirl-web
     , postgresql-libpq
     , prometheus-client

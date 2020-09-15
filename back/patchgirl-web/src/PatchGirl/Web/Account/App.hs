@@ -214,29 +214,29 @@ resetVisitorSql connection = do
           VALUES ('1b983dbb-26d8-4fa6-b152-941ea3b0f905', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'apiHost', 'localhost', false);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('7d45afa0-2a02-4046-b43b-b79d7f79ec1a', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbHost', 'myPosgresHost', false);
+          VALUES ('7d45afa0-2a02-4046-b43b-b79d7f79ec1a', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbHost', 'myPosgresHost', true);
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('4416da3e-36c3-49fa-a88e-7895415d427a', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbHost', 'localhost', true);
+          VALUES ('4416da3e-36c3-49fa-a88e-7895415d427a', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbHost', 'localhost', false);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('4cd293ac-a33b-4a67-b8da-c38d1f99c449', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPort', '5432', false);
+          VALUES ('4cd293ac-a33b-4a67-b8da-c38d1f99c449', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPort', '5432', true);
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('5b658544-2e89-4bcf-a1da-3f76886821ac', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPort', '5432', true);
+          VALUES ('5b658544-2e89-4bcf-a1da-3f76886821ac', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPort', '5432', false);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('8e395078-f8f0-4913-9542-6e3fc5ba6170', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbUser', 'postgres', false);
+          VALUES ('8e395078-f8f0-4913-9542-6e3fc5ba6170', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbUser', 'postgres', true);
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('4d149735-a4d8-4b80-8307-4549040e938c', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbUser', 'postgres', true);
+          VALUES ('4d149735-a4d8-4b80-8307-4549040e938c', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbUser', 'postgres', false);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('16fb37db-ffa0-45c3-98f3-0dfeb1f7c69e', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPassword', 'somePassw0rd!', false);
+          VALUES ('16fb37db-ffa0-45c3-98f3-0dfeb1f7c69e', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPassword', 'somePassw0rd!', true);
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('5f6bc4e3-0818-48c3-aef9-068c7e6aa886', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPassword', '', true);
+          VALUES ('5f6bc4e3-0818-48c3-aef9-068c7e6aa886', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPassword', '', false);
 
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('c439e158-b927-457e-a0c5-48e14bb81ed5', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbName', 'myDB', false);
+          VALUES ('c439e158-b927-457e-a0c5-48e14bb81ed5', '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbName', 'myDB', true);
           INSERT INTO key_value (id, environment_id, key, value, hidden)
-          VALUES ('0e7f4708-1a0f-4dab-91f2-9761e746dd9e', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbName', 'test', true);
+          VALUES ('0e7f4708-1a0f-4dab-91f2-9761e746dd9e', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbName', 'test', false);
 
 
 
