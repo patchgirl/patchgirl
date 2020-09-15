@@ -3,7 +3,7 @@
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module PatchGirl.Model where
+module PatchGirl.Web.Model where
 
 import qualified Control.Monad.Except   as Except
 import qualified Control.Monad.IO.Class as IO
@@ -11,7 +11,7 @@ import qualified Control.Monad.Reader   as Reader
 
 import           Servant                hiding (BadPassword, NoSuchUser)
 
-import           PatchGirl.Internal.Env
+import           PatchGirl.Web.Internal.Env
 
 
 newtype AppM a =

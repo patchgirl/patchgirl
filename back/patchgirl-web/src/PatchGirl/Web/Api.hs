@@ -2,7 +2,7 @@
 {-# LANGUAGE DataKinds       #-}
 {-# LANGUAGE TypeOperators   #-}
 
-module PatchGirl.Api( WebApi
+module PatchGirl.Web.Api( WebApi
                     , webApiServer
                     , RequestCollectionApi
                     , PgCollectionApi
@@ -40,7 +40,7 @@ import           Environment.App
 import           Environment.Model
 import           Github.App
 import           Health.App
-import           PatchGirl.Model
+import           PatchGirl.Web.Model
 import           PgCollection.App
 import           PgCollection.Model
 import           PgNode.App

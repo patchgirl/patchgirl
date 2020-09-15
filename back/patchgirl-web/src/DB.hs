@@ -8,7 +8,7 @@ import           Data.Text                  as TS
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Natural                (naturalToInt)
 
-import           PatchGirl.Internal.Env
+import           PatchGirl.Web.Internal.Env
 
 getDBConnection
   :: ( MonadReader Env m

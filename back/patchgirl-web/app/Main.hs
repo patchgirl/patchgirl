@@ -1,6 +1,6 @@
 module Main where
 
-import qualified PatchGirl.Server as Server
+import qualified PatchGirl.Web.Server as Server
 
 main :: IO ()
 main =

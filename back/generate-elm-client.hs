@@ -32,9 +32,24 @@ import           Servant.Auth.Server       (JWT)
 import           Servant.Elm
 import           Servant.Foreign           hiding (Static)
 
-import           PatchGirl.Client          (deriveWithSingleFieldObject,
-                                            deriveWithTaggedObject)
-import qualified PatchGirl.Client          as Web
+--import           PatchGirl.Client          (deriveWithSingleFieldObject,
+--                                            deriveWithTaggedObject)
+
+import           CaseInsensitive          as Web
+import           ElmOption                as Web
+import           Environment.Model        as Web
+import           Github.App               as Web
+import           Health.App               as Web
+import           Http                     as Web
+import           PatchGirl.Api            as Web
+import           PatchGirl.Internal.Env   as Web
+import           PgCollection.Model       as Web
+import           PgNode.Model             as Web
+import           RequestCollection.Model  as Web
+import           RequestNode.Model        as Web
+import           ScenarioCollection.Model as Web
+import           ScenarioNode.Model       as Web
+import           Session.Model            as Web
 
 import qualified Api                       as Runner
 import qualified Interpolator              as Runner

@@ -15,7 +15,6 @@ import           GHC.Generics        (Generic)
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Simple as Http
 import qualified Network.HTTP.Types  as Http
-import           PatchGirl.Client
 
 import           Interpolator
 

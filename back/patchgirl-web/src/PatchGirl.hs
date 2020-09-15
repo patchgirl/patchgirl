@@ -6,7 +6,7 @@ module PatchGirl
 import qualified Control.Monad.IO.Class as IO
 import qualified Control.Monad.Reader   as Reader
 
-import           PatchGirl.Internal.Env as Env
+import           PatchGirl.Web.Internal.Env as Env
 
 logError
   :: ( Reader.MonadReader Env m

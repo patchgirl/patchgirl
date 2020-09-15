@@ -11,7 +11,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           GHC.Generics
 
 import           DB
-import           PatchGirl.Internal.Env
+import           PatchGirl.Web.Internal.Env
 
 
 -- * Model

@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module PatchGirl.Internal.Env
+module PatchGirl.Web.Internal.Env
   ( createEnv
   , Env(..)
   , envPort

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ecd45e4dfcbc7b0933bb2f32a88f04a8c8c2e6e2fe1455a534e9d44a2edfd236
+-- hash: dd4fea770fba0febaa4a590f1e3fef65483dd8bd04f4b19ba91a6205daceeaa5
 
 name:           patchgirl-web
 version:        0.0.0
@@ -24,11 +24,10 @@ library
       Health.App
       Http
       PatchGirl
-      PatchGirl.Api
-      PatchGirl.Client
-      PatchGirl.Internal.Env
-      PatchGirl.Model
-      PatchGirl.Server
+      PatchGirl.Web.Api
+      PatchGirl.Web.Internal.Env
+      PatchGirl.Web.Model
+      PatchGirl.Web.Server
       PgCollection.App
       PgCollection.Model
       PgCollection.Sql

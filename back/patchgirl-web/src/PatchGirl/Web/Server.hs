@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds       #-}
 
-module PatchGirl.Server(run, mkApp) where
+module PatchGirl.Web.Server(run, mkApp) where
 
 import qualified GHC.Natural                       as Natural
 import qualified Network.Connection                as Tls
@@ -24,9 +24,9 @@ import           Servant.Auth.Server               (Cookie, CookieSettings, JWT,
                                                     sessionCookieName)
 
 
-import PatchGirl.Api (webApiServer, WebApi)
-import           PatchGirl.Internal.Env
-import           PatchGirl.Model
+import PatchGirl.Web.Api (webApiServer, WebApi)
+import           PatchGirl.Web.Internal.Env
+import           PatchGirl.Web.Model
 
 
 -- * run
