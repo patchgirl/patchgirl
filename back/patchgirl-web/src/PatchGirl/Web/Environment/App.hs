@@ -11,7 +11,6 @@ module PatchGirl.Web.Environment.App where
 
 import           Control.Lens                     ((&))
 import           Control.Lens.Getter              ((^.))
-import qualified Control.Monad          as Monad
 import           Control.Lens.Setter              ((%~))
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
@@ -304,6 +303,6 @@ updateKeyValuesHandler accountId environmentId' newKeyValues = do
   case environment of
     Just _ -> do
       liftIO $ deleteKeyValuesDB environmentId' connection
-      liftIO $ Monad.void $ mapM (flip (insertManyKeyValuesDB environmentId') connection) newKeyValues
+      liftIO $ mapM_ (flip (insertManyKeyValuesDB environmentId') connection) newKeyValues
     Nothing ->
       throwError err404
