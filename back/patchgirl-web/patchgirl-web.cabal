@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd4fea770fba0febaa4a590f1e3fef65483dd8bd04f4b19ba91a6205daceeaa5
+-- hash: 0cd30d8ee1c78388e3bce0764e47d42ad1c3fcbf14967d6aca5bd53706a3d764
 
 name:           patchgirl-web
 version:        0.0.0
@@ -12,43 +12,43 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Account.App
-      Account.Sql
-      CaseInsensitive
-      DB
-      ElmOption
-      Environment.App
-      Environment.Model
-      Foo
-      Github.App
-      Health.App
-      Http
-      PatchGirl
+      PatchGirl.Web.Account.App
+      PatchGirl.Web.Account.Sql
       PatchGirl.Web.Api
+      PatchGirl.Web.CaseInsensitive
+      PatchGirl.Web.DB
+      PatchGirl.Web.ElmOption
+      PatchGirl.Web.Environment.App
+      PatchGirl.Web.Environment.Model
+      PatchGirl.Web.Foo
+      PatchGirl.Web.Github.App
+      PatchGirl.Web.Health.App
+      PatchGirl.Web.Http
       PatchGirl.Web.Internal.Env
       PatchGirl.Web.Model
+      PatchGirl.Web.PatchGirl
+      PatchGirl.Web.PgCollection.App
+      PatchGirl.Web.PgCollection.Model
+      PatchGirl.Web.PgCollection.Sql
+      PatchGirl.Web.PgNode.App
+      PatchGirl.Web.PgNode.Model
+      PatchGirl.Web.PgNode.Sql
+      PatchGirl.Web.RequestCollection.App
+      PatchGirl.Web.RequestCollection.Model
+      PatchGirl.Web.RequestCollection.Sql
+      PatchGirl.Web.RequestNode.App
+      PatchGirl.Web.RequestNode.Model
+      PatchGirl.Web.RequestNode.Sql
+      PatchGirl.Web.ScenarioCollection.App
+      PatchGirl.Web.ScenarioCollection.Model
+      PatchGirl.Web.ScenarioCollection.Sql
+      PatchGirl.Web.ScenarioNode.App
+      PatchGirl.Web.ScenarioNode.Model
+      PatchGirl.Web.ScenarioNode.Sql
       PatchGirl.Web.Server
-      PgCollection.App
-      PgCollection.Model
-      PgCollection.Sql
-      PgNode.App
-      PgNode.Model
-      PgNode.Sql
-      RequestCollection.App
-      RequestCollection.Model
-      RequestCollection.Sql
-      RequestNode.App
-      RequestNode.Model
-      RequestNode.Sql
-      ScenarioCollection.App
-      ScenarioCollection.Model
-      ScenarioCollection.Sql
-      ScenarioNode.App
-      ScenarioNode.Model
-      ScenarioNode.Sql
-      Session.App
-      Session.Model
-      Test
+      PatchGirl.Web.Session.App
+      PatchGirl.Web.Session.Model
+      PatchGirl.Web.Test
   other-modules:
       Paths_patchgirl_web
   hs-source-dirs:
