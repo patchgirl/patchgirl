@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (Test(..), createAccountAndcleanDBAfter, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBAfter, withAccountAndToken, signedUserToken1, visitorId) where
+module Helper.App (Test(..), cleanDBAndCreateAccount, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBBefore, withAccountAndToken, signedUserToken1, visitorId) where
 
 import           Control.Concurrent.STM
 import           Control.Exception                (finally, throwIO)
@@ -26,7 +26,8 @@ import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
                                                            makeJWT, readKey)
 import           Servant.Client
 import qualified Test.Hspec                       as Hspec
-
+import System.FilePath ((</>))
+import System.IO.Unsafe
 
 import           PatchGirl.Web.CaseInsensitive
 import           PatchGirl.Web.Internal.Env
@@ -113,7 +114,7 @@ mkToken cookieSession mexp = do
 defaultEnv :: Env
 defaultEnv =
   Env { _envPort = 3001
-      , _envAppKeyFilePath = "../.appKey.test"
+      , _envAppKeyFilePath = ".." </> ".appKey.test"
       , _envDB = DBConfig { _dbPort = 5432
                          , _dbName = "test"
                          , _dbUser = "postgres"
@@ -123,6 +124,7 @@ defaultEnv =
                                  , _githubConfigClientSecret = "whatever"
                                  }
       , _envLog = Say.sayString
+      , _envResetVisitorData = ""
       }
 
 
@@ -130,32 +132,32 @@ defaultEnv2 :: IO Env
 defaultEnv2 = do
   logs <- newTVarIO ""
   let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
+  let file = ".." </> "reset-visitor-data.sql"
+  resetVisitorData <- (readFile file) <&> show <&> read @Query
   return $
     Env { _envPort = 3001
-        , _envAppKeyFilePath = "../.appKey.test"
+        , _envAppKeyFilePath = ".." </> ".appKey.test"
         , _envDB = DBConfig { _dbPort = 5432
                            , _dbName = "test"
                            , _dbUser = "postgres"
                            , _dbPassword = ""
                            }
         , _envGithub = GithubConfig { _githubConfigClientId    = "whatever"
-                                   , _githubConfigClientSecret = "whatever"
-                                   }
+                                    , _githubConfigClientSecret = "whatever"
+                                    }
         , _envLog = logFunc
+        , _envResetVisitorData = resetVisitorData
       }
 
 
 -- * db
 
 
-cleanDBAfter :: (Connection -> IO a) -> IO a
-cleanDBAfter f = do
+cleanDBBefore :: (Connection -> IO a) -> IO a
+cleanDBBefore f = do
   connection <- runReaderT getDBConnection defaultEnv
-  withConnection f connection
-  where
-    withConnection :: (Connection -> IO a) -> Connection -> IO a
-    withConnection f connection =
-      finally (f connection) $ listTables connection >>= mapM_ (truncateTable connection)
+  listTables connection >>= mapM_ (truncateTable connection)
+  f connection
 
 
 data Test =
@@ -164,20 +166,16 @@ data Test =
        , token      :: Auth.Token
        }
 
-createAccountAndcleanDBAfter :: (Test -> IO a) -> IO a
-createAccountAndcleanDBAfter f = do
+cleanDBAndCreateAccount :: (Test -> IO a) -> IO a
+cleanDBAndCreateAccount f = do
   connection <- runReaderT getDBConnection defaultEnv
+  listTables connection >>= mapM_ (truncateTable connection)
   accountId <- insertFakeAccount 1 connection
   token <- signedUserToken accountId
-  withConnection f Test { connection = connection
-                        , accountId = accountId
-                        , token = token
-                        }
-    where
-      withConnection :: (Test -> IO a) -> Test -> IO a
-      withConnection f test@Test { connection }  =
-        finally (f test) $ listTables connection >>= mapM_ (truncateTable connection)
-
+  f Test { connection = connection
+         , accountId = accountId
+         , token = token
+         }
 
 listTables :: Connection -> IO [Text]
 listTables c =

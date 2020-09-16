@@ -48,18 +48,18 @@ spec =
 
     describe "update request node" $ do
       it "returns 404 when request node doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (updateRequestNodeHandler token 1 UUID.nil updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
           let nodeId = head requestNodes ^. requestNodeId
           try clientEnv (updateRequestNodeHandler token requestCollectionId nodeId updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "modifies a request folder" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let nodeId = head requestNodes ^. requestNodeId
           _ <- try clientEnv (updateRequestNodeHandler token requestCollectionId nodeId updateRequestNode)
@@ -72,18 +72,18 @@ spec =
 
     describe "delete request node" $ do
       it "returns 404 when request node doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (deleteRequestNodeHandler token 1 UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
           let nodeId = head requestNodes ^. requestNodeId
           try clientEnv (deleteRequestNodeHandler token requestCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "delete a request node" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let nodeId = head requestNodes ^. requestNodeId
           selectRequestNodeExists nodeId connection `shouldReturn` True

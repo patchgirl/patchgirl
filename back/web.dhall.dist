@@ -9,6 +9,7 @@ let config =
   , github = { clientId = ""
              , clientSecret = ""
              }
+  , resetVisitorData = ./reset-visitor-data.sql as Text
   }
 
 in config

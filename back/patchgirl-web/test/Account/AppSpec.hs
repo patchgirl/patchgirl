@@ -41,7 +41,7 @@ resetVisitorAccount =
 
 spec :: Spec
 spec =
-  withClient (mkApp defaultEnv) $
+  withClient (defaultEnv2 >>= mkApp) $
 
 
 -- ** reset visitor account
@@ -49,7 +49,7 @@ spec =
 
     describe "reset visitor account" $
       it "should returns 200" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection } -> do
+        cleanDBAndCreateAccount $ \Test { connection } -> do
           res <- try clientEnv resetVisitorAccount
           res `shouldBe` ()
           selectFakeAccount defaultAccountId connection >>= (`shouldSatisfy` Maybe.isJust)

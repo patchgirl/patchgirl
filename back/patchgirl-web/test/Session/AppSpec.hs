@@ -53,7 +53,7 @@ spec =
     describe "who am I" $ do
       context "when signed in" $
         it "should return a signed user session" $ \clientEnv ->
-          cleanDBAfter $ \_ -> do
+          cleanDBBefore $ \_ -> do
           (token, accountId) <- signedUserToken1
           (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
           session `shouldBe` SignedUserSession { _sessionAccountId = accountId
@@ -64,7 +64,7 @@ spec =
 
       context "when unsigned" $
         it "should return a signed user session" $ \clientEnv ->
-          cleanDBAfter $ \_ -> do
+          cleanDBBefore $ \_ -> do
             (token, accountId) <- visitorToken
             (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
             session `shouldBe` VisitorSession { _sessionAccountId = accountId
@@ -77,7 +77,7 @@ spec =
 
     describe "sign out" $
       it "always return a visitor session and clean the cookies" $ \clientEnv ->
-        cleanDBAfter $ \_ -> do
+        cleanDBBefore $ \_ -> do
           ([(headerName, headerValue), _], session) <- try clientEnv signOut <&> (\r -> (getHeaders r, getResponse r))
           headerName `shouldBe` "Set-Cookie"
           headerValue `shouldBe` "JWT=value; Path=/; Expires=Tue, 10-Oct-1995 00:00:00 GMT; Max-Age=0; HttpOnly; Secure"

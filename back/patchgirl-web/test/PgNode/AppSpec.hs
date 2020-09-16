@@ -48,18 +48,18 @@ spec =
 
     describe "update pg node" $ do
       it "returns 404 when pg node doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (updatePgNodeHandler token UUID.nil UUID.nil updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the pg node doesnt belong to the account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId2 connection
           let nodeId = head pgNodes ^. pgNodeId
           try clientEnv (updatePgNodeHandler token pgCollectionId nodeId updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "modifies a pg folder" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let nodeId = head pgNodes ^. pgNodeId
           _ <- try clientEnv (updatePgNodeHandler token pgCollectionId nodeId updatePgNode)
@@ -72,18 +72,18 @@ spec =
 
     describe "delete pg node" $ do
       it "returns 404 when pg node doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (deletePgNodeHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the pg node doesnt belong to the account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId2 connection
           let nodeId = head pgNodes ^. pgNodeId
           try clientEnv (deletePgNodeHandler token pgCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "delete a pg node" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let nodeId = head pgNodes ^. pgNodeId
           selectPgNodeExists nodeId connection `shouldReturn` True

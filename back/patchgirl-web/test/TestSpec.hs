@@ -47,25 +47,25 @@ spec =
 
     describe "user test ressource" $ do
       it "creates a user" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test {} -> do
+        cleanDBAndCreateAccount $ \Test {} -> do
           UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           userTest_firstname `shouldBe` "John"
           userTest_lastname `shouldBe` "Doe"
 
       it "deletes a user" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test {} -> do
+        cleanDBAndCreateAccount $ \Test {} -> do
           UserTest{..} <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           try clientEnv (deleteUser userTest_id) `shouldReturn` ()
 
       it "shows a user" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test {} -> do
+        cleanDBAndCreateAccount $ \Test {} -> do
           userTest <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           UserTest{..} <- try clientEnv $ showUser (userTest_id userTest)
           userTest_firstname `shouldBe` "John"
           userTest_lastname `shouldBe` "Doe"
 
       it "updates a user" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test {} -> do
+        cleanDBAndCreateAccount $ \Test {} -> do
           userTest <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           UserTest{..} <- try clientEnv $ updateUser (userTest_id userTest) $ UpdateUserTest { updateUserTest_firstname = "Jack"
                                                                                              , updateUserTest_lastname = "Terry"
@@ -74,7 +74,7 @@ spec =
           userTest_lastname `shouldBe` "Terry"
 
       it "list users" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test {} -> do
+        cleanDBAndCreateAccount $ \Test {} -> do
           userTest1 <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
           userTest2 <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "Jack", newUserTest_lastname = "Raiden"}
           [user1, user2] <- try clientEnv listUsers

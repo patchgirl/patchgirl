@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0cd30d8ee1c78388e3bce0764e47d42ad1c3fcbf14967d6aca5bd53706a3d764
+-- hash: 1446e468a0a9d46f9c9a493eee94921bc67bcec9fef94e150591140aeb6dcec8
 
 name:           patchgirl-web
 version:        0.0.0
@@ -67,6 +67,7 @@ library
     , cookie
     , dhall
     , email-validate
+    , filepath
     , http-client
     , http-client-tls
     , http-conduit
@@ -120,6 +121,7 @@ executable patchgirl-web-exe
     , cookie
     , dhall
     , email-validate
+    , filepath
     , http-client
     , http-client-tls
     , http-conduit
@@ -196,6 +198,7 @@ test-suite spec
     , cookie
     , dhall
     , email-validate
+    , filepath
     , hspec
     , http-client
     , http-client-tls

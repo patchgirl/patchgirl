@@ -52,6 +52,7 @@ executables:
 
 dependencies:
   - base
+  - filepath
   - servant
   - servant-client
   - servant-server

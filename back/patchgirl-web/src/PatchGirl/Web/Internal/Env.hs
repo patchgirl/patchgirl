@@ -16,9 +16,11 @@ module PatchGirl.Web.Internal.Env
 
 import qualified Control.Lens as Lens
 import           Data.Text    (Text)
+import qualified Data.Text as Text
 import           Dhall        (Natural)
 import qualified Dhall
 import           GHC.Generics (Generic)
+import Database.PostgreSQL.Simple (Query)
 
 
 -- * db
@@ -59,6 +61,7 @@ data Config
            , _configAppKeyFilePath :: String
            , _configDB             :: DBConfig
            , _configGithub         :: GithubConfig
+           , _configResetVisitorData :: Text
            }
   deriving (Generic, Show)
 
@@ -69,6 +72,7 @@ instance Dhall.FromDhall Config where
       <*> Dhall.field "appKeyFilePath" Dhall.string
       <*> Dhall.field "db" Dhall.auto
       <*> Dhall.field "github" Dhall.auto
+      <*> Dhall.field "resetVisitorData" Dhall.auto
 
 getConfig :: IO Config
 getConfig =
@@ -84,6 +88,7 @@ data Env
         , _envDB             :: DBConfig
         , _envGithub         :: GithubConfig
         , _envLog            :: String -> IO ()
+        , _envResetVisitorData :: Query
         }
 
 $(Lens.makeLenses ''Env)
@@ -100,4 +105,5 @@ createEnv log = do
                , _envDB = _configDB
                , _envGithub = _configGithub
                , _envLog = log
+               , _envResetVisitorData = read @Query (Text.unpack _configResetVisitorData)
                }

@@ -57,7 +57,7 @@ spec =
 
     describe "create environment" $
       it "should create an environment and bind it to an account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           newEnvironment <- mkNewEnvironment
           try clientEnv (createEnvironment token newEnvironment)
           Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment (_newEnvironmentId newEnvironment) connection
@@ -75,7 +75,7 @@ spec =
 
     describe "get environments" $
       it "should get environments bound to the account" $ \clientEnv -> do
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
 
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           environmentId1 <- insertNewFakeEnvironment (newFakeEnvironment accountId "test1") connection
@@ -110,17 +110,17 @@ spec =
 
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (updateEnvironment token UUID.nil updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 when environment doesnt belong to account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test1") connection
           try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "should update environment" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           _ <- try clientEnv (updateEnvironment token environmentId updateEnvironmentPayload)
           Just FakeEnvironment { _fakeEnvironmentName } <- selectFakeEnvironment environmentId connection
@@ -132,16 +132,16 @@ spec =
 
     describe "delete environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (deleteEnvironment token UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           environmentId <- environmentThatDoesntBelongToAccountToken connection
           try clientEnv (deleteEnvironment token environmentId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes environment" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           _ <- try clientEnv (deleteEnvironment token environmentId)
           mEnvironment <- selectFakeEnvironment environmentId connection
@@ -153,16 +153,16 @@ spec =
 
     describe "update key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (updateKeyValues token UUID.nil []) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           environmentId <- environmentThatDoesntBelongToAccountToken connection
           try clientEnv (updateKeyValues token environmentId []) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "updates the environment key values" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           try clientEnv (updateKeyValues token environmentId [])
           selectFakeKeyValues environmentId connection `shouldReturn` []
@@ -188,21 +188,21 @@ spec =
 
     describe "delete key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } ->
+        cleanDBAndCreateAccount $ \Test { token } ->
           try clientEnv (deleteKeyValue token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
           environmentId <- environmentThatDoesntBelongToAccountToken connection
           try clientEnv (deleteKeyValue token environmentId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if the key value doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           try clientEnv (deleteKeyValue token environmentId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes the key value" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
           KeyValue { _keyValueId } <-
             insertNewFakeKeyValue NewFakeKeyValue { _newFakeKeyValueEnvironmentId = environmentId

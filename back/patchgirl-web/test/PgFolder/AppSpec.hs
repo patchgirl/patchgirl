@@ -48,25 +48,25 @@ spec =
 
     describe "create a pg folder" $ do
       it "returns 404 when pg collection doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } -> do
+        cleanDBAndCreateAccount $ \Test { token } -> do
           let newPgFile = mkNewPgFolder UUID.nil UUID.nil
           try clientEnv (createPgFolder token UUID.nil newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when pg node parent doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId _ <- insertSamplePgCollection accountId connection
           let newPgFile = mkNewPgFolder UUID.nil UUID.nil
           try clientEnv (createPgFolder token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when pg node parent exist but isn't a pg folder" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let fileId = Maybe.fromJust (getFirstPgFile pgNodes) ^. pgNodeId
           let newPgFile = mkNewPgFolder UUID.nil fileId
           try clientEnv (createPgFolder token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg folder" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let folderId = Maybe.fromJust (getFirstPgFolder pgNodes) ^. pgNodeId
           let newPgFolder = mkNewPgFolder UUID.nil folderId
@@ -80,12 +80,12 @@ spec =
 
     describe "create a root pg folder" $ do
       it "returns 404 when pg collection doesnt exist" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { token } -> do
+        cleanDBAndCreateAccount $ \Test { token } -> do
           let newRootPgFolder = mkNewRootPgFolder UUID.nil
           try clientEnv (createRootPgFolder token UUID.nil newRootPgFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg folder" $ \clientEnv ->
-        createAccountAndcleanDBAfter $ \Test { connection, accountId, token } -> do
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           pgCollectionId <- insertFakePgCollection accountId connection
           let newRootPgFolder = mkNewRootPgFolder UUID.nil
           _ <- try clientEnv (createRootPgFolder token pgCollectionId newRootPgFolder)
