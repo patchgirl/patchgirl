@@ -14,6 +14,7 @@ default-extensions:
   - InstanceSigs
   - MultiParamTypeClasses
   - MultiWayIf
+  - StrictData
   - TypeApplications # allows you to use visible type application in expressions, eg: show (read @Int "5")
 
 ghc-options:
