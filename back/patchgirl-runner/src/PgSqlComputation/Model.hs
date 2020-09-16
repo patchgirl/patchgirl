@@ -76,11 +76,15 @@ data PgComputation
 
 instance Aeson.ToJSON PgComputation where
   toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                             , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                             }
 
 instance Aeson.FromJSON PgComputation where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                                , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                                }
 
 
 -- * row

@@ -15,6 +15,7 @@ module PatchGirl.Web.Internal.Env
   , getConfig
   ) where
 
+import           Data.Function                     ((&))
 import qualified Control.Lens as Lens
 import           Data.Text    (Text)
 import qualified Data.Text as Text
@@ -106,5 +107,5 @@ createEnv log = do
                , _envDB = _configDB
                , _envGithub = _configGithub
                , _envLog = log
-               , _envResetVisitorData = read @Query (Text.unpack _configResetVisitorData)
+               , _envResetVisitorData = read @Query (Text.unpack _configResetVisitorData & show)
                }

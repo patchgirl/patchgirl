@@ -199,6 +199,7 @@ deriveElmDef deriveWithTaggedObject ''Runner.RequestComputation
 deriveElmDef deriveWithTaggedObject ''Runner.RequestComputationOutput
 deriveElmDef deriveWithTaggedObject ''Runner.ScriptException
 deriveElmDef deriveWithSingleFieldObject ''Runner.HttpException
+deriveElmDef deriveWithSingleFieldObject ''Runner.PgComputation
 deriveElmDef deriveWithSingleFieldObject ''Runner.SceneComputation
 deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioInput
 deriveElmDef deriveWithSingleFieldObject ''Runner.ScenarioOutput
@@ -212,7 +213,6 @@ deriveElmDef deriveWithTaggedObject ''Runner.Expr
 deriveElmDef deriveWithTaggedObject ''Runner.Json
 deriveElmDef deriveWithTaggedObject ''Runner.EnvironmentVars
 deriveElmDef deriveWithTaggedObject ''Runner.StringTemplate
-deriveElmDef deriveWithTaggedObject ''Runner.PgComputation
 deriveElmDef deriveWithTaggedObject ''Runner.Row
 deriveElmDef deriveWithTaggedObject ''Runner.Column
 deriveElmDef deriveWithTaggedObject ''Runner.PgValue
@@ -220,7 +220,7 @@ deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
 deriveElmDef deriveWithTaggedObject ''Runner.TemplatedPgConnection
 deriveElmDef deriveWithTaggedObject ''Runner.SceneFile
 deriveElmDef deriveWithTaggedObject ''Runner.PgError
-deriveElmDef deriveWithSingleFieldObject ''Runner.PgComputationOutput
+deriveElmDef deriveWithTaggedObject ''Runner.PgComputationOutput
 
 
 -- ** web
