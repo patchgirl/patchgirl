@@ -8,6 +8,7 @@ module PatchGirl.Web.Internal.Env
   , envDB
   , envGithub
   , envLog
+  , envResetVisitorData
   , DBConfig(..)
   , GithubConfig(..)
   , Config(..)

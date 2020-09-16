@@ -3,7 +3,7 @@
 module Helper.App (Test(..), cleanDBAndCreateAccount, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBBefore, withAccountAndToken, signedUserToken1, visitorId) where
 
 import           Control.Concurrent.STM
-import           Control.Exception                (finally, throwIO)
+import           Control.Exception                (throwIO)
 import           Control.Monad                    (void)
 import           Control.Monad.Reader             (runReaderT)
 import qualified Data.ByteString.Lazy             as BSL
@@ -27,7 +27,6 @@ import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
 import           Servant.Client
 import qualified Test.Hspec                       as Hspec
 import System.FilePath ((</>))
-import System.IO.Unsafe
 
 import           PatchGirl.Web.CaseInsensitive
 import           PatchGirl.Web.Internal.Env
