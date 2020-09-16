@@ -1,0 +1,20 @@
+[[check]] # Usage of the 'length' function that hangs on infinite lists
+type = "Exclude"
+id = "STAN-0103"
+scope = "all"
+[[check]] # Anti-pattern: Pattern matching on '_'
+type = "Exclude"
+id = "STAN-0213"
+scope = "all"
+[[check]] # big tuples
+type = "Exclude"
+id = "STAN-0302"
+scope = "all"
+[[check]] # big tuples
+type = "Exclude"
+id = "STAN-0009"
+scope = "all"
+[[check]] # Maybe.fromJust
+type = "Exclude"
+id = "STAN-0008"
+scope = "all"
