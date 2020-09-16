@@ -132,7 +132,7 @@ defaultEnv2 = do
   logs <- newTVarIO ""
   let logFunc msg = atomically $ modifyTVar logs (++ ("\n" ++ msg))
   let file = ".." </> "reset-visitor-data.sql"
-  resetVisitorData <- (readFile file) <&> show <&> read @Query
+  resetVisitorData <- readFile file <&> show <&> read @Query
   return $
     Env { _envPort = 3001
         , _envAppKeyFilePath = ".." </> ".appKey.test"
