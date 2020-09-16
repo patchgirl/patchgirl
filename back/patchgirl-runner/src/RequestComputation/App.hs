@@ -25,7 +25,6 @@ import qualified Network.HTTP.Types          as Http
 import           Env
 import           PatchGirl.Web.Http
 import           Interpolator
-import           Log
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 
@@ -39,8 +38,7 @@ runRequestComputationHandler
      )
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationOutput
-runRequestComputationHandler (templatedRequestComputationInput, environmentVars) =
---  runRequestComputationWithScenarioContext templatedRequestComputationInput environmentVars Map.empty Map.empty
+runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
   State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
 
 
@@ -123,7 +121,6 @@ ioRequestRunner request =
 
 responseToComputationResult
   :: ( Reader.MonadReader Env m
-     , IO.MonadIO m
      )
   => Either Http.HttpException (HttpResponse BSU.ByteString)
   -> m (Either HttpException RequestComputation)
@@ -132,16 +129,14 @@ responseToComputationResult either = do
     Right response ->
       return . Right $
         RequestComputation { _requestComputationStatusCode = Http.statusCode $ httpResponseStatus response
-                                 , _requestComputationHeaders    = parseResponseHeaders response
-                                 , _requestComputationBody       = BSU.toString $ httpResponseBody response
-                                 }
+                           , _requestComputationHeaders    = parseResponseHeaders response
+                           , _requestComputationBody       = BSU.toString $ httpResponseBody response
+                           }
 
-    Left ex@(Http.InvalidUrlException url reason) -> do
-      logError $ show ex
+    Left (Http.InvalidUrlException url reason) -> do
       return $ Left (InvalidUrlException url reason)
 
-    Left ex@(Http.HttpExceptionRequest _ content) -> do
-      logError $ show ex
+    Left (Http.HttpExceptionRequest _ content) -> do
       return $ Left matching
       where
         matching = case content of
