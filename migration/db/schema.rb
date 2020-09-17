@@ -614,8 +614,12 @@ CREATE TABLE public.schema_migrations (
 
 CREATE TABLE public.user_test (
     id integer NOT NULL,
+    role text NOT NULL,
     firstname text NOT NULL,
-    lastname text NOT NULL
+    lastname text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_at timestamp with time zone
 );
 
 

@@ -487,6 +487,8 @@ type TestApi =
       "users" :> Capture "userId" Int :> Get '[JSON] UserTest :<|>
       -- update
       "users" :> Capture "userId" Int :> ReqBody '[JSON] UpdateUserTest :> Put '[JSON] UserTest :<|>
+      -- update role
+      "users" :> Header "admin" Bool :> Capture "userId" Int :> "role" :> ReqBody '[JSON] UserRole :> Put '[JSON] UserRole :<|>
       -- list
       "users" :> Get '[JSON] [UserTest]
     )
@@ -500,6 +502,7 @@ testApiServer =
   deleteUserHandler :<|>
   showUserHandler :<|>
   updateUserHandler :<|>
+  updateRoleHandler :<|>
   listUserHandler
 
 type AssetApi =

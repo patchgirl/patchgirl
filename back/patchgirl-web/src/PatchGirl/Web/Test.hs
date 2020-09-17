@@ -15,6 +15,9 @@ import qualified GHC.Int                          as Int
 import qualified Servant
 import           Servant.API.ContentTypes         (NoContent (..))
 import           Servant.Server                   (ServerError)
+import qualified Database.PostgreSQL.Simple.FromField as PG
+import qualified Data.ByteString.Char8                as B
+
 
 import           PatchGirl.Web.DB
 import           PatchGirl.Web.Internal.Env
@@ -83,8 +86,8 @@ insertNewUserTestSql newUser connection = do
   where
     rawQuery =
       [sql|
-          INSERT INTO user_test (firstname, lastname)
-          VALUES (?, ?)
+          INSERT INTO user_test (firstname, lastname, role)
+          VALUES (?, ?, 'normal')
           RETURNING id, firstname, lastname
           |]
 
@@ -108,7 +111,8 @@ deleteUserTestSql userId connection = do
   where
     rawQuery =
       [sql|
-          DELETE FROM user_test
+          UPDATE user_test
+          SET deleted_at = NOW()
           WHERE id = ?
           |]
 
@@ -181,6 +185,62 @@ updateUserTestSql userId UpdateUserTest{..} connection = do
           SET firstname = ?, lastname = ?
           WHERE id = ?
           RETURNING id, firstname, lastname
+          |]
+
+
+-- ** update role
+
+
+newtype UserRole
+  = UserRole { userRole_role :: String }
+  deriving (Eq, Show, Read, Generic)
+
+instance PG.FromField UserRole where
+   fromField f mdata =
+     case B.unpack `fmap` mdata of
+       Nothing       -> PG.returnError PG.UnexpectedNull f ""
+       Just role     -> return UserRole { userRole_role = role }
+
+instance Aeson.ToJSON UserRole where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("userRole_" :: String) }
+
+instance Aeson.FromJSON UserRole where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("userRole_" :: String) }
+
+updateRoleHandler
+  :: ( Reader.MonadReader Env m
+     , IO.MonadIO m
+     , Except.MonadError Servant.ServerError m
+     )
+  => Maybe Bool
+  -> Int
+  -> UserRole
+  -> m UserRole
+updateRoleHandler mIsAdmin userId updateUserTestRole =
+  case mIsAdmin of
+    Just True -> do
+      connection <- getDBConnection
+      IO.liftIO $ updateUserTestRoleSql userId updateUserTestRole connection
+
+    _ ->
+      Servant.throwError Servant.err404
+
+
+updateUserTestRoleSql :: Int -> UserRole -> PG.Connection -> IO UserRole
+updateUserTestRoleSql userId UserRole{..} connection = do
+  [ PG.Only role ] <- PG.query connection rawQuery ( userRole_role
+                                                   , userId
+                                                   )
+  return role
+  where
+    rawQuery =
+      [sql|
+          UPDATE user_test
+          SET role = ?
+          WHERE id = ?
+          RETURNING role
           |]
 
 

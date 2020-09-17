@@ -24,12 +24,14 @@ createUser :: NewUserTest -> ClientM UserTest
 deleteUser :: Int -> ClientM ()
 showUser :: Int -> ClientM UserTest
 updateUser :: Int -> UpdateUserTest -> ClientM UserTest
+updateUserRole :: Maybe Bool -> Int -> UserRole -> ClientM UserRole
 listUsers :: ClientM [UserTest]
 _ :<|> _
   :<|> createUser
   :<|> deleteUser
   :<|> showUser
   :<|> updateUser
+  :<|> updateUserRole
   :<|> listUsers =
   client (Proxy :: Proxy TestApi)
 
@@ -72,6 +74,12 @@ spec =
                                                                                              }
           userTest_firstname `shouldBe` "Jack"
           userTest_lastname `shouldBe` "Terry"
+
+      it "updates a role" $ \clientEnv ->
+        cleanDBAndCreateAccount $ \Test {} -> do
+          userTest <- try clientEnv $ createUser NewUserTest { newUserTest_firstname = "John", newUserTest_lastname = "Doe"}
+          newUserRole <- try clientEnv $ updateUserRole (Just True) (userTest_id userTest) $ UserRole { userRole_role = "admin" }
+          (userRole_role newUserRole) `shouldBe` "admin"
 
       it "list users" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test {} -> do
