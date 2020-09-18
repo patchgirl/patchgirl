@@ -88,21 +88,38 @@ INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_
 VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete user', 'https://{{apiHost}}/users/2', 'Delete', ARRAY[]::header_type[], '');
 
 
--- *** session/
+-- *** products/
 
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name)
-VALUES ('da0a3654-5e30-471f-ba03-f87760976981', NULL, 'RequestFolder', 'session');
+VALUES ('da0a3654-5e30-471f-ba03-f87760976981', NULL, 'RequestFolder', 'products');
 
+-- create
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login successful', 'https://{{apiHost}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
-  "email": "{{user}}@reqres.in",
-  "password": "cityslicka"
+VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'create', 'https://{{apiHost}}/test/products', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
+  "name": "ball",
+  "quantity": 10,
+  "price": 10
 }');
 
+-- delete
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('6a55626d-d1ec-4255-851d-2b8e18f4bdc4', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'login unsuccessful', 'https://{{apiHost}}/login', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('588f9c59-6528-4432-9f12-aba40b09e0ec', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'delete', 'https://{{apiHost}}/test/products/{{productId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
+-- show
+INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+VALUES ('64b08934-88cb-4fa1-8fed-7d40d2552f4c', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'show', 'https://{{apiHost}}/test/products/{{productId}}', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
+
+-- update
+INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+VALUES ('ebd8df25-b372-4b61-a7c0-3ac1391e42aa', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'update', 'https://{{apiHost}}/test/products/{{productId}}', 'Put', ARRAY[('Content-Type','application/json')]::header_type[], '{
+  "quantity": 20,
+  "price": 20
+}');
+
+-- list
+INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+VALUES ('9d5873f3-6436-4b5b-96c6-2bb6457e207d', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'update', 'https://{{apiHost}}/test/products', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 -- * pg
 

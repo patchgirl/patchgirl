@@ -420,13 +420,29 @@ $$ LANGUAGE plpgsql;
 
 -- * test
 
+CREATE TABLE product_test(
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    price INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
 
 CREATE TABLE user_test(
     id SERIAL PRIMARY KEY,
     role TEXT NOT NULL,
     firstname TEXT NOT NULL,
     lastname TEXT NOT NULL,
+    wallet INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE basket_product_test(
+    user_id INTEGER REFERENCES user_test(id) ON DELETE CASCADE,
+    product_id INTEGER REFERENCES product_test(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL
 );

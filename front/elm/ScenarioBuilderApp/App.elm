@@ -39,7 +39,7 @@ type alias Model a =
         , environments : List Environment
         , page : Page
         , scenarioNewNode : NewNode
-        , selectedEnvironmentToRunIndex : Maybe Uuid
+        , selectedEnvironmentToRunId : Maybe Uuid
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
     }

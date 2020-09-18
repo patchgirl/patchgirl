@@ -33,7 +33,7 @@ type alias Model a =
         , displayedPgBuilderView : BuilderView Uuid
         , displayedPgId : Maybe Uuid
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Uuid
+        , selectedEnvironmentToRunId : Maybe Uuid
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
@@ -59,7 +59,7 @@ update msg model =
         SelectEnvironment id ->
             let
                 newModel =
-                    { model | selectedEnvironmentToRunIndex = Just id }
+                    { model | selectedEnvironmentToRunId = Just id }
             in
             ( newModel, Cmd.none )
 
@@ -97,7 +97,7 @@ view model =
                                , padding 20
                                , width (fillPortion 1)
                                ]
-                         ) <| environmentSelectionView model.environments model.selectedEnvironmentToRunIndex SelectEnvironment
+                         ) <| environmentSelectionView model.environments model.selectedEnvironmentToRunId SelectEnvironment
                     , el ( box [ alignTop
                                , spacing 20
                                , centerX

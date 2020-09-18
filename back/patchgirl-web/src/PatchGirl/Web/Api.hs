@@ -3,27 +3,27 @@
 {-# LANGUAGE TypeOperators   #-}
 
 module PatchGirl.Web.Api( WebApi
-                    , webApiServer
-                    , RequestCollectionApi
-                    , PgCollectionApi
-                    , ScenarioCollectionApi
-                    , EnvironmentApi
-                    , ScenarioNodeApi
-                    , ScenarioFileApi
-                    , ScenarioFolderApi
-                    , SceneActorApi
-                    , RequestNodeApi
-                    , RequestFileApi
-                    , RequestFolderApi
-                    , PgNodeApi
-                    , PgFileApi
-                    , PgFolderApi
-                    , SessionApi
-                    , PSessionApi
-                    , AccountApi
-                    , RestApi
-                    , TestApi
-                    ) where
+                        , webApiServer
+                        , RequestCollectionApi
+                        , PgCollectionApi
+                        , ScenarioCollectionApi
+                        , EnvironmentApi
+                        , ScenarioNodeApi
+                        , ScenarioFileApi
+                        , ScenarioFolderApi
+                        , SceneActorApi
+                        , RequestNodeApi
+                        , RequestFileApi
+                        , RequestFolderApi
+                        , PgNodeApi
+                        , PgFileApi
+                        , PgFolderApi
+                        , SessionApi
+                        , PSessionApi
+                        , AccountApi
+                        , RestApi
+                        , TestApi
+                        ) where
 
 
 import           Data.UUID
@@ -479,18 +479,40 @@ type TestApi =
     "test" :> (
       "deleteNoContent" :> DeleteNoContent '[JSON] NoContent :<|>
       "getStatusCode" :> Capture "statusCode" Int :> Get '[JSON] () :<|>
-       -- create
-      "users" :> ReqBody '[JSON] NewUserTest :> Post '[JSON] UserTest :<|>
-      -- delete
-      "users" :> Capture "userId" Int :> Delete '[JSON] () :<|>
-      -- show
-      "users" :> Capture "userId" Int :> Get '[JSON] UserTest :<|>
-      -- update
-      "users" :> Capture "userId" Int :> ReqBody '[JSON] UpdateUserTest :> Put '[JSON] UserTest :<|>
-      -- update role
-      "users" :> Header "admin" Bool :> Capture "userId" Int :> "role" :> ReqBody '[JSON] UserRole :> Put '[JSON] UserRole :<|>
-      -- list
-      "users" :> Get '[JSON] [UserTest]
+      "users" :> (
+         -- create
+        ReqBody '[JSON] NewUserTest :> Post '[JSON] UserTest :<|>
+        -- delete
+        Capture "userId" Int :> Delete '[JSON] () :<|>
+        -- show
+        Capture "userId" Int :> Get '[JSON] UserTest :<|>
+        -- update
+        Capture "userId" Int :> ReqBody '[JSON] UpdateUserTest :> Put '[JSON] UserTest :<|>
+        -- update role
+        Header "admin" Bool :> Capture "userId" Int :> "role" :> ReqBody '[JSON] UserRole :> Put '[JSON] UserRole :<|>
+        -- list
+        Get '[JSON] [UserTest]
+      ) :<|>
+      "products" :> (
+         -- create
+        ReqBody '[JSON] NewProductTest :> Post '[JSON] ProductTest :<|>
+        -- delete
+        Capture "productId" Int :> Delete '[JSON] () :<|>
+        -- show
+        Capture "productId" Int :> Get '[JSON] ProductTest :<|>
+        -- update
+        Capture "productId" Int :> ReqBody '[JSON] UpdateProductTest :> Put '[JSON] ProductTest :<|>
+        -- list
+        Get '[JSON] [ProductTest]
+      ) :<|>
+      "basket" :> (
+        -- add to basket
+        Capture "basketId" Int :> ReqBody '[JSON] AddToBasketTest :> Put '[JSON] () :<|>
+        -- remove from basket
+        Capture "basketId" Int :> ReqBody '[JSON] RemoveFromBasketTest :> Delete '[JSON] () :<|>
+        -- show
+        Capture "basketId" Int :> Get '[JSON] BasketTest
+      )
     )
   )
 
@@ -503,7 +525,15 @@ testApiServer =
   showUserHandler :<|>
   updateUserHandler :<|>
   updateRoleHandler :<|>
-  listUserHandler
+  listUserHandler :<|>
+  createProductHandler :<|>
+  deleteProductHandler :<|>
+  showProductHandler :<|>
+  updateProductHandler :<|>
+  listProductHandler :<|>
+  addToBasketHandler :<|>
+  removeFromBasketHandler :<|>
+  showBasketHandler
 
 type AssetApi =
   "public" :> Raw

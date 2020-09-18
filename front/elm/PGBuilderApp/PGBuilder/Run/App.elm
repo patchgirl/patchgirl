@@ -46,7 +46,7 @@ type alias Model a =
         , displayedPgBuilderView : BuilderView Uuid
         , navigationKey : Navigation.Key
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Uuid
+        , selectedEnvironmentToRunId : Maybe Uuid
         , runnerRunning : Bool
         , page : Page
     }

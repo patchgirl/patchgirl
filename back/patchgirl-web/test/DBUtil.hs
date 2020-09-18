@@ -100,7 +100,7 @@ selectFakeAccount id connection =
       [sql|
           SELECT id, email
           FROM account
-          where id = ?
+          WHERE id = ?
           |]
 
 

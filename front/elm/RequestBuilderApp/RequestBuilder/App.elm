@@ -49,7 +49,7 @@ type alias Model a =
         , displayedRequestBuilderView : BuilderView Uuid
         , requestNewNode : NewNode
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Uuid
+        , selectedEnvironmentToRunId : Maybe Uuid
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key

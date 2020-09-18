@@ -82,8 +82,8 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
         selectedEnvironmentToEditId =
             Nothing
 
-        selectedEnvironmentToRunIndex =
-            Nothing
+        selectedEnvironmentToRunId =
+            List.head environments |> Maybe.map .id
 
         initialLoadingStyle =
             Animation.style [ Animation.opacity 0 ]
@@ -142,7 +142,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , displayedScenarioId = Nothing
             , displayedSceneId = Nothing
             , script = ""
-            , selectedEnvironmentToRunIndex = selectedEnvironmentToRunIndex
+            , selectedEnvironmentToRunId = selectedEnvironmentToRunId
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , displayedEnvId = Nothing
             , displayedEnvironmentBuilderView = LandingView DefaultView

@@ -521,7 +521,7 @@ getNodeIdAndName node =
 
 
 environmentSelectionView : List Environment -> Maybe Uuid -> (Uuid -> a) -> Element a
-environmentSelectionView environments selectedEnvironmentToRunIndex msg =
+environmentSelectionView environments selectedEnvironmentToRunId msg =
     let
         entryView environment =
             Input.option environment.id (text (notEditedValue environment.name))
@@ -529,7 +529,7 @@ environmentSelectionView environments selectedEnvironmentToRunIndex msg =
     in
     Input.radio [ padding 20, spacing 10 ]
         { onChange = msg
-        , selected = selectedEnvironmentToRunIndex
+        , selected = selectedEnvironmentToRunId
         , label = Input.labelAbove [] (text "Environment:")
         , options =
               List.map entryView environments

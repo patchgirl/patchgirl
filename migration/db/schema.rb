@@ -430,6 +430,17 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
+-- Name: basket_product_test; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.basket_product_test (
+    user_id integer,
+    product_id integer,
+    quantity integer NOT NULL
+);
+
+
+--
 -- Name: environment; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -489,6 +500,41 @@ CREATE TABLE public.pg_node (
     pg_dbname text,
     CONSTRAINT pg_node_check CHECK ((((tag = 'PgFolder'::public.pg_node_type) AND (sql IS NULL)) OR ((tag = 'PgFile'::public.pg_node_type) AND (sql IS NOT NULL) AND (pg_host IS NOT NULL) AND (pg_password IS NOT NULL) AND (pg_port IS NOT NULL) AND (pg_user IS NOT NULL) AND (pg_dbname IS NOT NULL))))
 );
+
+
+--
+-- Name: product_test; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.product_test (
+    id integer NOT NULL,
+    name text NOT NULL,
+    quantity integer NOT NULL,
+    price integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_at timestamp with time zone
+);
+
+
+--
+-- Name: product_test_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.product_test_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: product_test_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.product_test_id_seq OWNED BY public.product_test.id;
 
 
 --
@@ -617,6 +663,7 @@ CREATE TABLE public.user_test (
     role text NOT NULL,
     firstname text NOT NULL,
     lastname text NOT NULL,
+    wallet integer DEFAULT 0,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
@@ -641,6 +688,13 @@ CREATE SEQUENCE public.user_test_id_seq
 --
 
 ALTER SEQUENCE public.user_test_id_seq OWNED BY public.user_test.id;
+
+
+--
+-- Name: product_test id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_test ALTER COLUMN id SET DEFAULT nextval('public.product_test_id_seq'::regclass);
 
 
 --
@@ -738,6 +792,14 @@ ALTER TABLE ONLY public.pg_node
 
 
 --
+-- Name: product_test product_test_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_test
+    ADD CONSTRAINT product_test_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: request_collection request_collection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -823,6 +885,22 @@ ALTER TABLE ONLY public.account_environment
 
 ALTER TABLE ONLY public.account_environment
     ADD CONSTRAINT account_environment_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES public.environment(id) ON DELETE CASCADE;
+
+
+--
+-- Name: basket_product_test basket_product_test_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.basket_product_test
+    ADD CONSTRAINT basket_product_test_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.product_test(id) ON DELETE CASCADE;
+
+
+--
+-- Name: basket_product_test basket_product_test_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.basket_product_test
+    ADD CONSTRAINT basket_product_test_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_test(id) ON DELETE CASCADE;
 
 
 --

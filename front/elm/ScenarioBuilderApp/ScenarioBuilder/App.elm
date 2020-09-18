@@ -54,7 +54,7 @@ type alias Model a =
         , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
         , scenarioNewNode : NewNode
         , environments : List Environment
-        , selectedEnvironmentToRunIndex : Maybe Uuid
+        , selectedEnvironmentToRunId : Maybe Uuid
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
