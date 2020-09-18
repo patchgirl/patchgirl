@@ -382,8 +382,7 @@ view file model =
                          , padding 20
                          ]
                     )
-                    [ el [ alignRight ] (closeBuilderView model.page)
-                    , titleView model file
+                    [ titleView model file
                     , el [ alignTop ] builderView
                     ]
                 , el

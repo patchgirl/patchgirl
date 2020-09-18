@@ -119,7 +119,7 @@ VALUES ('ebd8df25-b372-4b61-a7c0-3ac1391e42aa', 'da0a3654-5e30-471f-ba03-f877609
 
 -- list
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('9d5873f3-6436-4b5b-96c6-2bb6457e207d', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'update', 'https://{{apiHost}}/test/products', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('9d5873f3-6436-4b5b-96c6-2bb6457e207d', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'list', 'https://{{apiHost}}/test/products', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 -- * pg
 
