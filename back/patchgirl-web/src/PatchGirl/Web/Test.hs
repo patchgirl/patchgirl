@@ -148,11 +148,11 @@ data AddToBasketTest
 
 instance Aeson.ToJSON AddToBasketTest where
   toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("updateBasketTest_" :: String) }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("addToBasket_" :: String) }
 
 instance Aeson.FromJSON AddToBasketTest where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("updateBasketTest_" :: String) }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("addToBasket_" :: String) }
 
 
 -- *** remove from basket
@@ -166,11 +166,11 @@ data RemoveFromBasketTest
 
 instance Aeson.ToJSON RemoveFromBasketTest where
   toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("updateBasketTest_" :: String) }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("removeFromBasketTest_" :: String) }
 
 instance Aeson.FromJSON RemoveFromBasketTest where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("updateBasketTest_" :: String) }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("removeFromBasketTest_" :: String) }
 
 
 -- ** user
@@ -559,6 +559,7 @@ listUserTestSql connection = do
       [sql|
           SELECT id, firstname, lastname
           FROM user_test
+          WHERE deleted_at IS NULL
           |]
 
 
@@ -644,7 +645,7 @@ showBasketHandler userId = do
 
 showBasketTestSql :: Int -> PG.Connection -> IO (Maybe BasketTest)
 showBasketTestSql userId connection = do
-  [ mUserIdToPurchase ] :: [ Maybe (Int, [PurchaseTest]) ]  <- PG.query connection rawQuery (PG.Only userId)
+  mUserIdToPurchase :: Maybe (Int, [PurchaseTest])  <- PG.query connection rawQuery (PG.Only userId) <&> Maybe.listToMaybe
   return $ mUserIdToPurchase <&> \(_, purchases) ->
     BasketTest { basketTest_userId = userId
                , basketTest_purchases = purchases

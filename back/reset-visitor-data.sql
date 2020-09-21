@@ -63,6 +63,71 @@ INSERT INTO account (
 );
 
 
+-- * environment
+
+
+INSERT INTO environment (id, name)
+VALUES ('98fa7543-aaaf-41a2-9b42-54129bd96551', 'prod');
+INSERT INTO environment (id, name)
+VALUES ('38668b92-647d-4108-92c8-b539fdc7a7bd', 'dev');
+INSERT INTO environment (id, name)
+VALUES ('2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'staging');
+
+
+INSERT INTO account_environment (account_id, environment_id)
+VALUES ('00000000-0000-1000-a000-000000000000', '98fa7543-aaaf-41a2-9b42-54129bd96551');
+INSERT INTO account_environment (account_id, environment_id)
+VALUES ('00000000-0000-1000-a000-000000000000', '38668b92-647d-4108-92c8-b539fdc7a7bd');
+INSERT INTO account_environment (account_id, environment_id)
+VALUES ('00000000-0000-1000-a000-000000000000', '2b9271c8-2e6c-4886-af8b-9c7eff43fe79');
+
+
+-- * key values
+
+
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'apiHost', 'reqres.in/api', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'apiHost', 'localhost', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'apiHost', 'localhost', false);
+
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbHost', 'myPosgresHost', true);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbHost', 'localhost', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'dbHost', 'localhost', false);
+
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPort', '5432', true);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPort', '5433', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'dbPort', '5432', false);
+
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbUser', 'postgres', true);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbUser', 'dev', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'dbUser', 'postgres', false);
+
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPassword', 'somePassw0rd!', true);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPassword', '', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'dbPassword', '', false);
+
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbName', 'myDB', true);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbName', 'dev', false);
+INSERT INTO key_value (id, environment_id, key, value, hidden)
+VALUES (gen_random_uuid(), '2b9271c8-2e6c-4886-af8b-9c7eff43fe79', 'dbName', 'test', false);
+
+
 -- * requests
 
 
@@ -73,19 +138,25 @@ INSERT INTO request_node (id, request_node_parent_id, tag, name)
 VALUES ('58954f35-49ac-45b7-bcf6-c8df1af4b12c', NULL, 'RequestFolder', 'users');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'list users', 'https://{{apiHost}}/users', 'Get', ARRAY[('key1','value1')]::header_type[], '');
+VALUES ('e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'list', 'https://{{apiHost}}/test/users', 'Get', ARRAY[('key1','value1')]::header_type[], '');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('e5324e42-76e5-4fa4-8243-0348dba8c1a8', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'single user', 'https://{{apiHost}}/users/2', 'Get', ARRAY[]::header_type[], '');
+VALUES ('e5324e42-76e5-4fa4-8243-0348dba8c1a8', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'show', 'https://{{apiHost}}/test/users/{{userId}}', 'Get', ARRAY[]::header_type[], '');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('5ff67d3c-28a2-4aa1-b474-4b10dabd2852', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'create user', 'https://{{apiHost}}/users', 'Post', ARRAY[('key1','value1')]::header_type[], '');
+VALUES ('5ff67d3c-28a2-4aa1-b474-4b10dabd2852', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'create', 'https://{{apiHost}}/test/users', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
+  "firstname": "John",
+  "lastname": "Doe"
+}');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'update user', 'https://{{apiHost}}/users/2', 'Put', ARRAY[]::header_type[], '');
+VALUES ('718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'update', 'https://{{apiHost}}/test/users/{{userId}}', 'Put', ARRAY[('Content-Type','application/json')]::header_type[], '{
+  "firstname": "Jane",
+  "lastname": "Doe"
+}');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete user', 'https://{{apiHost}}/users/2', 'Delete', ARRAY[]::header_type[], '');
+VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete', 'https://{{apiHost}}/test/users/{{userId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 
 -- *** products/
@@ -121,7 +192,34 @@ VALUES ('ebd8df25-b372-4b61-a7c0-3ac1391e42aa', 'da0a3654-5e30-471f-ba03-f877609
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
 VALUES ('9d5873f3-6436-4b5b-96c6-2bb6457e207d', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'list', 'https://{{apiHost}}/test/products', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
+-- *** basket/
+
+
+INSERT INTO request_node (id, request_node_parent_id, tag, name)
+VALUES ('47f796ea-68f6-4c1f-8b6d-624ad031e2d8', NULL, 'RequestFolder', 'basket');
+
+-- show
+INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+VALUES ('8eb08e68-ebe3-4e20-ad38-2be6b2c98c8d', '47f796ea-68f6-4c1f-8b6d-624ad031e2d8', 'RequestFile', 'show', 'https://{{apiHost}}/test/basket/{{userId}}', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
+
+-- add to basket
+INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+VALUES ('c4295e57-20eb-4bf0-ba0b-f5f070dfe862', '47f796ea-68f6-4c1f-8b6d-624ad031e2d8', 'RequestFile', 'add to basket', 'https://{{apiHost}}/test/basket/{{userId}}', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
+  "productId": {{productId}},
+  "quantity": 100
+}');
+
+-- remove from basket
+INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
+VALUES ('044e39f8-e234-4e85-9690-4cb35b16ed5f', '47f796ea-68f6-4c1f-8b6d-624ad031e2d8', 'RequestFile', 'remove from basket', 'https://{{apiHost}}/test/basket/{{userId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '{
+  "productId": {{productId}},
+  "productQuantity": 1
+}');
+
 -- * pg
+
+
+-- ** users
 
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
@@ -140,6 +238,60 @@ INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password
 VALUES ('cfb334e7-212c-4b8a-9f39-814538f96046', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'insert user',  'INSERT INTO user_test (firstname, lastname) values (''john'', ''doe'');', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 
+-- ** products
+
+
+INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
+VALUES ('5e49588f-65e6-415b-9b0a-677b9db87a5e', NULL, 'PgFolder', 'products');
+
+INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
+VALUES ('e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6', '5e49588f-65e6-415b-9b0a-677b9db87a5e', 'PgFile', 'delete all',  'DELETE FROM product_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+
+-- ** basket
+
+
+INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
+VALUES ('fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', NULL, 'PgFolder', 'basket');
+
+INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
+VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'PgFile', 'reset',  'DELETE FROM basket_product_test WHERE id = {{userId}};', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+
+
+-- * scene
+
+
+INSERT INTO scene_node(
+    id,
+    scene_node_parent_id,
+    actor_type,
+    http_actor_id,
+    pg_actor_id,
+    prescript,
+    postscript
+  ) VALUES (
+    'e7b29477-a1b0-4ef3-b035-08af0f0cbea1',
+    NULL,
+    'PgActor',
+    NULL,
+    'e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6',
+    '',
+    ''
+  )
+);
+
+
+-- * scenario
+
+-- ** reset all
+
+
+INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name)
+VALUES ('fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', NULL, 'ScenarioFolder', 'reset everything');
+
+INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name, environment_id, scene_node_id)
+VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'ScenarioFile', 'delete all users & products', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'e7b29477-a1b0-4ef3-b035-08af0f0cbea1');
+
+
 -- * request collection
 
 
@@ -148,9 +300,10 @@ VALUES (1, '00000000-0000-1000-a000-000000000000');
 
 INSERT INTO request_collection_to_request_node (request_collection_id, request_node_id)
 VALUES (1,'58954f35-49ac-45b7-bcf6-c8df1af4b12c');
-
 INSERT INTO request_collection_to_request_node (request_collection_id, request_node_id)
 VALUES (1,'da0a3654-5e30-471f-ba03-f87760976981');
+INSERT INTO request_collection_to_request_node (request_collection_id, request_node_id)
+VALUES (1,'47f796ea-68f6-4c1f-8b6d-624ad031e2d8');
 
 
 -- * pg collection
@@ -161,6 +314,10 @@ VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97', '00000000-0000-1000-a000-0000000
 
 INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_actor_id)
 VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','cb2c1df8-68f0-4a61-b7c7-f75194604976');
+INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_actor_id)
+VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','5e49588f-65e6-415b-9b0a-677b9db87a5e');
+INSERT INTO pg_collection_to_pg_node (pg_collection_id, pg_actor_id)
+VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','fcd4b4af-ad04-4efa-b48e-a5fd56d5133b');
 
 
 -- * scenario
@@ -169,52 +326,5 @@ VALUES ('d45a8a8d-c0a3-439d-ac65-3f2992e61b97','cb2c1df8-68f0-4a61-b7c7-f7519460
 INSERT INTO scenario_collection (account_id, id)
 VALUES ('00000000-0000-1000-a000-000000000000', 'a9e3fbc2-de07-40a5-afd8-2460ef1e202c');
 
-
--- * environment
-
-
-INSERT INTO environment (id, name)
-VALUES ('98fa7543-aaaf-41a2-9b42-54129bd96551', 'prod');
-
-INSERT INTO environment (id, name)
-VALUES ('38668b92-647d-4108-92c8-b539fdc7a7bd', 'dev');
-
-INSERT INTO account_environment (account_id, environment_id)
-VALUES ('00000000-0000-1000-a000-000000000000', '98fa7543-aaaf-41a2-9b42-54129bd96551');
-
-INSERT INTO account_environment (account_id, environment_id)
-VALUES ('00000000-0000-1000-a000-000000000000', '38668b92-647d-4108-92c8-b539fdc7a7bd');
-
-
--- * key values
-
-
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'apiHost', 'reqres.in/api', false);
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'apiHost', 'localhost', false);
-
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbHost', 'myPosgresHost', true);
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbHost', 'localhost', false);
-
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPort', '5432', true);
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPort', '5432', false);
-
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbUser', 'postgres', true);
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbUser', 'postgres', false);
-
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbPassword', 'somePassw0rd!', true);
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbPassword', '', false);
-
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '98fa7543-aaaf-41a2-9b42-54129bd96551', 'dbName', 'myDB', true);
-INSERT INTO key_value (id, environment_id, key, value, hidden)
-VALUES (gen_random_uuid(), '38668b92-647d-4108-92c8-b539fdc7a7bd', 'dbName', 'test', false);
+INSERT INTO scenario_collection_to_scenario_node (scenario_collection_id, scenario_node_id)
+VALUES ('a9e3fbc2-de07-40a5-afd8-2460ef1e202c','99346105-4f8d-4be4-a14b-7c5b264ffc1d');

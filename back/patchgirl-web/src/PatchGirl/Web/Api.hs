@@ -507,11 +507,11 @@ type TestApi =
       ) :<|>
       "basket" :> (
         -- add to basket
-        Capture "basketId" Int :> ReqBody '[JSON] AddToBasketTest :> Put '[JSON] () :<|>
+        Capture "userId" Int :> ReqBody '[JSON] AddToBasketTest :> Post '[JSON] () :<|>
         -- remove from basket
-        Capture "basketId" Int :> ReqBody '[JSON] RemoveFromBasketTest :> Delete '[JSON] () :<|>
+        Capture "userId" Int :> ReqBody '[JSON] RemoveFromBasketTest :> Delete '[JSON] () :<|>
         -- show
-        Capture "basketId" Int :> Get '[JSON] BasketTest
+        Capture "userId" Int :> Get '[JSON] BasketTest
       )
     )
   )

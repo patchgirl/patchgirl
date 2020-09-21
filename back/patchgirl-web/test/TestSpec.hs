@@ -56,7 +56,7 @@ _ :<|> _
 
 
 spec :: Spec
-spec =
+spec = focus $
   withClient (mkApp defaultEnv) $ do
 
 
