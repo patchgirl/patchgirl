@@ -24,7 +24,8 @@ library
       ScenarioComputation.App
       ScenarioComputation.Model
       Server
-      TangoScript
+      TangoScript.App
+      TangoScript.Model
   other-modules:
       Paths_patchgirl_runner
   hs-source-dirs:
@@ -110,6 +111,7 @@ test-suite spec
       PgSqlComputation.AppSpec
       RequestComputation.AppSpec
       ScenarioComputation.AppSpec
+      TangoScript.AppSpec
       Paths_patchgirl_runner
   hs-source-dirs:
       test

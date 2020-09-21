@@ -12,7 +12,7 @@ import           GHC.Generics             (Generic)
 import           Interpolator
 import           PgSqlComputation.Model
 import           RequestComputation.Model
-import           TangoScript
+import           TangoScript.Model
 
 
 -- * scenario input

@@ -23,7 +23,7 @@ import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           Server
-import           TangoScript
+import           TangoScript.Model
 
 
 -- * client

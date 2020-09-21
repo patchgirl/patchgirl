@@ -17,7 +17,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Maybe      as Maybe
 import           GHC.Generics    (Generic)
 
-import           TangoScript
+import           TangoScript.Model
 
 
 -- * model

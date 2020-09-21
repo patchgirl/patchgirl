@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module TangoScript ( TangoAst
-                   , Proc(..)
-                   , Expr(..)
-                   , Json(..)
-                   ) where
+module TangoScript.Model ( TangoAst
+                         , Proc(..)
+                         , Expr(..)
+                         , Json(..)
+                         ) where
 
 import qualified Data.Aeson      as Aeson
 import           Data.Map.Strict (Map)

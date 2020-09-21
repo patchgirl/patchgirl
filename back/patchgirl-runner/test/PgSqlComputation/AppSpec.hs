@@ -152,7 +152,7 @@ spec = do
           input =
             ( Map.empty
             , PgComputationInput
-                [Sentence "insert into user_test (firstname, lastname) values ('a', 'b');"]
+                [ Sentence "insert into user_test (firstname, lastname, role) values ('a', 'b', 'manager');" ]
                 validPgConnection
             )
         let output = Right PgCommandOK
@@ -163,7 +163,7 @@ spec = do
           input =
             ( Map.empty
             , PgComputationInput
-                [ Sentence "insert into user_test (firstname, lastname) values ('a', 'b') RETURNING firstname, lastname;"]
+                [ Sentence "insert into user_test (firstname, lastname, role) values ('a', 'b', 'manager') RETURNING firstname, lastname;"]
                 validPgConnection
             )
         let output =
