@@ -138,25 +138,25 @@ INSERT INTO request_node (id, request_node_parent_id, tag, name)
 VALUES ('58954f35-49ac-45b7-bcf6-c8df1af4b12c', NULL, 'RequestFolder', 'users');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'list', 'https://{{apiHost}}/test/users', 'Get', ARRAY[('key1','value1')]::header_type[], '');
+VALUES ('e46ee2de-f1ce-4b13-b1ec-b529ae87da54', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'list users', 'https://{{apiHost}}/test/users', 'Get', ARRAY[('key1','value1')]::header_type[], '');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('e5324e42-76e5-4fa4-8243-0348dba8c1a8', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'show', 'https://{{apiHost}}/test/users/{{userId}}', 'Get', ARRAY[]::header_type[], '');
+VALUES ('e5324e42-76e5-4fa4-8243-0348dba8c1a8', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'show user', 'https://{{apiHost}}/test/users/{{userId}}', 'Get', ARRAY[]::header_type[], '');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('5ff67d3c-28a2-4aa1-b474-4b10dabd2852', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'create', 'https://{{apiHost}}/test/users', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
+VALUES ('5ff67d3c-28a2-4aa1-b474-4b10dabd2852', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'create user', 'https://{{apiHost}}/test/users', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
   "firstname": "John",
   "lastname": "Doe"
 }');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'update', 'https://{{apiHost}}/test/users/{{userId}}', 'Put', ARRAY[('Content-Type','application/json')]::header_type[], '{
+VALUES ('718a67f1-9ff2-4d09-a14a-1b9f4c029a26', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'update user', 'https://{{apiHost}}/test/users/{{userId}}', 'Put', ARRAY[('Content-Type','application/json')]::header_type[], '{
   "firstname": "Jane",
   "lastname": "Doe"
 }');
 
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete', 'https://{{apiHost}}/test/users/{{userId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('913d508c-fef3-4034-98da-9e328debb196', '58954f35-49ac-45b7-bcf6-c8df1af4b12c', 'RequestFile', 'delete user', 'https://{{apiHost}}/test/users/{{userId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 
 -- *** products/
@@ -167,7 +167,7 @@ VALUES ('da0a3654-5e30-471f-ba03-f87760976981', NULL, 'RequestFolder', 'products
 
 -- create
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'create', 'https://{{apiHost}}/test/products', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
+VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'create product', 'https://{{apiHost}}/test/products', 'Post', ARRAY[('Content-Type','application/json')]::header_type[], '{
   "name": "ball",
   "quantity": 10,
   "price": 10
@@ -175,22 +175,22 @@ VALUES ('b3b24406-a7c0-4c68-bdcc-279e843340a0', 'da0a3654-5e30-471f-ba03-f877609
 
 -- delete
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('588f9c59-6528-4432-9f12-aba40b09e0ec', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'delete', 'https://{{apiHost}}/test/products/{{productId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('588f9c59-6528-4432-9f12-aba40b09e0ec', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'delete product', 'https://{{apiHost}}/test/products/{{productId}}', 'Delete', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 -- show
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('64b08934-88cb-4fa1-8fed-7d40d2552f4c', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'show', 'https://{{apiHost}}/test/products/{{productId}}', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('64b08934-88cb-4fa1-8fed-7d40d2552f4c', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'show product', 'https://{{apiHost}}/test/products/{{productId}}', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 -- update
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('ebd8df25-b372-4b61-a7c0-3ac1391e42aa', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'update', 'https://{{apiHost}}/test/products/{{productId}}', 'Put', ARRAY[('Content-Type','application/json')]::header_type[], '{
+VALUES ('ebd8df25-b372-4b61-a7c0-3ac1391e42aa', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'update product', 'https://{{apiHost}}/test/products/{{productId}}', 'Put', ARRAY[('Content-Type','application/json')]::header_type[], '{
   "quantity": 20,
   "price": 20
 }');
 
 -- list
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('9d5873f3-6436-4b5b-96c6-2bb6457e207d', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'list', 'https://{{apiHost}}/test/products', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('9d5873f3-6436-4b5b-96c6-2bb6457e207d', 'da0a3654-5e30-471f-ba03-f87760976981', 'RequestFile', 'list products', 'https://{{apiHost}}/test/products', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 -- *** basket/
 
@@ -200,7 +200,7 @@ VALUES ('47f796ea-68f6-4c1f-8b6d-624ad031e2d8', NULL, 'RequestFolder', 'basket')
 
 -- show
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
-VALUES ('8eb08e68-ebe3-4e20-ad38-2be6b2c98c8d', '47f796ea-68f6-4c1f-8b6d-624ad031e2d8', 'RequestFile', 'show', 'https://{{apiHost}}/test/basket/{{userId}}', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
+VALUES ('8eb08e68-ebe3-4e20-ad38-2be6b2c98c8d', '47f796ea-68f6-4c1f-8b6d-624ad031e2d8', 'RequestFile', 'show basket', 'https://{{apiHost}}/test/basket/{{userId}}', 'Get', ARRAY[('Content-Type','application/json')]::header_type[], '');
 
 -- add to basket
 INSERT INTO request_node (id, request_node_parent_id, tag, name, http_url, http_method, http_headers, http_body)
@@ -226,13 +226,13 @@ INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
 VALUES ('cb2c1df8-68f0-4a61-b7c7-f75194604976', NULL, 'PgFolder', 'users');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-VALUES ('0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'all users',  'SELECT * FROM user_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+VALUES ('0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'select all users',  'SELECT * FROM user_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-VALUES ('aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'single users',  'SELECT * FROM user_test where id = 1 ;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+VALUES ('aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'select single users',  'SELECT * FROM user_test where id = 1 ;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-VALUES ('579f1274-045e-403f-b987-22caea511d9b', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'delete users',  'DELETE FROM user_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+VALUES ('579f1274-045e-403f-b987-22caea511d9b', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'delete all users',  'DELETE FROM user_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
 VALUES ('cfb334e7-212c-4b8a-9f39-814538f96046', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'insert user',  'INSERT INTO user_test (firstname, lastname) values (''john'', ''doe'');', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
@@ -245,7 +245,7 @@ INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
 VALUES ('5e49588f-65e6-415b-9b0a-677b9db87a5e', NULL, 'PgFolder', 'products');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-VALUES ('e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6', '5e49588f-65e6-415b-9b0a-677b9db87a5e', 'PgFile', 'delete all',  'DELETE FROM product_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+VALUES ('e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6', '5e49588f-65e6-415b-9b0a-677b9db87a5e', 'PgFile', 'delete all products',  'DELETE FROM product_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 -- ** basket
 
@@ -254,7 +254,10 @@ INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
 VALUES ('fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', NULL, 'PgFolder', 'basket');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'PgFile', 'reset',  'DELETE FROM basket_product_test WHERE id = {{userId}};', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'PgFile', 'delete user basket',  'DELETE FROM basket_product_test WHERE id = {{userId}};', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+
+INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
+VALUES ('b87cf618-e4a8-441e-bb48-e65456aed260', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'PgFile', 'delete all baskets',  'DELETE FROM basket_product_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 
 -- * scene
@@ -276,6 +279,42 @@ INSERT INTO scene_node(
   'PgActor',
   NULL,
   'e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6',
+  '',
+  ''
+);
+
+INSERT INTO scene_node(
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  '68e108c3-0674-43b0-b5f1-90cc686f7bb4',
+  'e7b29477-a1b0-4ef3-b035-08af0f0cbea1',
+  'PgActor',
+  NULL,
+  'b87cf618-e4a8-441e-bb48-e65456aed260',
+  '',
+  ''
+);
+
+INSERT INTO scene_node(
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  '0165aa2e-af7d-4de0-b507-098384327820',
+  '68e108c3-0674-43b0-b5f1-90cc686f7bb4',
+  'PgActor',
+  NULL,
+  '579f1274-045e-403f-b987-22caea511d9b',
   '',
   ''
 );
