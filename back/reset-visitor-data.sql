@@ -259,37 +259,68 @@ VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', 'fcd4b4af-ad04-4efa-b48e-a5fd56d
 
 -- * scene
 
+-- ** reset
+
 
 INSERT INTO scene_node(
-    id,
-    scene_node_parent_id,
-    actor_type,
-    http_actor_id,
-    pg_actor_id,
-    prescript,
-    postscript
-  ) VALUES (
-    'e7b29477-a1b0-4ef3-b035-08af0f0cbea1',
-    NULL,
-    'PgActor',
-    NULL,
-    'e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6',
-    '',
-    ''
-  )
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  'e7b29477-a1b0-4ef3-b035-08af0f0cbea1',
+  NULL,
+  'PgActor',
+  NULL,
+  'e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6',
+  '',
+  ''
 );
 
+
+-- ** simple project
+
+
+INSERT INTO scene_node(
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  '7d8285a2-ac9c-4485-b96a-7ccc766638ca',
+  NULL,
+  'HttpActor',
+  '5ff67d3c-28a2-4aa1-b474-4b10dabd2852',
+  NULL,
+  '',
+  ''
+);
 
 -- * scenario
 
 -- ** reset all
 
+INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name)
+VALUES ('fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', NULL, 'ScenarioFolder', 'Shopping web app');
+
 
 INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name)
-VALUES ('fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', NULL, 'ScenarioFolder', 'reset everything');
+VALUES ('5bdc3a0e-1731-4213-8020-644bc7bff6e1', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'ScenarioFolder', 'reset everything');
 
 INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name, environment_id, scene_node_id)
-VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'ScenarioFile', 'delete all users & products', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'e7b29477-a1b0-4ef3-b035-08af0f0cbea1');
+VALUES ('9d07ef17-ca17-471b-b4e2-e26d8c97328d', '5bdc3a0e-1731-4213-8020-644bc7bff6e1', 'ScenarioFile', 'delete all users & products', '38668b92-647d-4108-92c8-b539fdc7a7bd', 'e7b29477-a1b0-4ef3-b035-08af0f0cbea1');
+
+INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name)
+VALUES ('31333648-03d3-4ddd-a4d0-9a726d9562c4', 'fcd4b4af-ad04-4efa-b48e-a5fd56d5133b', 'ScenarioFolder', 'create simple project');
+
+INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name, environment_id, scene_node_id)
+VALUES ('de687457-8cff-459f-9cc9-95c17baafde3', '31333648-03d3-4ddd-a4d0-9a726d9562c4', 'ScenarioFile', 'create a user with products in their basket', '38668b92-647d-4108-92c8-b539fdc7a7bd', '7d8285a2-ac9c-4485-b96a-7ccc766638ca');
 
 
 -- * request collection
@@ -327,4 +358,4 @@ INSERT INTO scenario_collection (account_id, id)
 VALUES ('00000000-0000-1000-a000-000000000000', 'a9e3fbc2-de07-40a5-afd8-2460ef1e202c');
 
 INSERT INTO scenario_collection_to_scenario_node (scenario_collection_id, scenario_node_id)
-VALUES ('a9e3fbc2-de07-40a5-afd8-2460ef1e202c','99346105-4f8d-4be4-a14b-7c5b264ffc1d');
+VALUES ('a9e3fbc2-de07-40a5-afd8-2460ef1e202c','fcd4b4af-ad04-4efa-b48e-a5fd56d5133b');
