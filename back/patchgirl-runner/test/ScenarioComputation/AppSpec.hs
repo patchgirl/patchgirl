@@ -438,7 +438,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [ Row [ ("id", PgInt 1) ] ]) AccessOutOfBound
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [ Row [ ("id", PgInt 1) ] ]) (AccessOutOfBound (LInt 1) (LInt 1))
             ]
           )
 

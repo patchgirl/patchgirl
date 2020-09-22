@@ -133,7 +133,7 @@ data ScriptException
   | AssertEqualFailed Expr Expr
   | CannotUseFunction String
   | EmptyResponse String
-  | AccessOutOfBound
+  | AccessOutOfBound Expr Expr
   | CantAccessElem Expr Expr
   deriving (Eq, Show, Generic)
 

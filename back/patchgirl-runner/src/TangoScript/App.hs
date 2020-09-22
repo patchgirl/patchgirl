@@ -3,8 +3,11 @@ module TangoScript.App where
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.State       as State
 import           Data.Functor              ((<&>))
+import           Data.Function              ((&))
 import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
+import GHC.Natural (Natural)
+import qualified GHC.Natural as Natural
 
 import           ScenarioComputation.Model
 import           TangoScript.Model
@@ -72,31 +75,56 @@ reduceExprToPrimitive context = \case
     e1 <- reduceExprToPrimitive context ex1
     e2 <- reduceExprToPrimitive context ex2
     case (e1, e2) of
-      (Right (LList list), Right (LInt index)) ->
-        case getAtIndex list index of
-          Just expr -> return $ Right expr
-          Nothing   -> return $ Left AccessOutOfBound
-
-      (Right (LList list), Right (LString index)) ->
-        case getAtKey list index of
-          Right Nothing  -> return $ Right LNull
-          Right (Just e) -> return $ Right e
-          Left x         -> return $ Left x
-
-      (Right e, Right o) ->
-        return $ Left $ CantAccessElem e o
-
-      (Left other, _) ->
-        return $ Left other
-
-      (_, Left other) ->
-        return $ Left other
+      (Right expr1, Right expr2) -> return $ reduceAccessOp expr1 expr2
+      (Left other, _) -> return $ Left other
+      (_, Left other) -> return $ Left other
 
   e ->
     return $ Right e
 
+
+-- * reduce access op
+
+
+reduceAccessOp :: Expr -> Expr -> Either ScriptException Expr
+reduceAccessOp ex1 ex2 =
+  case (ex1, ex2) of
+    (LList list, LInt index) ->
+      case getAtIndex list (fromIntegral index & Natural.naturalFromInteger) of
+        Just expr -> Right expr
+        Nothing   -> Left $ AccessOutOfBound ex1 ex2
+
+    (LList list, LString index) ->
+      case getAtKey list index of
+        Right Nothing  -> Right LNull
+        Right (Just e) -> Right e
+        Left x         -> Left x
+
+    (LString str, LInt index) ->
+      getAtIndex str (fromIntegral index & Natural.naturalFromInteger) & \case
+        Nothing -> Left $ AccessOutOfBound ex1 ex2
+        Just letter -> Right (LString (letter : ""))
+
+    (LJson (JString str), LInt index) ->
+      getAtIndex str (fromIntegral index & Natural.naturalFromInteger) & \case
+        Nothing -> Left $ CantAccessElem ex1 ex2
+        Just letter -> Right (LString (letter : ""))
+
+    (LJson (JArray list), LInt index) ->
+      getAtIndex list (fromIntegral index & Natural.naturalFromInteger) & \case
+        Just expr -> Right $ LJson expr
+        Nothing -> Left $ AccessOutOfBound ex1 ex2
+
+    (LJson (JObject object), LString str) ->
+      Map.lookup str object & \case
+        Just expr -> Right $ LJson expr
+        Nothing -> Left $ AccessOutOfBound ex1 ex2
+
+    (e, o) ->
+      Left $ CantAccessElem e o
+
   where
-    getAtIndex :: [a] -> Int -> Maybe a
+    getAtIndex :: [a] -> Natural -> Maybe a
     getAtIndex list index =
       case (list, index) of
         ([], _)      -> Nothing
