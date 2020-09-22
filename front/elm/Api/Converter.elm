@@ -563,12 +563,14 @@ convertScriptExceptionFromBackToFront backScriptException =
         Back.EmptyResponse str ->
             Front.EmptyResponse str
 
-        Back.AccessOutOfBound  ->
-            Front.AccessOutOfBound
+        Back.AccessOutOfBound expr1 expr2  ->
+            Front.AccessOutOfBound (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
 
         Back.CantAccessElem expr1 expr2 ->
             Front.CantAccessElem (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
 
+        Back.ConversionFailed expr1 str ->
+            Front.ConversionFailed (convertExpressionFromBackToFront expr1) str
 
 -- * tangoscript
 
@@ -595,7 +597,7 @@ convertProcFromFrontToBack frontProc =
 convertExpressionFromBackToFront : Back.Expr -> Front.Expr
 convertExpressionFromBackToFront backEx =
     case backEx of
-        Back.LJson _ -> Debug.todo "json"
+        Back.LJson json -> Front.LJson (convertJsonFromBackToFront json)
         Back.LList xs -> List.map convertExpressionFromBackToFront xs |> Front.LList
         Back.LBool x -> Front.LBool x
         Back.LInt x -> Front.LInt x
@@ -607,6 +609,7 @@ convertExpressionFromBackToFront backEx =
         Back.LFetch x -> Front.LFetch x
         Back.LEq a b -> Front.LEq (convertExpressionFromBackToFront a) (convertExpressionFromBackToFront b)
         Back.LHttpResponseBodyAsString -> Front.LHttpResponseBodyAsString
+        Back.LHttpResponseBodyAsJson -> Front.LHttpResponseBodyAsJson
         Back.LHttpResponseStatus -> Front.LHttpResponseStatus
         Back.LPgSimpleResponse -> Front.LPgSimpleResponse
         Back.LPgRichResponse -> Front.LPgRichResponse
@@ -625,9 +628,32 @@ convertExpressionFromFrontToBack frontExpr =
         Front.LFetch x -> Back.LFetch x
         Front.LEq a b -> Back.LEq (convertExpressionFromFrontToBack a) (convertExpressionFromFrontToBack b)
         Front.LHttpResponseBodyAsString -> Back.LHttpResponseBodyAsString
+        Front.LHttpResponseBodyAsJson -> Back.LHttpResponseBodyAsJson
         Front.LHttpResponseStatus -> Back.LHttpResponseStatus
         Front.LPgSimpleResponse -> Back.LPgSimpleResponse
         Front.LPgRichResponse -> Back.LPgRichResponse
         Front.LList xs -> Back.LList (List.map convertExpressionFromFrontToBack xs)
         Front.LAccessOp e o -> Back.LAccessOp (convertExpressionFromFrontToBack e) (convertExpressionFromFrontToBack o)
-        Front.LJson _ -> Debug.todo ""
+        Front.LJson json -> Back.LJson (convertJsonFromFrontToBack json)
+
+convertJsonFromFrontToBack : Front.Json -> Back.Json
+convertJsonFromFrontToBack json =
+    case json of
+        Front.JInt x -> Back.JInt x
+        Front.JFloat x -> Back.JFloat x
+        Front.JBool x -> Back.JBool x
+        Front.JString x -> Back.JString x
+        Front.JArray x -> Back.JArray (List.map convertJsonFromFrontToBack x)
+        Front.JObject x -> Back.JObject (Dict.map (\_ v -> convertJsonFromFrontToBack v) x)
+        Front.JNull -> Back.JNull
+
+convertJsonFromBackToFront : Back.Json -> Front.Json
+convertJsonFromBackToFront json =
+    case json of
+        Back.JInt x -> Front.JInt x
+        Back.JFloat x -> Front.JFloat x
+        Back.JBool x -> Front.JBool x
+        Back.JString x -> Front.JString x
+        Back.JArray x -> Front.JArray (List.map convertJsonFromBackToFront x)
+        Back.JObject x -> Front.JObject (Dict.map (\_ v -> convertJsonFromBackToFront v) x)
+        Back.JNull -> Front.JNull

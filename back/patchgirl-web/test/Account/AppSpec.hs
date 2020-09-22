@@ -40,7 +40,7 @@ resetVisitorAccount =
 
 
 spec :: Spec
-spec =
+spec = focus $
   withClient (defaultEnv2 >>= mkApp) $
 
 

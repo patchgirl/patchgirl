@@ -338,8 +338,67 @@ INSERT INTO scene_node(
   '5ff67d3c-28a2-4aa1-b474-4b10dabd2852',
   NULL,
   '',
-  ''
+  'var userId = httpResponseBodyAsJson["id"];
+set("userId", userId);
+assertEqual(httpResponseStatus, 200);'
 );
+
+INSERT INTO scene_node(
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  '7a7d9c29-815f-46d3-bbcd-061cde184671',
+  '7d8285a2-ac9c-4485-b96a-7ccc766638ca',
+  'HttpActor',
+  'b3b24406-a7c0-4c68-bdcc-279e843340a0',
+  NULL,
+  '',
+  'var productId = httpResponseBodyAsJson["id"];
+set("productId", productId);
+assertEqual(httpResponseStatus, 200);'
+);
+
+INSERT INTO scene_node(
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  'ba8081b6-0222-4b6a-8886-aff2abce77cc',
+  '7a7d9c29-815f-46d3-bbcd-061cde184671',
+  'HttpActor',
+  'c4295e57-20eb-4bf0-ba0b-f5f070dfe862',
+  NULL,
+  '',
+  'assertEqual(httpResponseStatus, 200);'
+);
+
+INSERT INTO scene_node(
+  id,
+  scene_node_parent_id,
+  actor_type,
+  http_actor_id,
+  pg_actor_id,
+  prescript,
+  postscript
+) VALUES (
+  '536c41f3-03a5-429d-ad9c-4f19019681a8',
+  'ba8081b6-0222-4b6a-8886-aff2abce77cc',
+  'HttpActor',
+  '8eb08e68-ebe3-4e20-ad38-2be6b2c98c8d',
+  NULL,
+  '',
+  'assertEqual(httpResponseStatus, 200);'
+);
+
 
 -- * scenario
 
