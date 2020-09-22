@@ -31,35 +31,31 @@ reduceExprToPrimitive
   -> Expr
   -> m (Either ScriptException Expr)
 reduceExprToPrimitive context = \case
+  json@(LJson _) ->
+    return $ Right json
+
   LList exprs -> do
     Monad.mapM (reduceExprToPrimitive context) exprs <&> Monad.sequence >>= \case
       Right reducedExprs -> return $ Right $ LList reducedExprs
       Left s -> return $ Left s
 
-  LHttpResponseStatus -> do
-    case context of
-      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseStatus in a prescript"
-      PostScene result -> return $ getStatus result
+  bool@(LBool _) ->
+    return $ Right bool
 
-  LHttpResponseBodyAsString -> do
-    case context of
-      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseBodyAsString in a prescript"
-      PostScene result -> return $ getBody result
+  int@(LInt _) ->
+    return $ Right int
 
-  LPgSimpleResponse -> do
-    case context of
-      PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
-      PostScene result -> return $ getSimpleTable result
+  float@(LFloat _) ->
+    return $ Right float
 
-  LPgRichResponse -> do
-    case context of
-      PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
-      PostScene result -> return $ getRichTable result
+  LNull ->
+    return $ Right LNull
 
-  LEq e1 e2 -> do
-    b1 <- reduceExprToPrimitive context e1
-    b2 <- reduceExprToPrimitive context e2
-    return $ Right $ LBool (b1 == b2)
+  str@(LString _) ->
+    return $ Right str
+
+  rowElem@(LRowElem _) ->
+    return $ Right rowElem
 
   lvar@(LVar var) -> do
     State.get <&> localVars <&> Map.lookup var >>= \case
@@ -71,6 +67,31 @@ reduceExprToPrimitive context = \case
       Nothing   -> return $ Left $ UnknownVariable lfetch
       Just expr -> return $ Right expr
 
+  LEq e1 e2 -> do
+    b1 <- reduceExprToPrimitive context e1
+    b2 <- reduceExprToPrimitive context e2
+    return $ Right $ LBool (b1 == b2)
+
+  LHttpResponseBodyAsString -> do
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseBodyAsString in a prescript"
+      PostScene result -> return $ getBody result
+
+  LHttpResponseStatus -> do
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseStatus in a prescript"
+      PostScene result -> return $ getStatus result
+
+  LPgSimpleResponse -> do
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
+      PostScene result -> return $ getSimpleTable result
+
+  LPgRichResponse -> do
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use this function in a prescript"
+      PostScene result -> return $ getRichTable result
+
   LAccessOp ex1 ex2 -> do
     e1 <- reduceExprToPrimitive context ex1
     e2 <- reduceExprToPrimitive context ex2
@@ -78,9 +99,6 @@ reduceExprToPrimitive context = \case
       (Right expr1, Right expr2) -> return $ reduceAccessOp expr1 expr2
       (Left other, _) -> return $ Left other
       (_, Left other) -> return $ Left other
-
-  e ->
-    return $ Right e
 
 
 -- * reduce access op
