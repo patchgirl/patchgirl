@@ -701,8 +701,9 @@ type ScriptException
   | AssertEqualFailed Expr Expr
   | CannotUseFunction String
   | EmptyResponse String
-  | AccessOutOfBound
+  | AccessOutOfBound Expr Expr
   | CantAccessElem Expr Expr
+  | ConversionFailed Expr String
 
 
 scriptExceptionToString : ScriptException -> String
@@ -720,11 +721,14 @@ scriptExceptionToString scriptException =
         EmptyResponse response ->
             "Empty response: " ++  response
 
-        AccessOutOfBound ->
-            "Access out of bound"
+        AccessOutOfBound expr1 expr2 ->
+            "Access out of bound: " ++ exprToString expr1 ++ " - " ++ exprToString expr2
 
         CantAccessElem expr1 _ ->
             "Cant access elem: [" ++ exprToString expr1 ++ "]"
+
+        ConversionFailed expr1 str ->
+            str ++ ": [" ++ exprToString expr1 ++ "]"
 
 -- * editable
 {-
@@ -819,6 +823,7 @@ type Expr
     | LFetch String
     | LEq Expr Expr
     | LHttpResponseBodyAsString
+    | LHttpResponseBodyAsJson
     | LHttpResponseStatus
     | LPgSimpleResponse -- results without columnName
     | LPgRichResponse   -- response with columnName
@@ -835,6 +840,7 @@ type Json
     | JString String
     | JArray (List Json)
     | JObject (Dict String Json)
+    | JNull
 
 
 exprToString : Expr -> String
@@ -853,6 +859,7 @@ exprToString expr =
         LFetch x -> "global var " ++ x
         LEq e1 e2 -> "Eq " ++ (exprToString e1) ++ " " ++ (exprToString e2)
         LHttpResponseBodyAsString -> "httpResponseBodyAsString"
+        LHttpResponseBodyAsJson -> "httpResponseBodyAsJson"
         LHttpResponseStatus -> "httpResponseStatus"
         LPgSimpleResponse -> "pgResponse"
         LPgRichResponse -> "pgResponseAsArray"

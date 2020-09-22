@@ -10,7 +10,7 @@ module InterpolatorSpec where
 import qualified Data.Map.Strict as Map
 
 import           Interpolator
-import           TangoScript
+import           TangoScript.Model
 import           Test.Hspec
 
 

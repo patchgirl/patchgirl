@@ -24,7 +24,8 @@ library
       ScenarioComputation.App
       ScenarioComputation.Model
       Server
-      TangoScript
+      TangoScript.App
+      TangoScript.Model
   other-modules:
       Paths_patchgirl_runner
   hs-source-dirs:
@@ -50,11 +51,14 @@ library
     , prometheus-client
     , prometheus-metrics-ghc
     , say
+    , scientific
     , servant-server
     , stm
+    , text
     , unordered-containers
     , utf8-string
     , uuid
+    , vector
     , wai
     , wai-cors
     , wai-middleware-prometheus
@@ -89,11 +93,14 @@ executable patchgirl-runner-exe
     , prometheus-client
     , prometheus-metrics-ghc
     , say
+    , scientific
     , servant-server
     , stm
+    , text
     , unordered-containers
     , utf8-string
     , uuid
+    , vector
     , wai
     , wai-cors
     , wai-middleware-prometheus
@@ -110,6 +117,7 @@ test-suite spec
       PgSqlComputation.AppSpec
       RequestComputation.AppSpec
       ScenarioComputation.AppSpec
+      TangoScript.AppSpec
       Paths_patchgirl_runner
   hs-source-dirs:
       test
@@ -136,12 +144,15 @@ test-suite spec
     , prometheus-client
     , prometheus-metrics-ghc
     , say
+    , scientific
     , servant-client
     , servant-server
     , stm
+    , text
     , unordered-containers
     , utf8-string
     , uuid
+    , vector
     , wai
     , wai-cors
     , wai-middleware-prometheus

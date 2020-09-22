@@ -23,7 +23,7 @@ import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 import           Server
-import           TangoScript
+import           TangoScript.Model
 
 
 -- * client
@@ -438,7 +438,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [ Row [ ("id", PgInt 1) ] ]) AccessOutOfBound
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AccessOutOfBound (LList [LInt 1]) (LInt 2))
             ]
           )
 

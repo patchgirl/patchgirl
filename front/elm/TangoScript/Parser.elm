@@ -33,6 +33,7 @@ reserved =
         , "get"
         , "set"
         , "httpResponseBodyAsString"
+        , "httpResponseBodyAsJson"
         , "httpResponseStatus"
         , "true"
         , "false"
@@ -136,6 +137,7 @@ exprParser =
         |= P.oneOf
            [ lBoolParser
            , httpResponseBodyAsStringParser
+           , httpResponseBodyAsJsonParser
            , httpResponseStatusParser
            , pgSimpleTableParser
            , pgRichTableParser
@@ -202,6 +204,12 @@ httpResponseBodyAsStringParser : Parser Expr
 httpResponseBodyAsStringParser =
     P.keyword "httpResponseBodyAsString"
         |> P.map (always LHttpResponseBodyAsString)
+        |> P.andThen promoteToAccessOpParser
+
+httpResponseBodyAsJsonParser : Parser Expr
+httpResponseBodyAsJsonParser =
+    P.keyword "httpResponseBodyAsJson"
+        |> P.map (always LHttpResponseBodyAsJson)
         |> P.andThen promoteToAccessOpParser
 
 httpResponseStatusParser : Parser Expr
@@ -466,6 +474,9 @@ showExpr expr =
         LHttpResponseBodyAsString ->
             "(LHttpResponseBodyAsString)"
 
+        LHttpResponseBodyAsJson ->
+            "(LHttpResponseBodyAsString)"
+
         LHttpResponseStatus ->
             "(LHttpResponseStatus)"
 
@@ -501,6 +512,7 @@ showJson json =
     case json of
         JInt x -> "(JInt " ++ String.fromInt(x) ++ " )"
         JFloat x -> "(JFloat " ++ String.fromFloat(x) ++ " )"
+        JNull -> "(JNull)"
         JBool bool ->
             let
                 boolAsString =

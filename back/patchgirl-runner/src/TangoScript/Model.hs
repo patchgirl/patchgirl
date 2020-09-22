@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module TangoScript ( TangoAst
-                   , Proc(..)
-                   , Expr(..)
-                   , Json(..)
-                   ) where
+module TangoScript.Model ( TangoAst
+                         , Proc(..)
+                         , Expr(..)
+                         , Json(..)
+                         ) where
 
 import qualified Data.Aeson      as Aeson
 import           Data.Map.Strict (Map)
@@ -49,6 +49,7 @@ data Expr
   | LFetch String
   | LEq Expr Expr
   | LHttpResponseBodyAsString
+  | LHttpResponseBodyAsJson
   | LHttpResponseStatus
   | LPgSimpleResponse -- results without columnName
   | LPgRichResponse   -- response with columnName
@@ -74,6 +75,7 @@ data Json
     | JString String
     | JArray [Json]
     | JObject (Map String Json)
+    | JNull
     deriving (Show, Eq, Generic)
 
 instance Aeson.ToJSON Json where

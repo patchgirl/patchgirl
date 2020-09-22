@@ -54,7 +54,7 @@ import qualified Interpolator              as Runner
 import qualified PgSqlComputation.Model    as Runner
 import qualified RequestComputation.Model  as Runner
 import qualified ScenarioComputation.Model as Runner
-import qualified TangoScript               as Runner
+import qualified TangoScript.Model         as Runner
 
 
 -- * util
