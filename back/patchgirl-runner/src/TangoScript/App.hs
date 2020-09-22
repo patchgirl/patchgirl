@@ -7,7 +7,6 @@ import           Data.Function              ((&))
 import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
 import GHC.Natural (Natural)
-import qualified GHC.Natural as Natural
 
 import           ScenarioComputation.Model
 import           TangoScript.Model
@@ -108,7 +107,7 @@ reduceAccessOp :: Expr -> Expr -> Either ScriptException Expr
 reduceAccessOp ex1 ex2 =
   case (ex1, ex2) of
     (LList list, LInt index) ->
-      case getAtIndex list (fromIntegral index & Natural.naturalFromInteger) of
+      intToNatural index >>= getAtIndex list & \case
         Just expr -> Right expr
         Nothing   -> Left $ AccessOutOfBound ex1 ex2
 
@@ -119,17 +118,17 @@ reduceAccessOp ex1 ex2 =
         Left x         -> Left x
 
     (LString str, LInt index) ->
-      getAtIndex str (fromIntegral index & Natural.naturalFromInteger) & \case
+      intToNatural index >>= getAtIndex str & \case
         Nothing -> Left $ AccessOutOfBound ex1 ex2
         Just letter -> Right (LString (letter : ""))
 
     (LJson (JString str), LInt index) ->
-      getAtIndex str (fromIntegral index & Natural.naturalFromInteger) & \case
+      intToNatural index >>= getAtIndex str & \case
         Nothing -> Left $ CantAccessElem ex1 ex2
         Just letter -> Right (LString (letter : ""))
 
     (LJson (JArray list), LInt index) ->
-      getAtIndex list (fromIntegral index & Natural.naturalFromInteger) & \case
+      intToNatural index >>= getAtIndex list & \case
         Just expr -> Right $ LJson expr
         Nothing -> Left $ AccessOutOfBound ex1 ex2
 
@@ -142,6 +141,11 @@ reduceAccessOp ex1 ex2 =
       Left $ CantAccessElem e o
 
   where
+    intToNatural :: Int -> Maybe Natural
+    intToNatural n
+      | n < 0     = Nothing
+      | otherwise = Just $ fromIntegral n
+
     getAtIndex :: [a] -> Natural -> Maybe a
     getAtIndex list index =
       case (list, index) of
