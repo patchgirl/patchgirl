@@ -7,6 +7,7 @@ import qualified Data.Map.Strict           as Map
 import TangoScript.Model
 import TangoScript.App
 import           ScenarioComputation.Model
+import           RequestComputation.Model
 
 spec :: Spec
 spec = do
@@ -73,7 +74,7 @@ spec = do
       it "reduce" $ do
         let input = LAccessOp (LVar "foo") (LInt 1)
         let output = LString "a"
-        let reduced = reduceWithContext input $ ScriptContext Map.empty Map.empty (Map.fromList [ ("foo", LString "bar") ])
+        let reduced = reduceWithScriptContext input $ ScriptContext Map.empty Map.empty (Map.fromList [ ("foo", LString "bar") ])
         reduced `shouldBe` Right output
 
 
@@ -82,7 +83,7 @@ spec = do
 
       it "reduce" $ do
         let input = LAccessOp (LJson (JArray [JInt 1, JInt 2, JInt 3])) (LInt 1)
-        let output = LJson $ JInt 2
+        let output = LInt 2
         reduce input `shouldBe` Right output
 
 
@@ -91,7 +92,7 @@ spec = do
 
       it "reduce" $ do
         let input = LAccessOp (LJson (JObject $ Map.fromList [ ("foo", JString "bar"), ("baz", JString "biz") ] )) (LString "foo")
-        let output = LJson $ JString "bar"
+        let output = LString "bar"
         reduce input `shouldBe` Right output
 
 
@@ -113,14 +114,38 @@ spec = do
         reduce input `shouldBe` Right output
 
 
+-- ** http json response
+
+
+      it "reduce" $ do
+        let input = LAccessOp LHttpResponseBodyAsJson (LString "foo")
+        let output = LString "bar"
+        let reduced = reduceWithFullContext input emptyScriptContext (PostScene $ mkRequestComputationFromBody " { \"foo\": \"bar\"  } ")
+        reduced `shouldBe` Right output
+
+
 -- * util
 
 
   where
+    emptyScriptContext :: ScriptContext
+    emptyScriptContext = ScriptContext Map.empty Map.empty Map.empty
+
     reduce :: Expr -> Either ScriptException Expr
     reduce expr =
-      reduceWithContext expr $ ScriptContext Map.empty Map.empty Map.empty
+      reduceWithScriptContext expr emptyScriptContext
 
-    reduceWithContext :: Expr -> ScriptContext -> Either ScriptException Expr
-    reduceWithContext expr scriptContext =
-      State.evalState (reduceExprToPrimitive PreScene expr) scriptContext
+    reduceWithScriptContext :: Expr -> ScriptContext -> Either ScriptException Expr
+    reduceWithScriptContext expr scriptContext =
+      reduceWithFullContext expr scriptContext PreScene
+
+    reduceWithFullContext :: Expr -> ScriptContext -> Context a -> Either ScriptException Expr
+    reduceWithFullContext expr scriptContext context =
+      State.evalState (reduceExprToPrimitive context expr) scriptContext
+
+    mkRequestComputationFromBody :: String -> RequestComputation
+    mkRequestComputationFromBody body =
+      RequestComputation { _requestComputationStatusCode = 200
+                         , _requestComputationHeaders    = []
+                         , _requestComputationBody       = body
+                         }

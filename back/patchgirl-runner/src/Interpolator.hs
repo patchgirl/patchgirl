@@ -108,6 +108,7 @@ exprToString = \case
   LFetch _ -> Nothing
   LEq _ _ -> Nothing
   LHttpResponseBodyAsString -> Nothing
+  LHttpResponseBodyAsJson -> Nothing
   LHttpResponseStatus -> Nothing
   LPgSimpleResponse -> Nothing
   LPgRichResponse -> Nothing
@@ -117,6 +118,7 @@ jsonToString :: Json -> String
 jsonToString = \case
   JInt x -> show x
   JFloat x -> show x
+  JNull -> "NULL"
   JBool x -> show x
   JString x -> show x
   JArray xs ->

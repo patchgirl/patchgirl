@@ -51,11 +51,14 @@ library
     , prometheus-client
     , prometheus-metrics-ghc
     , say
+    , scientific
     , servant-server
     , stm
+    , text
     , unordered-containers
     , utf8-string
     , uuid
+    , vector
     , wai
     , wai-cors
     , wai-middleware-prometheus
@@ -90,11 +93,14 @@ executable patchgirl-runner-exe
     , prometheus-client
     , prometheus-metrics-ghc
     , say
+    , scientific
     , servant-server
     , stm
+    , text
     , unordered-containers
     , utf8-string
     , uuid
+    , vector
     , wai
     , wai-cors
     , wai-middleware-prometheus
@@ -138,12 +144,15 @@ test-suite spec
     , prometheus-client
     , prometheus-metrics-ghc
     , say
+    , scientific
     , servant-client
     , servant-server
     , stm
+    , text
     , unordered-containers
     , utf8-string
     , uuid
+    , vector
     , wai
     , wai-cors
     , wai-middleware-prometheus

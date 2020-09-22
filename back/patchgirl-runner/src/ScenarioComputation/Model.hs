@@ -135,6 +135,7 @@ data ScriptException
   | EmptyResponse String
   | AccessOutOfBound Expr Expr
   | CantAccessElem Expr Expr
+  | ConversionFailed Expr String
   deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON ScriptException where
@@ -158,7 +159,7 @@ data Context a where
 
 
 class ToPrimitive a where
-  getBody :: a -> Either ScriptException Expr
+  getBody :: a -> Either ScriptException String
   getStatus :: a -> Either ScriptException Expr
   getSimpleTable :: a -> Either ScriptException Expr
   getRichTable :: a -> Either ScriptException Expr
@@ -169,7 +170,7 @@ class ToPrimitive a where
 
 instance ToPrimitive RequestComputation where
   getBody RequestComputation {..} =
-    Right $ LString _requestComputationBody
+    Right _requestComputationBody
 
   getStatus RequestComputation {..} =
     Right $ LInt _requestComputationStatusCode

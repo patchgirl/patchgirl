@@ -54,6 +54,9 @@ dependencies:
   - patchgirl-web
   - base
   - wai-cors
+  - scientific
+  - text
+  - vector
   - servant-server
   - utf8-string
   - dhall

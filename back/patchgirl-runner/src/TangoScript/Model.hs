@@ -49,6 +49,7 @@ data Expr
   | LFetch String
   | LEq Expr Expr
   | LHttpResponseBodyAsString
+  | LHttpResponseBodyAsJson
   | LHttpResponseStatus
   | LPgSimpleResponse -- results without columnName
   | LPgRichResponse   -- response with columnName
@@ -74,6 +75,7 @@ data Json
     | JString String
     | JArray [Json]
     | JObject (Map String Json)
+    | JNull
     deriving (Show, Eq, Generic)
 
 instance Aeson.ToJSON Json where

@@ -2,11 +2,18 @@ module TangoScript.App where
 
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.State       as State
+import qualified Data.Scientific as Scientific
 import           Data.Functor              ((<&>))
 import           Data.Function              ((&))
+import   qualified Data.Bifunctor as  Bifunctor
 import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
+import qualified Data.HashMap.Strict       as HashMap
+import Data.ByteString.Lazy.UTF8 as BLU
 import GHC.Natural (Natural)
+import qualified Data.Aeson as Aeson
+import Data.Text as TS
+import qualified Data.Vector as Vector
 
 import           ScenarioComputation.Model
 import           TangoScript.Model
@@ -30,8 +37,15 @@ reduceExprToPrimitive
   -> Expr
   -> m (Either ScriptException Expr)
 reduceExprToPrimitive context = \case
-  json@(LJson _) ->
-    return $ Right json
+  LJson json ->
+    return . Right $ case json of
+      JInt int -> LInt int
+      JFloat float -> LFloat float
+      JBool bool -> LBool bool
+      JString str -> LString str
+      array@(JArray _) -> LJson array
+      object@(JObject _) -> LJson object
+      JNull -> LNull
 
   LList exprs -> do
     Monad.mapM (reduceExprToPrimitive context) exprs <&> Monad.sequence >>= \case
@@ -74,7 +88,17 @@ reduceExprToPrimitive context = \case
   LHttpResponseBodyAsString -> do
     case context of
       PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseBodyAsString in a prescript"
-      PostScene result -> return $ getBody result
+      PostScene result -> return $ getBody result <&> LString
+
+  LHttpResponseBodyAsJson -> do
+    case context of
+      PreScene  -> return $ Left $ CannotUseFunction "You can't use httpResponseBodyAsJson in a prescript"
+      PostScene result -> do
+        return $
+          getBody result >>= \body ->
+            BLU.fromString body & Aeson.decode <&> valueToJson & \case
+              Nothing -> Left $ ConversionFailed (LString body) "conversion to json failed for:"
+              Just json -> Right $ LJson json
 
   LHttpResponseStatus -> do
     case context of
@@ -95,7 +119,10 @@ reduceExprToPrimitive context = \case
     e1 <- reduceExprToPrimitive context ex1
     e2 <- reduceExprToPrimitive context ex2
     case (e1, e2) of
-      (Right expr1, Right expr2) -> return $ reduceAccessOp expr1 expr2
+      (Right expr1, Right expr2) -> case reduceAccessOp expr1 expr2 of
+        Left scriptException -> return $ Left scriptException
+        Right expr -> reduceExprToPrimitive context expr
+
       (Left other, _) -> return $ Left other
       (_, Left other) -> return $ Left other
 
@@ -171,3 +198,31 @@ reduceAccessOp ex1 ex2 =
                 False -> Right Nothing
 
               e -> Left $ CantAccessElem e (LString index)
+
+
+-- * value to Json
+
+
+valueToJson :: Aeson.Value -> Json
+valueToJson value =
+  case value of
+    Aeson.Object object ->
+      JObject $
+        (HashMap.toList object <&> Bifunctor.bimap TS.unpack valueToJson) & Map.fromList
+
+    Aeson.Array array ->
+      JArray $ Vector.toList array <&> valueToJson
+
+    Aeson.String str ->
+      JString (TS.unpack str)
+
+    Aeson.Number scientific ->
+      case Scientific.floatingOrInteger scientific of
+        Left l -> JFloat l
+        Right i -> JInt i
+
+    Aeson.Bool bool ->
+      JBool bool
+
+    Aeson.Null ->
+      JNull
