@@ -174,6 +174,9 @@ view whichEditView model =
             DeleteView scenarioNode ->
                 deleteView model scenarioNode
 
+            DuplicateView scenarioNode ->
+                none
+
 
 -- ** default view
 

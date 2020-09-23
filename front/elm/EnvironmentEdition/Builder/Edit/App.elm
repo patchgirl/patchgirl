@@ -178,6 +178,9 @@ view whichEditView model =
             DeleteView environment ->
                 deleteView model environment
 
+            DuplicateView environment ->
+                none
+
 
 -- ** default view
 

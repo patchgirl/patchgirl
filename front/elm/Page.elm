@@ -109,6 +109,7 @@ urlParser =
         , Url.map (ReqPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "req" </> Url.s "new-file")
         , Url.map (\reqId -> ReqPage (EditView (DefaultEditView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit")
         , Url.map (\reqId -> ReqPage (EditView (DeleteView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\reqId -> ReqPage (EditView (DuplicateView reqId))) (appRoot </> Url.s "req" </> uuidParser </> Url.s "edit" </> Url.s "duplicate")
         , Url.map (\reqId -> ReqPage (RunView reqId)) (appRoot </> Url.s "req" </> Url.s "run" </> uuidParser)
 
         -- pg
@@ -172,6 +173,9 @@ href page =
                                 EditView (DeleteView id) ->
                                     [ Uuid.toString id, "edit", "delete" ]
 
+                                EditView (DuplicateView id) ->
+                                    [ Uuid.toString id, "edit", "duplicate" ]
+
                                 RunView id ->
                                     [ "run", Uuid.toString id ]
 
@@ -196,6 +200,9 @@ href page =
 
                                 EditView (DeleteView id) ->
                                     [ Uuid.toString id, "edit", "delete" ]
+
+                                EditView (DuplicateView id) ->
+                                    [ Uuid.toString id, "edit", "duplicate" ]
 
                                 RunView id ->
                                     [ "run", Uuid.toString id ]
@@ -222,6 +229,9 @@ href page =
                                 EditView (DeleteView id) ->
                                     [ Uuid.toString id, "edit", "delete" ]
 
+                                EditView (DuplicateView id) ->
+                                    [ Uuid.toString id, "edit", "duplicate" ]
+
                                 RunView id ->
                                     [ "run", Uuid.toString id ]
 
@@ -246,6 +256,9 @@ href page =
 
                                 RichEditView (DeleteView id) ->
                                     [ Uuid.toString id, "edit", "delete" ]
+
+                                RichEditView (DuplicateView id) ->
+                                    [ Uuid.toString id, "edit", "duplicate" ]
 
                                 RichRunView id Nothing ->
                                     [ "run", Uuid.toString id ]

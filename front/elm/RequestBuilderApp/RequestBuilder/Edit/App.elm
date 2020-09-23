@@ -64,6 +64,9 @@ type Msg
     -- delete
     | AskDelete Uuid
     | Delete Uuid
+    -- duplicate
+    | AskDuplicate Uuid
+    | Duplicate Uuid
 
 
 -- * update
@@ -267,6 +270,36 @@ update msg model =
             in
             ( newModel, newMsg )
 
+        AskDuplicate id ->
+            let
+                (RequestCollection requestCollectionId _) =
+                    model.requestCollection
+
+                newMsg =
+                    Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id (deleteRequestNodeResultToMsg id)
+            in
+            ( model, newMsg )
+
+        Duplicate id ->
+            let
+                (RequestCollection requestCollectionId requestNodes) =
+                    model.requestCollection
+
+                newRequestNodes =
+                    List.concatMap (deleteRequestNode id) requestNodes
+
+                newModel =
+                    { model
+                        | requestCollection =
+                            RequestCollection requestCollectionId newRequestNodes
+                    }
+
+                newMsg =
+                    Navigation.pushUrl model.navigationKey (href (ReqPage (LandingView DefaultView)))
+
+            in
+            ( newModel, newMsg )
+
         PrintNotification notification ->
             ( { model | notification = Just notification }, Cmd.none )
 
@@ -324,6 +357,9 @@ view whichEditView model =
             DeleteView requestNode ->
                 deleteView model requestNode
 
+            DuplicateView requestNode ->
+                duplicateView model requestNode
+
 
 -- ** default view
 
@@ -365,6 +401,16 @@ defaultEditView model requestNode =
                 , url = href (ReqPage (EditView (DeleteView id)))
                 }
 
+        duplicateBtn =
+            link primaryButtonAttrs
+                { label =
+                      iconWithAttr { defaultIconAttribute
+                                       | title = " Duplicate"
+                                       , icon = "content_copy"
+                                   }
+                , url = href (ReqPage (EditView (DuplicateView id)))
+                }
+
         renameInput =
             Input.text []
                   { onChange = UpdateName id
@@ -386,7 +432,7 @@ defaultEditView model requestNode =
                   , renameBtn
                   ]
         , el [ centerX ] (text "or ")
-        , row [ centerX ] [ deleteBtn ]
+        , row [ centerX, spacing 10 ] [ duplicateBtn, deleteBtn ]
         ]
 
 
@@ -424,4 +470,35 @@ deleteView model requestNode =
               ]
         , areYouSure
         , row [ centerX, spacing 20 ] [ noBtn, yesBtn ]
+        ]
+
+
+-- ** duplicate view
+
+
+duplicateView : Model a -> RequestNode -> Element Msg
+duplicateView model requestNode =
+    let
+        { id, name } =
+            getNodeIdAndName requestNode
+
+        duplicateBtn =
+            Input.button primaryButtonAttrs
+                { onPress = Just <| AskDuplicate id
+                , label = text "Duplicate"
+                }
+
+        title =
+            el [ Font.size 25, Font.underline ] <| text ("Duplicate " ++ (editedOrNotEditedValue name))
+
+        (RequestCollection _ nodes) =
+            model.requestCollection
+    in
+    column [ spacing 20 ]
+        [ row [ width fill, centerY ]
+              [ el [ alignLeft ] title
+              , el [ alignRight ] (closeBuilderView model.page)
+              ]
+        , folderTreeView nodes model.requestNewNode.parentFolderId SelectFolder
+        , row [ centerX, spacing 20 ] [ duplicateBtn ]
         ]

@@ -41,7 +41,8 @@ type alias Model a =
 
 
 type Msg
-    = SelectFolder (Maybe Uuid)
+    = SelectFolder Uuid
+    | SelectRootFolder
     | ChangeName String
     -- mkdir
     | GenerateRandomUUIDForFolder NewNode
@@ -74,13 +75,26 @@ update msg model =
             in
             (newModel, Cmd.none)
 
-        SelectFolder mId ->
+        SelectRootFolder ->
             let
                 oldLandingRequestNewNode =
                     model.requestNewNode
 
                 newLandingRequestNewNode =
-                    { oldLandingRequestNewNode | parentFolderId = mId }
+                    { oldLandingRequestNewNode | parentFolderId = Nothing }
+
+                newModel =
+                    { model | requestNewNode = newLandingRequestNewNode }
+            in
+            (newModel, Cmd.none)
+
+        SelectFolder id ->
+            let
+                oldLandingRequestNewNode =
+                    model.requestNewNode
+
+                newLandingRequestNewNode =
+                    { oldLandingRequestNewNode | parentFolderId = Just id }
 
                 newModel =
                     { model | requestNewNode = newLandingRequestNewNode }
@@ -156,24 +170,34 @@ update msg model =
                 (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
+                newFile =
+                    mkDefaultRequestFile newNode newId
+
                 newMsg =
                     case newNode.parentFolderId of
                         Nothing ->
                             let
                                 payload =
-                                       { newRootRequestFileId = newId
-                                       , newRootRequestFileName = newNode.name
+                                       { newRootRequestFileId = newFile.id
+                                       , newRootRequestFileName = notEditedValue newFile.name
+                                       , newRootRequestFileHttpUrl = notEditedValue newFile.httpUrl
+                                       , newRootRequestFileMethod = notEditedValue newFile.httpMethod |> Client.convertMethodFromFrontToBack
+                                       , newRootRequestFileHeaders = notEditedValue newFile.httpHeaders
+                                       , newRootRequestFileBody = notEditedValue newFile.httpBody
                                        }
-
                             in
                             Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newRequestFileId = newId
+                                    { newRequestFileId = newFile.id
                                     , newRequestFileParentNodeId = folderId
-                                    , newRequestFileName = newNode.name
+                                    , newRequestFileName = notEditedValue newFile.name
+                                    , newRequestFileHttpUrl = notEditedValue newFile.httpUrl
+                                    , newRequestFileMethod = notEditedValue newFile.httpMethod |> Client.convertMethodFromFrontToBack
+                                    , newRequestFileHeaders = notEditedValue newFile.httpHeaders
+                                    , newRequestFileBody = notEditedValue newFile.httpBody
                                     }
                             in
                             Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newNode newId)
@@ -189,7 +213,7 @@ update msg model =
                 newRequestNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultRequestFile newNode newId ]
+                            requestNodes ++ [ File (mkDefaultRequestFile newNode newId) ]
 
                         Just folderId ->
                             List.map (modifyRequestNode folderId (touchRequest newNode newId)) requestNodes
@@ -225,7 +249,7 @@ touchRequest newNode id parentNode =
             in
             Folder
                 { folder
-                    | children = RequestChildren (mkDefaultRequestFile newNode id :: children)
+                    | children = RequestChildren (File (mkDefaultRequestFile newNode id) :: children)
                     , open = True
                 }
 
@@ -256,20 +280,19 @@ mkDefaultRequestFolder newNode id =
         }
 
 
-mkDefaultRequestFile : NewNode -> Uuid -> RequestNode
+mkDefaultRequestFile : NewNode -> Uuid -> RequestFileRecord
 mkDefaultRequestFile newNode id =
-    File
-        { id = id
-        , name = NotEdited newNode.name
-        , httpUrl = NotEdited ""
-        , httpMethod = NotEdited HttpGet
-        , httpHeaders = NotEdited []
-        , httpBody = NotEdited ""
-        , showResponseView = False
-        , whichResponseView = BodyResponseView
-        , requestComputationResult = Nothing
-        , runRequestIconAnimation = Animation.style []
-        }
+    { id = id
+    , name = NotEdited newNode.name
+    , httpUrl = NotEdited ""
+    , httpMethod = NotEdited HttpGet
+    , httpHeaders = NotEdited []
+    , httpBody = NotEdited ""
+    , showResponseView = False
+    , whichResponseView = BodyResponseView
+    , requestComputationResult = Nothing
+    , runRequestIconAnimation = Animation.style []
+    }
 
 
 -- ** msg handling
@@ -380,6 +403,9 @@ createDefaultFolderView model =
 
         title =
             el [ Font.size 25, Font.underline ] (text "Create new folder")
+
+        (RequestCollection _ nodes) =
+            model.requestCollection
     in
     column [ spacing 20 ]
         [ row [ width fill, centerY ]
@@ -387,7 +413,7 @@ createDefaultFolderView model =
               , el [ alignRight ] (closeBuilderView model.page)
               ]
         , nameInput
-        , folderTreeView model SelectFolder
+        , folderTreeWithRootView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
         , el [ centerX ] createButton
         ]
 
@@ -421,6 +447,9 @@ createDefaultFileView model =
                   }
         title =
             el [ Font.size 25, Font.underline ] (text "Create new request")
+
+        (RequestCollection _ nodes) =
+            model.requestCollection
     in
     column [ spacing 20 ]
         [ row [ width fill, centerY ]
@@ -428,90 +457,6 @@ createDefaultFileView model =
               , el [ alignRight ] (closeBuilderView model.page)
               ]
         , nameInput
-        , folderTreeView model SelectFolder
+        , folderTreeWithRootView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
         , el [ centerX ] createButton
-        ]
-
-
--- ** folder tree view
-
-
-folderTreeView : Model a -> (Maybe Uuid -> msg) -> Element msg
-folderTreeView model selectFolderMsg =
-    let
-        (RequestCollection _ requestNodes) =
-            model.requestCollection
-
-        treeView =
-            column [ spacing 10 ]
-                [ text "Select a folder:"
-                , folderView Nothing model (NotEdited "/") selectFolderMsg (nodeView model selectFolderMsg requestNodes)
-                ]
-    in
-    treeView
-
-
-nodeView : Model a -> (Maybe Uuid -> msg) -> List RequestNode -> List (Element msg)
-nodeView model selectFolderMsg requestNodes =
-    case requestNodes of
-        [] ->
-            []
-
-        node :: tail ->
-            case node of
-                File _ -> nodeView model selectFolderMsg tail
-                Folder { id, name, children } ->
-                    let
-                        (RequestChildren c) =
-                            children
-
-                        folderChildrenView =
-                            nodeView model selectFolderMsg c
-
-                        tailView =
-                            nodeView model selectFolderMsg tail
-
-                        currentFolderView =
-                            folderView (Just id) model name selectFolderMsg folderChildrenView
-                    in
-                    currentFolderView :: tailView
-
-
--- ** folder view
-
-
-folderView : Maybe Uuid -> Model a -> Editable String -> (Maybe Uuid -> msg) -> List (Element msg) -> Element msg
-folderView mId model eName selectFolderMsg folderChildrenView =
-    let
-        label : String -> Element msg
-        label title =
-            iconWithAttr { defaultIconAttribute
-                             | title = title
-                             , iconSize = Nothing
-                             , icon = "folder"
-                             , iconVerticalAlign = Just "bottom"
-                             , primIconColor =
-                               case selected of
-                                   True -> Just primaryColor
-                                   False -> Nothing
-                         }
-
-        selected =
-            model.requestNewNode.parentFolderId == mId
-
-        selectedAttributes =
-            case selected of
-                False -> []
-                True -> [ Font.bold ]
-
-        selectFolderBtn : Element msg
-        selectFolderBtn =
-            Input.button selectedAttributes
-                { onPress = Just (selectFolderMsg mId)
-                , label = label (editedOrNotEditedValue eName)
-                }
-    in
-    column [ spacing 10 ]
-        [ selectFolderBtn
-        , column [ paddingXY 20 0 ] folderChildrenView
         ]

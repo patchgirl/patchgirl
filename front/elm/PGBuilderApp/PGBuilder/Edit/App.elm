@@ -174,6 +174,9 @@ view whichEditView model =
             DeleteView pgNode ->
                 deleteView model pgNode
 
+            DuplicateView pgNode ->
+                none
+
 
 -- ** default view
 

@@ -562,3 +562,98 @@ closeBuilderView page =
                              , icon = "clear"
                          }
         }
+
+
+-- ** pick folder view
+
+
+folderTreeWithRootView : List RequestNode -> Maybe Uuid -> msg -> (Uuid -> msg) -> Element msg
+folderTreeWithRootView nodes mParentFolderId selectRootFolderMsg selectFolderMsg =
+    column [ spacing 10 ]
+        [ text "Select a folder:"
+        , rootFolderView mParentFolderId (NotEdited "/") selectRootFolderMsg (nodeView mParentFolderId selectFolderMsg nodes)
+        ]
+
+
+folderTreeView : List RequestNode -> Maybe Uuid -> (Uuid -> msg) -> Element msg
+folderTreeView nodes mParentFolderId selectFolderMsg =
+    column [ spacing 10 ]
+        [ text "Select a folder:"
+        , column [] <| nodeView mParentFolderId selectFolderMsg nodes
+        ]
+
+
+nodeView : Maybe Uuid -> (Uuid -> b) -> List RequestNode -> List (Element b)
+nodeView mParentFolderId selectFolderMsg nodes =
+    case nodes of
+        [] ->
+            []
+
+        node :: tail ->
+            case node of
+                File _ -> nodeView mParentFolderId selectFolderMsg tail
+                Folder { id, name, children } ->
+                    let
+                        (RequestChildren c) =
+                            children
+
+                        folderChildrenView =
+                            nodeView mParentFolderId selectFolderMsg c
+
+                        tailView =
+                            nodeView mParentFolderId selectFolderMsg tail
+
+                        currentFolderView =
+                            folderView id mParentFolderId name selectFolderMsg folderChildrenView
+                    in
+                    currentFolderView :: tailView
+
+
+rootFolderView : Maybe Uuid -> Editable String -> b -> List (Element b) -> Element b
+rootFolderView mParentFolderId eName selectRootFolderMsg folderChildrenView =
+    let
+        selected =
+            mParentFolderId == Nothing
+    in
+    fView selected eName selectRootFolderMsg folderChildrenView
+
+folderView : Uuid -> Maybe Uuid -> Editable String -> (Uuid -> b) -> List (Element b) -> Element b
+folderView id mParentFolderId eName selectFolderMsg folderChildrenView =
+    let
+        selected =
+            mParentFolderId == Just id
+    in
+    fView selected eName (selectFolderMsg id) folderChildrenView
+
+fView : Bool -> Editable String -> a -> List (Element a) -> Element a
+fView selected eName selectFolderMsg folderChildrenView =
+    let
+        label : String -> Element a
+        label title =
+            iconWithAttr { defaultIconAttribute
+                             | title = title
+                             , iconSize = Nothing
+                             , icon = "folder"
+                             , iconVerticalAlign = Just "bottom"
+                             , primIconColor =
+                               case selected of
+                                   True -> Just primaryColor
+                                   False -> Nothing
+                         }
+
+        selectedAttributes =
+            case selected of
+                False -> []
+                True -> [ Font.bold ]
+
+        selectFolderBtn : Element a
+        selectFolderBtn =
+            Input.button selectedAttributes
+                { onPress = Just selectFolderMsg
+                , label = label (editedOrNotEditedValue eName)
+                }
+    in
+    column [ spacing 10 ]
+        [ selectFolderBtn
+        , column [ paddingXY 20 0 ] folderChildrenView
+        ]
