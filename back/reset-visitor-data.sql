@@ -235,7 +235,7 @@ INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password
 VALUES ('579f1274-045e-403f-b987-22caea511d9b', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'delete all users',  'DELETE FROM user_test;', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 INSERT INTO pg_node (id, pg_node_parent_id, tag, name, sql, pg_host, pg_password, pg_port, pg_user, pg_dbname)
-VALUES ('cfb334e7-212c-4b8a-9f39-814538f96046', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'insert user',  'INSERT INTO user_test (firstname, lastname) values (''john'', ''doe'');', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
+VALUES ('cfb334e7-212c-4b8a-9f39-814538f96046', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', 'PgFile', 'insert user',  'INSERT INTO user_test (firstname, lastname, role) values (''john'', ''doe'', ''manager'');', '{{dbHost}}', '{{dbPassword}}', '{{dbPort}}', '{{dbUser}}', '{{dbName}}');
 
 
 -- ** products

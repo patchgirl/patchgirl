@@ -215,7 +215,7 @@ deriveElmDef deriveWithTaggedObject ''Runner.EnvironmentVars
 deriveElmDef deriveWithTaggedObject ''Runner.StringTemplate
 deriveElmDef deriveWithTaggedObject ''Runner.Row
 deriveElmDef deriveWithTaggedObject ''Runner.Column
-deriveElmDef deriveWithTaggedObject ''Runner.PgValue
+deriveElmDef deriveWithSingleFieldObject ''Runner.PgValue
 deriveElmDef deriveWithTaggedObject ''Runner.PgComputationInput
 deriveElmDef deriveWithTaggedObject ''Runner.TemplatedPgConnection
 deriveElmDef deriveWithTaggedObject ''Runner.SceneFile

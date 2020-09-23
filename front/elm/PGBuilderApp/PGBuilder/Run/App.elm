@@ -64,7 +64,6 @@ type Msg
     | UpdateDbName String
     | AskRun
     | RemoteComputationDone PgComputationOutput
-    | RemoteComputationFailed
     | PrintNotification Notification
     | AskSave
     | SaveSuccessfully
@@ -177,15 +176,6 @@ update msg model file =
                     { file
                         | showResponseView = True
                         , pgComputationOutput = Just pgComputationOutput
-                    }
-            in
-            ( model, newFile, Cmd.none )
-
-        RemoteComputationFailed ->
-            let
-                newFile =
-                    { file
-                        | pgComputationOutput = Nothing
                     }
             in
             ( model, newFile, Cmd.none )

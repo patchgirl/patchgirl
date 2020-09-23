@@ -124,11 +124,15 @@ data PgValue
 
 instance Aeson.ToJSON PgValue where
   toJSON =
-    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                             , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                             }
 
 instance Aeson.FromJSON PgValue where
   parseJSON =
-    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1
+                                                , Aeson.sumEncoding = Aeson.ObjectWithSingleField
+                                                }
 
 
 -- * pg connection
