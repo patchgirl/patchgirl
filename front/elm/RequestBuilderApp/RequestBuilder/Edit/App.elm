@@ -65,8 +65,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | AskDuplicate Uuid
-    | Duplicate Uuid
+    | GenerateRandomUUIDForDuplicate Uuid
+    | AskDuplicate Uuid Uuid
+    | Duplicate Uuid Uuid (Maybe Uuid)
 
 
 -- * update
@@ -270,23 +271,43 @@ update msg model =
             in
             ( newModel, newMsg )
 
-        AskDuplicate id ->
+        GenerateRandomUUIDForDuplicate origId ->
+            let
+                newMsg =
+                    Random.generate (AskDuplicate origId) Uuid.uuidGenerator
+            in
+            ( model, newMsg )
+
+        AskDuplicate origId newId ->
             let
                 (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
+                nodeParentId =
+                    model.requestNewNode.parentFolderId
+
+                payload =
+                    { duplicateNodeNewId = newId
+                    , duplicateNodeTargetId = nodeParentId
+                    }
+
                 newMsg =
-                    Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id (deleteRequestNodeResultToMsg id)
+                    Client.postApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId origId payload (duplicateRequestNodeResultToMsg origId newId nodeParentId)
             in
             ( model, newMsg )
 
-        Duplicate id ->
+        Duplicate origId newId nodeParentId ->
             let
                 (RequestCollection requestCollectionId requestNodes) =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.concatMap (deleteRequestNode id) requestNodes
+                    case nodeParentId of
+                        Nothing ->
+                            requestNodes ++ [ mkDefaultRequestFile newId ]
+
+                        Just folderId ->
+                            List.map (modifyRequestNode folderId (touchRequest newId)) requestNodes
 
                 newModel =
                     { model
@@ -342,6 +363,15 @@ deleteRequestNodeResultToMsg id result =
 
         Err error ->
             PrintNotification <| AlertNotification "Could not delete, maybe this HTTP request is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
+
+duplicateRequestNodeResultToMsg : Uuid -> Uuid -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicateRequestNodeResultToMsg origId newId nodeParentId result =
+    case result of
+        Ok _ ->
+            Duplicate origId newId nodeParentId
+
+        Err error ->
+            PrintNotification <| AlertNotification "Could not duplicate! Try reloading the page!" (httpErrorToString error)
 
 
 -- * view
@@ -432,7 +462,12 @@ defaultEditView model requestNode =
                   , renameBtn
                   ]
         , el [ centerX ] (text "or ")
-        , row [ centerX, spacing 10 ] [ duplicateBtn, deleteBtn ]
+        , row [ centerX, spacing 10 ]
+            [ case requestNode of
+                  File _ -> duplicateBtn
+                  _ -> none
+            , deleteBtn
+            ]
         ]
 
 
@@ -484,7 +519,7 @@ duplicateView model requestNode =
 
         duplicateBtn =
             Input.button primaryButtonAttrs
-                { onPress = Just <| AskDuplicate id
+                { onPress = Just <| GenerateRandomUUIDForDuplicate id
                 , label = text "Duplicate"
                 }
 
