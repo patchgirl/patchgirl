@@ -78,10 +78,10 @@ spec =
           fakeRequestFile <- selectFakeRequestFile UUID.nil connection
           fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Just folderId
                                                       , _fakeRequestFileName       = "test"
-                                                      , _fakeRequestFileHttpUrl    = ""
+                                                      , _fakeRequestFileHttpUrl    = "http://foo.com"
                                                       , _fakeRequestFileHttpMethod = Get
-                                                      , _fakeRequestFileHttpBody   = ""
-                                                      , _fakeRequestFileHttpHeaders = HttpHeaders []
+                                                      , _fakeRequestFileHttpBody   = "body"
+                                                      , _fakeRequestFileHttpHeaders = HttpHeaders [ Header ("key", "value") ]
                                                       }
 
 -- ** create root request file
@@ -101,10 +101,10 @@ spec =
           fakeRequestFile <- selectFakeRequestFile UUID.nil connection
           fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Nothing
                                                       , _fakeRequestFileName       = "test"
-                                                      , _fakeRequestFileHttpUrl    = ""
+                                                      , _fakeRequestFileHttpUrl    = "http://foo.com"
                                                       , _fakeRequestFileHttpMethod = Get
-                                                      , _fakeRequestFileHttpBody   = ""
-                                                      , _fakeRequestFileHttpHeaders = HttpHeaders []
+                                                      , _fakeRequestFileHttpBody   = "body"
+                                                      , _fakeRequestFileHttpHeaders = HttpHeaders [ Header ("key", "value") ]
                                                       }
 
 
@@ -132,6 +132,8 @@ spec =
                                                              ]
 
 
+-- * util
+
 
   where
     mkNewRequestFile :: UUID -> UUID -> NewRequestFile
@@ -139,11 +141,21 @@ spec =
       NewRequestFile { _newRequestFileId           = id
                      , _newRequestFileParentNodeId = parentId
                      , _newRequestFileName         = "test"
+                     , _newRequestFileHttpUrl = "http://foo.com"
+                     , _newRequestFileMethod  = Get
+                     , _newRequestFileHeaders = [ HttpHeader ("key", "value") ]
+                     , _newRequestFileBody    = "body"
                      }
 
     mkNewRootRequestFile :: UUID -> NewRootRequestFile
     mkNewRootRequestFile id =
-      NewRootRequestFile { _newRootRequestFileId = id, _newRootRequestFileName = "test" }
+      NewRootRequestFile { _newRootRequestFileId = id
+                         , _newRootRequestFileName = "test"
+                         , _newRootRequestFileHttpUrl = "http://foo.com"
+                         , _newRootRequestFileMethod = Get
+                         , _newRootRequestFileHeaders = [ HttpHeader ("key", "value") ]
+                         , _newRootRequestFileBody = "body"
+                         }
 
     mkUpdateRequestFile :: UpdateRequestFile
     mkUpdateRequestFile =

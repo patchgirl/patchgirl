@@ -29,6 +29,31 @@ import           GHC.Generics
 import           PatchGirl.Web.Http
 
 
+-- * http header
+
+
+newtype HttpHeader = HttpHeader (String, String) deriving (Eq, Show, Generic, Read)
+
+instance ToJSON HttpHeader where
+  toJSON =
+    genericToJSON defaultOptions
+
+instance FromJSON HttpHeader where
+  parseJSON =
+    genericParseJSON defaultOptions
+
+instance ToField [HttpHeader] where
+    toField headers =
+      Many [ Plain "ARRAY["
+           , Many $ List.intersperse (Plain ",") $ map toField headers
+           , Plain "]::header_type[]"
+           ]
+
+instance ToField HttpHeader where
+  toField (HttpHeader keyValue) =
+    toField $ show keyValue
+
+
 -- * request node
 
 
@@ -168,11 +193,16 @@ instance ToField UpdateRequestNode where
 
 
 data NewRootRequestFile =
-  NewRootRequestFile { _newRootRequestFileId           :: UUID
-                     , _newRootRequestFileName         :: String
+  NewRootRequestFile { _newRootRequestFileId      :: UUID
+                     , _newRootRequestFileName    :: String
+                     , _newRootRequestFileHttpUrl :: String
+                     , _newRootRequestFileMethod  :: Method
+                     , _newRootRequestFileHeaders :: [HttpHeader]
+                     , _newRootRequestFileBody    :: String
                      } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRootRequestFile)
+
 
 instance ToJSON NewRootRequestFile where
   toJSON =
@@ -190,6 +220,10 @@ data NewRequestFile =
   NewRequestFile { _newRequestFileId           :: UUID
                  , _newRequestFileParentNodeId :: UUID
                  , _newRequestFileName         :: String
+                 , _newRequestFileHttpUrl :: String
+                 , _newRequestFileMethod  :: Method
+                 , _newRequestFileHeaders :: [HttpHeader]
+                 , _newRequestFileBody    :: String
                  } deriving (Eq, Show, Generic, ToRow)
 
 $(makeLenses ''NewRequestFile)
@@ -241,29 +275,9 @@ instance FromJSON NewRequestFolder where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
+
 -- * update request file
 
-
-newtype HttpHeader = HttpHeader (String, String) deriving (Eq, Show, Generic, Read)
-
-instance ToJSON HttpHeader where
-  toJSON =
-    genericToJSON defaultOptions
-
-instance FromJSON HttpHeader where
-  parseJSON =
-    genericParseJSON defaultOptions
-
-instance ToField [HttpHeader] where
-    toField headers =
-      Many [ Plain "ARRAY["
-           , Many $ List.intersperse (Plain ",") $ map toField headers
-           , Plain "]::header_type[]"
-           ]
-
-instance ToField HttpHeader where
-  toField (HttpHeader keyValue) =
-    toField $ show keyValue
 
 data UpdateRequestFile
   = UpdateRequestFile { _updateRequestFileName        :: String

@@ -64,6 +64,10 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootRequestFileId
                                    , _newRootRequestFileName
+                                   , _newRootRequestFileHttpUrl
+                                   , _newRootRequestFileMethod
+                                   , _newRootRequestFileHeaders
+                                   , _newRootRequestFileBody
                                    , requestCollectionId
                                    , _newRootRequestFileId
                                    )
@@ -72,16 +76,16 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
       [sql|
           WITH insert_root_request_node AS (
             INSERT INTO request_node (
-              id,
-              request_node_parent_id,
               tag,
+              request_node_parent_id,
+              id,
               name,
               http_url,
               http_method,
               http_headers,
               http_body
             )
-            VALUES (?, NULL, 'RequestFile', ?, '', 'Get', '{}', '')
+            VALUES ('RequestFile', NULL, ?, ?, ?, ?, ?, ?)
           ) INSERT INTO request_collection_to_request_node (
               request_collection_id,
               request_node_id
@@ -95,21 +99,28 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
 
 insertRequestFile :: NewRequestFile -> PG.Connection -> IO ()
 insertRequestFile NewRequestFile {..} connection =
-  Monad.void $ PG.execute connection rawQuery (_newRequestFileId, _newRequestFileParentNodeId, _newRequestFileName)
+  Monad.void $ PG.execute connection rawQuery ( _newRequestFileId
+                                              , _newRequestFileParentNodeId
+                                              , _newRequestFileName
+                                              , _newRequestFileHttpUrl
+                                              , _newRequestFileMethod
+                                              , _newRequestFileHeaders
+                                              , _newRequestFileBody
+                                              )
   where
     rawQuery =
       [sql|
           INSERT INTO request_node (
+            tag,
             id,
             request_node_parent_id,
-            tag,
             name,
             http_url,
             http_method,
             http_headers,
             http_body
           )
-          VALUES (?, ?, 'RequestFile', ?, '', 'Get', '{}', '')
+          VALUES ('RequestFile', ?, ?, ?, ?, ?, ?, ?)
           |]
 
 
