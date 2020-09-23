@@ -15,6 +15,9 @@ import qualified Network.HTTP.Types  as HTTP
 import           Servant
 import qualified Servant.Auth.Client as Auth
 import qualified Servant.Auth.Server as Auth
+import qualified Data.Maybe as Maybe
+import           Data.Function ((&))
+import           Data.Functor ((<&>))
 import           Servant.Client      (ClientM, client)
 import           Test.Hspec
 
@@ -31,7 +34,8 @@ import           PatchGirl.Web.RequestNode.Model
 
 updateRequestNodeHandler :: Auth.Token -> Int -> UUID -> UpdateRequestNode -> ClientM ()
 deleteRequestNodeHandler :: Auth.Token -> Int -> UUID -> ClientM ()
-updateRequestNodeHandler :<|> deleteRequestNodeHandler =
+duplicateNodeHandler :: Auth.Token -> Int -> UUID -> DuplicateNode -> ClientM ()
+updateRequestNodeHandler :<|> deleteRequestNodeHandler :<|> duplicateNodeHandler =
   client (Proxy :: Proxy (RequestNodeApi '[Auth.JWT]))
 
 
@@ -39,7 +43,7 @@ updateRequestNodeHandler :<|> deleteRequestNodeHandler =
 
 
 spec :: Spec
-spec =
+spec = focus $
   withClient (mkApp defaultEnv) $ do
 
 
@@ -90,7 +94,64 @@ spec =
           _ <- try clientEnv (deleteRequestNodeHandler token requestCollectionId nodeId)
           selectRequestNodeExists nodeId connection `shouldReturn` False
 
+
+-- ** duplicate node
+
+
+    fdescribe "duplicate request node" $ do
+      it "returns 404 when request node doesnt exist" $ \clientEnv ->
+        cleanDBAndCreateAccount $ \Test { token } -> do
+          let duplicateNode = mkDuplicateNode Nothing
+          try clientEnv (duplicateNodeHandler token 1 UUID.nil duplicateNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
+        cleanDBAndCreateAccount $ \Test { connection, token } -> do
+          accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
+          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId2 connection
+          let nodeId = head requestNodes ^. requestNodeId
+          let duplicateNode = mkDuplicateNode Nothing
+          try clientEnv (duplicateNodeHandler token requestCollectionId nodeId duplicateNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+
+      it "returns 404 when try to duplicate a root folder" $ \clientEnv ->
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
+          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
+          let nodeId = (getFirstFolder requestNodes & Maybe.fromJust) ^. requestNodeId
+          let duplicateNode = mkDuplicateNode Nothing
+          try clientEnv (duplicateNodeHandler token requestCollectionId nodeId duplicateNode) `shouldThrow`  errorsWithStatus HTTP.notFound404
+
+      it "duplicate a file to the root" $ \clientEnv ->
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
+          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
+          let nodeId = (getFirstFile requestNodes & Maybe.fromJust) ^. requestNodeId
+          let duplicateNode = mkDuplicateNode Nothing
+          try clientEnv (duplicateNodeHandler token requestCollectionId nodeId duplicateNode) `shouldReturn` ()
+          origFile <- selectFakeRequestFile nodeId connection
+          targetFile <- selectFakeRequestFile UUID.nil connection
+          _fakeRequestFileName targetFile `shouldBe` (_fakeRequestFileName origFile) ++ " copy"
+
+      it "duplicate a file to a folder" $ \clientEnv ->
+        cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
+          RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
+          let nodeId = (getFirstFile requestNodes & Maybe.fromJust) ^. requestNodeId
+          let parentId = (getFirstFolder requestNodes) <&> _requestNodeId
+          let duplicateNode = mkDuplicateNode parentId
+          try clientEnv (duplicateNodeHandler token requestCollectionId nodeId duplicateNode) `shouldReturn` ()
+          origFile <- selectFakeRequestFile nodeId connection
+          targetFile <- selectFakeRequestFile UUID.nil connection
+          _fakeRequestFileName targetFile `shouldBe` (_fakeRequestFileName origFile) ++ " copy"
+          _fakeRequestFileParentId targetFile `shouldBe` parentId
+
+
+-- * util
+
+
   where
     updateRequestNode :: UpdateRequestNode
     updateRequestNode =
       UpdateRequestNode { _updateRequestNodeName = "newName" }
+
+    mkDuplicateNode :: Maybe UUID -> DuplicateNode
+    mkDuplicateNode mTargetId =
+      DuplicateNode { _duplicateNodeNewId = UUID.nil
+                    , _duplicateNodeTargetId = mTargetId
+                    }

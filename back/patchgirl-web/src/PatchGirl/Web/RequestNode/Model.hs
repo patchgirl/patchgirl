@@ -310,3 +310,22 @@ data ParentNodeId
   = RequestCollectionId Int
   | RequestNodeId UUID
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
+
+
+-- * duplicate node
+
+
+data DuplicateNode =
+  DuplicateNode { _duplicateNodeNewId :: UUID
+                , _duplicateNodeTargetId :: Maybe UUID
+                } deriving (Eq, Show, Generic)
+
+$(makeLenses ''DuplicateNode)
+
+instance ToJSON DuplicateNode where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON DuplicateNode where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }

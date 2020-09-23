@@ -281,18 +281,22 @@ sceneApiServer =
 
 type RequestNodeApi auths =
   Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
-    -- rename request node
+    -- rename node
     ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
-    -- delete request node
-    Delete '[JSON] ()
+    -- delete node
+    Delete '[JSON] () :<|>
+    -- duplicate node
+    ReqBody '[JSON] DuplicateNode :> Post '[JSON] ()
   ))
 
 requestNodeApiServer
   :: (AuthResult CookieSession -> Int -> UUID -> UpdateRequestNode -> AppM ())
   :<|> (AuthResult CookieSession -> Int -> UUID -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> UUID -> DuplicateNode -> AppM ())
 requestNodeApiServer =
   authorizeWithAccountId updateRequestNodeHandler
   :<|> authorizeWithAccountId deleteRequestNodeHandler
+  :<|> authorizeWithAccountId duplicateNodeHandler
 
 
 -- * request file api

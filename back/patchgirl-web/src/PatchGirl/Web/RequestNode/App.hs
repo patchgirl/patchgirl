@@ -7,6 +7,7 @@ module PatchGirl.Web.RequestNode.App ( updateRequestNodeHandler
                        , createRootRequestFolderHandler
                        , createRequestFolderHandler
                        , findNodeInRequestNodes
+                       , duplicateNodeHandler
                        ) where
 
 import           Control.Lens.Operators ((^.))
@@ -25,6 +26,7 @@ import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.RequestCollection.Sql
 import           PatchGirl.Web.RequestNode.Model
 import           PatchGirl.Web.RequestNode.Sql
+import           PatchGirl.Web.Http
 
 
 -- * update request node
@@ -177,87 +179,47 @@ duplicateNodeHandler
   => UUID
   -> Int
   -> UUID
-  -> Maybe UUID
+  -> DuplicateNode
   -> m ()
-duplicateNodeHandler accountId requestCollectionId origNodeId mFolderTargetNodeId = do
+duplicateNodeHandler accountId requestCollectionId origNodeId DuplicateNode{..} = do
   connection <- getDBConnection
   ifValidRequestCollection connection accountId requestCollectionId $ do
-    ifValidRequestNode connection requestCollectionId origNodeId $ \nodes node -> do
-      let copy = node { _requestNodeName = _requestNodeName node ++ " copy" }
-      maybe mFolderTargetNodeId (duplicateToRoot connection requestCollectionId copy) $ \targetFolderId ->
-        case findNodeInRequestNodes targetFolderId nodes of
-          Just RequestFolder {} ->
-            duplicateToTargetNodeId connection requestCollectionId targetFolderId copy
-          _ ->
-            Servant.throwError Servant.err404
+    ifValidRequestNode connection requestCollectionId origNodeId $ \nodes -> \case
+      RequestFolder {} ->
+        Servant.throwError Servant.err404
+      RequestFile { _requestNodeName, _requestNodeHttpUrl, _requestNodeHttpMethod, _requestNodeHttpHeaders, _requestNodeHttpBody } -> do
+        case _duplicateNodeTargetId of
+          Nothing ->
+            IO.liftIO $ insertRootRequestFileH connection _duplicateNodeNewId _requestNodeName _requestNodeHttpUrl _requestNodeHttpMethod _requestNodeHttpHeaders _requestNodeHttpBody
+          Just targetFolderId ->
+            case findNodeInRequestNodes targetFolderId nodes of
+              Just RequestFolder { _requestNodeId } -> do
+                IO.liftIO $ insertRequestFileH connection _duplicateNodeNewId _requestNodeId _requestNodeName _requestNodeHttpUrl _requestNodeHttpMethod _requestNodeHttpHeaders _requestNodeHttpBody
+              _ ->
+                Servant.throwError Servant.err404
   where
-    maybe m f g = Maybe.maybe f g m
+    insertRootRequestFileH :: PG.Connection -> UUID -> String -> String -> Method -> [(String, String)] -> String -> IO ()
+    insertRootRequestFileH connection duplicateNodeNewId requestNodeName requestNodeHttpUrl requestNodeHttpMethod requestNodeHttpHeaders requestNodeHttpBody = do
+      let newRootRequestFile = NewRootRequestFile { _newRootRequestFileId      = duplicateNodeNewId
+                                                  , _newRootRequestFileName    = requestNodeName ++ " copy"
+                                                  , _newRootRequestFileHttpUrl = requestNodeHttpUrl
+                                                  , _newRootRequestFileMethod  = requestNodeHttpMethod
+                                                  , _newRootRequestFileHeaders = requestNodeHttpHeaders <&> HttpHeader
+                                                  , _newRootRequestFileBody    = requestNodeHttpBody
+                                                  }
+      insertRootRequestFile newRootRequestFile requestCollectionId connection
 
-
--- * duplicate to root
-
-
-duplicateToRoot
-  :: ( IO.MonadIO m
-     , Except.MonadError Servant.ServerError m
-     )
-  => PG.Connection
-  -> Int
-  -> RequestNode
-  -> m ()
-duplicateToRoot connection requestCollectionId = \case
-  RequestFolder {..} -> do
-    let newRootRequestFolder = NewRootRequestFolder { _newRootRequestFolderId = _requestNodeId
-                                                    , _newRootRequestFolderName = _requestNodeName
-                                                    }
-    IO.liftIO $ insertRootRequestFolder newRootRequestFolder requestCollectionId connection
-    Monad.forM_ _requestNodeChildren $ duplicateToTargetNodeId connection requestCollectionId _requestNodeId
-
-
-  RequestFile {..} -> do
-    let newRootRequestFile =
-          NewRootRequestFile { _newRootRequestFileId      = _requestNodeId
-                             , _newRootRequestFileName    = _requestNodeName
-                             , _newRootRequestFileHttpUrl = _requestNodeHttpUrl
-                             , _newRootRequestFileMethod  = _requestNodeHttpMethod
-                             , _newRootRequestFileHeaders = _requestNodeHttpHeaders <&> HttpHeader
-                             , _newRootRequestFileBody    = _requestNodeHttpBody
-                             }
-    IO.liftIO $ insertRootRequestFile newRootRequestFile requestCollectionId connection
-
-
--- * duplicate to target
-
-
-duplicateToTargetNodeId
-  :: ( IO.MonadIO m
-     , Except.MonadError Servant.ServerError m
-     )
-  => PG.Connection
-  -> Int
-  -> UUID
-  -> RequestNode
-  -> m ()
-duplicateToTargetNodeId connection requestCollectionId targetFolderId  = \case
-  RequestFolder {..} -> do
-    let newRequestFolder = NewRequestFolder { _newRequestFolderId = _requestNodeId
-                                            , _newRequestFolderParentNodeId = targetFolderId
-                                            , _newRequestFolderName = _requestNodeName
-                                            }
-    IO.liftIO $ insertRequestFolder newRequestFolder connection
-    Monad.forM_ _requestNodeChildren $ duplicateToTargetNodeId connection requestCollectionId _requestNodeId
-
-  RequestFile {..} -> do
-    let newRequestFile =
-          NewRequestFile { _newRequestFileId      = _requestNodeId
-                         , _newRequestFileParentNodeId = targetFolderId
-                         , _newRequestFileName    = _requestNodeName
-                         , _newRequestFileHttpUrl = _requestNodeHttpUrl
-                         , _newRequestFileMethod  = _requestNodeHttpMethod
-                         , _newRequestFileHeaders = _requestNodeHttpHeaders <&> HttpHeader
-                         , _newRequestFileBody    = _requestNodeHttpBody
-                         }
-    IO.liftIO $ insertRequestFile newRequestFile connection
+    insertRequestFileH :: PG.Connection -> UUID -> UUID -> String -> String -> Method -> [(String, String)] -> String -> IO ()
+    insertRequestFileH connection duplicateNodeNewId targetFolderId requestNodeName requestNodeHttpUrl requestNodeHttpMethod requestNodeHttpHeaders requestNodeHttpBody = do
+      let newRequestFile = NewRequestFile { _newRequestFileId      = duplicateNodeNewId
+                                          , _newRequestFileParentNodeId = targetFolderId
+                                          , _newRequestFileName    = requestNodeName ++ " copy"
+                                          , _newRequestFileHttpUrl = requestNodeHttpUrl
+                                          , _newRequestFileMethod  = requestNodeHttpMethod
+                                          , _newRequestFileHeaders = requestNodeHttpHeaders <&> HttpHeader
+                                          , _newRequestFileBody    = requestNodeHttpBody
+                                          }
+      insertRequestFile newRequestFile connection
 
 
 -- * util
