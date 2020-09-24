@@ -52,9 +52,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | GenerateRandomUUIDForDuplicate Uuid
-    | AskDuplicate Uuid Uuid
-    | Duplicate Uuid Uuid (Maybe Uuid)
+    | GenerateRandomUUIDForDuplicate RequestFileRecord
+    | AskDuplicate RequestFileRecord Uuid
+    | Duplicate RequestFileRecord (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -153,14 +153,14 @@ update msg model =
             in
             ( newModel, newMsg )
 
-        GenerateRandomUUIDForDuplicate origId ->
+        GenerateRandomUUIDForDuplicate origFileRecord ->
             let
                 newMsg =
-                    Random.generate (AskDuplicate origId) Uuid.uuidGenerator
+                    Random.generate (AskDuplicate origFileRecord) Uuid.uuidGenerator
             in
             ( model, newMsg )
 
-        AskDuplicate origId newId ->
+        AskDuplicate origFileRecord newId ->
             let
                 (RequestCollection requestCollectionId _) =
                     model.requestCollection
@@ -168,28 +168,55 @@ update msg model =
                 nodeParentId =
                     model.requestNewNode.parentFolderId
 
-                payload =
-                    { duplicateNodeNewId = newId
-                    , duplicateNodeTargetId = nodeParentId
+                newFileRecord =
+                    { origFileRecord
+                        | id = newId
+                        , name = NotEdited <| (notEditedValue origFileRecord.name) ++ " copy"
                     }
 
                 newMsg =
-                    Client.postApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId origId payload (duplicateRequestNodeResultToMsg origId newId nodeParentId)
+                    case model.requestNewNode.parentFolderId of
+                        Nothing ->
+                            let
+                                payload =
+                                       { newRootRequestFileId = newFileRecord.id
+                                       , newRootRequestFileName = editedOrNotEditedValue newFileRecord.name
+                                       , newRootRequestFileHttpUrl = editedOrNotEditedValue newFileRecord.httpUrl
+                                       , newRootRequestFileMethod = editedOrNotEditedValue newFileRecord.httpMethod |> Client.convertMethodFromFrontToBack
+                                       , newRootRequestFileHeaders = editedOrNotEditedValue newFileRecord.httpHeaders
+                                       , newRootRequestFileBody = editedOrNotEditedValue newFileRecord.httpBody
+                                       }
+                            in
+                            Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId payload (duplicateRequestFileResultToMsg newFileRecord model.requestNewNode.parentFolderId)
+
+                        Just folderId ->
+                            let
+                                payload =
+                                    { newRequestFileId = newFileRecord.id
+                                    , newRequestFileParentNodeId = folderId
+                                    , newRequestFileName = editedOrNotEditedValue newFileRecord.name
+                                    , newRequestFileHttpUrl = editedOrNotEditedValue newFileRecord.httpUrl
+                                    , newRequestFileMethod = editedOrNotEditedValue newFileRecord.httpMethod |> Client.convertMethodFromFrontToBack
+                                    , newRequestFileHeaders = editedOrNotEditedValue newFileRecord.httpHeaders
+                                    , newRequestFileBody = editedOrNotEditedValue newFileRecord.httpBody
+                                    }
+                            in
+                            Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId payload (duplicateRequestFileResultToMsg newFileRecord model.requestNewNode.parentFolderId)
             in
             ( model, newMsg )
 
-        Duplicate origId newId nodeParentId ->
+        Duplicate newFile mParentId ->
             let
                 (RequestCollection requestCollectionId requestNodes) =
                     model.requestCollection
 
                 newRequestNodes =
-                    case nodeParentId of
+                    case mParentId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultRequestFile newId ]
+                            requestNodes ++ [ File newFile ]
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (touchRequest newId)) requestNodes
+                            List.map (modifyRequestNode folderId (touchRequest (File newFile))) requestNodes
 
                 newModel =
                     { model
@@ -210,6 +237,15 @@ update msg model =
 -- * util
 
 
+duplicateRequestFileResultToMsg : RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicateRequestFileResultToMsg newFile mParentId result =
+    case result of
+        Ok _ ->
+            Duplicate newFile mParentId
+
+        Err error ->
+            PrintNotification <| AlertNotification "Could not duplicate file, try reloading the page" (httpErrorToString error)
+
 renameNodeResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 renameNodeResultToMsg id newName result =
     case result of
@@ -228,15 +264,6 @@ deleteRequestNodeResultToMsg id result =
         Err error ->
             PrintNotification <| AlertNotification "Could not delete, maybe this HTTP request is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
-duplicateRequestNodeResultToMsg : Uuid -> Uuid -> Maybe Uuid -> Result Http.Error () -> Msg
-duplicateRequestNodeResultToMsg origId newId nodeParentId result =
-    case result of
-        Ok _ ->
-            Duplicate origId newId nodeParentId
-
-        Err error ->
-            PrintNotification <| AlertNotification "Could not duplicate! Try reloading the page!" (httpErrorToString error)
-
 
 -- * view
 
@@ -252,7 +279,10 @@ view whichEditView model =
                 deleteView model requestNode
 
             DuplicateView requestNode ->
-                duplicateView model requestNode
+                case requestNode of
+                    Folder _ -> none
+                    File fileRecord ->
+                        duplicateView model fileRecord
 
 
 -- ** default view
@@ -375,20 +405,20 @@ deleteView model requestNode =
 -- ** duplicate view
 
 
-duplicateView : Model a -> RequestNode -> Element Msg
-duplicateView model requestNode =
+duplicateView : Model a -> RequestFileRecord -> Element Msg
+duplicateView model fileRecord =
     let
-        { id, name } =
-            getNodeIdAndName requestNode
+        name =
+            editedOrNotEditedValue fileRecord.name
 
         duplicateBtn =
             Input.button primaryButtonAttrs
-                { onPress = Just <| GenerateRandomUUIDForDuplicate id
+                { onPress = Just <| GenerateRandomUUIDForDuplicate fileRecord
                 , label = text "Duplicate"
                 }
 
         title =
-            el [ Font.size 25, Font.underline ] <| text ("Duplicate " ++ (editedOrNotEditedValue name))
+            el [ Font.size 25, Font.underline ] <| text ("Duplicate " ++ name)
 
         (RequestCollection _ nodes) =
             model.requestCollection

@@ -144,6 +144,7 @@ getNodeId requestNode =
         Folder { id } -> id
         File { id } -> id
 
+
 -- ** modify
 
 
@@ -356,8 +357,8 @@ mkdirPg id node =
 -- ** touch
 
 
-touchRequest : Uuid -> RequestNode -> RequestNode
-touchRequest id parentNode =
+touchRequest : RequestNode -> RequestNode -> RequestNode
+touchRequest newRequestNode parentNode =
     case parentNode of
         (File _) as file ->
             file
@@ -369,7 +370,7 @@ touchRequest id parentNode =
             in
             Folder
                 { folder
-                    | children = RequestChildren (mkDefaultRequestFile id :: children)
+                    | children = RequestChildren (newRequestNode :: children)
                     , open = True
                 }
 
@@ -464,20 +465,19 @@ mkDefaultPgFolder id =
         , children = PgChildren []
         }
 
-mkDefaultRequestFile : Uuid -> RequestNode
+mkDefaultRequestFile : Uuid -> RequestFileRecord
 mkDefaultRequestFile id =
-    File
-        { id = id
-        , name = NotEdited "new request"
-        , httpUrl = NotEdited ""
-        , httpMethod = NotEdited HttpGet
-        , httpHeaders = NotEdited []
-        , httpBody = NotEdited ""
-        , showResponseView = False
-        , whichResponseView = BodyResponseView
-        , requestComputationResult = Nothing
-        , runRequestIconAnimation = Animation.style []
-        }
+    { id = id
+    , name = NotEdited "new request"
+    , httpUrl = NotEdited ""
+    , httpMethod = NotEdited HttpGet
+    , httpHeaders = NotEdited []
+    , httpBody = NotEdited ""
+    , showResponseView = False
+    , whichResponseView = BodyResponseView
+    , requestComputationResult = Nothing
+    , runRequestIconAnimation = Animation.style []
+    }
 
 mkDefaultPgFile : Uuid -> PgNode
 mkDefaultPgFile id =

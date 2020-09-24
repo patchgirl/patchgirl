@@ -51,7 +51,7 @@ type Msg
     -- touch
     | GenerateRandomUUIDForFile NewNode
     | AskTouch NewNode Uuid
-    | Touch NewNode Uuid
+    | Touch RequestFileRecord (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -171,7 +171,7 @@ update msg model =
                     model.requestCollection
 
                 newFile =
-                    mkDefaultRequestFile newNode newId
+                    mkDefaultRequestFile newId
 
                 newMsg =
                     case newNode.parentFolderId of
@@ -186,7 +186,7 @@ update msg model =
                                        , newRootRequestFileBody = notEditedValue newFile.httpBody
                                        }
                             in
-                            Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newNode newId)
+                            Client.postApiRequestCollectionByRequestCollectionIdRootRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newFile newNode.parentFolderId)
 
                         Just folderId ->
                             let
@@ -200,23 +200,23 @@ update msg model =
                                     , newRequestFileBody = notEditedValue newFile.httpBody
                                     }
                             in
-                            Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newNode newId)
+                            Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId payload (createRequestFileResultToMsg newFile newNode.parentFolderId)
 
             in
             ( model, newMsg )
 
-        Touch newNode newId ->
+        Touch newFile mParentId ->
             let
                 (RequestCollection id requestNodes) =
                     model.requestCollection
 
                 newRequestNodes =
-                    case newNode.parentFolderId of
+                    case mParentId of
                         Nothing ->
-                            requestNodes ++ [ File (mkDefaultRequestFile newNode newId) ]
+                            File newFile :: requestNodes
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (touchRequest newNode newId)) requestNodes
+                            List.map (modifyRequestNode folderId (touchRequest (File newFile))) requestNodes
 
                 newModel =
                     { model
@@ -236,6 +236,7 @@ update msg model =
 -- ** tree
 
 
+{-
 touchRequest : NewNode -> Uuid -> RequestNode -> RequestNode
 touchRequest newNode id parentNode =
     case parentNode of
@@ -252,6 +253,7 @@ touchRequest newNode id parentNode =
                     | children = RequestChildren (File (mkDefaultRequestFile newNode id) :: children)
                     , open = True
                 }
+-}
 
 mkdirRequest : NewNode -> Uuid -> RequestNode -> RequestNode
 mkdirRequest newNode id node =
@@ -280,29 +282,14 @@ mkDefaultRequestFolder newNode id =
         }
 
 
-mkDefaultRequestFile : NewNode -> Uuid -> RequestFileRecord
-mkDefaultRequestFile newNode id =
-    { id = id
-    , name = NotEdited newNode.name
-    , httpUrl = NotEdited ""
-    , httpMethod = NotEdited HttpGet
-    , httpHeaders = NotEdited []
-    , httpBody = NotEdited ""
-    , showResponseView = False
-    , whichResponseView = BodyResponseView
-    , requestComputationResult = Nothing
-    , runRequestIconAnimation = Animation.style []
-    }
-
-
 -- ** msg handling
 
 
-createRequestFileResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg
-createRequestFileResultToMsg newNode id result =
+createRequestFileResultToMsg : RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+createRequestFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->
-            Touch newNode id
+            Touch newFile mParentId
 
         Err error ->
             PrintNotification <| AlertNotification "Could not create a new file, try reloading the page" (httpErrorToString error)
