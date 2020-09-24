@@ -355,7 +355,7 @@ createDefaultFolderView model =
               , el [ alignRight ] (closeBuilderView model.page)
               ]
         , nameInput
-        , folderTreeWithRootView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
+        , folderTreeView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
         , el [ centerX ] createButton
         ]
 
@@ -399,6 +399,6 @@ createDefaultFileView model =
               , el [ alignRight ] (closeBuilderView model.page)
               ]
         , nameInput
-        , folderTreeWithRootView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
+        , folderTreeView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
         , el [ centerX ] createButton
         ]

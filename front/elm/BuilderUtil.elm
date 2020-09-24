@@ -566,8 +566,8 @@ closeBuilderView page =
 -- ** pick folder view
 
 
-folderTreeWithRootView : List RequestNode -> Maybe Uuid -> msg -> (Uuid -> msg) -> Element msg
-folderTreeWithRootView nodes mParentFolderId selectRootFolderMsg selectFolderMsg =
+folderTreeView : List RequestNode -> Maybe Uuid -> msg -> (Uuid -> msg) -> Element msg
+folderTreeView nodes mParentFolderId selectRootFolderMsg selectFolderMsg =
     column [ spacing 10 ]
         [ text "Select a folder:"
         , rootFolderView mParentFolderId (NotEdited "/") selectRootFolderMsg (nodeView mParentFolderId selectFolderMsg nodes)

@@ -442,6 +442,6 @@ duplicateView model fileRecord =
               [ el [ alignLeft ] title
               , el [ alignRight ] (closeBuilderView model.page)
               ]
-        , folderTreeWithRootView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
+        , folderTreeView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
         , row [ centerX, spacing 20 ] [ duplicateBtn ]
         ]
