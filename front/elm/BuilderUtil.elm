@@ -438,12 +438,26 @@ tempRename newName node =
 -- ** mk default
 
 
-mkDefaultRequestFolder : Uuid -> RequestFolderRecord
-mkDefaultRequestFolder id =
+mkDefaultRequestFolder : Uuid -> String -> RequestFolderRecord
+mkDefaultRequestFolder id name =
     { id = id
-    , name = NotEdited "new folder"
+    , name = NotEdited name
     , open = False
     , children = RequestChildren []
+    }
+
+mkDefaultRequestFile : Uuid -> String -> RequestFileRecord
+mkDefaultRequestFile id name =
+    { id = id
+    , name = NotEdited name
+    , httpUrl = NotEdited ""
+    , httpMethod = NotEdited HttpGet
+    , httpHeaders = NotEdited []
+    , httpBody = NotEdited ""
+    , showResponseView = False
+    , whichResponseView = BodyResponseView
+    , requestComputationResult = Nothing
+    , runRequestIconAnimation = Animation.style []
     }
 
 mkDefaultScenarioFolder : Uuid -> ScenarioNode
@@ -463,20 +477,6 @@ mkDefaultPgFolder id =
         , open = False
         , children = PgChildren []
         }
-
-mkDefaultRequestFile : Uuid -> RequestFileRecord
-mkDefaultRequestFile id =
-    { id = id
-    , name = NotEdited "new request"
-    , httpUrl = NotEdited ""
-    , httpMethod = NotEdited HttpGet
-    , httpHeaders = NotEdited []
-    , httpBody = NotEdited ""
-    , showResponseView = False
-    , whichResponseView = BodyResponseView
-    , requestComputationResult = Nothing
-    , runRequestIconAnimation = Animation.style []
-    }
 
 mkDefaultPgFile : Uuid -> PgNode
 mkDefaultPgFile id =

@@ -142,11 +142,8 @@ update msg model =
                 (RequestCollection id requestNodes) =
                     model.requestCollection
 
-                defaultFolder =
-                    mkDefaultRequestFolder newId
-
                 newFolder =
-                    { defaultFolder | name = NotEdited newNode.name }
+                    mkDefaultRequestFolder newId newNode.name
 
                 newRequestNodes =
                     case newNode.parentFolderId of
@@ -177,7 +174,7 @@ update msg model =
                     model.requestCollection
 
                 newFile =
-                    mkDefaultRequestFile newId
+                    mkDefaultRequestFile newId newNode.name
 
                 newMsg =
                     case newNode.parentFolderId of
