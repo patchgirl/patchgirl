@@ -43,20 +43,7 @@ type alias Model a =
 
 
 type Msg
-    -- mkdir
     = SelectFolder Uuid
-    | UpdateFolderName String
-    | GenerateRandomUUIDForFolder Uuid
-    | AskMkdir Uuid Uuid
-    | Mkdir Uuid Uuid
-    | NoOp
-    -- touch
-    | UpdateFileName String
-    | GenerateRandomUUIDForFile Uuid
-    | AskTouch Uuid Uuid
-    | Touch Uuid Uuid
-    -- other
-    | PrintNotification Notification
     -- rename
     | UpdateName Uuid String -- while focus is on the input
     | AskRename Uuid String
@@ -68,6 +55,8 @@ type Msg
     | GenerateRandomUUIDForDuplicate Uuid
     | AskDuplicate Uuid Uuid
     | Duplicate Uuid Uuid (Maybe Uuid)
+    -- other
+    | PrintNotification Notification
 
 
 -- * update
@@ -76,19 +65,6 @@ type Msg
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
     case msg of
-        UpdateFolderName newName ->
-            let
-                oldLandingRequestNewFolder =
-                    model.requestNewNode
-
-                newLandingRequestNewFolder =
-                    { oldLandingRequestNewFolder | name = newName }
-
-                newModel =
-                    { model | requestNewNode = newLandingRequestNewFolder }
-            in
-            (newModel, Cmd.none)
-
         SelectFolder id ->
             let
                 oldLandingRequestNewFolder =
@@ -101,100 +77,6 @@ update msg model =
                     { model | requestNewNode = newLandingRequestNewFolder }
             in
             (newModel, Cmd.none)
-
-        GenerateRandomUUIDForFolder parentNodeId ->
-            let
-                newMsg =
-                    Random.generate (AskMkdir parentNodeId) Uuid.uuidGenerator
-            in
-            ( model, newMsg )
-
-        AskMkdir parentNodeId newId ->
-            let
-                (RequestCollection requestCollectionId _) =
-                    model.requestCollection
-
-                newRequestFolder =
-                    { newRequestFolderId = newId
-                    , newRequestFolderParentNodeId = parentNodeId
-                    , newRequestFolderName = model.requestNewNode.name
-                    }
-
-                newMsg =
-                    Client.postApiRequestCollectionByRequestCollectionIdRequestFolder "" "" requestCollectionId newRequestFolder (createRequestFolderResultToMsg parentNodeId newId)
-            in
-            ( model, newMsg )
-
-        Mkdir parentNodeId newId ->
-            let
-                (RequestCollection id requestNodes) =
-                    model.requestCollection
-
-                newRequestNodes =
-                    List.map (modifyRequestNode parentNodeId (mkdirRequest newId)) requestNodes
-
-                newModel =
-                    { model
-                        | requestCollection =
-                            RequestCollection id newRequestNodes
-                    }
-            in
-            ( newModel, Cmd.none )
-
-        UpdateFileName newName ->
-            let
-                oldLandingRequestNewFile =
-                    model.requestNewNode
-
-                newLandingRequestNewFile =
-                    { oldLandingRequestNewFile | name = newName }
-
-                newModel =
-                    { model | requestNewNode = newLandingRequestNewFile }
-            in
-            (newModel, Cmd.none)
-
-        GenerateRandomUUIDForFile parentNodeId ->
-            let
-                newMsg =
-                    Random.generate (AskTouch parentNodeId) Uuid.uuidGenerator
-            in
-            ( model, newMsg )
-
-        AskTouch parentNodeId newId ->
-            let
-                {-newRequestFile =
-                    { newRequestFileId = newId
-                    , newRequestFileParentNodeId = parentNodeId
-                    }-}
-
-                    {-
-                newMsg =
-                    Client.postApiRequestCollectionByRequestCollectionIdRequestFile "" "" requestCollectionId newRequestFile (newRequestFileResultToMsg parentNodeId newId)
-                    -}
-                newMsg =
-                    Cmd.none
-            in
-            ( model, newMsg )
-
-        Touch parentNodeId newId ->
-            let
-                (RequestCollection id requestNodes) =
-                    model.requestCollection
-
-                newRequestNodes =
-                    List.map (modifyRequestNode parentNodeId (touchRequest newId)) requestNodes
-
-                newModel =
-                    { model
-                        | requestCollection =
-                            RequestCollection id newRequestNodes
-                    }
-            in
-            ( newModel, Cmd.none )
-
-        NoOp ->
-            (model, Cmd.none)
 
         UpdateName id newName ->
             let
@@ -327,24 +209,6 @@ update msg model =
 
 -- * util
 
-
-createRequestFolderResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
-createRequestFolderResultToMsg parentNodeId id result =
-    case result of
-        Ok _ ->
-            Mkdir parentNodeId id
-
-        Err error ->
-            PrintNotification <| AlertNotification "Could not create folder, try reloading the page!" (httpErrorToString error)
-
-newRequestFileResultToMsg : Uuid -> Uuid -> Result Http.Error () -> Msg
-newRequestFileResultToMsg parentNodeId id result =
-    case result of
-        Ok _ ->
-            Touch parentNodeId id
-
-        Err error ->
-            PrintNotification <| AlertNotification "Could create a new file, try reloading the page" (httpErrorToString error)
 
 renameNodeResultToMsg : Uuid -> String -> Result Http.Error () -> Msg
 renameNodeResultToMsg id newName result =
