@@ -13,9 +13,12 @@
 ** TODO Request: description field
 
 
+** TODO Tangoscript: add assertNotEqual
+
 * Improvements
 
 
+** TODO Doc: add documentation for json response and json access
 ** TODO Scenario: prettify "add a scene to your scenario" button
 ** TODO Scenario: reset data
 ** TODO Tree: duplicate entry for file
