@@ -337,8 +337,8 @@ mkdirScenario id node =
                     , open = True
                 }
 
-mkdirPg : Uuid -> PgNode -> PgNode
-mkdirPg id node =
+mkdirPg : PgFolderRecord -> PgNode -> PgNode
+mkdirPg record node =
     case node of
         (File _) as file ->
             file
@@ -350,7 +350,7 @@ mkdirPg id node =
             in
             Folder
                 { folder
-                    | children = PgChildren (mkDefaultPgFolder id :: children)
+                    | children = PgChildren (Folder record :: children)
                     , open = True
                 }
 
@@ -438,6 +438,9 @@ tempRename newName node =
 -- ** mk default
 
 
+-- *** request
+
+
 mkDefaultRequestFolder : Uuid -> String -> RequestFolderRecord
 mkDefaultRequestFolder id name =
     { id = id
@@ -460,6 +463,36 @@ mkDefaultRequestFile id name =
     , runRequestIconAnimation = Animation.style []
     }
 
+
+-- *** pg
+
+
+mkDefaultPgFolder : Uuid -> String -> PgFolderRecord
+mkDefaultPgFolder id name =
+    { id = id
+    , name = NotEdited name
+    , open = False
+    , children = PgChildren []
+    }
+
+mkDefaultPgFile : Uuid -> String -> PgFileRecord
+mkDefaultPgFile id name =
+    { id = id
+    , name = NotEdited name
+    , dbHost = NotEdited ""
+    , dbPassword = NotEdited ""
+    , dbPort = NotEdited ""
+    , dbUser = NotEdited ""
+    , dbName = NotEdited ""
+    , sql = NotEdited ""
+    , pgComputationOutput = Nothing
+    , showResponseView = False
+    }
+
+
+-- *** scenario
+
+
 mkDefaultScenarioFolder : Uuid -> ScenarioNode
 mkDefaultScenarioFolder id =
     Folder
@@ -467,30 +500,6 @@ mkDefaultScenarioFolder id =
         , name = NotEdited "new folder"
         , open = False
         , children = ScenarioChildren []
-        }
-
-mkDefaultPgFolder : Uuid -> PgNode
-mkDefaultPgFolder id =
-    Folder
-        { id = id
-        , name = NotEdited "new folder"
-        , open = False
-        , children = PgChildren []
-        }
-
-mkDefaultPgFile : Uuid -> PgNode
-mkDefaultPgFile id =
-    File
-        { id = id
-        , name = NotEdited ""
-        , dbHost = NotEdited ""
-        , dbPassword = NotEdited ""
-        , dbPort = NotEdited ""
-        , dbUser = NotEdited ""
-        , dbName = NotEdited ""
-        , sql = NotEdited ""
-        , pgComputationOutput = Nothing
-        , showResponseView = False
         }
 
 mkDefaultScenarioFile : Uuid -> ScenarioNode
@@ -501,6 +510,7 @@ mkDefaultScenarioFile id =
         , name = NotEdited ""
         , scenes = []
         }
+
 
 -- ** get node id & name
 

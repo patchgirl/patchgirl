@@ -19,7 +19,7 @@ import Util exposing (..)
 import Uuid exposing (Uuid)
 import Page exposing(..)
 import HttpError exposing(..)
-import BuilderUtil as PgTree
+import BuilderUtil exposing(..)
 import PGBuilderApp.PGTree.App as PgTree
 import BuilderUtil exposing (..)
 import Animation
@@ -128,13 +128,16 @@ update msg model =
                 (PgCollection id pgNodes) =
                     model.pgCollection
 
+                newFolder =
+                    mkDefaultPgFolder newId newNode.name
+
                 newPgNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            pgNodes ++ [ mkDefaultRequestFolder newNode newId ]
+                            pgNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (PgTree.modifyPgNode folderId (mkdirRequest newNode newId)) pgNodes
+                            List.map (modifyPgNode folderId (mkdirPg newFolder)) pgNodes
 
                 newModel =
                     { model
@@ -198,7 +201,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNode =
-                    mkDefaultRequestFile newNode newId
+                    File (mkDefaultPgFile newId newNode.name)
 
                 newPgNodes =
                     case newNode.parentFolderId of
@@ -206,7 +209,7 @@ update msg model =
                             pgNodes ++ [ newPgNode ]
 
                         Just folderId ->
-                            List.map (PgTree.modifyPgNode folderId (PgTree.touchPg newPgNode)) pgNodes
+                            List.map (modifyPgNode folderId (touchPg newPgNode)) pgNodes
 
                 newModel =
                     { model
@@ -221,72 +224,6 @@ update msg model =
 
 
 -- * util
-
-
--- ** tree
-
-
-touchRequest : NewNode -> Uuid -> PgNode -> PgNode
-touchRequest newNode id parentNode =
-    case parentNode of
-        (File _) as file ->
-            file
-
-        Folder folder ->
-            let
-                (PgChildren children) =
-                    folder.children
-            in
-            Folder
-                { folder
-                    | children = PgChildren (mkDefaultRequestFile newNode id :: children)
-                    , open = True
-                }
-
-mkdirRequest : NewNode -> Uuid -> PgNode -> PgNode
-mkdirRequest newNode id node =
-    case node of
-        (File _) as file ->
-            file
-
-        Folder folder ->
-            let
-                (PgChildren children) =
-                    folder.children
-            in
-            Folder
-                { folder
-                    | children = PgChildren (mkDefaultRequestFolder newNode id :: children)
-                    , open = True
-                }
-
-mkDefaultRequestFolder : NewNode -> Uuid -> PgNode
-mkDefaultRequestFolder newNode id =
-    Folder
-        { id = id
-        , name = NotEdited newNode.name
-        , open = False
-        , children = PgChildren []
-        }
-
-
-mkDefaultRequestFile : NewNode -> Uuid -> PgNode
-mkDefaultRequestFile newNode id =
-    File
-        { id = id
-        , name = NotEdited newNode.name
-        , dbHost = NotEdited ""
-        , dbPassword = NotEdited ""
-        , dbPort = NotEdited ""
-        , dbUser = NotEdited ""
-        , dbName = NotEdited ""
-        , sql = NotEdited ""
-        , pgComputationOutput = Nothing
-        , showResponseView = False
-        }
-
-
--- ** msg handling
 
 
 createPgFileResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg
