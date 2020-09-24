@@ -53,6 +53,7 @@ procParser =
         |. P.spaces
         |= P.oneOf
            [ assertEqualParser
+           , assertNotEqualParser
            , letParser
            , setParser
            ]
@@ -110,6 +111,25 @@ assertEqualParser : Parser Proc
 assertEqualParser =
     P.succeed AssertEqual
         |. P.keyword "assertEqual"
+        |. P.spaces
+        |. P.symbol "("
+        |. P.spaces
+        |= (P.lazy <| \_ -> exprParser)
+        |. P.spaces
+        |. P.symbol ","
+        |. P.spaces
+        |= (P.lazy <| \_ -> exprParser)
+        |. P.spaces
+        |. P.symbol ")"
+
+
+-- ** assert not equal
+
+
+assertNotEqualParser : Parser Proc
+assertNotEqualParser =
+    P.succeed AssertNotEqual
+        |. P.keyword "assertNotEqual"
         |. P.spaces
         |. P.symbol "("
         |. P.spaces
@@ -437,6 +457,9 @@ showProc proc =
     case proc of
         AssertEqual expr1 expr2 ->
             "(== " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
+
+        AssertNotEqual expr1 expr2 ->
+            "(!= " ++ showExpr expr1 ++ showExpr expr2 ++ ")"
 
         Let str expr ->
             "(Let " ++ str ++ " " ++ showExpr expr ++ ")"

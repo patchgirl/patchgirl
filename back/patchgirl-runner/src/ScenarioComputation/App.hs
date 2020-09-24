@@ -170,7 +170,22 @@ runProc context = \case
       (Right a, Right b) ->
         case a == b of
           True  -> return Nothing
-          False -> return $ Just (AssertEqualFailed a b)
+          False -> return $ Just (AssertionFailed a b $ (show a) ++ " is not equal to " ++ (show b))
+
+      (Left s, _) ->
+        return $ Just s
+
+      (_, Left s) ->
+        return $ Just s
+
+  AssertNotEqual expr1 expr2 -> do
+    ex1 <- reduceExprToPrimitive context expr1
+    ex2 <- reduceExprToPrimitive context expr2
+    case (ex1, ex2) of
+      (Right a, Right b) ->
+        case a /= b of
+          True  -> return Nothing
+          False -> return $ Just (AssertionFailed a b $ (show a) ++ " is equal to " ++ (show b))
 
       (Left s, _) ->
         return $ Just s

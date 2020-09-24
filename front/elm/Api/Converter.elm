@@ -554,8 +554,8 @@ convertScriptExceptionFromBackToFront backScriptException =
         Back.UnknownVariable expr ->
             Front.UnknownVariable (convertExpressionFromBackToFront expr)
 
-        Back.AssertEqualFailed expr1 expr2 ->
-            Front.AssertEqualFailed (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2)
+        Back.AssertionFailed expr1 expr2 str ->
+            Front.AssertionFailed (convertExpressionFromBackToFront expr1) (convertExpressionFromBackToFront expr2) str
 
         Back.CannotUseFunction str ->
             Front.CannotUseFunction str
@@ -587,6 +587,7 @@ convertProcFromFrontToBack : Front.Proc -> Back.Proc
 convertProcFromFrontToBack frontProc =
     case frontProc of
         Front.AssertEqual expr1 expr2 -> Back.AssertEqual (convertExpressionFromFrontToBack expr1) (convertExpressionFromFrontToBack expr2)
+        Front.AssertNotEqual expr1 expr2 -> Back.AssertNotEqual (convertExpressionFromFrontToBack expr1) (convertExpressionFromFrontToBack expr2)
         Front.Let str expr -> Back.Let str (convertExpressionFromFrontToBack expr)
         Front.Set str expr -> Back.Set str (convertExpressionFromFrontToBack expr)
 

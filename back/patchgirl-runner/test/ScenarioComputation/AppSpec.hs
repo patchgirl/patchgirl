@@ -154,7 +154,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ PrescriptFailed $ AssertEqualFailed (LString "a") (LString "b")
+            [ mkSceneOutput $ PrescriptFailed $ (AssertionFailed (LString "a") (LString "b") "LString \"a\" is not equal to LString \"b\"")
             ]
           )
 
@@ -279,7 +279,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertEqualFailed (LString "foo") (LString "bar"))
+            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\"")
             ]
           )
 
@@ -494,7 +494,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AssertEqualFailed LNull (LInt 1))
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AssertionFailed LNull (LInt 1) "LNull is not equal to LInt 1")
             ]
           )
 

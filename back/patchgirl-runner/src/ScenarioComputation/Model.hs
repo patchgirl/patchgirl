@@ -130,7 +130,7 @@ instance Aeson.FromJSON SceneComputation where
 
 data ScriptException
   = UnknownVariable Expr
-  | AssertEqualFailed Expr Expr
+  | AssertionFailed Expr Expr String
   | CannotUseFunction String
   | EmptyResponse String
   | AccessOutOfBound Expr Expr

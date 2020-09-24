@@ -704,7 +704,7 @@ type SceneComputation
 
 type ScriptException
   = UnknownVariable Expr
-  | AssertEqualFailed Expr Expr
+  | AssertionFailed Expr Expr String
   | CannotUseFunction String
   | EmptyResponse String
   | AccessOutOfBound Expr Expr
@@ -718,8 +718,8 @@ scriptExceptionToString scriptException =
         UnknownVariable expr ->
             "Unknown variable " ++ exprToString expr
 
-        AssertEqualFailed e1 e2 ->
-            "assertEqual failed: " ++ (exprToString e1) ++ " is not equal to " ++ (exprToString e2)
+        AssertionFailed _ _ error ->
+            error
 
         CannotUseFunction function ->
             "Cannot use function: [" ++ function ++ "]"
@@ -808,6 +808,7 @@ type alias TangoAst = List Proc
 
 type Proc
     = AssertEqual Expr Expr
+    | AssertNotEqual Expr Expr
     | Let String Expr
     | Set String Expr
 

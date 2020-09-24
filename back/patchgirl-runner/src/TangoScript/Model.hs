@@ -19,6 +19,7 @@ type TangoAst = [Proc]
 
 data Proc
   = AssertEqual Expr Expr
+  | AssertNotEqual Expr Expr
   | Let String Expr
   | Set String Expr
   deriving (Show, Eq, Generic)
