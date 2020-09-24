@@ -893,7 +893,7 @@ httpDetailedSceneView file scene fileRecord =
                     text <| "Prescript failed because of: " ++ scriptExceptionToString scriptException
 
                 HttpSceneFailed httpException ->
-                    text <| "This request failed because of: " ++ httpExceptionToString httpException
+                    paragraph [] [ text <| "This request failed because of: " ++ httpExceptionToString httpException ]
 
                 PgSceneFailed _ ->
                     none
