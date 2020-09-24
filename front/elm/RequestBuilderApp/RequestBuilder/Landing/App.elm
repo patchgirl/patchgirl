@@ -142,13 +142,19 @@ update msg model =
                 (RequestCollection id requestNodes) =
                     model.requestCollection
 
+                defaultFolder =
+                    mkDefaultRequestFolder newId
+
+                newFolder =
+                    { defaultFolder | name = NotEdited newNode.name }
+
                 newRequestNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            requestNodes ++ [ mkDefaultRequestFolder newNode newId ]
+                            requestNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (mkdirRequest newNode newId)) requestNodes
+                            List.map (modifyRequestNode folderId (mkdirRequest newFolder)) requestNodes
 
                 newModel =
                     { model
@@ -232,57 +238,6 @@ update msg model =
 
 -- * util
 
-
--- ** tree
-
-
-{-
-touchRequest : NewNode -> Uuid -> RequestNode -> RequestNode
-touchRequest newNode id parentNode =
-    case parentNode of
-        (File _) as file ->
-            file
-
-        Folder folder ->
-            let
-                (RequestChildren children) =
-                    folder.children
-            in
-            Folder
-                { folder
-                    | children = RequestChildren (File (mkDefaultRequestFile newNode id) :: children)
-                    , open = True
-                }
--}
-
-mkdirRequest : NewNode -> Uuid -> RequestNode -> RequestNode
-mkdirRequest newNode id node =
-    case node of
-        (File _) as file ->
-            file
-
-        Folder folder ->
-            let
-                (RequestChildren children) =
-                    folder.children
-            in
-            Folder
-                { folder
-                    | children = RequestChildren (mkDefaultRequestFolder newNode id :: children)
-                    , open = True
-                }
-
-mkDefaultRequestFolder : NewNode -> Uuid -> RequestNode
-mkDefaultRequestFolder newNode id =
-    Folder
-        { id = id
-        , name = NotEdited newNode.name
-        , open = False
-        , children = RequestChildren []
-        }
-
-
--- ** msg handling
 
 
 createRequestFileResultToMsg : RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg

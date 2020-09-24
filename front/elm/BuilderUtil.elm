@@ -303,8 +303,8 @@ toggleFolder node =
 -- ** mkdir
 
 
-mkdirRequest : Uuid -> RequestNode -> RequestNode
-mkdirRequest id node =
+mkdirRequest : RequestFolderRecord -> RequestNode -> RequestNode
+mkdirRequest record node =
     case node of
         (File _) as file ->
             file
@@ -316,7 +316,7 @@ mkdirRequest id node =
             in
             Folder
                 { folder
-                    | children = RequestChildren (mkDefaultRequestFolder id :: children)
+                    | children = RequestChildren (Folder record :: children)
                     , open = True
                 }
 
@@ -438,14 +438,13 @@ tempRename newName node =
 -- ** mk default
 
 
-mkDefaultRequestFolder : Uuid -> RequestNode
+mkDefaultRequestFolder : Uuid -> RequestFolderRecord
 mkDefaultRequestFolder id =
-    Folder
-        { id = id
-        , name = NotEdited "new folder"
-        , open = False
-        , children = RequestChildren []
-        }
+    { id = id
+    , name = NotEdited "new folder"
+    , open = False
+    , children = RequestChildren []
+    }
 
 mkDefaultScenarioFolder : Uuid -> ScenarioNode
 mkDefaultScenarioFolder id =
