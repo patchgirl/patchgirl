@@ -358,11 +358,12 @@ http://domain.com/users/{{foo}}
 
 ## Assertion
 
-Assertions are useful when you want to make sure some data is equal to an expected result.
+Assertions are useful when you want to make sure some data is equal or not to an expected result.
 Assertions can be used with the syntax:
 
 ```tangoscript
 assertEqual(a, b);
+assertNotEqual(a, b);
 ```
 
 Note that `a` and `b` must be of the same type to make assertEqual succeeds.
