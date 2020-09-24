@@ -12,7 +12,6 @@ import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
-                                                       constructorTagModifier,
                                                        defaultOptions,
                                                        fieldLabelModifier,
                                                        genericParseJSON,
@@ -27,7 +26,7 @@ import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
 
 import           PatchGirl.Web.Http
-
+import PatchGirl.Web.NodeType.Model
 
 -- * http header
 
@@ -88,21 +87,6 @@ instance FromField [RequestNode] where
     either (returnError ConversionFailed field) return errorOrRequestNodes
 
 
--- * request node type
-
-
-data RequestNodeType
-  = RequestFileType
-  | RequestFolderType
-  deriving (Eq, Show, Generic)
-
-instance FromJSON RequestNodeType where
-  parseJSON = genericParseJSON defaultOptions
-    { constructorTagModifier = \s ->
-        let suffixToRemove = "Type" :: String
-        in take (length s - length suffixToRemove) s
-    }
-
 -- * request node from pg
 
 
@@ -127,9 +111,9 @@ newtype RequestNodeFromPG = RequestNodeFromPG RequestNode
 
 instance FromJSON RequestNodeFromPG where
   parseJSON = withObject "RequestNode" $ \o -> do
-    requestNodeType <- o .: "tag" :: Parser RequestNodeType
+    requestNodeType <- o .: "tag" :: Parser NodeType
     case requestNodeType of
-      RequestFileType -> do
+      File -> do
         pgHeaders <- o .: "http_headers" :: Parser [PGHeader]
         let _requestNodeHttpHeaders = (\pgHeader -> (headerKey pgHeader, headerValue pgHeader)) <$> pgHeaders
         _requestNodeId <- o .: "id"
@@ -138,7 +122,7 @@ instance FromJSON RequestNodeFromPG where
         _requestNodeHttpMethod <- o .: "http_method"
         _requestNodeHttpBody <- o .: "http_body"
         return $ RequestNodeFromPG $ RequestFile{..}
-      RequestFolderType -> do
+      Folder -> do
         pgChildren <- o .: "children" :: Parser [RequestNodeFromPG]
         _requestNodeId <- o .: "id"
         _requestNodeName <- o .: "name"

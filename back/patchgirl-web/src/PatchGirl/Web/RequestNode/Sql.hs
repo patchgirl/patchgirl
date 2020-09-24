@@ -85,7 +85,7 @@ insertRootRequestFile NewRootRequestFile {..} requestCollectionId connection =
               http_headers,
               http_body
             )
-            VALUES ('RequestFile', NULL, ?, ?, ?, ?, ?, ?)
+            VALUES ('File', NULL, ?, ?, ?, ?, ?, ?)
           ) INSERT INTO request_collection_to_request_node (
               request_collection_id,
               request_node_id
@@ -120,7 +120,7 @@ insertRequestFile NewRequestFile {..} connection =
             http_headers,
             http_body
           )
-          VALUES ('RequestFile', ?, ?, ?, ?, ?, ?, ?)
+          VALUES ('File', ?, ?, ?, ?, ?, ?, ?)
           |]
 
 
@@ -145,7 +145,7 @@ insertRootRequestFolder NewRootRequestFolder {..} requestCollectionId connection
               tag,
               name
             )
-            VALUES (?, NULL, 'RequestFolder', ?)
+            VALUES (?, NULL, 'Folder', ?)
           ) INSERT INTO request_collection_to_request_node (
               request_collection_id,
               request_node_id
@@ -169,7 +169,7 @@ insertRequestFolder NewRequestFolder {..} connection =
             tag,
             name
           )
-          VALUES (?, ?, 'RequestFolder', ?)
+          VALUES (?, ?, 'Folder', ?)
           |]
 
 

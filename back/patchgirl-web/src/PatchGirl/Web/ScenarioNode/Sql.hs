@@ -88,7 +88,7 @@ insertRootScenarioFile NewRootScenarioFile {..} scenarioCollectionId connection 
               name,
               environment_id
             )
-            VALUES (?, NULL, 'ScenarioFile', ?, ?)
+            VALUES (?, NULL, 'File', ?, ?)
           ) INSERT INTO scenario_collection_to_scenario_node (
               scenario_collection_id,
               scenario_node_id
@@ -117,7 +117,7 @@ insertScenarioFile NewScenarioFile {..} connection =
             tag,
             environment_id
           )
-          VALUES (?, ?, ?, 'ScenarioFile', ?)
+          VALUES (?, ?, ?, 'File', ?)
           |]
 
 
@@ -164,7 +164,7 @@ insertRootScenarioFolder NewRootScenarioFolder {..} scenarioCollectionId connect
               tag,
               name
             )
-            VALUES (?, NULL, 'ScenarioFolder', ?)
+            VALUES (?, NULL, 'Folder', ?)
           ) INSERT INTO scenario_collection_to_scenario_node (
               scenario_collection_id,
               scenario_node_id
@@ -191,7 +191,7 @@ insertScenarioFolder NewScenarioFolder {..} connection =
             tag,
             name
           )
-          VALUES (?, ?, 'ScenarioFolder', ?)
+          VALUES (?, ?, 'Folder', ?)
           |]
 
 

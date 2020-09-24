@@ -352,7 +352,7 @@ end
 
 
 pg_nodes = [
-  insert_pg_folder('cb2c1df8-68f0-4a61-b7c7-f75194604976', nil, 'PgFolder', "users"),
+  insert_pg_folder('cb2c1df8-68f0-4a61-b7c7-f75194604976', nil, 'Folder', "users"),
   insert_pg_file(  '0c37579e-6a6c-4e9f-ae2c-47a7e7270d14', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "select users",  "select * from user_test;", "", "", "", "", ""),
   insert_pg_file(  'aa517710-150f-4707-a8cc-a24af252acd7', 'cb2c1df8-68f0-4a61-b7c7-f75194604976', "single user", "select * from user_test;", "", "", "", "", ""),
 ]

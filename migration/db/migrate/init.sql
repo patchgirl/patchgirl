@@ -15,10 +15,13 @@ CREATE TABLE account(
 );
 
 
+
+-- * node type
+
+CREATE TYPE node_type AS ENUM ('Folder', 'File');
+
 -- * request node
 
-
-CREATE TYPE request_node_type AS ENUM ('RequestFolder', 'RequestFile');
 CREATE TYPE http_method_type AS ENUM ('Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options');
 CREATE TYPE header_type AS (
   header_key TEXT,
@@ -28,15 +31,15 @@ CREATE TYPE header_type AS (
 CREATE TABLE request_node(
   id UUID PRIMARY KEY,
   request_node_parent_id UUID REFERENCES request_node(id) ON DELETE CASCADE,
-  tag request_node_type NOT NULL,
+  tag node_type NOT NULL,
   name TEXT NOT NULL,
   http_url TEXT,
   http_method http_method_type,
   http_headers header_type[],
   http_body TEXT,
   CHECK (
-    (tag = 'RequestFolder' AND http_url IS NULL AND http_method IS NULL AND http_headers IS NULL AND http_body IS NULL) OR
-    (tag = 'RequestFile' AND http_url IS NOT NULL AND http_method IS NOT NULL AND http_headers IS NOT NULL AND http_body IS NOT NULL)
+    (tag = 'Folder' AND http_url IS NULL AND http_method IS NULL AND http_headers IS NULL AND http_body IS NULL) OR
+    (tag = 'File' AND http_url IS NOT NULL AND http_method IS NOT NULL AND http_headers IS NOT NULL AND http_body IS NOT NULL)
   )
 );
 
@@ -59,12 +62,10 @@ CREATE TABLE request_collection_to_request_node(
 -- * pg node
 
 
-CREATE TYPE pg_node_type AS ENUM ('PgFolder', 'PgFile');
-
 CREATE TABLE pg_node(
   id UUID PRIMARY KEY,
   pg_node_parent_id UUID REFERENCES pg_node(id) ON DELETE CASCADE,
-  tag pg_node_type NOT NULL,
+  tag node_type NOT NULL,
   name TEXT NOT NULL,
   sql TEXT,
   pg_host TEXT,
@@ -73,8 +74,8 @@ CREATE TABLE pg_node(
   pg_user TEXT,
   pg_dbname TEXT,
   CHECK (
-    (tag = 'PgFolder' AND sql IS NULL) OR
-    ( tag = 'PgFile' AND
+    (tag = 'Folder' AND sql IS NULL) OR
+    ( tag = 'File' AND
       sql IS NOT NULL AND
       pg_host IS NOT NULL AND
       pg_password IS NOT NULL AND
@@ -147,18 +148,16 @@ CREATE TABLE key_value(
 -- * scenario node
 
 
-CREATE TYPE scenario_node_type AS ENUM ('ScenarioFolder', 'ScenarioFile');
-
 CREATE TABLE scenario_node(
   id UUID PRIMARY KEY,
-  tag scenario_node_type NOT NULL,
+  tag node_type NOT NULL,
   environment_id UUID REFERENCES environment(id),
   name TEXT NOT NULL,
   scenario_node_parent_id UUID REFERENCES scenario_node(id) ON DELETE CASCADE,
   scene_node_id UUID REFERENCES scene_node(id) ON DELETE CASCADE
   CHECK (
-    (tag = 'ScenarioFile') OR
-    (tag = 'ScenarioFolder' AND environment_id IS NULL AND scene_node_id IS NULL)
+    (tag = 'File') OR
+    (tag = 'Folder' AND environment_id IS NULL AND scene_node_id IS NULL)
   )
 );
 
@@ -185,7 +184,7 @@ CREATE OR REPLACE FUNCTION root_request_nodes_as_json(rc_id int) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'RequestFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -216,7 +215,7 @@ CREATE OR REPLACE FUNCTION request_nodes_as_json(node_id uuid) RETURNS jsonb[] A
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'RequestFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -249,7 +248,7 @@ CREATE OR REPLACE FUNCTION root_pg_nodes_as_json(rc_id uuid) RETURNS jsonb[] AS 
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'PgFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -282,7 +281,7 @@ CREATE OR REPLACE FUNCTION pg_nodes_as_json(node_id uuid) RETURNS jsonb[] AS $$
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'PgFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -317,7 +316,7 @@ CREATE OR REPLACE FUNCTION root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'ScenarioFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -345,7 +344,7 @@ CREATE OR REPLACE FUNCTION scenario_nodes_as_json(node_id uuid) RETURNS jsonb[] 
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'ScenarioFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,

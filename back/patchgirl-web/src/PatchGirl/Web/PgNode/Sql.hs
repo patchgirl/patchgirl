@@ -88,7 +88,7 @@ insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
               pg_user,
               pg_dbname
             )
-            VALUES ('PgFile', NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ('File', NULL, ?, ?, ?, ?, ?, ?, ?, ?)
           ) INSERT INTO pg_collection_to_pg_node (
               pg_collection_id,
               pg_actor_id
@@ -118,7 +118,7 @@ insertPgFile newPgFile connection =
             pg_user,
             pg_dbname
           )
-          VALUES ('PgFile', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES ('File', ?, ?, ?, ?, ?, ?, ?, ?, ?)
           |]
 
 
@@ -143,7 +143,7 @@ insertRootPgFolder NewRootPgFolder{..} pgCollectionId connection =
               tag,
               name
             )
-            VALUES (?, NULL, 'PgFolder', ?)
+            VALUES (?, NULL, 'Folder', ?)
           ) INSERT INTO pg_collection_to_pg_node (
               pg_collection_id,
               pg_actor_id
@@ -167,7 +167,7 @@ insertPgFolder NewPgFolder {..} connection =
             tag,
             name
           )
-          VALUES (?, ?, 'PgFolder', ?)
+          VALUES (?, ?, 'Folder', ?)
           |]
 
 

@@ -12,7 +12,6 @@ import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
-                                                       constructorTagModifier,
                                                        defaultOptions,
                                                        fieldLabelModifier,
                                                        genericParseJSON,
@@ -26,6 +25,7 @@ import           Database.PostgreSQL.Simple.FromField hiding (name)
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
+import PatchGirl.Web.NodeType.Model
 
 
 -- * actor type
@@ -185,22 +185,6 @@ instance FromField [ScenarioNode] where
     either (returnError ConversionFailed field) return errorOrScenarioNodes
 
 
--- * scenario node type
-
-
-data ScenarioNodeType
-  = ScenarioFileType
-  | ScenarioFolderType
-  deriving (Eq, Show, Generic)
-
-instance FromJSON ScenarioNodeType where
-  parseJSON = genericParseJSON defaultOptions
-    { constructorTagModifier = \s ->
-        let suffixToRemove = "Type" :: String
-        in take (length s - length suffixToRemove) s
-    }
-
-
 -- * scenario node from pg
 
 
@@ -208,16 +192,16 @@ newtype ScenarioNodeFromPG = ScenarioNodeFromPG ScenarioNode
 
 instance FromJSON ScenarioNodeFromPG where
   parseJSON = withObject "ScenarioNode" $ \o -> do
-    scenarioNodeType <- o .: "tag" :: Parser ScenarioNodeType
+    scenarioNodeType <- o .: "tag" :: Parser NodeType
     case scenarioNodeType of
-      ScenarioFileType -> do
+      File -> do
         _scenarioNodeId <- o .: "id"
         _scenarioNodeName <- o .: "name"
         _scenarioNodeEnvironmentId <- o .: "environment_id"
         scenesFromPG <- o .: "scene_nodes" :: Parser [SceneFromPG]
         let _scenarioNodeScenes = map fromSceneFromPGTOScene scenesFromPG
         return $ ScenarioNodeFromPG $ ScenarioFile{..}
-      ScenarioFolderType -> do
+      Folder -> do
         pgChildren <- o .: "children" :: Parser [ScenarioNodeFromPG]
         _scenarioNodeId <- o .: "id"
         _scenarioNodeName <- o .: "name"

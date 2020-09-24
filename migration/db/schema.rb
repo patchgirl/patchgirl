@@ -77,32 +77,12 @@ CREATE TYPE public.http_method_type AS ENUM (
 
 
 --
--- Name: pg_node_type; Type: TYPE; Schema: public; Owner: -
+-- Name: node_type; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.pg_node_type AS ENUM (
-    'PgFolder',
-    'PgFile'
-);
-
-
---
--- Name: request_node_type; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.request_node_type AS ENUM (
-    'RequestFolder',
-    'RequestFile'
-);
-
-
---
--- Name: scenario_node_type; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.scenario_node_type AS ENUM (
-    'ScenarioFolder',
-    'ScenarioFile'
+CREATE TYPE public.node_type AS ENUM (
+    'Folder',
+    'File'
 );
 
 
@@ -126,7 +106,7 @@ CREATE FUNCTION public.pg_nodes_as_json(node_id uuid) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'PgFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -164,7 +144,7 @@ CREATE FUNCTION public.request_nodes_as_json(node_id uuid) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'RequestFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -200,7 +180,7 @@ CREATE FUNCTION public.root_pg_nodes_as_json(rc_id uuid) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'PgFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -239,7 +219,7 @@ CREATE FUNCTION public.root_request_nodes_as_json(rc_id integer) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'RequestFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -276,7 +256,7 @@ CREATE FUNCTION public.root_scenario_nodes_as_json(rc_id uuid) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'ScenarioFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -340,7 +320,7 @@ CREATE FUNCTION public.scenario_nodes_as_json(node_id uuid) RETURNS jsonb[]
 DECLARE result jsonb[];
 BEGIN
   SELECT array_agg (
-    CASE WHEN tag = 'ScenarioFolder' THEN
+    CASE WHEN tag = 'Folder' THEN
       jsonb_build_object(
         'id', id,
         'name', name,
@@ -490,7 +470,7 @@ CREATE TABLE public.pg_collection_to_pg_node (
 CREATE TABLE public.pg_node (
     id uuid NOT NULL,
     pg_node_parent_id uuid,
-    tag public.pg_node_type NOT NULL,
+    tag public.node_type NOT NULL,
     name text NOT NULL,
     sql text,
     pg_host text,
@@ -498,7 +478,7 @@ CREATE TABLE public.pg_node (
     pg_port text,
     pg_user text,
     pg_dbname text,
-    CONSTRAINT pg_node_check CHECK ((((tag = 'PgFolder'::public.pg_node_type) AND (sql IS NULL)) OR ((tag = 'PgFile'::public.pg_node_type) AND (sql IS NOT NULL) AND (pg_host IS NOT NULL) AND (pg_password IS NOT NULL) AND (pg_port IS NOT NULL) AND (pg_user IS NOT NULL) AND (pg_dbname IS NOT NULL))))
+    CONSTRAINT pg_node_check CHECK ((((tag = 'Folder'::public.node_type) AND (sql IS NULL)) OR ((tag = 'File'::public.node_type) AND (sql IS NOT NULL) AND (pg_host IS NOT NULL) AND (pg_password IS NOT NULL) AND (pg_port IS NOT NULL) AND (pg_user IS NOT NULL) AND (pg_dbname IS NOT NULL))))
 );
 
 
@@ -584,13 +564,13 @@ CREATE TABLE public.request_collection_to_request_node (
 CREATE TABLE public.request_node (
     id uuid NOT NULL,
     request_node_parent_id uuid,
-    tag public.request_node_type NOT NULL,
+    tag public.node_type NOT NULL,
     name text NOT NULL,
     http_url text,
     http_method public.http_method_type,
     http_headers public.header_type[],
     http_body text,
-    CONSTRAINT request_node_check CHECK ((((tag = 'RequestFolder'::public.request_node_type) AND (http_url IS NULL) AND (http_method IS NULL) AND (http_headers IS NULL) AND (http_body IS NULL)) OR ((tag = 'RequestFile'::public.request_node_type) AND (http_url IS NOT NULL) AND (http_method IS NOT NULL) AND (http_headers IS NOT NULL) AND (http_body IS NOT NULL))))
+    CONSTRAINT request_node_check CHECK ((((tag = 'Folder'::public.node_type) AND (http_url IS NULL) AND (http_method IS NULL) AND (http_headers IS NULL) AND (http_body IS NULL)) OR ((tag = 'File'::public.node_type) AND (http_url IS NOT NULL) AND (http_method IS NOT NULL) AND (http_headers IS NOT NULL) AND (http_body IS NOT NULL))))
 );
 
 
@@ -620,12 +600,12 @@ CREATE TABLE public.scenario_collection_to_scenario_node (
 
 CREATE TABLE public.scenario_node (
     id uuid NOT NULL,
-    tag public.scenario_node_type NOT NULL,
+    tag public.node_type NOT NULL,
     environment_id uuid,
     name text NOT NULL,
     scenario_node_parent_id uuid,
     scene_node_id uuid,
-    CONSTRAINT scenario_node_check CHECK (((tag = 'ScenarioFile'::public.scenario_node_type) OR ((tag = 'ScenarioFolder'::public.scenario_node_type) AND (environment_id IS NULL) AND (scene_node_id IS NULL))))
+    CONSTRAINT scenario_node_check CHECK (((tag = 'File'::public.node_type) OR ((tag = 'Folder'::public.node_type) AND (environment_id IS NULL) AND (scene_node_id IS NULL))))
 );
 
 

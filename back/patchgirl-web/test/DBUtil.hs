@@ -163,7 +163,7 @@ insertFakeRequestFolder fakeRequestFolder connection = do
     rawQuery =
       [sql|
           INSERT INTO request_node (id, request_node_parent_id, tag, name)
-          VALUES (?, ?, 'RequestFolder', ?)
+          VALUES (?, ?, 'Folder', ?)
           RETURNING id;
           |]
 
@@ -198,7 +198,7 @@ insertFakeRequestFile newFakeRequestFile connection = do
             http_method,
             http_body,
             http_headers
-          ) VALUES (?, ?, 'RequestFile', ?,?,?,?, '{}')
+          ) VALUES (?, ?, 'File', ?,?,?,?, '{}')
           RETURNING id;
           |]
 
@@ -350,7 +350,7 @@ insertFakePgFolder fakePgFolder connection = do
     rawQuery =
       [sql|
           INSERT INTO pg_node (id, pg_node_parent_id, tag, name)
-          VALUES (?, ?, 'PgFolder', ?)
+          VALUES (?, ?, 'Folder', ?)
           RETURNING id;
           |]
 
@@ -390,7 +390,7 @@ insertFakePgFile newFakePgFile connection = do
             pg_port,
             pg_user,
             pg_dbname
-          ) VALUES ('PgFile', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES ('File', ?, ?, ?, ?, ?, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -713,7 +713,7 @@ insertFakeScenarioFolder fakeScenarioFolder connection = do
     rawQuery =
       [sql|
           INSERT INTO scenario_node (id, scenario_node_parent_id, tag, name)
-          VALUES (?, ?, 'ScenarioFolder', ?)
+          VALUES (?, ?, 'Folder', ?)
           RETURNING id;
           |]
 
@@ -745,7 +745,7 @@ insertFakeScenarioFile newFakeScenarioFile connection = do
             name,
             scene_node_id,
             environment_id
-          ) VALUES (?, ?, 'ScenarioFile', ?,?,?)
+          ) VALUES (?, ?, 'File', ?,?,?)
           RETURNING id;
           |]
 
@@ -902,7 +902,7 @@ selectFakeScenarioFile id connection = do
           SELECT scenario_node_parent_id, name, scene_node_id, environment_id
           FROM scenario_node
           WHERE id = ?
-          AND tag = 'ScenarioFile'
+          AND tag = 'File'
           |]
 
 

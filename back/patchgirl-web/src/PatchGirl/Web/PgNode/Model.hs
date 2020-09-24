@@ -12,7 +12,6 @@ import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
-                                                       constructorTagModifier,
                                                        defaultOptions,
                                                        fieldLabelModifier,
                                                        genericParseJSON,
@@ -24,6 +23,7 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
+import PatchGirl.Web.NodeType.Model
 
 
 -- * pg node
@@ -62,22 +62,6 @@ instance FromField [PgNode] where
     either (returnError ConversionFailed field) return errorOrPgNodes
 
 
--- * pg node type
-
-
-data PgNodeType
-  = PgFileType
-  | PgFolderType
-  deriving (Eq, Show, Generic)
-
-instance FromJSON PgNodeType where
-  parseJSON = genericParseJSON defaultOptions
-    { constructorTagModifier = \s ->
-        let suffixToRemove = "Type" :: String
-        in take (length s - length suffixToRemove) s
-    }
-
-
 -- * pg node from pg
 
 
@@ -85,9 +69,9 @@ newtype PgNodeFromPG = PgNodeFromPG PgNode
 
 instance FromJSON PgNodeFromPG where
   parseJSON = withObject "PgNode" $ \o -> do
-    pgNodeType <- o .: "tag" :: Parser PgNodeType
+    pgNodeType <- o .: "tag" :: Parser NodeType
     case pgNodeType of
-      PgFileType -> do
+      File -> do
         _pgNodeId <- o .: "id"
         _pgNodeName <- o .: "name"
         _pgNodeSql <- o .: "sql"
@@ -97,7 +81,7 @@ instance FromJSON PgNodeFromPG where
         _pgNodeUser <- o .: "pg_user"
         _pgNodeDbName <- o .: "pg_dbname"
         return $ PgNodeFromPG $ PgFile{..}
-      PgFolderType -> do
+      Folder -> do
         _pgNodeId <- o .: "id"
         _pgNodeName <- o .: "name"
         pgChildren <- o .: "children" :: Parser [PgNodeFromPG]
