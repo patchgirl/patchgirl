@@ -573,15 +573,6 @@ folderTreeWithRootView nodes mParentFolderId selectRootFolderMsg selectFolderMsg
         , rootFolderView mParentFolderId (NotEdited "/") selectRootFolderMsg (nodeView mParentFolderId selectFolderMsg nodes)
         ]
 
-
-folderTreeView : List RequestNode -> Maybe Uuid -> (Uuid -> msg) -> Element msg
-folderTreeView nodes mParentFolderId selectFolderMsg =
-    column [ spacing 10 ]
-        [ text "Select a folder:"
-        , column [] <| nodeView mParentFolderId selectFolderMsg nodes
-        ]
-
-
 nodeView : Maybe Uuid -> (Uuid -> b) -> List RequestNode -> List (Element b)
 nodeView mParentFolderId selectFolderMsg nodes =
     case nodes of

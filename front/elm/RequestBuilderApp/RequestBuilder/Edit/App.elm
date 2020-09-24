@@ -44,6 +44,7 @@ type alias Model a =
 
 type Msg
     = SelectFolder Uuid
+    | SelectRootFolder
     -- rename
     | UpdateName Uuid String -- while focus is on the input
     | AskRename Uuid String
@@ -72,6 +73,19 @@ update msg model =
 
                 newLandingRequestNewFolder =
                     { oldLandingRequestNewFolder | parentFolderId = Just id }
+
+                newModel =
+                    { model | requestNewNode = newLandingRequestNewFolder }
+            in
+            (newModel, Cmd.none)
+
+        SelectRootFolder ->
+            let
+                oldLandingRequestNewFolder =
+                    model.requestNewNode
+
+                newLandingRequestNewFolder =
+                    { oldLandingRequestNewFolder | parentFolderId = Nothing }
 
                 newModel =
                     { model | requestNewNode = newLandingRequestNewFolder }
@@ -428,6 +442,6 @@ duplicateView model fileRecord =
               [ el [ alignLeft ] title
               , el [ alignRight ] (closeBuilderView model.page)
               ]
-        , folderTreeView nodes model.requestNewNode.parentFolderId SelectFolder
+        , folderTreeWithRootView nodes model.requestNewNode.parentFolderId SelectRootFolder SelectFolder
         , row [ centerX, spacing 20 ] [ duplicateBtn ]
         ]
