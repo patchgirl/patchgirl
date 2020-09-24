@@ -127,13 +127,16 @@ update msg model =
                 (ScenarioCollection id scenarioNodes) =
                     model.scenarioCollection
 
+                newFolder =
+                    mkDefaultScenarioFolder newId newNode.name
+
                 newScenarioNodes =
                     case newNode.parentFolderId of
                         Nothing ->
-                            scenarioNodes ++ [ mkDefaultScenarioFolder newNode newId ]
+                            scenarioNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (modifyScenarioNode folderId (mkdirScenario newNode newId)) scenarioNodes
+                            List.map (modifyScenarioNode folderId (mkdirScenario newFolder)) scenarioNodes
 
                 newModel =
                     { model
@@ -188,7 +191,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNode =
-                    mkDefaultScenarioFile newNode newId
+                    File (mkDefaultScenarioFile newId newNode.name)
 
                 newScenarioNodes =
                     case newNode.parentFolderId of
@@ -211,50 +214,6 @@ update msg model =
 
 
 -- * util
-
-
--- ** tree
-
-
-mkdirScenario : NewNode -> Uuid -> ScenarioNode -> ScenarioNode
-mkdirScenario newNode id node =
-    case node of
-        (File _) as file ->
-            file
-
-        Folder folder ->
-            let
-                (ScenarioChildren children) =
-                    folder.children
-            in
-            Folder
-                { folder
-                    | children = ScenarioChildren (mkDefaultScenarioFolder newNode id :: children)
-                    , open = True
-                }
-
-mkDefaultScenarioFolder : NewNode -> Uuid -> ScenarioNode
-mkDefaultScenarioFolder newNode id =
-    Folder
-        { id = id
-        , name = NotEdited newNode.name
-        , open = False
-        , children = ScenarioChildren []
-        }
-
-
-mkDefaultScenarioFile : NewNode -> Uuid -> ScenarioNode
-mkDefaultScenarioFile newNode id =
-    File
-        { id = id
-        , environmentId = NotEdited Nothing
-        , name = NotEdited newNode.name
-        , scenes = []
-        }
-
-
-
--- ** msg handling
 
 
 createScenarioFileResultToMsg : NewNode -> Uuid -> Result Http.Error () -> Msg

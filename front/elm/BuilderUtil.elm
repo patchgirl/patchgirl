@@ -320,8 +320,8 @@ mkdirRequest record node =
                     , open = True
                 }
 
-mkdirScenario : Uuid -> ScenarioNode -> ScenarioNode
-mkdirScenario id node =
+mkdirScenario : ScenarioFolderRecord -> ScenarioNode -> ScenarioNode
+mkdirScenario record node =
     case node of
         (File _) as file ->
             file
@@ -333,7 +333,7 @@ mkdirScenario id node =
             in
             Folder
                 { folder
-                    | children = ScenarioChildren (mkDefaultScenarioFolder id :: children)
+                    | children = ScenarioChildren (Folder record :: children)
                     , open = True
                 }
 
@@ -493,23 +493,21 @@ mkDefaultPgFile id name =
 -- *** scenario
 
 
-mkDefaultScenarioFolder : Uuid -> ScenarioNode
-mkDefaultScenarioFolder id =
-    Folder
-        { id = id
-        , name = NotEdited "new folder"
-        , open = False
-        , children = ScenarioChildren []
-        }
+mkDefaultScenarioFolder : Uuid -> String -> ScenarioFolderRecord
+mkDefaultScenarioFolder id name =
+    { id = id
+    , name = NotEdited name
+    , open = False
+    , children = ScenarioChildren []
+    }
 
-mkDefaultScenarioFile : Uuid -> ScenarioNode
-mkDefaultScenarioFile id =
-    File
-        { id = id
-        , environmentId = NotEdited Nothing
-        , name = NotEdited ""
-        , scenes = []
-        }
+mkDefaultScenarioFile : Uuid -> String -> ScenarioFileRecord
+mkDefaultScenarioFile id name =
+    { id = id
+    , name = NotEdited name
+    , environmentId = NotEdited Nothing
+    , scenes = []
+    }
 
 
 -- ** get node id & name
