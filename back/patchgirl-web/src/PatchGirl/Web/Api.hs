@@ -284,19 +284,15 @@ type RequestNodeApi auths =
     -- rename node
     ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
     -- delete node
-    Delete '[JSON] () :<|>
-    -- duplicate node
-    ReqBody '[JSON] DuplicateNode :> Post '[JSON] ()
+    Delete '[JSON] ()
   ))
 
 requestNodeApiServer
   :: (AuthResult CookieSession -> Int -> UUID -> UpdateRequestNode -> AppM ())
   :<|> (AuthResult CookieSession -> Int -> UUID -> AppM ())
-  :<|> (AuthResult CookieSession -> Int -> UUID -> DuplicateNode -> AppM ())
 requestNodeApiServer =
   authorizeWithAccountId updateRequestNodeHandler
   :<|> authorizeWithAccountId deleteRequestNodeHandler
-  :<|> authorizeWithAccountId duplicateNodeHandler
 
 
 -- * request file api

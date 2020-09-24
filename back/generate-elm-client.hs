@@ -267,7 +267,6 @@ deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.NewPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.ActorType
-deriveElmDef deriveWithTaggedObject ''Web.DuplicateNode
 
 
 -- * main
@@ -338,7 +337,6 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewRootPgFolder)
       , DefineElm (Proxy :: Proxy Web.NewPgFolder)
       , DefineElm (Proxy :: Proxy Web.ActorType)
-      , DefineElm (Proxy :: Proxy Web.DuplicateNode)
       ]
     proxyApi =
       (Proxy :: Proxy (Web.RestApi '[Cookie]))
