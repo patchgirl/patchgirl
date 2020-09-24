@@ -379,6 +379,7 @@ In an HTTP post script, the following functions are available:
 
 ```tangoscript
 httpResponseBodyAsString // returns the response body as a string
+httpResponseBodyAsJson // returns the response body as a json object
 httpResponseStatus // returns the response status as an int
 ```
 
@@ -386,6 +387,12 @@ So if you want to check that the response succeeded you can write:
 
 ```tangoscript
 assertEqual(httpResponseStatus, 200);
+```
+
+Or maybe you need to access some element of your response:
+
+```tangoscript
+var name = httpResponseBodyAsJson["user"]["firstname"];
 ```
 
 ### Postgres response
