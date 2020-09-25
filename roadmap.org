@@ -20,6 +20,7 @@
 * Improvements
 
 
+** TODO SQL: align table cells correctly
 ** TODO Doc: add documentation for json response and json access
 ** TODO Scenario: prettify "add a scene to your scenario" button
 ** TODO Scenario: reset data
