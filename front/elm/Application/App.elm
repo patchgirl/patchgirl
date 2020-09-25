@@ -424,7 +424,8 @@ homeView model =
                         { src = "public/images/logo.png"
                         , description = "logo"
                         }
-                  , paragraph [ centerX, centerY, Font.size 25, Font.center ] [ text "HTTP and Postgres client to ease DB seeding" ]
+                  , paragraph [ centerX, centerY, Font.size 25, Font.center ]
+                      [ text "Painless & automated QA for devs" ]
                   ]
             ]
 
@@ -458,7 +459,7 @@ homeView model =
 
         mkFeatureDescription : String -> Element Msg
         mkFeatureDescription description =
-            el [ Font.size 18, width fill ] <|
+            el [ Font.size 24, width fill ] <|
                 iconWithAttr { defaultIconAttribute
                                  | icon = "done_outline"
                                  , title = description
@@ -468,42 +469,29 @@ homeView model =
         leftDescriptionView : Element Msg
         leftDescriptionView =
             column [ Font.center, width fill, centerX, spacing 40 ]
-                [ column [ width fill, centerX, spacing 10, Font.size 24 ]
-                      [ el [ width fill ] (text "Play HTTP and SQL queries to seed your Database")
-                      , el [ width fill ] (text "& Make testing fun again!")
-                      ]
-                , column [ width shrink, centerX, spacing 30, Font.size 20 ]
-                    [ column [ width fill, centerX, spacing 20 ]
+                [ column [ width shrink, centerX, spacing 40, Font.size 30 ]
+                    [ column [ width fill, centerX, spacing 30 ]
                           [ el [ centerX ] <|
                                 iconWithAttr { defaultIconAttribute
-                                                 | icon = "public"
-                                                 , title = " Test your API"
+                                                 | icon = "local_movies"
+                                                 , iconSize = Just "30px"
+                                                 , iconVerticalAlign = Just "sub"
+                                                 , title = " Create and Run test scenarios"
                                                  , primIconColor = Just primaryColor
                                              }
                           , column [ spacing 10, paddingXY 30 0 ]
-                              [ mkFeatureDescription " Make sure your API responds correctly"
-                              , mkFeatureDescription " Check that your DB is in the correct state"
+                              [ mkFeatureDescription " Save time & energy testing your feature"
+                              , mkFeatureDescription " Make testing easily reproducible"
+                              , mkFeatureDescription " Automatically detect regression"
                               ]
                           ]
-                    , column [ width fill, centerX, spacing 20 ]
-                        [ el [ centerX, Font.size 20 ] <|
-                              iconWithAttr { defaultIconAttribute
-                                               | icon = "storage"
-                                               , title = " Seed your DB"
-                                               , primIconColor = Just primaryColor
-                                           }
-                        , column [ spacing 10, paddingXY 30 0 ]
-                            [ mkFeatureDescription " Prepare your DB to a given state"
-                            , mkFeatureDescription " Make your application testable more easily"
-                            ]
-                        ]
                     ]
                 , link [ centerY, centerX
                      , height (px 100)
                      , width (fill |> minimum 300 |> maximum 500)
                      , Background.color primaryColor
                      , Font.color secondaryColor
-                     , Font.size 25
+                     , Font.size 30
                      , mouseOver
                            [ Background.color secondaryColor
                            , Font.color primaryColor
