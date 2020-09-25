@@ -82,7 +82,7 @@ view model =
         , wrappedRow
               [ width fill
               , paddingXY 10 0
-              , spacing 10
+              , spacing 20
               ]
               [ el ( box [ alignTop
                                , spacing 20

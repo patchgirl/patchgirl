@@ -280,7 +280,7 @@ parseHeaders headers =
 
 view : Model a -> PgFileRecord -> Element Msg
 view model file =
-    wrappedRow [ alignTop, width fill, spacing 10 ]
+    column [ alignTop, width fill, spacing 20 ]
         [ el ( box  [ width (fillPortion 1), alignTop, padding 20 ] ) <|
               builderView model file
         , case file.showResponseView of

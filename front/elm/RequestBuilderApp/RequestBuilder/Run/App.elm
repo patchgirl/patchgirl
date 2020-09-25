@@ -359,40 +359,26 @@ view file model =
                 , bodyView file keyValuesToRun
                 ]
     in
-    case file.showResponseView of
-        False ->
-            column ( box [ width fill
-                        , paddingXY 20 10
-                        , spacing 10
-                        , centerX
-                        , padding 20
-                        , width fill
-                        ]
-                   )
-                [ titleView model file
-                , el [ width fill ] builderView
-                ]
-
-        True ->
-            wrappedRow [ alignTop, width fill, spacing 10 ]
-                [ column
-                    ( box [ width (fillPortion 1)
-                         , alignTop
-                         , spacing 10
-                         , padding 20
-                         ]
-                    )
-                    [ titleView model file
-                    , el [ alignTop ] builderView
-                    ]
-                , el
-                    ( box [ width (fillPortion 1)
-                         , alignTop
-                         , padding 20
-                         ]
-                    )
-                    (responseView file)
-                ]
+    column [ width fill, spacing 20 ]
+        [ column ( box [ width fill
+                       , spacing 10
+                       , padding 20
+                       , centerX
+                       , width fill
+                       ]
+                 )
+              [ titleView model file
+              , el [ width fill ] builderView
+              ]
+        , case file.showResponseView of
+              False -> none
+              True ->
+                           el ( box [ width (fillPortion 1)
+                                    , alignTop
+                                    , padding 20
+                                    ]
+                              ) (responseView file)
+        ]
 
 
 -- ** title
