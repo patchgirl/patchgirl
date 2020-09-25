@@ -435,6 +435,7 @@ homeView model =
                 [ el (box [ case selected of
                                 True -> Border.color black
                                 False -> Border.color white
+                          , Border.width 1
                           , padding 20
                           , centerX
                           ]
