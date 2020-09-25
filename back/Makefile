@@ -6,6 +6,9 @@ run:
 both:
 	clear; make app APP=web; make app APP=runner
 
+fast:
+	clear; echo "building back/$(PACKAGE)"; stack build $(PACKAGE) --fast -j 2
+
 app:
 	clear; echo "building back/$(PACKAGE)"; stack build $(PACKAGE) --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
 
