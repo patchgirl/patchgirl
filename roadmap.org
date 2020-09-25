@@ -11,9 +11,11 @@
 ** TODO Scenario: cookie
 ** TODO Scenario: include scenario
 ** TODO Request: description field
+** TODO Environment: encryption
 
+** TODO Team mode
+** TODO standalone application
 
-** TODO Tangoscript: add assertNotEqual
 
 * Improvements
 
