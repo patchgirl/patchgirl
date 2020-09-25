@@ -420,46 +420,36 @@ responseView pgComputationOutput =
 
                 PgTuplesOk rows ->
                     let
-                        headerRow : Row -> List String
-                        headerRow header =
-                            List.map Tuple.first header
-
-                        rowView : Row -> Element a
-                        rowView someRow =
+                        buildColumn : Row -> Element a
+                        buildColumn col =
                             let
-                                elemView : (String, PgValue) -> Element a
-                                elemView (_, value) =
-                                    el [ width fill ] (showPGValue value)
+                                header =
+                                    List.head col
+                                        |> Maybe.map Tuple.first
+                                        |> Maybe.withDefault "unknown column"
+
+                                pgValuesAsColumn =
+                                    col
+                                        |> List.map Tuple.second
+                                        |> List.map showPGValue
                             in
-                            row [ width fill, spacing 10 ]
-                                <| List.map elemView someRow
-
-                        tableHeaderView : String -> Element a
-                        tableHeaderView key =
-                            column [ width fill, spacing 10 ]
-                                [ text key
-                                , el [ width fill
-                                     , Border.solid
-                                     , Border.color black
-                                     , Border.width 1
-                                     ] none
+                            column [ width fill, spacing 30 ]
+                                [ el [ width fill, Font.center, Font.bold ] (text header)
+                                , column [ spacing 10, width fill ] pgValuesAsColumn
                                 ]
-
                     in
-                        column [ width fill, spacing 10 ] <|
-                            case rows of
-                                [] ->
-                                    [ el [ centerX] (text "Empty response") ]
+                    row [ width fill, spacing 10 ] <|
+                        case rowsToColumns rows of
+                            [] ->
+                                [ el [ centerX] (text "Empty response") ]
 
-                                (header :: _) as nonEmptyRows ->
-                                    [ row [ width fill ] (List.map tableHeaderView (headerRow header))
-                                    , column [ width fill ] (List.map rowView nonEmptyRows)
-                                    ]
+                            columns ->
+                                List.map buildColumn columns
 
 
 showPGValue : PgValue -> Element a
 showPGValue pgValue =
-    case pgValue of
+    el [ width fill, Font.center ] <| case pgValue of
         PgString str -> text str
         PgInt int -> text (String.fromInt int)
         PgFloat float -> text (String.fromFloat float)

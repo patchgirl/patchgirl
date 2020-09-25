@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Uuid exposing (Uuid)
 import Parser exposing(DeadEnd)
 import Json.Encode as Json exposing(Value)
+import List.Extra as List
 
 
 -- * menu
@@ -654,10 +655,14 @@ type PgComputation
     | PgTuplesOk (List Row)
 
 
--- ** column
+-- ** row
 
 
 type alias Row = List (String, PgValue)
+
+rowsToColumns : List Row -> List Row
+rowsToColumns rows =
+    List.transpose rows
 
 
 -- ** pg Value
