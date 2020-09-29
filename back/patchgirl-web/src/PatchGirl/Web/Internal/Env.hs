@@ -3,38 +3,30 @@
 module PatchGirl.Web.Internal.Env
   ( createEnv
   , Env(..)
-  , envPort
-  , envAppKeyFilePath
-  , envDB
-  , envGithub
-  , envLog
-  , envResetVisitorData
   , DBConfig(..)
   , GithubConfig(..)
   , Config(..)
-  , getConfig
   ) where
 
-import           Data.Function                     ((&))
-import qualified Control.Lens as Lens
-import           Data.Text    (Text)
-import qualified Data.Text as Text
-import           Dhall        (Natural)
+import           Data.Function              ((&))
+import           Data.Text                  (Text)
+import qualified Data.Text                  as Text
+import           Database.PostgreSQL.Simple (Query)
+import           Dhall                      (Natural)
 import qualified Dhall
-import           GHC.Generics (Generic)
-import Database.PostgreSQL.Simple (Query)
+import           GHC.Generics               (Generic)
 
 
 -- * db
 
 
-data DBConfig
-  = DBConfig { _dbPort     :: Natural
-             , _dbName     :: Text
-             , _dbUser     :: Text
-             , _dbPassword :: Text
-             }
-  deriving (Generic, Show)
+data DBConfig = DBConfig
+    { _dbPort     :: Natural
+    , _dbName     :: Text
+    , _dbUser     :: Text
+    , _dbPassword :: Text
+    }
+    deriving (Generic, Show)
 
 instance Dhall.FromDhall DBConfig where
   autoWith _ = Dhall.record $
@@ -44,11 +36,11 @@ instance Dhall.FromDhall DBConfig where
 -- * github
 
 
-data GithubConfig
-  = GithubConfig { _githubConfigClientId     :: Text
-                 , _githubConfigClientSecret :: Text
-                 }
-  deriving (Generic, Show)
+data GithubConfig = GithubConfig
+    { _githubConfigClientId     :: Text
+    , _githubConfigClientSecret :: Text
+    }
+    deriving (Generic, Show)
 
 instance Dhall.FromDhall GithubConfig where
   autoWith _ = Dhall.record $
@@ -58,14 +50,14 @@ instance Dhall.FromDhall GithubConfig where
 -- * config
 
 
-data Config
-  = Config { _configPort           :: Natural
-           , _configAppKeyFilePath :: String
-           , _configDB             :: DBConfig
-           , _configGithub         :: GithubConfig
-           , _configResetVisitorData :: Text
-           }
-  deriving (Generic, Show)
+data Config = Config
+    { _configPort             :: Natural
+    , _configAppKeyFilePath   :: String
+    , _configDB               :: DBConfig
+    , _configGithub           :: GithubConfig
+    , _configResetVisitorData :: Text
+    }
+    deriving (Generic, Show)
 
 instance Dhall.FromDhall Config where
   autoWith _ = Dhall.record $
@@ -84,17 +76,14 @@ getConfig =
 -- * env
 
 
-data Env
-  = Env { _envPort           :: Natural
-        , _envAppKeyFilePath :: String
-        , _envDB             :: DBConfig
-        , _envGithub         :: GithubConfig
-        , _envLog            :: String -> IO ()
-        , _envResetVisitorData :: Query
-        }
-
-$(Lens.makeLenses ''Env)
-
+data Env = Env
+    { _envPort             :: Natural
+    , _envAppKeyFilePath   :: String
+    , _envDB               :: DBConfig
+    , _envGithub           :: GithubConfig
+    , _envLog              :: String -> IO ()
+    , _envResetVisitorData :: Query
+    }
 
 -- * create env
 

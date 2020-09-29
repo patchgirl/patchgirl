@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 87cf1ecf878d76a9ecb669d16dcdf84c0cd78d229a21080cfe2d72baa2ed402d
+-- hash: 5f0686429b08d36913e77fa41fee707be54ca723b5c0fb71dddb34d352658891
 
 name:           patchgirl-web
 version:        0.0.0
@@ -74,7 +74,6 @@ library
     , http-conduit
     , http-types
     , jose
-    , lens
     , monad-loops
     , mtl
     , postgresql-simple
@@ -128,7 +127,6 @@ executable patchgirl-web-exe
     , http-conduit
     , http-types
     , jose
-    , lens
     , monad-loops
     , mtl
     , patchgirl-web
@@ -206,7 +204,6 @@ test-suite spec
     , http-conduit
     , http-types
     , jose
-    , lens
     , monad-loops
     , mtl
     , patchgirl-web

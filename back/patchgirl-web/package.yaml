@@ -71,7 +71,6 @@ dependencies:
   - servant-elm
   - aeson-qq
   - unordered-containers
-  - lens
   - mtl
   - case-insensitive
   - cookie

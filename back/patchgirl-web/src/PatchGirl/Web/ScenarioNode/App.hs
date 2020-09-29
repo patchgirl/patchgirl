@@ -1,19 +1,18 @@
 
 module PatchGirl.Web.ScenarioNode.App where
 
-import qualified Control.Exception          as Exception
-import           Control.Lens.Operators     ((^.))
-import qualified Control.Monad              as Monad
-import qualified Control.Monad.Except       as Except (MonadError)
-import qualified Control.Monad.IO.Class     as IO
-import qualified Control.Monad.Loops        as Loops
-import qualified Control.Monad.Reader       as Reader
-import           Data.Function              ((&))
-import           Data.Functor               ((<&>))
-import qualified Data.List                  as List
-import qualified Data.Maybe                 as Maybe
+import qualified Control.Exception                    as Exception
+import qualified Control.Monad                        as Monad
+import qualified Control.Monad.Except                 as Except (MonadError)
+import qualified Control.Monad.IO.Class               as IO
+import qualified Control.Monad.Loops                  as Loops
+import qualified Control.Monad.Reader                 as Reader
+import           Data.Function                        ((&))
+import           Data.Functor                         ((<&>))
+import qualified Data.List                            as List
+import qualified Data.Maybe                           as Maybe
 import           Data.UUID
-import qualified Database.PostgreSQL.Simple as PG
+import qualified Database.PostgreSQL.Simple           as PG
 import qualified Servant
 
 import           PatchGirl.Web.DB
@@ -123,7 +122,7 @@ createScenarioFileHandler accountId scenarioCollectionId newScenarioFile = do
       scenarioNodeAuthorized :: IO Bool
       scenarioNodeAuthorized =
         selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
-        Maybe.maybe False isScenarioFolder . findNodeInScenarioNodes (newScenarioFile ^. newScenarioFileParentNodeId)
+        Maybe.maybe False isScenarioFolder . findNodeInScenarioNodes (_newScenarioFileParentNodeId newScenarioFile)
   authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
   case authorized of
     False ->
@@ -154,7 +153,7 @@ updateScenarioFileHandler accountId scenarioCollectionId updateScenarioFile = do
     scenarioNodeAuthorized :: IO Bool
     scenarioNodeAuthorized =
         selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
-        Maybe.maybe False isScenarioFile . findNodeInScenarioNodes (updateScenarioFile ^. updateScenarioFileId)
+        Maybe.maybe False isScenarioFile . findNodeInScenarioNodes (_updateScenarioFileId updateScenarioFile)
 
   authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
   case authorized of
@@ -210,7 +209,7 @@ createScenarioFolderHandler accountId scenarioCollectionId newScenarioFolder = d
       scenarioNodeAuthorized :: IO Bool
       scenarioNodeAuthorized =
         selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection <&>
-        Maybe.maybe False isScenarioFolder . findNodeInScenarioNodes (newScenarioFolder ^. newScenarioFolderParentNodeId)
+        Maybe.maybe False isScenarioFolder . findNodeInScenarioNodes (_newScenarioFolderParentNodeId newScenarioFolder)
 
   authorized <- IO.liftIO $ Loops.andM [ scenarioCollectionAuthorized, scenarioNodeAuthorized ]
   case authorized of
@@ -245,7 +244,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
         Nothing -> pure False
         Just collectionId -> do
           selectRequestNodesFromRequestCollectionId collectionId connection
-            <&> findNodeInRequestNodes (newScene ^. newSceneActorId)
+            <&> findNodeInRequestNodes (_newSceneActorId newScene)
             <&> Maybe.isJust
 
     pgAuthorized :: IO Bool
@@ -254,16 +253,16 @@ createSceneHandler accountId scenarioNodeId newScene = do
         Nothing -> pure False
         Just collectionId -> do
           selectPgNodesFromPgCollectionId collectionId connection
-            <&> findNodeInPgNodes (newScene ^. newSceneActorId)
+            <&> findNodeInPgNodes (_newSceneActorId newScene)
             <&> Maybe.isJust
 
     sceneAuthorized :: Bool
     sceneAuthorized =
       case mScenarioNode of
         Just ScenarioFile { _scenarioNodeScenes } ->
-          case newScene ^. newSceneSceneActorParentId of
+          case _newSceneSceneActorParentId newScene  of
             Just sceneNodeParentId -> do
-              List.find (\scene -> sceneNodeParentId == scene ^. sceneId) _scenarioNodeScenes
+              List.find (\scene -> sceneNodeParentId == _sceneId scene) _scenarioNodeScenes
                 & Maybe.isJust
             Nothing -> True
         _ -> False
@@ -303,7 +302,7 @@ deleteSceneHandler accountId scenarioNodeId sceneId' = do
           findNodeInScenarioNodes scenarioNodeId scenarioNodes >>= \case
             ScenarioFolder {} -> Nothing
             ScenarioFile { _scenarioNodeScenes } ->
-              List.find (\scene -> scene ^. sceneId == sceneId') _scenarioNodeScenes
+              List.find (\scene -> _sceneId scene  == sceneId') _scenarioNodeScenes
 
       case sceneAuthorized of
         Nothing ->
@@ -337,7 +336,7 @@ updateSceneHandler accountId scenarioNodeId sceneId' updateScene = do
         sceneAuthorized =
           findNodeInScenarioNodes scenarioNodeId scenarioNodes >>= \case
             ScenarioFile { _scenarioNodeScenes } ->
-              List.find (\scene -> scene ^. sceneId == sceneId') _scenarioNodeScenes
+              List.find (\scene -> _sceneId scene == sceneId') _scenarioNodeScenes
             _ ->
               Nothing
 
@@ -367,11 +366,11 @@ findNodeInScenarioNodes nodeIdToFind scenarioNodes =
   where
     findNodeInScenarioNode :: ScenarioNode -> Maybe ScenarioNode
     findNodeInScenarioNode scenarioNode =
-      case scenarioNode ^. scenarioNodeId == nodeIdToFind of
+      case _scenarioNodeId scenarioNode  == nodeIdToFind of
         True -> Just scenarioNode
         False ->
           case scenarioNode of
             ScenarioFile {} ->
               Nothing
             ScenarioFolder {} ->
-              findNodeInScenarioNodes nodeIdToFind (scenarioNode ^. scenarioNodeChildren)
+              findNodeInScenarioNodes nodeIdToFind (_scenarioNodeChildren scenarioNode)

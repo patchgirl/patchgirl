@@ -9,12 +9,11 @@ module PatchGirl.Web.PgNode.App ( updatePgNodeHandler
                   , findNodeInPgNodes
                   ) where
 
-import           Control.Lens.Operators ((^.))
-import qualified Control.Monad          as Monad
-import qualified Control.Monad.Except   as Except (MonadError)
-import qualified Control.Monad.IO.Class as IO
-import qualified Control.Monad.Reader   as Reader
-import qualified Data.Maybe             as Maybe
+import qualified Control.Monad                  as Monad
+import qualified Control.Monad.Except           as Except (MonadError)
+import qualified Control.Monad.IO.Class         as IO
+import qualified Control.Monad.Reader           as Reader
+import qualified Data.Maybe                     as Maybe
 import           Data.UUID
 import qualified Servant
 
@@ -89,14 +88,14 @@ findNodeInPgNodes nodeIdToFind pgNodes =
   where
     findNodeInPgNode :: PgNode -> Maybe PgNode
     findNodeInPgNode pgNode =
-      case pgNode ^. pgNodeId == nodeIdToFind of
+      case _pgNodeId pgNode == nodeIdToFind of
         True -> Just pgNode
         False ->
           case pgNode of
             PgFile {} ->
               Nothing
             PgFolder {} ->
-              findNodeInPgNodes nodeIdToFind (pgNode ^. pgNodeChildren)
+              findNodeInPgNodes nodeIdToFind (_pgNodeChildren pgNode)
 
 
 -- * create root pg file
@@ -141,7 +140,7 @@ createPgFileHandler accountId pgCollectionId newPgFile = do
       Servant.throwError Servant.err404
     _ -> do
       pgNodes <- IO.liftIO $ selectPgNodesFromPgCollectionId pgCollectionId connection
-      case findNodeInPgNodes (newPgFile ^. newPgFileParentNodeId) pgNodes of
+      case findNodeInPgNodes (_newPgFileParentNodeId newPgFile) pgNodes of
         Just PgFolder {} ->
           IO.liftIO $ insertPgFile newPgFile connection
         _ ->
@@ -217,7 +216,7 @@ createPgFolderHandler accountId pgCollectionId newPgFolder = do
       Servant.throwError Servant.err404
     _ -> do
       pgNodes <- IO.liftIO $ selectPgNodesFromPgCollectionId pgCollectionId connection
-      case findNodeInPgNodes (newPgFolder ^. newPgFolderParentNodeId) pgNodes of
+      case findNodeInPgNodes (_newPgFolderParentNodeId newPgFolder) pgNodes of
         Just PgFolder {} -> do
           IO.liftIO $ insertPgFolder newPgFolder connection
         _ ->

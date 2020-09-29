@@ -8,7 +8,6 @@
 module PatchGirl.Web.ScenarioNode.Model where
 
 
-import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
@@ -25,16 +24,15 @@ import           Database.PostgreSQL.Simple.FromField hiding (name)
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
-import PatchGirl.Web.NodeType.Model
+import           PatchGirl.Web.NodeType.Model
 
 
 -- * actor type
 
 
-data ActorType
-  = HttpActor
-  | PgActor
-  deriving (Eq, Show, Generic)
+data ActorType = HttpActor
+    | PgActor
+    deriving (Eq, Show, Generic)
 
 instance PG.ToField ActorType where
   toField = PG.toField . show
@@ -59,17 +57,15 @@ instance FromJSON ActorType where
 -- * new scene
 
 
-data NewScene
-  = NewScene { _newSceneId                :: UUID
-             , _newSceneSceneActorParentId :: Maybe UUID
-             , _newSceneActorId           :: UUID
-             , _newSceneActorType         :: ActorType
-             , _newScenePrescript         :: String
-             , _newScenePostscript        :: String
-             }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''NewScene)
+data NewScene = NewScene
+    { _newSceneId                 :: UUID
+    , _newSceneSceneActorParentId :: Maybe UUID
+    , _newSceneActorId            :: UUID
+    , _newSceneActorType          :: ActorType
+    , _newScenePrescript          :: String
+    , _newScenePostscript         :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON NewScene where
   toJSON =
@@ -83,20 +79,19 @@ instance FromJSON NewScene where
 -- * scene actor
 
 
-data SceneActor
-  = HttpSceneActor { _sceneId         :: UUID
-                   , _sceneActorId    :: UUID
-                   , _scenePrescript  :: String
-                   , _scenePostscript :: String
-                   }
-  | PgSceneActor { _sceneId         :: UUID
-                 , _sceneActorId    :: UUID
-                 , _scenePrescript  :: String
-                 , _scenePostscript :: String
-                 }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''SceneActor)
+data SceneActor = HttpSceneActor
+    { _sceneId         :: UUID
+    , _sceneActorId    :: UUID
+    , _scenePrescript  :: String
+    , _scenePostscript :: String
+    }
+    | PgSceneActor
+    { _sceneId         :: UUID
+    , _sceneActorId    :: UUID
+    , _scenePrescript  :: String
+    , _scenePostscript :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON SceneActor where
   toJSON =
@@ -110,13 +105,11 @@ instance FromJSON SceneActor where
 -- * update scene
 
 
-data UpdateScene
-  = UpdateScene { _updateScenePrescript  :: String
-                , _updateScenePostscript :: String
-                }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''UpdateScene)
+data UpdateScene = UpdateScene
+    { _updateScenePrescript  :: String
+    , _updateScenePostscript :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON UpdateScene where
   toJSON =
@@ -156,19 +149,18 @@ fromSceneFromPGTOScene (SceneFromPG scene) = scene
 -- * scenario node
 
 
-data ScenarioNode
-  = ScenarioFolder { _scenarioNodeId       :: UUID
-                   , _scenarioNodeName     :: String
-                   , _scenarioNodeChildren :: [ScenarioNode]
-                   }
-  | ScenarioFile { _scenarioNodeId            :: UUID
-                 , _scenarioNodeName          :: String
-                 , _scenarioNodeEnvironmentId :: Maybe UUID
-                 , _scenarioNodeScenes        :: [SceneActor]
-                 }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''ScenarioNode)
+data ScenarioNode = ScenarioFolder
+    { _scenarioNodeId       :: UUID
+    , _scenarioNodeName     :: String
+    , _scenarioNodeChildren :: [ScenarioNode]
+    }
+    | ScenarioFile
+    { _scenarioNodeId            :: UUID
+    , _scenarioNodeName          :: String
+    , _scenarioNodeEnvironmentId :: Maybe UUID
+    , _scenarioNodeScenes        :: [SceneActor]
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON ScenarioNode where
   toJSON =
@@ -245,19 +237,16 @@ instance FromJSON UpdateScenarioNode where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeLenses ''UpdateScenarioNode)
-
 
 -- * new root scenario file
 
 
-data NewRootScenarioFile =
-  NewRootScenarioFile { _newRootScenarioFileId            :: UUID
-                      , _newRootScenarioFileName          :: String
-                      , _newRootScenarioFileEnvironmentId :: Maybe UUID
-                      } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootScenarioFile)
+data NewRootScenarioFile = NewRootScenarioFile
+    { _newRootScenarioFileId            :: UUID
+    , _newRootScenarioFileName          :: String
+    , _newRootScenarioFileEnvironmentId :: Maybe UUID
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRootScenarioFile where
   toJSON =
@@ -271,14 +260,13 @@ instance FromJSON NewRootScenarioFile where
 -- * new scenario file
 
 
-data NewScenarioFile =
-  NewScenarioFile { _newScenarioFileId            :: UUID
-                  , _newScenarioFileName          :: String
-                  , _newScenarioFileParentNodeId  :: UUID
-                  , _newScenarioFileEnvironmentId :: Maybe UUID
-                  } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewScenarioFile)
+data NewScenarioFile = NewScenarioFile
+    { _newScenarioFileId            :: UUID
+    , _newScenarioFileName          :: String
+    , _newScenarioFileParentNodeId  :: UUID
+    , _newScenarioFileEnvironmentId :: Maybe UUID
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewScenarioFile where
   toJSON =
@@ -292,12 +280,11 @@ instance FromJSON NewScenarioFile where
 -- * update scenario file
 
 
-data UpdateScenarioFile =
-  UpdateScenarioFile { _updateScenarioFileId            :: UUID
-                     , _updateScenarioFileEnvironmentId :: Maybe UUID
-                     } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''UpdateScenarioFile)
+data UpdateScenarioFile = UpdateScenarioFile
+    { _updateScenarioFileId            :: UUID
+    , _updateScenarioFileEnvironmentId :: Maybe UUID
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON UpdateScenarioFile where
   toJSON =
@@ -311,12 +298,11 @@ instance FromJSON UpdateScenarioFile where
 -- * new root scenario folder
 
 
-data NewRootScenarioFolder =
-  NewRootScenarioFolder { _newRootScenarioFolderId           :: UUID
-                        , _newRootScenarioFolderName :: String
-                        } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootScenarioFolder)
+data NewRootScenarioFolder = NewRootScenarioFolder
+    { _newRootScenarioFolderId   :: UUID
+    , _newRootScenarioFolderName :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRootScenarioFolder where
   toJSON =
@@ -330,13 +316,12 @@ instance FromJSON NewRootScenarioFolder where
 -- * new scenario folder
 
 
-data NewScenarioFolder =
-  NewScenarioFolder { _newScenarioFolderId           :: UUID
-                    , _newScenarioFolderParentNodeId :: UUID
-                    , _newScenarioFolderName         :: String
-                    } deriving (Eq, Show, Generic)
-
-$(makeLenses ''NewScenarioFolder)
+data NewScenarioFolder = NewScenarioFolder
+    { _newScenarioFolderId           :: UUID
+    , _newScenarioFolderParentNodeId :: UUID
+    , _newScenarioFolderName         :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON NewScenarioFolder where
   toJSON =

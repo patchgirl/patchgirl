@@ -9,14 +9,13 @@ module PatchGirl.Web.RequestNode.App ( updateRequestNodeHandler
                        , findNodeInRequestNodes
                        ) where
 
-import           Control.Lens.Operators ((^.))
-import qualified Control.Monad          as Monad
-import qualified Control.Monad.Except   as Except (MonadError)
-import qualified Control.Monad.IO.Class as IO
-import qualified Control.Monad.Reader   as Reader
-import qualified Data.Maybe             as Maybe
-import qualified Database.PostgreSQL.Simple       as PG
+import qualified Control.Monad                       as Monad
+import qualified Control.Monad.Except                as Except (MonadError)
+import qualified Control.Monad.IO.Class              as IO
+import qualified Control.Monad.Reader                as Reader
+import qualified Data.Maybe                          as Maybe
 import           Data.UUID
+import qualified Database.PostgreSQL.Simple          as PG
 import qualified Servant
 
 import           PatchGirl.Web.DB
@@ -98,7 +97,7 @@ createRequestFileHandler
 createRequestFileHandler accountId requestCollectionId newRequestFile = do
   connection <- getDBConnection
   ifValidRequestCollection connection accountId requestCollectionId $ do
-    ifValidRequestNode connection requestCollectionId (newRequestFile ^. newRequestFileParentNodeId) $ \case
+    ifValidRequestNode connection requestCollectionId (_newRequestFileParentNodeId newRequestFile) $ \case
       RequestFolder {} ->
         IO.liftIO $ insertRequestFile newRequestFile connection
       _ ->
@@ -158,7 +157,7 @@ createRequestFolderHandler
 createRequestFolderHandler accountId requestCollectionId newRequestFolder = do
   connection <- getDBConnection
   ifValidRequestCollection connection accountId requestCollectionId $ do
-    ifValidRequestNode connection requestCollectionId (newRequestFolder ^. newRequestFolderParentNodeId) $ \case
+    ifValidRequestNode connection requestCollectionId (_newRequestFolderParentNodeId newRequestFolder) $ \case
       RequestFolder {} ->
         IO.liftIO $ insertRequestFolder newRequestFolder connection
       _ ->
@@ -209,11 +208,11 @@ findNodeInRequestNodes nodeIdToFind requestNodes =
   where
     findNodeInRequestNode :: RequestNode -> Maybe RequestNode
     findNodeInRequestNode requestNode =
-      case requestNode ^. requestNodeId == nodeIdToFind of
+      case _requestNodeId requestNode == nodeIdToFind of
         True -> Just requestNode
         False ->
           case requestNode of
             RequestFile {} ->
               Nothing
             RequestFolder {} ->
-              findNodeInRequestNodes nodeIdToFind (requestNode ^. requestNodeChildren)
+              findNodeInRequestNodes nodeIdToFind (_requestNodeChildren requestNode)

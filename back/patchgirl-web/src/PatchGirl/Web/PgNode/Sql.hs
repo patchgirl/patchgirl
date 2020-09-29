@@ -1,6 +1,5 @@
 module PatchGirl.Web.PgNode.Sql where
 
-import           Control.Lens.Getter              ((^.))
 import qualified Control.Monad                    as Monad
 import           Data.UUID                        (UUID)
 import qualified Database.PostgreSQL.Simple       as PG
@@ -29,7 +28,7 @@ selectPgNodesFromPgCollectionId pgCollectionId connection = do
 updatePgNodeDB :: UUID -> UpdatePgNode -> PG.Connection -> IO ()
 updatePgNodeDB pgNodeId updatePgNode connection = do
   -- todo search func with : m a -> m b
-  let newName = updatePgNode ^. updatePgNodeName
+  let newName = _updatePgNodeName updatePgNode
   _ <- PG.execute connection updateQuery (newName, pgNodeId)
   return ()
   where
