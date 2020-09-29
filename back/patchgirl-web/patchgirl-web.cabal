@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5f0686429b08d36913e77fa41fee707be54ca723b5c0fb71dddb34d352658891
+-- hash: dada130ec19eb7eba1976a0a831d8b3c072ca1d16862ad8a296159fd823925cd
 
 name:           patchgirl-web
 version:        0.0.0
@@ -58,7 +58,6 @@ library
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
   build-depends:
       aeson
-    , aeson-qq
     , base
     , bytestring
     , case-insensitive
@@ -67,7 +66,6 @@ library
     , control-monad-free
     , cookie
     , dhall
-    , email-validate
     , filepath
     , http-client
     , http-client-tls
@@ -111,7 +109,6 @@ executable patchgirl-web-exe
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
   build-depends:
       aeson
-    , aeson-qq
     , base
     , bytestring
     , case-insensitive
@@ -120,7 +117,6 @@ executable patchgirl-web-exe
     , control-monad-free
     , cookie
     , dhall
-    , email-validate
     , filepath
     , http-client
     , http-client-tls
@@ -187,7 +183,6 @@ test-suite spec
   ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
   build-depends:
       aeson
-    , aeson-qq
     , base
     , bytestring
     , case-insensitive
@@ -196,7 +191,6 @@ test-suite spec
     , control-monad-free
     , cookie
     , dhall
-    , email-validate
     , filepath
     , hspec
     , http-client
