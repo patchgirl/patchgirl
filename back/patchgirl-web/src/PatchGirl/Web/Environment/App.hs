@@ -13,7 +13,6 @@ import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
 import           Data.Foldable                    (foldl')
-import           Data.Function                    ((&))
 import           Data.HashMap.Strict              as HashMap (HashMap, elems,
                                                               empty, insertWith)
 import           Data.List                        (find)
@@ -74,7 +73,7 @@ selectEnvironments accountId connection = do
 
     mergeValue :: Environment -> Environment -> Environment
     mergeValue oldEnv newEnv =
-      oldEnv { _environmentKeyValues = _environmentKeyValues oldEnv ++ _environmentKeyValues newEnv }
+      oldEnv { _environmentKeyValues = _environmentKeyValues newEnv ++ _environmentKeyValues oldEnv }
 
     selectEnvironmentQueryWithKeyValues =
       [sql|

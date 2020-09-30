@@ -25,13 +25,13 @@ import qualified Servant.Auth.Client              as Auth
 import qualified Servant.Auth.Server              as Auth (defaultJWTSettings,
                                                            makeJWT, readKey)
 import           Servant.Client
+import           System.FilePath                  ((</>))
 import qualified Test.Hspec                       as Hspec
-import System.FilePath ((</>))
 
 import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.DB
 import           PatchGirl.Web.Internal.Env
 import           PatchGirl.Web.Session.Model
-import           PatchGirl.Web.DB
 
 
 -- * helper
@@ -53,10 +53,10 @@ errorsWithStatus status servantError =
 withClient :: IO Application -> Hspec.SpecWith ClientEnv -> Hspec.SpecWith ()
 withClient app innerSpec =
   Hspec.beforeAll (Client.newManager Client.defaultManagerSettings) $
-    flip Hspec.aroundWith innerSpec $ \action httpManager ->
+    flip Hspec.aroundWith innerSpec $ \(action :: ClientEnv -> IO()) httpManager ->
       testWithApplication app $ \port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
-        action (ClientEnv httpManager testBaseUrl Nothing)
+        action $ ClientEnv httpManager testBaseUrl Nothing defaultMakeClientRequest
 
 
 -- ** user
@@ -159,11 +159,11 @@ cleanDBBefore f = do
   f connection
 
 
-data Test =
-  Test { connection :: Connection
-       , accountId  :: UUID
-       , token      :: Auth.Token
-       }
+data Test = Test
+    { connection :: Connection
+    , accountId  :: UUID
+    , token      :: Auth.Token
+    }
 
 cleanDBAndCreateAccount :: (Test -> IO a) -> IO a
 cleanDBAndCreateAccount f = do

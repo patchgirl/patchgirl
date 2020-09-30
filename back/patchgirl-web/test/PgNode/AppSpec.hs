@@ -8,22 +8,22 @@
 
 module PgNode.AppSpec where
 
-import           Control.Lens.Getter ((^.))
+import           Data.Function                    ((&))
 import           Data.UUID
-import qualified Data.UUID           as UUID
-import qualified Network.HTTP.Types  as HTTP
+import qualified Data.UUID                        as UUID
+import qualified Network.HTTP.Types               as HTTP
 import           Servant
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Servant.Auth.Client              as Auth
+import qualified Servant.Auth.Server              as Auth
+import           Servant.Client                   (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgNode.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -55,13 +55,13 @@ spec =
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId2 connection
-          let nodeId = head pgNodes ^. pgNodeId
+          let nodeId = head pgNodes & _pgNodeId
           try clientEnv (updatePgNodeHandler token pgCollectionId nodeId updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "modifies a pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
-          let nodeId = head pgNodes ^. pgNodeId
+          let nodeId = head pgNodes & _pgNodeId
           _ <- try clientEnv (updatePgNodeHandler token pgCollectionId nodeId updatePgNode)
           FakePgFolder { _fakePgFolderName } <- selectFakePgFolder nodeId connection
           _fakePgFolderName `shouldBe` "newName"
@@ -79,13 +79,13 @@ spec =
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId2 connection
-          let nodeId = head pgNodes ^. pgNodeId
+          let nodeId = head pgNodes & _pgNodeId
           try clientEnv (deletePgNodeHandler token pgCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "delete a pg node" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
-          let nodeId = head pgNodes ^. pgNodeId
+          let nodeId = head pgNodes & _pgNodeId
           selectPgNodeExists nodeId connection `shouldReturn` True
           _ <- try clientEnv (deletePgNodeHandler token pgCollectionId nodeId)
           selectPgNodeExists nodeId connection `shouldReturn` False

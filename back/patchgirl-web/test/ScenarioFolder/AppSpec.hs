@@ -7,23 +7,23 @@
 
 module ScenarioFolder.AppSpec where
 
-import           Control.Lens.Getter ((^.))
-import qualified Data.Maybe          as Maybe
+import           Data.Function                          ((&))
+import qualified Data.Maybe                             as Maybe
 import           Data.UUID
-import qualified Data.UUID           as UUID
-import qualified Network.HTTP.Types  as HTTP
+import qualified Data.UUID                              as UUID
+import qualified Network.HTTP.Types                     as HTTP
 import           Servant
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Servant.Auth.Client                    as Auth
+import qualified Servant.Auth.Server                    as Auth
+import           Servant.Client                         (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.ScenarioCollection.Model
 import           PatchGirl.Web.ScenarioNode.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -61,14 +61,14 @@ spec =
       it "returns 404 when scenario node parent exist but isn't a scenario folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           let newScenarioFolder = mkNewScenarioFolder UUID.nil fileId
           try clientEnv (createScenarioFolder token scenarioCollectionId newScenarioFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
+          let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) & _scenarioNodeId
           let newScenarioFolder = mkNewScenarioFolder UUID.nil folderId
           _ <- try clientEnv (createScenarioFolder token scenarioCollectionId newScenarioFolder)
           fakeScenarioFolder <- selectFakeScenarioFolder UUID.nil connection

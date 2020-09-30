@@ -7,23 +7,23 @@
 
 module Environment.AppSpec where
 
-import qualified Data.Maybe                 as Maybe
-import           Data.UUID                  (UUID)
-import qualified Data.UUID.V4                         as UUID
-import qualified Data.UUID                         as UUID
-import qualified Database.PostgreSQL.Simple as PG
-import qualified Network.HTTP.Types         as HTTP
+import qualified Data.Maybe                      as Maybe
+import           Data.UUID                       (UUID)
+import qualified Data.UUID                       as UUID
+import qualified Data.UUID.V4                    as UUID
+import qualified Database.PostgreSQL.Simple      as PG
+import qualified Network.HTTP.Types              as HTTP
 import           Servant
-import qualified Servant.Auth.Client        as Auth
-import qualified Servant.Auth.Server        as Auth
-import           Servant.Client             (ClientM, client)
+import qualified Servant.Auth.Client             as Auth
+import qualified Servant.Auth.Server             as Auth
+import           Servant.Client                  (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
-import           PatchGirl.Web.Environment.Model
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -76,7 +76,6 @@ spec =
     describe "get environments" $
       it "should get environments bound to the account" $ \clientEnv -> do
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
-
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           environmentId1 <- insertNewFakeEnvironment (newFakeEnvironment accountId "test1") connection
           _ <- insertNewFakeEnvironment (newFakeEnvironment accountId2 "test2") connection
@@ -93,7 +92,7 @@ spec =
                                   , _newFakeKeyValueHidden = True
                                   }
                 ]
-          [keyValue1, keyValue2] <- mapM (`insertNewFakeKeyValue` connection) newFakeKeyValues
+          [ keyValue1, keyValue2 ] <- mapM (`insertNewFakeKeyValue` connection) newFakeKeyValues
           environments <- try clientEnv (getEnvironments token)
           let expectedEnvironments = [ Environment { _environmentId = environmentId1
                                                    , _environmentName = "test1"

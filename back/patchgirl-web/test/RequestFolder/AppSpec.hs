@@ -7,15 +7,15 @@
 
 module RequestFolder.AppSpec where
 
-import           Control.Lens.Getter ((^.))
-import qualified Data.Maybe          as Maybe
+import           Data.Function                         ((&))
+import qualified Data.Maybe                            as Maybe
 import           Data.UUID
-import qualified Data.UUID           as UUID
-import qualified Network.HTTP.Types  as HTTP
+import qualified Data.UUID                             as UUID
+import qualified Network.HTTP.Types                    as HTTP
 import           Servant
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Servant.Auth.Client                   as Auth
+import qualified Servant.Auth.Server                   as Auth
+import           Servant.Client                        (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
@@ -62,14 +62,14 @@ spec =
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
+          let fileId = Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
           let newRequestFile = mkNewRequestFolder UUID.nil fileId
           try clientEnv (createRequestFolder token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstFolder requestNodes) ^. requestNodeId
+          let folderId = Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
           let newRequestFolder = mkNewRequestFolder UUID.nil folderId
           _ <- try clientEnv (createRequestFolder token requestCollectionId newRequestFolder)
           fakeRequestFolder <- selectFakeRequestFolder UUID.nil connection
