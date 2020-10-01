@@ -56,7 +56,7 @@ withClient app innerSpec =
     flip Hspec.aroundWith innerSpec $ \(action :: ClientEnv -> IO()) httpManager ->
       testWithApplication app $ \port -> do
         let testBaseUrl = BaseUrl Http "localhost" port ""
-        action $ ClientEnv httpManager testBaseUrl Nothing defaultMakeClientRequest
+        action $ ClientEnv httpManager testBaseUrl Nothing
 
 
 -- ** user
