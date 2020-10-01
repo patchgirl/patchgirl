@@ -179,9 +179,6 @@ update msg model =
                 (RequestCollection requestCollectionId _) =
                     model.requestCollection
 
-                nodeParentId =
-                    model.requestNewNode.parentFolderId
-
                 newFileRecord =
                     { origFileRecord
                         | id = newId
