@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        ghc: ["8.8.3"]
+        ghc: ["8.8.4"]
         stack: ["2.3.1"]
 
     steps:
@@ -60,11 +60,11 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           stack-version: ${{ matrix.stack }}
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         name: Cache ~/.stack
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-${{ matrix.ghc }}-stack
+          key: ${{ runner.os }}-${{ matrix.ghc }}-stack-after-01-10-2020
 
       - name: Build binary
         run: |

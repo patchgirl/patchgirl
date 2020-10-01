@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest] # windows-latest // windows seems not to be supported correctly with ghc-8.8.3
         stack: ["2.3.1"]
-        ghc: ["8.8.3"]
+        ghc: ["8.8.4"]
 
     steps:
     - uses: actions/checkout@v2

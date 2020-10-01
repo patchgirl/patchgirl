@@ -17,8 +17,8 @@ import           Test.Hspec
 import           Api
 import           FakeHttpRequest
 import           Helper.App
-import           PatchGirl.Web.Http
 import           Interpolator
+import           PatchGirl.Web.Http
 import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           ScenarioComputation.Model
@@ -279,7 +279,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\""
+            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) $ AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\""
             ]
           )
 
@@ -494,7 +494,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) AssertionFailed LNull (LInt 1) "LNull is not equal to LInt 1"
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) $ AssertionFailed LNull (LInt 1) "LNull is not equal to LInt 1"
             ]
           )
 
