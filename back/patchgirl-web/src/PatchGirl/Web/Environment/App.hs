@@ -9,9 +9,6 @@ module PatchGirl.Web.Environment.App where
 -- * import
 
 
-import           Control.Lens                     ((&))
-import           Control.Lens.Getter              ((^.))
-import           Control.Lens.Setter              ((%~))
 import           Control.Monad.Except             (MonadError)
 import           Control.Monad.IO.Class           (MonadIO, liftIO)
 import           Control.Monad.Reader             (MonadReader)
@@ -49,34 +46,34 @@ selectEnvironments accountId connection = do
   where
     convertPgEnvironmentsToHashMap :: [PGEnvironmentWithKeyValue] -> HashMap UUID Environment
     convertPgEnvironmentsToHashMap pgEnvironments =
-      foldl' (\acc pgEnv -> insertWith mergeValue (pgEnv ^. pgEnvironmentWithKeyValueEnvironmentId) (convertPGEnviromentToEnvironment pgEnv) acc) HashMap.empty pgEnvironments
+      foldl' (\acc pgEnv -> insertWith mergeValue (_pgEnvironmentWithKeyValueEnvironmentId pgEnv) (convertPGEnviromentToEnvironment pgEnv) acc) HashMap.empty pgEnvironments
 
     convertPGEnviromentToEnvironment :: PGEnvironmentWithKeyValue -> Environment
     convertPGEnviromentToEnvironment pgEnv =
       let
         keyValue :: KeyValue
         keyValue =
-          KeyValue { _keyValueId = pgEnv ^. pgEnvironmentWithKeyValueKeyValueId
-                   , _keyValueKey = pgEnv ^. pgEnvironmentWithKeyValueKey
-                   , _keyValueValue = pgEnv ^. pgEnvironmentWithKeyValueValue
-                   , _keyValueHidden = pgEnv ^. pgEnvironmentWithKeyValueHidden
+          KeyValue { _keyValueId     = _pgEnvironmentWithKeyValueKeyValueId pgEnv
+                   , _keyValueKey    = _pgEnvironmentWithKeyValueKey pgEnv
+                   , _keyValueValue  = _pgEnvironmentWithKeyValueValue pgEnv
+                   , _keyValueHidden = _pgEnvironmentWithKeyValueHidden pgEnv
                    }
       in
-        Environment { _environmentId = pgEnv ^. pgEnvironmentWithKeyValueEnvironmentId
-                    , _environmentName = pgEnv ^. pgEnvironmentWithKeyValueEnvironmentName
+        Environment { _environmentId =  _pgEnvironmentWithKeyValueEnvironmentId pgEnv
+                    , _environmentName = _pgEnvironmentWithKeyValueEnvironmentName pgEnv
                     , _environmentKeyValues = [ keyValue ]
                     }
 
     convertPGEnviromentWithoutKeyValuesToEnvironment :: PGEnvironmentWithoutKeyValue -> Environment
     convertPGEnviromentWithoutKeyValuesToEnvironment pgEnv =
-        Environment { _environmentId = pgEnv ^. pgEnvironmentWithoutKeyValueEnvironmentId
-                    , _environmentName = pgEnv ^. pgEnvironmentWithoutKeyValueEnvironmentName
+        Environment { _environmentId = _pgEnvironmentWithoutKeyValueEnvironmentId pgEnv
+                    , _environmentName = _pgEnvironmentWithoutKeyValueEnvironmentName pgEnv
                     , _environmentKeyValues = []
                     }
 
     mergeValue :: Environment -> Environment -> Environment
     mergeValue oldEnv newEnv =
-      oldEnv & environmentKeyValues %~ (++) (newEnv ^. environmentKeyValues)
+      oldEnv { _environmentKeyValues = _environmentKeyValues newEnv ++ _environmentKeyValues oldEnv }
 
     selectEnvironmentQueryWithKeyValues =
       [sql|
@@ -241,11 +238,11 @@ deleteKeyValueHandler accountId environmentId' keyValueId' = do
   environments <- liftIO $ selectEnvironments accountId connection
   let
     mKeyValue = do
-      environment <- find (\environment -> environment ^. environmentId == environmentId') environments
-      find (\keyValue -> keyValue ^. keyValueId == keyValueId') $ environment ^. environmentKeyValues
+      environment <- find (\environment -> _environmentId environment  == environmentId') environments
+      find (\keyValue -> _keyValueId keyValue == keyValueId') $ _environmentKeyValues environment
   case mKeyValue of
     Just keyValue ->
-      liftIO $ deleteKeyValueDB (keyValue ^. keyValueId) connection
+      liftIO $ deleteKeyValueDB (_keyValueId keyValue) connection
     Nothing -> throwError err404
 
 deleteKeyValueDB :: UUID -> PG.Connection -> IO ()
@@ -299,7 +296,7 @@ updateKeyValuesHandler accountId environmentId' newKeyValues = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments accountId connection
   let
-    environment = find (\env -> env ^. environmentId == environmentId') environments
+    environment = find (\env -> _environmentId env == environmentId') environments
   case environment of
     Just _ -> do
       liftIO $ deleteKeyValuesDB environmentId' connection

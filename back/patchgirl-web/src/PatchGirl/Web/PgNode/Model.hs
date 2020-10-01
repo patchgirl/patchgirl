@@ -1,14 +1,11 @@
-{-# LANGUAGE DeriveAnyClass         #-}
-{-# LANGUAGE DeriveGeneric          #-}
-{-# LANGUAGE DuplicateRecordFields  #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleInstances     #-}
 
 module PatchGirl.Web.PgNode.Model where
 
 
-import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
@@ -23,29 +20,28 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
-import PatchGirl.Web.NodeType.Model
+import           PatchGirl.Web.NodeType.Model
 
 
 -- * pg node
 
 
-data PgNode
-  = PgFolder { _pgNodeId       :: UUID
-             , _pgNodeName     :: String
-             , _pgNodeChildren :: [PgNode]
-             }
-  | PgFile { _pgNodeId       :: UUID
-           , _pgNodeName     :: String
-           , _pgNodeSql      :: String
-           , _pgNodeHost     :: String
-           , _pgNodePassword :: String
-           , _pgNodePort     :: String
-           , _pgNodeUser     :: String
-           , _pgNodeDbName   :: String
-           }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''PgNode)
+data PgNode = PgFolder
+    { _pgNodeId       :: UUID
+    , _pgNodeName     :: String
+    , _pgNodeChildren :: [PgNode]
+    }
+    | PgFile
+    { _pgNodeId       :: UUID
+    , _pgNodeName     :: String
+    , _pgNodeSql      :: String
+    , _pgNodeHost     :: String
+    , _pgNodePassword :: String
+    , _pgNodePort     :: String
+    , _pgNodeUser     :: String
+    , _pgNodeDbName   :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON PgNode where
   toJSON =
@@ -125,8 +121,6 @@ instance FromJSON UpdatePgNode where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeLenses ''UpdatePgNode)
-
 instance ToField UpdatePgNode where
   toField UpdatePgNode {..} =
     toField (show _updatePgNodeName)
@@ -135,18 +129,17 @@ instance ToField UpdatePgNode where
 -- * new root pg file
 
 
-data NewRootPgFile =
-  NewRootPgFile { _newRootPgFileId       :: UUID
-                , _newRootPgFileName     :: String
-                , _newRootPgFileSql      :: String
-                , _newRootPgFileHost     :: String
-                , _newRootPgFilePassword :: String
-                , _newRootPgFilePort     :: String
-                , _newRootPgFileUser     :: String
-                , _newRootPgFileDbName   :: String
-                } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootPgFile)
+data NewRootPgFile = NewRootPgFile
+    { _newRootPgFileId       :: UUID
+    , _newRootPgFileName     :: String
+    , _newRootPgFileSql      :: String
+    , _newRootPgFileHost     :: String
+    , _newRootPgFilePassword :: String
+    , _newRootPgFilePort     :: String
+    , _newRootPgFileUser     :: String
+    , _newRootPgFileDbName   :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRootPgFile where
   toJSON =
@@ -160,19 +153,18 @@ instance FromJSON NewRootPgFile where
 -- * new pg file
 
 
-data NewPgFile =
-  NewPgFile { _newPgFileId           :: UUID
-            , _newPgFileParentNodeId :: UUID
-            , _newPgFileName         :: String
-            , _newPgFileSql          :: String
-            , _newPgFileHost         :: String
-            , _newPgFilePassword     :: String
-            , _newPgFilePort         :: String
-            , _newPgFileUser         :: String
-            , _newPgFileDbName       :: String
-            } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewPgFile)
+data NewPgFile = NewPgFile
+    { _newPgFileId           :: UUID
+    , _newPgFileParentNodeId :: UUID
+    , _newPgFileName         :: String
+    , _newPgFileSql          :: String
+    , _newPgFileHost         :: String
+    , _newPgFilePassword     :: String
+    , _newPgFilePort         :: String
+    , _newPgFileUser         :: String
+    , _newPgFileDbName       :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewPgFile where
   toJSON =
@@ -186,12 +178,11 @@ instance FromJSON NewPgFile where
 -- * new root pg folder
 
 
-data NewRootPgFolder =
-  NewRootPgFolder { _newRootPgFolderId   :: UUID
-                  , _newRootPgFolderName :: String
-                  } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootPgFolder)
+data NewRootPgFolder = NewRootPgFolder
+    { _newRootPgFolderId   :: UUID
+    , _newRootPgFolderName :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRootPgFolder where
   toJSON =
@@ -205,13 +196,12 @@ instance FromJSON NewRootPgFolder where
 -- * new pg folder
 
 
-data NewPgFolder =
-  NewPgFolder { _newPgFolderId           :: UUID
-              , _newPgFolderParentNodeId :: UUID
-              , _newPgFolderName         :: String
-              } deriving (Eq, Show, Generic)
-
-$(makeLenses ''NewPgFolder)
+data NewPgFolder = NewPgFolder
+    { _newPgFolderId           :: UUID
+    , _newPgFolderParentNodeId :: UUID
+    , _newPgFolderName         :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON NewPgFolder where
   toJSON =
@@ -225,16 +215,16 @@ instance FromJSON NewPgFolder where
 -- * update pg file
 
 
-data UpdatePgFile
-  = UpdatePgFile { _updatePgFileName     :: String
-                 , _updatePgFileSql      :: String
-                 , _updatePgFileHost     :: String
-                 , _updatePgFilePassword :: String
-                 , _updatePgFilePort     :: String
-                 , _updatePgFileUser     :: String
-                 , _updatePgFileDbName   :: String
-                 }
-  deriving (Eq, Show, Generic)
+data UpdatePgFile = UpdatePgFile
+    { _updatePgFileName     :: String
+    , _updatePgFileSql      :: String
+    , _updatePgFileHost     :: String
+    , _updatePgFilePassword :: String
+    , _updatePgFilePort     :: String
+    , _updatePgFileUser     :: String
+    , _updatePgFileDbName   :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON UpdatePgFile where
   toJSON =
@@ -243,5 +233,3 @@ instance ToJSON UpdatePgFile where
 instance FromJSON UpdatePgFile where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-$(makeLenses ''UpdatePgFile)

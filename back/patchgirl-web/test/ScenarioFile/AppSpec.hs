@@ -7,24 +7,24 @@
 
 module ScenarioFile.AppSpec where
 
-import           Control.Lens.Getter        ((^.))
-import qualified Data.Maybe                 as Maybe
+import           Data.Function                          ((&))
+import qualified Data.Maybe                             as Maybe
 import           Data.UUID
-import qualified Data.UUID                  as UUID
-import qualified Database.PostgreSQL.Simple as PG
-import qualified Network.HTTP.Types         as HTTP
-import           Servant                    hiding (Header)
-import qualified Servant.Auth.Client        as Auth
-import qualified Servant.Auth.Server        as Auth
-import           Servant.Client             (ClientM, client)
+import qualified Data.UUID                              as UUID
+import qualified Database.PostgreSQL.Simple             as PG
+import qualified Network.HTTP.Types                     as HTTP
+import           Servant                                hiding (Header)
+import qualified Servant.Auth.Client                    as Auth
+import qualified Servant.Auth.Server                    as Auth
+import           Servant.Client                         (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.ScenarioCollection.Model
 import           PatchGirl.Web.ScenarioNode.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -65,14 +65,14 @@ spec =
       it "returns 404 when scenario node parent exist but isn't a scenario folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let fileId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           (_, newScenarioFile) <- mkNewScenarioFile UUID.nil fileId accountId connection
           try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the scenario file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) ^. scenarioNodeId
+          let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) & _scenarioNodeId
           (environmentId, newScenarioFile) <- mkNewScenarioFile UUID.nil folderId accountId connection
           _ <- try clientEnv (createScenarioFileHandler token scenarioCollectionId newScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile UUID.nil connection
@@ -90,7 +90,7 @@ spec =
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId2 connection
-          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           let updateScenarioFile = mkUpdateScenarioFile nodeId UUID.nil
           try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
             `shouldThrow` errorsWithStatus HTTP.notFound404
@@ -105,7 +105,7 @@ spec =
       it "doesnt update when new environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token, accountId } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           let updateScenarioFile = mkUpdateScenarioFile nodeId UUID.nil
           try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile nodeId connection
@@ -120,7 +120,7 @@ spec =
           envId <- insertNewFakeEnvironment newEnvironment connection
 
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           let updateScenarioFile = mkUpdateScenarioFile nodeId envId
           try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile nodeId connection
@@ -134,7 +134,7 @@ spec =
                                                   }
           envId <- insertNewFakeEnvironment newEnvironment connection
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           let updateScenarioFile = mkUpdateScenarioFile nodeId envId
           try clientEnv (updateScenarioFileHandler token scenarioCollectionId updateScenarioFile)
           fakeScenarioFile <- selectFakeScenarioFile nodeId connection

@@ -7,24 +7,24 @@
 
 module RequestFile.AppSpec where
 
-import           Control.Lens.Getter ((^.))
-import qualified Data.Maybe          as Maybe
+import           Data.Function                         ((&))
+import qualified Data.Maybe                            as Maybe
 import           Data.UUID
-import qualified Data.UUID           as UUID
-import qualified Network.HTTP.Types  as HTTP
-import           Servant             hiding (Header)
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Data.UUID                             as UUID
+import qualified Network.HTTP.Types                    as HTTP
+import           Servant                               hiding (Header)
+import qualified Servant.Auth.Client                   as Auth
+import qualified Servant.Auth.Server                   as Auth
+import           Servant.Client                        (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
-import           PatchGirl.Web.Http
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Http
 import           PatchGirl.Web.RequestCollection.Model
 import           PatchGirl.Web.RequestNode.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -65,14 +65,14 @@ spec =
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstFile requestNodes) ^. requestNodeId
+          let fileId = Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
           let newRequestFile = mkNewRequestFile UUID.nil fileId
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstFolder requestNodes) ^. requestNodeId
+          let folderId = Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
           let newRequestFile = mkNewRequestFile UUID.nil folderId
           _ <- try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile)
           fakeRequestFile <- selectFakeRequestFile UUID.nil connection

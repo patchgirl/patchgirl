@@ -1,10 +1,9 @@
 module PatchGirl.Web.ScenarioNode.Sql where
 
-import           Control.Lens.Getter              ((^.))
 import           Data.UUID
-import qualified Database.PostgreSQL.Simple       as PG
+import qualified Database.PostgreSQL.Simple           as PG
 import           Database.PostgreSQL.Simple.SqlQQ
-import qualified GHC.Int                          as Int
+import qualified GHC.Int                              as Int
 
 import           PatchGirl.Web.ScenarioCollection.Sql
 import           PatchGirl.Web.ScenarioNode.Model
@@ -40,7 +39,7 @@ selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection = do
 
 updateScenarioNodeDB :: UUID -> UpdateScenarioNode -> PG.Connection -> IO ()
 updateScenarioNodeDB scenarioNodeId updateScenarioNode connection = do
-  let newName = updateScenarioNode ^. updateScenarioNodeName
+  let newName = _updateScenarioNodeName updateScenarioNode
   _ <- PG.execute connection updateQuery (newName, scenarioNodeId)
   return ()
   where

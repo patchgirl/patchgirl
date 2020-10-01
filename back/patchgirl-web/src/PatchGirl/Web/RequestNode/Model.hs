@@ -1,14 +1,11 @@
-{-# LANGUAGE DeriveAnyClass         #-}
-{-# LANGUAGE DeriveGeneric          #-}
-{-# LANGUAGE DuplicateRecordFields  #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleInstances     #-}
 
 module PatchGirl.Web.RequestNode.Model where
 
 
-import           Control.Lens                         (makeLenses)
 import           Data.Aeson                           (Value)
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
@@ -26,7 +23,7 @@ import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
 
 import           PatchGirl.Web.Http
-import PatchGirl.Web.NodeType.Model
+import           PatchGirl.Web.NodeType.Model
 
 -- * http header
 
@@ -56,21 +53,20 @@ instance ToField HttpHeader where
 -- * request node
 
 
-data RequestNode
-  = RequestFolder { _requestNodeId       :: UUID
-                  , _requestNodeName     :: String
-                  , _requestNodeChildren :: [RequestNode]
-                  }
-  | RequestFile { _requestNodeId          :: UUID
-                , _requestNodeName        :: String
-                , _requestNodeHttpUrl     :: String
-                , _requestNodeHttpMethod  :: Method
-                , _requestNodeHttpHeaders :: [(String, String)]
-                , _requestNodeHttpBody    :: String
-                }
-  deriving (Eq, Show, Generic)
-
-$(makeLenses ''RequestNode)
+data RequestNode = RequestFolder
+    { _requestNodeId       :: UUID
+    , _requestNodeName     :: String
+    , _requestNodeChildren :: [RequestNode]
+    }
+    | RequestFile
+    { _requestNodeId          :: UUID
+    , _requestNodeName        :: String
+    , _requestNodeHttpUrl     :: String
+    , _requestNodeHttpMethod  :: Method
+    , _requestNodeHttpHeaders :: [(String, String)]
+    , _requestNodeHttpBody    :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON RequestNode where
   toJSON =
@@ -93,9 +89,11 @@ instance FromField [RequestNode] where
 -- ** pg header
 
 
-data PGHeader = PGHeader { headerKey   :: String
-                         , headerValue :: String
-                         } deriving (Eq, Show)
+data PGHeader = PGHeader
+    { headerKey   :: String
+    , headerValue :: String
+    }
+    deriving (Eq, Show)
 
 instance FromJSON PGHeader where
   parseJSON = withObject "PGHeader" $ \o -> do
@@ -166,8 +164,6 @@ instance FromJSON UpdateRequestNode where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeLenses ''UpdateRequestNode)
-
 instance ToField UpdateRequestNode where
   toField UpdateRequestNode {..} =
     toField (show _updateRequestNodeName)
@@ -176,17 +172,15 @@ instance ToField UpdateRequestNode where
 -- * new root request file
 
 
-data NewRootRequestFile =
-  NewRootRequestFile { _newRootRequestFileId      :: UUID
-                     , _newRootRequestFileName    :: String
-                     , _newRootRequestFileHttpUrl :: String
-                     , _newRootRequestFileMethod  :: Method
-                     , _newRootRequestFileHeaders :: [HttpHeader]
-                     , _newRootRequestFileBody    :: String
-                     } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootRequestFile)
-
+data NewRootRequestFile = NewRootRequestFile
+    { _newRootRequestFileId      :: UUID
+    , _newRootRequestFileName    :: String
+    , _newRootRequestFileHttpUrl :: String
+    , _newRootRequestFileMethod  :: Method
+    , _newRootRequestFileHeaders :: [HttpHeader]
+    , _newRootRequestFileBody    :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRootRequestFile where
   toJSON =
@@ -200,17 +194,16 @@ instance FromJSON NewRootRequestFile where
 -- * new request file
 
 
-data NewRequestFile =
-  NewRequestFile { _newRequestFileId           :: UUID
-                 , _newRequestFileParentNodeId :: UUID
-                 , _newRequestFileName         :: String
-                 , _newRequestFileHttpUrl :: String
-                 , _newRequestFileMethod  :: Method
-                 , _newRequestFileHeaders :: [HttpHeader]
-                 , _newRequestFileBody    :: String
-                 } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRequestFile)
+data NewRequestFile = NewRequestFile
+    { _newRequestFileId           :: UUID
+    , _newRequestFileParentNodeId :: UUID
+    , _newRequestFileName         :: String
+    , _newRequestFileHttpUrl      :: String
+    , _newRequestFileMethod       :: Method
+    , _newRequestFileHeaders      :: [HttpHeader]
+    , _newRequestFileBody         :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRequestFile where
   toJSON =
@@ -224,12 +217,11 @@ instance FromJSON NewRequestFile where
 -- * new root request folder
 
 
-data NewRootRequestFolder =
-  NewRootRequestFolder { _newRootRequestFolderId   :: UUID
-                       , _newRootRequestFolderName :: String
-                       } deriving (Eq, Show, Generic, ToRow)
-
-$(makeLenses ''NewRootRequestFolder)
+data NewRootRequestFolder = NewRootRequestFolder
+    { _newRootRequestFolderId   :: UUID
+    , _newRootRequestFolderName :: String
+    }
+    deriving (Eq, Show, Generic, ToRow)
 
 instance ToJSON NewRootRequestFolder where
   toJSON =
@@ -243,13 +235,12 @@ instance FromJSON NewRootRequestFolder where
 -- * new request folder
 
 
-data NewRequestFolder =
-  NewRequestFolder { _newRequestFolderId           :: UUID
-                   , _newRequestFolderParentNodeId :: UUID
-                   , _newRequestFolderName         :: String
-                   } deriving (Eq, Show, Generic)
-
-$(makeLenses ''NewRequestFolder)
+data NewRequestFolder = NewRequestFolder
+    { _newRequestFolderId           :: UUID
+    , _newRequestFolderParentNodeId :: UUID
+    , _newRequestFolderName         :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON NewRequestFolder where
   toJSON =
@@ -263,14 +254,14 @@ instance FromJSON NewRequestFolder where
 -- * update request file
 
 
-data UpdateRequestFile
-  = UpdateRequestFile { _updateRequestFileName        :: String
-                      , _updateRequestFileHttpUrl     :: String
-                      , _updateRequestFileHttpMethod  :: Method
-                      , _updateRequestFileHttpHeaders :: [HttpHeader]
-                      , _updateRequestFileHttpBody    :: String
-                      }
-  deriving (Eq, Show, Generic)
+data UpdateRequestFile = UpdateRequestFile
+    { _updateRequestFileName        :: String
+    , _updateRequestFileHttpUrl     :: String
+    , _updateRequestFileHttpMethod  :: Method
+    , _updateRequestFileHttpHeaders :: [HttpHeader]
+    , _updateRequestFileHttpBody    :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON UpdateRequestFile where
   toJSON =
@@ -280,8 +271,6 @@ instance FromJSON UpdateRequestFile where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
-$(makeLenses ''UpdateRequestFile)
-
 
 -- * parent node id
 
@@ -290,21 +279,19 @@ $(makeLenses ''UpdateRequestFile)
   a request node (file or folder) can either be regular (meaning it has a folder as a parent)
   or root (meaning it is at the top of a tree hierarchy so it doesn't have a parent)
 -}
-data ParentNodeId
-  = RequestCollectionId Int
-  | RequestNodeId UUID
-  deriving (Eq, Show, Generic, FromJSON, ToJSON)
+data ParentNodeId = RequestCollectionId Int
+    | RequestNodeId UUID
+    deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 
 -- * duplicate node
 
 
-data DuplicateNode =
-  DuplicateNode { _duplicateNodeNewId :: UUID
-                , _duplicateNodeTargetId :: Maybe UUID
-                } deriving (Eq, Show, Generic)
-
-$(makeLenses ''DuplicateNode)
+data DuplicateNode = DuplicateNode
+    { _duplicateNodeNewId    :: UUID
+    , _duplicateNodeTargetId :: Maybe UUID
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON DuplicateNode where
   toJSON =

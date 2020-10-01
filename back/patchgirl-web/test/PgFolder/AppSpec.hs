@@ -7,23 +7,23 @@
 
 module PgFolder.AppSpec where
 
-import           Control.Lens.Getter ((^.))
-import qualified Data.Maybe          as Maybe
+import           Data.Function                    ((&))
+import qualified Data.Maybe                       as Maybe
 import           Data.UUID
-import qualified Data.UUID           as UUID
-import qualified Network.HTTP.Types  as HTTP
+import qualified Data.UUID                        as UUID
+import qualified Network.HTTP.Types               as HTTP
 import           Servant
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Servant.Auth.Client              as Auth
+import qualified Servant.Auth.Server              as Auth
+import           Servant.Client                   (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgNode.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -61,14 +61,14 @@ spec =
       it "returns 404 when pg node parent exist but isn't a pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstPgFile pgNodes) ^. pgNodeId
+          let fileId = Maybe.fromJust (getFirstPgFile pgNodes) & _pgNodeId
           let newPgFile = mkNewPgFolder UUID.nil fileId
           try clientEnv (createPgFolder token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstPgFolder pgNodes) ^. pgNodeId
+          let folderId = Maybe.fromJust (getFirstPgFolder pgNodes) & _pgNodeId
           let newPgFolder = mkNewPgFolder UUID.nil folderId
           _ <- try clientEnv (createPgFolder token pgCollectionId newPgFolder)
           fakePgFolder <- selectFakePgFolder UUID.nil connection

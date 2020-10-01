@@ -17,6 +17,7 @@ import NoUnused.Dependencies
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoUnused.Modules
 
 config : List Rule
 config =
@@ -24,6 +25,7 @@ config =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
+    , NoUnused.Modules.rule
     --, NoUnusued.rule
 
     ]

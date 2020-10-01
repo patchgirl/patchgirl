@@ -8,23 +8,23 @@
 
 module ScenarioNode.AppSpec where
 
-import           Control.Lens.Getter ((^.))
-import qualified Data.Maybe          as Maybe
+import           Data.Function                          ((&))
+import qualified Data.Maybe                             as Maybe
 import           Data.UUID
-import qualified Data.UUID           as UUID
-import qualified Network.HTTP.Types  as HTTP
+import qualified Data.UUID                              as UUID
+import qualified Network.HTTP.Types                     as HTTP
 import           Servant
-import qualified Servant.Auth.Client as Auth
-import qualified Servant.Auth.Server as Auth
-import           Servant.Client      (ClientM, client)
+import qualified Servant.Auth.Client                    as Auth
+import qualified Servant.Auth.Server                    as Auth
+import           Servant.Client                         (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.ScenarioCollection.Model
 import           PatchGirl.Web.ScenarioNode.Model
+import           PatchGirl.Web.Server
 
 
 -- * client
@@ -61,13 +61,13 @@ spec =
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId2 connection
-          let nodeId = head scenarioNodes ^. scenarioNodeId
+          let nodeId = head scenarioNodes & _scenarioNodeId
           try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "modifies a scenario folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let nodeId = head scenarioNodes ^. scenarioNodeId
+          let nodeId = head scenarioNodes & _scenarioNodeId
           _ <- try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode)
           FakeScenarioFolder { _fakeScenarioFolderName } <- selectFakeScenarioFolder nodeId connection
           _fakeScenarioFolderName `shouldBe` "newName"
@@ -75,7 +75,7 @@ spec =
       it "modifies a scenario file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) ^. scenarioNodeId
+          let nodeId = Maybe.fromJust (getFirstScenarioFile scenarioNodes) & _scenarioNodeId
           _ <- try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nodeId updateScenarioNode)
           FakeScenarioFile { _fakeScenarioFileName } <- selectFakeScenarioFile nodeId connection
           _fakeScenarioFileName `shouldBe` "newName"
@@ -98,13 +98,13 @@ spec =
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           accountId2 <- insertFakeAccount defaultNewFakeAccount2 connection
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId2 connection
-          let nodeId = head scenarioNodes ^. scenarioNodeId
+          let nodeId = head scenarioNodes & _scenarioNodeId
           try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "delete a scenario node" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let nodeId = head scenarioNodes ^. scenarioNodeId
+          let nodeId = head scenarioNodes & _scenarioNodeId
           selectScenarioNodeExists nodeId connection `shouldReturn` True
           _ <- try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nodeId)
           selectScenarioNodeExists nodeId connection `shouldReturn` False
