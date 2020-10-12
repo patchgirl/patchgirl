@@ -35,7 +35,7 @@ type alias Model a =
         , pgCollection : PgCollection
         , scenarioCollection : ScenarioCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
-        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+        , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
         , environments : List Environment
         , page : Page
         , scenarioNewNode : NewNode

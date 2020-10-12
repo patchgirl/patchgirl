@@ -13,7 +13,7 @@ type Page
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
     | EnvPage (BuilderView Uuid)
-    | ScenarioPage (RichBuilderView Uuid (Maybe Uuid))
+    | ScenarioPage (RichBuilderView Uuid SceneDetailView)
     | NotFoundPage
     | DocumentationPage Documentation
     | TangoScriptPage
@@ -134,8 +134,9 @@ urlParser =
         , Url.map (ScenarioPage (RichLandingView CreateDefaultFileView)) (appRoot </> Url.s "scenario" </> Url.s "new-file")
         , Url.map (\envId -> ScenarioPage (RichEditView (DefaultEditView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit")
         , Url.map (\envId -> ScenarioPage (RichEditView (DeleteView envId))) (appRoot </> Url.s "scenario" </> uuidParser </> Url.s "edit" </> Url.s "delete")
-        , Url.map (\envId sceneId -> ScenarioPage (RichRunView envId (Just sceneId))) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser </> uuidParser)
-        , Url.map (\envId -> ScenarioPage (RichRunView envId Nothing)) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser)
+        , Url.map (\envId sceneId -> ScenarioPage (RichRunView envId (AddNewSceneView sceneId))) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser </> uuidParser </> Url.s "newScene")
+        , Url.map (\envId sceneId -> ScenarioPage (RichRunView envId (ShowDetailView sceneId))) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser </> uuidParser)
+        , Url.map (\envId -> ScenarioPage (RichRunView envId NoSceneDetailView)) (appRoot </> Url.s "scenario" </> Url.s "run" </> uuidParser)
 
         -- other
         , Url.map (\documentation -> DocumentationPage documentation) (appRoot </> Url.s "documentation" </> documentationParser)
@@ -260,11 +261,20 @@ href page =
                                 RichEditView (DuplicateView id) ->
                                     [ Uuid.toString id, "edit", "duplicate" ]
 
-                                RichRunView id Nothing ->
-                                    [ "run", Uuid.toString id ]
+                                RichRunView id sceneDetailView ->
+                                    let
+                                        sceneDetailViewToUrl =
+                                            case sceneDetailView of
+                                                ShowDetailView sceneId ->
+                                                    [ Uuid.toString sceneId ]
 
-                                RichRunView id (Just sceneId) ->
-                                    [ "run", Uuid.toString id, Uuid.toString sceneId ]
+                                                AddNewSceneView sceneId ->
+                                                    [ Uuid.toString sceneId, "newScene" ]
+
+                                                NoSceneDetailView ->
+                                                    []
+                                    in
+                                    [ "run", Uuid.toString id ] ++ sceneDetailViewToUrl
 
                     in
                     [ "app", "scenario" ] ++ mode

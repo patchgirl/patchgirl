@@ -87,8 +87,12 @@ type RichBuilderView a b
     | RichEditView (WhichEditView a)
     | RichRunView a b
 
+type SceneDetailView
+    = ShowDetailView Uuid
+    | AddNewSceneView Uuid
+    | NoSceneDetailView
 
-getRichBuilderId : RichBuilderView Uuid (Maybe Uuid) -> Maybe Uuid
+getRichBuilderId : RichBuilderView Uuid SceneDetailView -> Maybe Uuid
 getRichBuilderId builderView =
     case builderView of
         RichLandingView _ ->

@@ -29,7 +29,7 @@ type alias Model a =
         , page : Page
         , showMainMenuName : Maybe MainMenuName
         , runnerRunning : Bool
-        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+        , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
         , displayedSceneId : Maybe Uuid
         , displayedRequestBuilderView : BuilderView Uuid
         , displayedPgBuilderView : BuilderView Uuid

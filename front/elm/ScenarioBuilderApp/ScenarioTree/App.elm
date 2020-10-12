@@ -25,7 +25,7 @@ type alias Model a =
     { a
         | scenarioCollection : ScenarioCollection
         , displayedScenarioNodeMenuId : Maybe Uuid
-        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+        , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
     }
 
 
@@ -153,7 +153,7 @@ fileView id model eName =
         ]
         [ el [ onRight folderMenuView ] <|
               link [ weight ]
-                  { url = href (ScenarioPage (RichRunView id Nothing))
+                  { url = href (ScenarioPage (RichRunView id NoSceneDetailView))
                   , label = el [] <| iconWithTextAndColor "label" name color
                   }
         ]

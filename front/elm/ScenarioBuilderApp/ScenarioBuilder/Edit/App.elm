@@ -33,7 +33,7 @@ type alias Model a =
         | notification : Maybe Notification
         , scenarioCollection : ScenarioCollection
         , scenarioNewNode : NewNode
-        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+        , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
         , navigationKey : Navigation.Key
         , page : Page
     }

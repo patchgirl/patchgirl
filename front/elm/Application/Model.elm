@@ -54,7 +54,7 @@ type alias Model =
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid
-    , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+    , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
     , displayedScenarioId : Maybe Uuid
     , scenarioNewNode : NewNode
     , displayedSceneId : Maybe Uuid

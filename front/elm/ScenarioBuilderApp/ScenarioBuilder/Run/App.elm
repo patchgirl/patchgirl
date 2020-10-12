@@ -53,7 +53,7 @@ type alias Model a =
         , displayedPgBuilderView : BuilderView Uuid
         , scenarioCollection : ScenarioCollection
         , scenarioNewNode : NewNode
-        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+        , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
         , navigationKey : Navigation.Key
         , environments : List Environment
         , selectedEnvironmentToRunId : Maybe Uuid
@@ -74,7 +74,6 @@ type Msg
     | SelectHttpFile (Maybe Uuid) Uuid Uuid
     | SelectPgFile (Maybe Uuid) Uuid Uuid
     | AskCreateScene (Maybe Uuid) Uuid ActorType Uuid
-    | CloseModal
       -- delete scene
     | AskDeleteScene Uuid
     | DeleteScene Uuid
@@ -101,8 +100,8 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> ScenarioFileRecord -> Maybe Uuid -> (Model a, ScenarioFileRecord, Cmd Msg)
-update msg model file mDisplayedSceneId =
+update : Msg -> Model a -> ScenarioFileRecord -> SceneDetailView -> (Model a, ScenarioFileRecord, Cmd Msg)
+update msg model file sceneDetailView =
     case msg of
 
 
@@ -205,14 +204,29 @@ update msg model file mDisplayedSceneId =
                 newFile =
                     { file | scenes = newScenes }
 
+                noSceneDetailMsg =
+                    Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id NoSceneDetailView)))
+
                 newMsg =
-                    case mDisplayedSceneId == Just id of
-                        True ->
-                            Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id Nothing)))
+                    case sceneDetailView of
+                        ShowDetailView sceneId ->
+                            case sceneId == id of
+                                True ->
+                                    noSceneDetailMsg
 
-                        False ->
+                                False ->
+                                    Cmd.none
+
+                        AddNewSceneView sceneId ->
+                            case sceneId == id of
+                                True ->
+                                    noSceneDetailMsg
+
+                                False ->
+                                    Cmd.none
+
+                        NoSceneDetailView ->
                             Cmd.none
-
             in
             ( model, newFile, newMsg )
 
@@ -441,13 +455,6 @@ update msg model file mDisplayedSceneId =
             in
             ( model, newFile, Cmd.none )
 
-        CloseModal ->
-            let
-                newModel =
-                    { model | whichModal = Nothing }
-            in
-            ( newModel, file, Cmd.none )
-
         PrintNotification notification ->
             ( { model | notification = Just notification }, file, Cmd.none )
 
@@ -544,34 +551,17 @@ findRecord model scene =
 -- * view
 
 
-view : Model a -> ScenarioFileRecord -> Maybe Uuid -> Element Msg
-view model file mDisplayedSceneId =
+view : Model a -> ScenarioFileRecord -> SceneDetailView -> Element Msg
+view model file sceneDetailView =
     let
-        closeNewSceneView : Element Msg
-        closeNewSceneView =
-            Input.button []
-                { onPress = Just CloseModal
-                , label =
-                    iconWithAttr { defaultIconAttribute
-                                     | title = ""
-                                     , icon = "clear"
-                                 }
-                }
 
         scenesView =
             case file.scenes of
                 [] ->
-                    Input.button [ centerY, centerX ]
-                        { onPress = Just (ShowSceneSelectionModal Nothing)
-                        , label =
-                            row [ centerX, centerY ]
-                                [ addIcon
-                                , el [] (text "Add a scene to your scenario")
-                                ]
-                        }
+                    selectSceneView model Nothing
 
                 scenes ->
-                    column [ centerX, spacing 10 ] (List.map (sceneView model file mDisplayedSceneId) scenes)
+                    column [ centerX, spacing 10 ] (List.map (sceneView model file sceneDetailView) scenes)
 
         envSelectionView : Element Msg
         envSelectionView =
@@ -638,45 +628,42 @@ view model file mDisplayedSceneId =
                 , envSelectionView
                 ]
     in
-    case model.whichModal of
-        Just _ ->
-            column (box [ padding 30, spacing 20, centerX ])
-                [ row [ width fill ]
-                      [ el [ centerX, Font.size 25, Font.underline ] <| text "Select a request to use a scene"
-                      , el [ alignRight ] closeNewSceneView
-                      ]
-                , selectSceneView model Nothing
-                ]
+    wrappedRow [ height fill, width fill, spacing 20 ]
+        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
+        , row [ width <| fillPortion 9, alignTop, spacing 20 ]
+            [ el [ width <| fillPortion 2, height fill ] scenesView
+            , el [ width <| fillPortion 8, height fill, alignRight ] <|
+                case sceneDetailView of
+                    ShowDetailView sceneId ->
+                        detailedSceneView model file sceneId
 
-        Nothing ->
-            case mDisplayedSceneId of
-                Nothing ->
-                    wrappedRow [ height fill, width fill, spacing 20 ]
-                        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
-                        , row [ width <| fillPortion 9, alignTop, spacing 20 ]
-                            [ el [ width <| fillPortion 2, height fill ] scenesView
-                            , el [ width <| fillPortion 8, height fill, alignRight ] none
-                            ]
-                        ]
+                    AddNewSceneView sceneId ->
+                        selectSceneView model (Just sceneId)
 
-                Just sceneId ->
-                    wrappedRow [ height fill, width fill, spacing 20 ]
-                        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
-                        , row [ width <| fillPortion 9, alignTop, spacing 20 ]
-                            [ el [ width <| fillPortion 2, height fill ] scenesView
-                            , el [ width <| fillPortion 8, height fill, alignRight ] (detailedSceneView model file sceneId)
-                            ]
-                        ]
+                    NoSceneDetailView ->
+                        none
+            ]
+        ]
+
+
 
 
 -- ** scene view
 
 
-sceneView : Model a -> ScenarioFileRecord -> Maybe Uuid -> Scene -> Element Msg
-sceneView model file mDisplayedSceneId scene =
+sceneView : Model a -> ScenarioFileRecord -> SceneDetailView -> Scene -> Element Msg
+sceneView model file sceneDetailView scene =
     let
         selected =
-            mDisplayedSceneId == Just scene.id
+            case sceneDetailView of
+                ShowDetailView sceneId ->
+                    sceneId == scene.id
+
+                AddNewSceneView _ ->
+                    False
+
+                NoSceneDetailView ->
+                    False
 
         selectedSceneAttrs =
             case selected of
@@ -719,12 +706,15 @@ sceneView model file mDisplayedSceneId scene =
                 [ row
                     ( box [ Border.width 1, centerX ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
                     ) [ link [ padding 20, width fill, height fill ]
-                           { url = href <| ScenarioPage (RichRunView file.id (Just scene.id))
+                           { url = href <| ScenarioPage (RichRunView file.id (ShowDetailView scene.id))
                            , label =
                                row [ spacing 20, centerX ]
                                    [ row []
                                          [ iconWithAttr { defaultIconAttribute | icon = sceneIcon, title = "" }
-                                         , text (notEditedValue name)
+                                         , el ( case selected of
+                                                    False -> []
+                                                    True -> [ Font.bold ]
+                                              ) <| text (notEditedValue name)
                                          ]
                                    ]
                            }
@@ -734,7 +724,7 @@ sceneView model file mDisplayedSceneId scene =
                             }
                       , el [ width (px 10) ] none
                       ]
-                , arrowView scene.id
+                , arrowView sceneDetailView file.id scene.id
                 ]
 
         _ ->
@@ -745,19 +735,36 @@ sceneView model file mDisplayedSceneId scene =
 -- ** arrow view
 
 
-arrowView : Uuid -> Element Msg
-arrowView id =
+arrowView : SceneDetailView -> Uuid -> Uuid -> Element Msg
+arrowView sceneDetailView id sceneId =
     let
-        addSceneBtn =
-            Input.button []
-                { onPress = Just (ShowSceneSelectionModal (Just id))
+        selected =
+            case sceneDetailView of
+                ShowDetailView _ ->
+                    False
+
+                AddNewSceneView parentSceneId ->
+                    parentSceneId == sceneId
+
+                NoSceneDetailView ->
+                    False
+
+        addNewSceneLink =
+            link []
+                { url = href <| ScenarioPage (RichRunView id (AddNewSceneView sceneId))
                 , label = row [] [ addIcon
-                                 , text " add new scene"
+                                 , el ( case selected of
+                                            True -> [ Font.bold ]
+                                            False -> []
+                                      ) <| text " add new scene"
                                  ]
                 }
     in
         column [ centerX, spacing 5 ]
-            [ el [ centerX ] addSceneBtn
+            [ el ( [ centerX
+                   , padding 10
+                   ]
+                 ) addNewSceneLink
             , el [ centerX ] arrowDownwardIcon
             ]
 
@@ -849,7 +856,7 @@ httpDetailedSceneView file scene fileRecord =
                           }
                     , saveSceneButton
                     , link [ alignRight ]
-                        { url = href <| ScenarioPage (RichRunView file.id Nothing)
+                        { url = href <| ScenarioPage (RichRunView file.id NoSceneDetailView)
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
@@ -1108,7 +1115,7 @@ selectSceneView model sceneParentId =
             model.pgCollection
 
         treeView =
-            row [ padding 20, centerX ]
+            row [ centerX ]
                 [ column [ spacing 30, width (fillPortion 1) ]
                       [ el [ centerX, Font.size 23 ] <|
                             iconWithAttr { defaultIconAttribute
@@ -1247,4 +1254,7 @@ selectSceneView model sceneParentId =
                         none
                 ]
     in
-        treeView
+        column (box [ spacing 30, padding 30 ])
+            [ el [ centerX ] <| text "Select a scene to add to your scenario"
+            , treeView
+            ]

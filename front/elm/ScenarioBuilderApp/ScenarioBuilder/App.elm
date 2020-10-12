@@ -51,7 +51,7 @@ type alias Model a =
         , pgNewNode : NewNode
         , displayedPgBuilderView : BuilderView Uuid
         , displayedScenarioNodeMenuId : Maybe Uuid
-        , displayedScenarioBuilderView : RichBuilderView Uuid (Maybe Uuid)
+        , displayedScenarioBuilderView : RichBuilderView Uuid SceneDetailView
         , scenarioNewNode : NewNode
         , environments : List Environment
         , selectedEnvironmentToRunId : Maybe Uuid
@@ -94,10 +94,10 @@ update msg model =
             let
                 (newModel, newMsg) =
                     case getBuilder model of
-                        RichRunView (Just (File scenarioFileRecord)) mId ->
+                        RichRunView (Just (File scenarioFileRecord)) sceneDetailView ->
                             let
                                 (updatedModel, newScenarioRecord, updatedMsg) =
-                                    Run.update subMsg model scenarioFileRecord mId
+                                    Run.update subMsg model scenarioFileRecord sceneDetailView
 
                                 (ScenarioCollection scenarioCollectionId scenarioNodes) =
                                     model.scenarioCollection
@@ -121,7 +121,7 @@ update msg model =
 -- * util
 
 
-getBuilder : Model a -> RichBuilderView (Maybe ScenarioNode) (Maybe Uuid)
+getBuilder : Model a -> RichBuilderView (Maybe ScenarioNode) SceneDetailView
 getBuilder model =
     let
         (ScenarioCollection _ nodes) =
@@ -139,8 +139,8 @@ getBuilder model =
             in
             RichEditView (mapEditView (findNode nodes getChildren) whichEditView)
 
-        RichRunView id mId ->
-            RichRunView (findScenarioNode nodes id) mId
+        RichRunView id sceneDetailView ->
+            RichRunView (findScenarioNode nodes id) sceneDetailView
 
 
 -- * view
@@ -161,8 +161,8 @@ view model =
                     map EditAppMsg (Edit.view nodeType model)
 
 
-        RichRunView (Just (File scenarioFileRecord)) mDisplayedSceneId ->
-            map RunAppMsg (Run.view model scenarioFileRecord mDisplayedSceneId)
+        RichRunView (Just (File scenarioFileRecord)) sceneDetailView ->
+            map RunAppMsg (Run.view model scenarioFileRecord sceneDetailView)
 
         RichRunView _ _ ->
             text "404 - could not find run view"
