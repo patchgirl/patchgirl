@@ -71,9 +71,9 @@ type Msg
     -- create scene
     = ShowSceneSelectionModal (Maybe Uuid)
     | GenerateRandomUUIDForScene (Maybe Uuid) Uuid ActorType
-    | SelectHttpFile (Maybe Uuid) Uuid Uuid
-    | SelectPgFile (Maybe Uuid) Uuid Uuid
     | AskCreateScene (Maybe Uuid) Uuid ActorType Uuid
+    | AddHttpFile (Maybe Uuid) Uuid Uuid
+    | AddPgFile (Maybe Uuid) Uuid Uuid
       -- delete scene
     | AskDeleteScene Uuid
     | DeleteScene Uuid
@@ -138,7 +138,7 @@ update msg model file sceneDetailView =
             in
             ( model, file, newMsg )
 
-        SelectHttpFile sceneParentId nodeId newSceneId ->
+        AddHttpFile sceneParentId nodeId newSceneId ->
             let
                 newScene =
                     mkDefaultScene newSceneId nodeId HttpActor
@@ -151,6 +151,9 @@ update msg model file sceneDetailView =
                         Just parentId ->
                             addToListAfterPredicate file.scenes (\scene -> scene.id == parentId) newScene
 
+                newMsg =
+                    Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id (ShowDetailView newSceneId))))
+
                 newModel =
                     { model
                         | whichModal = Nothing
@@ -160,9 +163,9 @@ update msg model file sceneDetailView =
                     { file | scenes = newScenes }
 
             in
-            ( newModel, newFile, Cmd.none )
+            ( newModel, newFile, newMsg )
 
-        SelectPgFile sceneParentId nodeId newSceneId ->
+        AddPgFile sceneParentId nodeId newSceneId ->
             let
                 newScene =
                     mkDefaultScene newSceneId nodeId PgActor
@@ -175,6 +178,9 @@ update msg model file sceneDetailView =
                         Just parentId ->
                             addToListAfterPredicate file.scenes (\scene -> scene.id == parentId) newScene
 
+                newMsg =
+                    Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id (ShowDetailView newSceneId))))
+
                 newModel =
                     { model
                         | whichModal = Nothing
@@ -183,7 +189,7 @@ update msg model file sceneDetailView =
                 newFile =
                     { file | scenes = newScenes }
             in
-            ( newModel, newFile, Cmd.none )
+            ( newModel, newFile, newMsg )
 
 
 -- ** delete scene
@@ -504,10 +510,10 @@ createSceneResultToMsg sceneParentId nodeId newSceneId actorType result =
         Ok () ->
             case actorType of
                 HttpActor ->
-                    SelectHttpFile sceneParentId nodeId newSceneId
+                    AddHttpFile sceneParentId nodeId newSceneId
 
                 PgActor ->
-                    SelectPgFile sceneParentId nodeId newSceneId
+                    AddPgFile sceneParentId nodeId newSceneId
 
         Err err ->
             PrintNotification <| AlertNotification "Could not create the scene, try reloading the page!" (httpErrorToString err)
