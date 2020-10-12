@@ -615,7 +615,7 @@ view model file sceneDetailView =
                 [ row [ spacing 10, width fill ]
                       [ el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue file.name) secondaryColor
                       , el [ alignRight ] saveScenarioView
-                      , el [ alignRight ] <|
+                      , el [] <|
                           Input.button [ centerX
                                        , Border.solid
                                        , Border.color secondaryColor
@@ -630,6 +630,10 @@ view model file sceneDetailView =
                                       [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
                                       ]
                               }
+                      , link []
+                          { url = href <| ScenarioPage (RichLandingView  DefaultView)
+                          , label = el [] clearIcon
+                          }
                       ]
                 , envSelectionView
                 ]
@@ -726,7 +730,7 @@ sceneView model file sceneDetailView scene =
                            }
                      , Input.button []
                             { onPress = Just (AskDeleteScene scene.id)
-                            , label = el [ alignRight ] clearIcon
+                            , label = el [ alignRight ] deleteIcon
                             }
                       , el [ width (px 10) ] none
                       ]
@@ -811,7 +815,7 @@ detailedSceneView model file sceneId =
                         httpDetailedSceneView file scene record
 
                     PgRecord record ->
-                        pgDetailedSceneView scene record
+                        pgDetailedSceneView file scene record
 
 
 -- *** http detailed scene view
@@ -956,8 +960,8 @@ httpDetailedSceneView file scene fileRecord =
 -- *** pg detailed scene view
 
 
-pgDetailedSceneView : Scene -> PgFileRecord -> List (Element Msg)
-pgDetailedSceneView scene fileRecord =
+pgDetailedSceneView : ScenarioFileRecord -> Scene -> PgFileRecord -> List (Element Msg)
+pgDetailedSceneView file scene fileRecord =
     let
         sqlText =
             editedOrNotEditedValue fileRecord.sql
@@ -997,7 +1001,7 @@ pgDetailedSceneView scene fileRecord =
                           }
                     , saveSceneButton
                     , link [ alignRight ]
-                        { url =  href <| PgPage (RunView fileRecord.id)
+                        { url =  href <| ScenarioPage (RichRunView file.id NoSceneDetailView)
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
