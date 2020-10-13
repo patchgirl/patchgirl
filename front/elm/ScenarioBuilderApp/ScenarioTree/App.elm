@@ -120,18 +120,6 @@ fileView id model eName =
         showMenu =
             model.displayedScenarioNodeMenuId == Just id
 
-        folderMenuView : Element Msg
-        folderMenuView =
-            case showMenu of
-                True ->
-                    link []
-                        { url = href (ScenarioPage (RichEditView (DefaultEditView id)))
-                        , label = editIcon
-                        }
-
-                False ->
-                    none
-
         name =
             notEditedValue eName
 
@@ -148,15 +136,40 @@ fileView id model eName =
                True -> Font.heavy
                False -> Font.regular
     in
-    row [ onMouseEnter (ToggleMenu (Just id))
-        , onMouseLeave (ToggleMenu Nothing)
-        ]
-        [ el [ onRight folderMenuView ] <|
-              link [ weight ]
-                  { url = href (ScenarioPage (RichRunView id NoSceneDetailView))
-                  , label = el [] <| iconWithTextAndColor "label" name color
-                  }
-        ]
+    el [ onMouseEnter (ToggleMenu (Just id))
+       , onMouseLeave (ToggleMenu Nothing)
+       ] <|
+        case showMenu of
+            True ->
+                row [ weight ]
+                    [ link []
+                          { url = href (ScenarioPage (RichEditView (DefaultEditView id)))
+                          , label =
+                              iconWithAttr { defaultIconAttribute
+                                               | title = ""
+                                               , icon = "edit"
+                                           }
+                          }
+                    , link []
+                        { url = href (ScenarioPage (RichRunView id NoSceneDetailView))
+                        , label = text name
+                        }
+                    ]
+
+
+            False ->
+                row [ weight ]
+                    [ iconWithAttr { defaultIconAttribute
+                                       | title = ""
+                                       , primIconColor = Just color
+                                       , icon = "label"
+                                   }
+                    , link [ weight ]
+                          { url = href (ScenarioPage (RichRunView id NoSceneDetailView))
+                          , label = text name
+                          }
+                    ]
+
 
 
 -- ** folder view

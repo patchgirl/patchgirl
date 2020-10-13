@@ -108,6 +108,7 @@ icon whichIcon =
 
 type alias IconAttribute =
     { title : String
+    , primTextColor : Maybe Color
     , icon : String
     , iconSize : Maybe String
     , iconVerticalAlign : Maybe String
@@ -117,6 +118,7 @@ type alias IconAttribute =
 defaultIconAttribute : IconAttribute
 defaultIconAttribute =
     { title = "title"
+    , primTextColor = Nothing
     , iconSize = Nothing
     , icon = "icon"
     , iconVerticalAlign = Just "bottom"
@@ -140,7 +142,12 @@ iconWithAttr attr =
                   |> Maybe.withDefault (Html.style "" "")
                 ]
                 [ Html.text attr.icon ]
-            , Html.text attr.title
+            , Html.span
+                  [ attr.primTextColor
+                  |> Maybe.map (\iconColor -> Html.style "color" (colorToString iconColor))
+                  |> Maybe.withDefault (Html.style "" "")
+                  ]
+                  [ Html.text attr.title ]
             ]
 
 iconWithTextAndColor : String -> String -> Color -> Element a
