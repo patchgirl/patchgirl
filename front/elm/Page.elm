@@ -118,6 +118,7 @@ urlParser =
         , Url.map (PgPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "pg" </> Url.s "new-file")
         , Url.map (\pgId -> PgPage (EditView (DefaultEditView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit")
         , Url.map (\pgId -> PgPage (EditView (DeleteView pgId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\reqId -> PgPage (EditView (DuplicateView reqId))) (appRoot </> Url.s "pg" </> uuidParser </> Url.s "edit" </> Url.s "duplicate")
         , Url.map (\pgId -> PgPage (RunView pgId)) (appRoot </> Url.s "pg" </> Url.s "run" </> uuidParser)
 
         -- env

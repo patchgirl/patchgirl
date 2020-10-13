@@ -43,13 +43,19 @@ type alias Model a =
 
 
 type Msg
+    = SelectFolder Uuid
+    | SelectRootFolder
     -- rename
-    = UpdateName Uuid String -- while focus is on the input
+    | UpdateName Uuid String -- while focus is on the input
     | AskRename Uuid String
     | Rename Uuid String
     -- delete
     | AskDelete Uuid
     | Delete Uuid
+    -- duplicate
+    | GenerateRandomUUIDForDuplicate PgFileRecord
+    | AskDuplicate PgFileRecord Uuid
+    | Duplicate PgFileRecord (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -60,6 +66,32 @@ type Msg
 update : Msg -> Model a -> (Model a, Cmd Msg)
 update msg model =
     case msg of
+        SelectFolder id ->
+            let
+                oldLandingPgNewFolder =
+                    model.pgNewNode
+
+                newLandingPgNewFolder =
+                    { oldLandingPgNewFolder | parentFolderId = Just id }
+
+                newModel =
+                    { model | pgNewNode = newLandingPgNewFolder }
+            in
+            (newModel, Cmd.none)
+
+        SelectRootFolder ->
+            let
+                oldLandingPgNewFolder =
+                    model.pgNewNode
+
+                newLandingPgNewFolder =
+                    { oldLandingPgNewFolder | parentFolderId = Nothing }
+
+                newModel =
+                    { model | pgNewNode = newLandingPgNewFolder }
+            in
+            (newModel, Cmd.none)
+
         UpdateName id newName ->
             let
                 (PgCollection pgCollectionId pgNodes) =
@@ -135,6 +167,85 @@ update msg model =
             in
             ( newModel, newMsg )
 
+        GenerateRandomUUIDForDuplicate origFileRecord ->
+            let
+                newMsg =
+                    Random.generate (AskDuplicate origFileRecord) Uuid.uuidGenerator
+            in
+            ( model, newMsg )
+
+        AskDuplicate origFileRecord newId ->
+            let
+                (PgCollection pgCollectionId _) =
+                    model.pgCollection
+
+                newFileRecord =
+                    { origFileRecord
+                        | id = newId
+                        , name = NotEdited <| (notEditedValue origFileRecord.name) ++ " copy"
+                    }
+
+                newMsg =
+                    case model.pgNewNode.parentFolderId of
+                        Nothing ->
+                            let
+                                payload =
+                                    { newRootPgFileId = newFileRecord.id
+                                    , newRootPgFileName = editedOrNotEditedValue newFileRecord.name
+                                    , newRootPgFileSql = editedOrNotEditedValue newFileRecord.sql
+                                    , newRootPgFileHost = editedOrNotEditedValue newFileRecord.dbHost
+                                    , newRootPgFilePassword = editedOrNotEditedValue newFileRecord.dbPassword
+                                    , newRootPgFilePort = editedOrNotEditedValue newFileRecord.dbPort
+                                    , newRootPgFileUser = editedOrNotEditedValue newFileRecord.dbUser
+                                    , newRootPgFileDbName = editedOrNotEditedValue newFileRecord.dbName
+                                    }
+                            in
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" pgCollectionId payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
+
+                        Just folderId ->
+                            let
+                                payload =
+                                    { newPgFileId = newFileRecord.id
+                                    , newPgFileParentNodeId = folderId
+                                    , newPgFileName = editedOrNotEditedValue newFileRecord.name
+                                    , newPgFileSql = editedOrNotEditedValue newFileRecord.sql
+                                    , newPgFileHost = editedOrNotEditedValue newFileRecord.dbHost
+                                    , newPgFilePassword = editedOrNotEditedValue newFileRecord.dbPassword
+                                    , newPgFilePort = editedOrNotEditedValue newFileRecord.dbPort
+                                    , newPgFileUser = editedOrNotEditedValue newFileRecord.dbUser
+                                    , newPgFileDbName = editedOrNotEditedValue newFileRecord.dbName
+                                    }
+                            in
+                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" pgCollectionId payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
+
+            in
+            ( model, newMsg )
+
+        Duplicate newFile mParentId ->
+            let
+                (PgCollection pgCollectionId pgNodes) =
+                    model.pgCollection
+
+                newPgNodes =
+                    case mParentId of
+                        Nothing ->
+                            pgNodes ++ [ File newFile ]
+
+                        Just folderId ->
+                            List.map (modifyPgNode folderId (touchPg (File newFile))) pgNodes
+
+                newModel =
+                    { model
+                        | pgCollection =
+                            PgCollection pgCollectionId newPgNodes
+                    }
+
+                newMsg =
+                    Navigation.pushUrl model.navigationKey (href (PgPage (LandingView DefaultView)))
+
+            in
+            ( newModel, newMsg )
+
         PrintNotification notification ->
             ( { model | notification = Just notification }, Cmd.none )
 
@@ -160,6 +271,14 @@ deletePgNodeResultToMsg id result =
         Err error ->
             PrintNotification <| AlertNotification "Could not delete, maybe this HTTP pg is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
+duplicatePgFileResultToMsg : PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicatePgFileResultToMsg newFile mParentId result =
+    case result of
+        Ok _ ->
+            Duplicate newFile mParentId
+
+        Err error ->
+            PrintNotification <| AlertNotification "Could not duplicate file, try reloading the page" (httpErrorToString error)
 
 -- * view
 
@@ -175,7 +294,10 @@ view whichEditView model =
                 deleteView model pgNode
 
             DuplicateView pgNode ->
-                none
+                case pgNode of
+                    Folder _ -> none
+                    File fileRecord ->
+                        duplicateView model fileRecord
 
 
 -- ** default view
@@ -218,6 +340,16 @@ defaultEditView model pgNode =
                 , url = href (PgPage (EditView (DeleteView id)))
                 }
 
+        duplicateBtn =
+            link primaryButtonAttrs
+                { label =
+                      iconWithAttr { defaultIconAttribute
+                                       | title = " Duplicate"
+                                       , icon = "content_copy"
+                                   }
+                , url = href (PgPage (EditView (DuplicateView id)))
+                }
+
         renameInput =
             Input.text []
                   { onChange = UpdateName id
@@ -239,7 +371,12 @@ defaultEditView model pgNode =
                   , renameBtn
                   ]
         , el [ centerX ] (text "or ")
-        , row [ centerX ] [ deleteBtn ]
+        , row [ centerX, spacing 10 ]
+            [ case pgNode of
+                  File _ -> duplicateBtn
+                  _ -> none
+            , deleteBtn
+            ]
         ]
 
 
@@ -277,4 +414,35 @@ deleteView model pgNode =
               ]
         , areYouSure
         , row [ centerX, spacing 20 ] [ noBtn, yesBtn ]
+        ]
+
+
+-- ** duplicate view
+
+
+duplicateView : Model a -> PgFileRecord -> Element Msg
+duplicateView model fileRecord =
+    let
+        name =
+            editedOrNotEditedValue fileRecord.name
+
+        duplicateBtn =
+            Input.button primaryButtonAttrs
+                { onPress = Just <| GenerateRandomUUIDForDuplicate fileRecord
+                , label = text "Duplicate"
+                }
+
+        title =
+            el [ Font.size 25, Font.underline ] <| text ("Duplicate " ++ name)
+
+        (PgCollection _ nodes) =
+            model.pgCollection
+    in
+    column [ spacing 20 ]
+        [ row [ width fill, centerY ]
+              [ el [ alignLeft ] title
+              , el [ alignRight ] (closeBuilderView model.page)
+              ]
+        , pgFolderTreeView nodes model.pgNewNode.parentFolderId SelectRootFolder SelectFolder
+        , row [ centerX, spacing 20 ] [ duplicateBtn ]
         ]

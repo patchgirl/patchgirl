@@ -655,3 +655,39 @@ fView selected eName selectFolderMsg folderChildrenView =
         [ selectFolderBtn
         , column [ paddingXY 20 0 ] folderChildrenView
         ]
+
+
+-- ** pick folder view 2
+
+
+pgFolderTreeView : List PgNode -> Maybe Uuid -> msg -> (Uuid -> msg) -> Element msg
+pgFolderTreeView nodes mParentFolderId selectRootFolderMsg selectFolderMsg =
+    column [ spacing 10 ]
+        [ text "Select a folder:"
+        , rootFolderView mParentFolderId (NotEdited "/") selectRootFolderMsg (pgNodeView mParentFolderId selectFolderMsg nodes)
+        ]
+
+pgNodeView : Maybe Uuid -> (Uuid -> b) -> List PgNode -> List (Element b)
+pgNodeView mParentFolderId selectFolderMsg nodes =
+    case nodes of
+        [] ->
+            []
+
+        node :: tail ->
+            case node of
+                File _ -> pgNodeView mParentFolderId selectFolderMsg tail
+                Folder { id, name, children } ->
+                    let
+                        (PgChildren c) =
+                            children
+
+                        folderChildrenView =
+                            pgNodeView mParentFolderId selectFolderMsg c
+
+                        tailView =
+                            pgNodeView mParentFolderId selectFolderMsg tail
+
+                        currentFolderView =
+                            folderView id mParentFolderId name selectFolderMsg folderChildrenView
+                    in
+                    currentFolderView :: tailView
