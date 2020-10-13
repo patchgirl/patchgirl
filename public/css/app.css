@@ -72,8 +72,10 @@ pre code {
 }
 
 
-.left-arrow-box:before {
-  border-right-color: rgba(249,227,208, 0.3);
-  border-width: 20px;
-  margin-top: -20px;
+.ball-spin-fade-loader > div {
+  background-color: rgb(220, 118, 118);
+}
+
+.loader-small {
+  transform: scale(0.4, 0.4);
 }

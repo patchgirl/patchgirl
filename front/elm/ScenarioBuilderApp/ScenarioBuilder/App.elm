@@ -35,6 +35,7 @@ import ScenarioBuilderApp.ScenarioBuilder.Landing.App as Landing
 import ScenarioBuilderApp.ScenarioBuilder.Edit.App as Edit
 import ScenarioBuilderApp.ScenarioBuilder.Run.App as Run
 import Modal exposing (Modal(..))
+import Set exposing (Set)
 
 
 -- * model
@@ -58,6 +59,7 @@ type alias Model a =
         , page : Page
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
+        , isLoading : List Loader
     }
 
 

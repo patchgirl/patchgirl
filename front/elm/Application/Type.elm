@@ -6,6 +6,7 @@ import Uuid exposing (Uuid)
 import Parser exposing(DeadEnd)
 import Json.Encode as Json exposing(Value)
 import List.Extra as List
+import Set exposing (Set)
 
 
 -- * menu
@@ -17,6 +18,14 @@ type MainMenuName
     | SignOutMenu
     | GithubMenu
     | RunnerStatusMenu
+
+
+-- * loading
+
+
+type Loader
+    = SceneCreationPending (Maybe Uuid)
+    | SceneDeletionPending Uuid
 
 
 -- * node type

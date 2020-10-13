@@ -19,6 +19,7 @@ import Uuid exposing(Uuid)
 import Browser.Navigation as Navigation
 import BuilderUtil exposing (..)
 import Banner exposing (..)
+import Set exposing (Set)
 
 
 -- * model
@@ -42,6 +43,7 @@ type alias Model a =
         , selectedEnvironmentToRunId : Maybe Uuid
         , runnerRunning : Bool
         , navigationKey : Navigation.Key
+        , isLoading : List Loader
     }
 
 

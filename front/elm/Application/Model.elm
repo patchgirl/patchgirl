@@ -7,6 +7,7 @@ import List.Extra as List
 import Modal exposing (Modal)
 import Page exposing (..)
 import Url
+import Set exposing (Set)
 import Uuid exposing (Uuid)
 
 
@@ -73,6 +74,9 @@ type alias Model =
 
     -- RUNNER
     , runnerRunning : Bool
+
+    -- LOADING
+    , isLoading : List Loader
     }
 
 

@@ -38,6 +38,8 @@ import RequestBuilderApp.RequestBuilder.ResponseView exposing(..)
 import PGBuilderApp.PGBuilder.Run.App as PgBuilder
 import Parser as P
 import TangoScript.Parser exposing (..)
+import Set exposing (Set)
+import Process
 
 
 -- * model
@@ -60,6 +62,7 @@ type alias Model a =
         , runnerRunning : Bool
         , page : Page
         , whichModal : Maybe Modal
+        , isLoading : List Loader
     }
 
 
@@ -122,21 +125,26 @@ update msg model file sceneDetailView =
             in
             ( model, file, newMsg )
 
-        AskCreateScene sceneActorParentId fileNodeId actorType newSceneId ->
+        AskCreateScene sceneParentId fileNodeId actorType newSceneId ->
             let
                 payload =
                     { newSceneId = newSceneId
-                    , newSceneSceneActorParentId = sceneActorParentId
+                    , newSceneSceneActorParentId = sceneParentId
                     , newSceneActorId = fileNodeId
                     , newSceneActorType = Client.convertActorTypeFromFrontToBack actorType
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
 
+                newModel =
+                    { model | isLoading = (SceneCreationPending sceneParentId) :: model.isLoading }
+
                 newMsg =
-                    Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) file.id payload (createSceneResultToMsg sceneActorParentId fileNodeId newSceneId actorType)
+                    Cmd.batch [ Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) file.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId actorType)
+                              , Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id NoSceneDetailView)))
+                              ]
             in
-            ( model, file, newMsg )
+            ( newModel, file, newMsg )
 
         AddHttpFile sceneParentId nodeId newSceneId ->
             let
@@ -157,6 +165,7 @@ update msg model file sceneDetailView =
                 newModel =
                     { model
                         | whichModal = Nothing
+                        , isLoading = List.remove (SceneCreationPending sceneParentId) model.isLoading
                     }
 
                 newFile =
@@ -184,6 +193,7 @@ update msg model file sceneDetailView =
                 newModel =
                     { model
                         | whichModal = Nothing
+                        , isLoading = List.remove (SceneCreationPending sceneParentId) model.isLoading
                     }
 
                 newFile =
@@ -199,13 +209,16 @@ update msg model file sceneDetailView =
             let
                 newMsg =
                     Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id sceneId (deleteSceneResultToMsg sceneId)
-            in
-            ( model, file, newMsg )
 
-        DeleteScene id ->
+                newModel =
+                    { model | isLoading = SceneDeletionPending sceneId :: model.isLoading }
+            in
+            ( newModel, file, newMsg )
+
+        DeleteScene deletedSceneId ->
             let
                 newScenes =
-                    List.filter (not << (\scene -> scene.id == id)) file.scenes
+                    List.filter (not << (\scene -> scene.id == deletedSceneId)) file.scenes
 
                 newFile =
                     { file | scenes = newScenes }
@@ -213,10 +226,13 @@ update msg model file sceneDetailView =
                 noSceneDetailMsg =
                     Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id NoSceneDetailView)))
 
+                newModel =
+                    { model | isLoading = List.remove (SceneDeletionPending deletedSceneId) model.isLoading }
+
                 newMsg =
                     case sceneDetailView of
                         ShowDetailView sceneId ->
-                            case sceneId == id of
+                            case sceneId == deletedSceneId of
                                 True ->
                                     noSceneDetailMsg
 
@@ -224,7 +240,7 @@ update msg model file sceneDetailView =
                                     Cmd.none
 
                         AddNewSceneView sceneId ->
-                            case sceneId == id of
+                            case sceneId == deletedSceneId of
                                 True ->
                                     noSceneDetailMsg
 
@@ -234,7 +250,7 @@ update msg model file sceneDetailView =
                         NoSceneDetailView ->
                             Cmd.none
             in
-            ( model, newFile, newMsg )
+            ( newModel, newFile, newMsg )
 
 
 -- ** update scene
@@ -714,7 +730,7 @@ sceneView model file sceneDetailView scene =
             in
             column [ centerX, spacing 10 ]
                 [ row
-                    ( box [ Border.width 1, centerX ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
+                    ( box [ Border.width 1, centerX, paddingXY 10 10 ] ++ sceneComputationAttrs ++ [ selectedSceneAttrs ]
                     ) [ link [ padding 20, width fill, height fill ]
                            { url = href <| ScenarioPage (RichRunView file.id (ShowDetailView scene.id))
                            , label =
@@ -728,13 +744,19 @@ sceneView model file sceneDetailView scene =
                                          ]
                                    ]
                            }
-                     , Input.button []
-                            { onPress = Just (AskDeleteScene scene.id)
-                            , label = el [ alignRight ] deleteIcon
-                            }
+                     , case List.member (SceneDeletionPending scene.id) model.isLoading of
+                           False ->
+                               Input.button []
+                                   { onPress = Just (AskDeleteScene scene.id)
+                                   , label = el [ alignRight ] deleteIcon
+                                   }
+
+                           True ->
+                               smallLoader
+
                       , el [ width (px 10) ] none
                       ]
-                , arrowView sceneDetailView file.id scene.id
+                , arrowView model sceneDetailView file.id scene.id
                 ]
 
         _ ->
@@ -745,8 +767,8 @@ sceneView model file sceneDetailView scene =
 -- ** arrow view
 
 
-arrowView : SceneDetailView -> Uuid -> Uuid -> Element Msg
-arrowView sceneDetailView id sceneId =
+arrowView : Model a -> SceneDetailView -> Uuid -> Uuid -> Element Msg
+arrowView model sceneDetailView id sceneId =
     let
         selected =
             case sceneDetailView of
@@ -774,7 +796,10 @@ arrowView sceneDetailView id sceneId =
             [ el ( [ centerX
                    , padding 10
                    ]
-                 ) addNewSceneLink
+                 ) <|
+                  case List.member (SceneCreationPending (Just sceneId)) model.isLoading of
+                      True -> smallLoader
+                      False -> addNewSceneLink
             , el [ centerX ] arrowDownwardIcon
             ]
 
@@ -1263,6 +1288,7 @@ selectSceneView model sceneParentId =
                     False ->
                         none
                 ]
+
     in
         column (box [ spacing 30, padding 30 ])
             [ el [ centerX ] <| text "Select a scene to add to your scenario"

@@ -290,6 +290,28 @@ selectiveButtonAttrs active =
             ]
 
 
+-- * loader
+
+
+smallLoader : Element a
+smallLoader =
+    html <|
+        Html.div
+            [ Html.class "loader-small" ]
+            [ Html.div
+                  [ Html.class "ball-spin-fade-loader" ]
+                  [ Html.div [] []
+                  , Html.div [] []
+                  , Html.div [] []
+                  , Html.div [] []
+                  , Html.div [] []
+                  , Html.div [] []
+                  , Html.div [] []
+                  , Html.div [] []
+                  ]
+            ]
+
+
 -- * label
 
 

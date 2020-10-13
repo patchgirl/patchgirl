@@ -26,6 +26,7 @@ import Url
 import Url.Parser as Url
 import Util exposing (..)
 import Time
+import Set
 import Task
 import Http
 import Api.RunnerGeneratedClient as Client
@@ -151,6 +152,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , newEnvironmentName = ""
             , runnerRunning = False
             , displayedDocumentation = RequestDoc
+            , isLoading = []
             }
     in
     ( updateModelWithPage page model, msg )
