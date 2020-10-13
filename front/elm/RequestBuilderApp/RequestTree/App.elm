@@ -119,18 +119,6 @@ fileView id model eName =
         showMenu =
             model.displayedRequestNodeMenuId == Just id
 
-        folderMenuView : Element Msg
-        folderMenuView =
-            case showMenu of
-                True ->
-                    link []
-                        { url = href (ReqPage (EditView (DefaultEditView id)))
-                        , label = editIcon
-                        }
-
-                False ->
-                    none
-
         name =
             notEditedValue eName
 
@@ -147,15 +135,32 @@ fileView id model eName =
                True -> Font.heavy
                False -> Font.regular
     in
-    row [ onMouseEnter (ToggleMenu (Just id))
-        , onMouseLeave (ToggleMenu Nothing)
-        ]
-        [ el [ onRight folderMenuView ] <|
-              link [ weight ]
-                  { url = href (ReqPage (RunView id))
-                  , label = el [] <| iconWithTextAndColor "label" name color
-                  }
-        ]
+    el [ onMouseEnter (ToggleMenu (Just id))
+       , onMouseLeave (ToggleMenu Nothing)
+       ] <|
+        row [ weight ] <|
+            [ case showMenu of
+                  True ->
+                      link []
+                          { url = href (ReqPage (EditView (DefaultEditView id)))
+                          , label =
+                              iconWithAttr { defaultIconAttribute
+                                               | title = ""
+                                               , icon = "edit"
+                                           }
+                          }
+
+                  False ->
+                      iconWithAttr { defaultIconAttribute
+                                       | title = ""
+                                       , primIconColor = Just color
+                                       , icon = "label"
+                                   }
+            , link [ weight ]
+                { url = href (ReqPage (RunView id))
+                , label = text name
+                }
+            ]
 
 
 -- ** folder view
@@ -164,19 +169,6 @@ fileView id model eName =
 folderView : Uuid -> Model a -> Editable String -> List (Element Msg) -> Bool -> Element Msg
 folderView id model eName folderChildrenView open =
     let
-        folderWithIconView : Element Msg
-        folderWithIconView =
-            let
-                folderIconText =
-                    case open of
-                        False ->
-                            "keyboard_arrow_right"
-
-                        True ->
-                            "keyboard_arrow_down"
-            in
-            iconWithText folderIconText name
-
         showMenu =
             Just id == model.displayedRequestNodeMenuId
 
@@ -191,36 +183,35 @@ folderView id model eName folderChildrenView open =
                True -> Font.heavy
                False -> Font.regular
 
-        folderReadView : Element Msg
-        folderReadView =
-            Input.button [ weight ]
-                { onPress = Just <| ToggleFolder id
-                , label = folderWithIconView
-                }
-
-        folderMenuView : Element Msg
-        folderMenuView =
-            case showMenu of
-                True ->
-                    link []
-                        { url = href (ReqPage (EditView (DefaultEditView id)))
-                        , label = editIcon
-                        }
-
-                False ->
-                    none
     in
-    column [ width (fill |> maximum 300) ]
-        [ row [ onMouseEnter (ToggleMenu (Just id))
+    column []
+        [ row [ weight
+              , onMouseEnter (ToggleMenu (Just id))
               , onMouseLeave (ToggleMenu Nothing)
               ]
-              [ folderReadView
-              , folderMenuView
+              [ link []
+                    { url = href (ReqPage (EditView (DefaultEditView id)))
+                    , label =
+                        iconWithAttr { defaultIconAttribute
+                                         | title = ""
+                                         , icon =
+                                           case showMenu of
+                                               True -> "edit"
+                                               False ->
+                                                   case open of
+                                                       False -> "keyboard_arrow_right"
+                                                       True -> "keyboard_arrow_down"
+                                     }
+                    }
+              , Input.button [ weight ]
+                  { onPress = Just <| ToggleFolder id
+                  , label = text name
+                  }
               ]
         , case open of
-            True ->
-                column [ spacing 10, paddingXY 20 10 ] folderChildrenView
+              True ->
+                  column [ spacing 10, paddingXY 20 10 ] folderChildrenView
 
-            False ->
-                none
+              False ->
+                  none
         ]
