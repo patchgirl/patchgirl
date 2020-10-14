@@ -779,6 +779,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakeHttpScene { _newFakeSceneParentId = Nothing
                          , _newFakeSceneRequestId = requestFileId
+                         , _newFakeSceneVariables = Variables []
                          , _newFakeScenePrescript = ""
                          , _newFakeScenePostscript = ""
                          }
@@ -797,6 +798,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakePgScene { _newFakePgSceneParentId = Nothing
                        , _newFakePgSceneActorId = pgFileId
+                       , _newFakePgSceneVariables = Variables []
                        , _newFakePgScenePrescript = ""
                        , _newFakePgScenePostscript = ""
                        }
@@ -952,10 +954,11 @@ selectScenarioNodeExists id connection = do
 data NewFakeHttpScene = NewFakeHttpScene
     { _newFakeSceneParentId   :: Maybe UUID
     , _newFakeSceneRequestId  :: UUID
+    , _newFakeSceneVariables  :: Variables
     , _newFakeScenePrescript  :: String
     , _newFakeScenePostscript :: String
     }
-    deriving (Eq, Show, Read, Generic, PG.ToRow)
+    deriving (Eq, Show, Generic, PG.ToRow)
 
 
 insertFakeHttpScene :: NewFakeHttpScene -> PG.Connection -> IO UUID
@@ -971,9 +974,10 @@ insertFakeHttpScene newFakeScene connection = do
             pg_actor_id,
             scene_node_parent_id,
             http_actor_id,
+            variables,
             prescript,
             postscript
-          ) VALUES (gen_random_uuid(), 'HttpActor', NULL, ?, ?, ?, ?)
+          ) VALUES (gen_random_uuid(), 'HttpActor', NULL, ?, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -984,10 +988,11 @@ insertFakeHttpScene newFakeScene connection = do
 data NewFakePgScene = NewFakePgScene
     { _newFakePgSceneParentId   :: Maybe UUID
     , _newFakePgSceneActorId    :: UUID
+    , _newFakePgSceneVariables  :: Variables
     , _newFakePgScenePrescript  :: String
     , _newFakePgScenePostscript :: String
     }
-    deriving (Eq, Show, Read, Generic, PG.ToRow)
+    deriving (Eq, Show, Generic, PG.ToRow)
 
 
 insertFakePgScene :: NewFakePgScene -> PG.Connection -> IO UUID
@@ -1003,9 +1008,10 @@ insertFakePgScene newFakeScene connection = do
             http_actor_id,
             scene_node_parent_id,
             pg_actor_id,
+            variables,
             prescript,
             postscript
-          ) VALUES (gen_random_uuid(), 'PgActor', NULL, ?, ?, ?, ?)
+          ) VALUES (gen_random_uuid(), 'PgActor', NULL, ?, ?, ?, ?, ?)
           RETURNING id;
           |]
 
@@ -1017,6 +1023,7 @@ data FakeScene = FakeScene
     { _fakeSceneParentId   :: Maybe UUID
     , _fakeActorType       :: ActorType
     , _fakeSceneId         :: UUID
+    , _fakeSceneVariables  :: Variables
     , _fakeScenePrescript  :: String
     , _fakeScenePostscript :: String
     }
@@ -1037,6 +1044,7 @@ selectFakeScene id connection =
               ELSE NULL
               END
             ),
+            variables,
             prescript,
             postscript
           FROM scene_node
@@ -1058,6 +1066,7 @@ selectFakeSceneWithParentId parentId connection =
               ELSE NULL
               END
             ),
+            variables,
             prescript,
             postscript
           FROM scene_node

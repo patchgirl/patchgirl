@@ -7,6 +7,7 @@ module PatchGirl.Web.ScenarioNode.Model where
 
 
 import           Data.Aeson                           (Value)
+import qualified Data.Aeson                           as Aeson
 import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        ToJSON (..),
                                                        defaultOptions,
@@ -60,6 +61,7 @@ data NewScene = NewScene
     , _newSceneSceneActorParentId :: Maybe UUID
     , _newSceneActorId            :: UUID
     , _newSceneActorType          :: ActorType
+    , _newSceneVariables          :: Variables
     , _newScenePrescript          :: String
     , _newScenePostscript         :: String
     }
@@ -80,12 +82,14 @@ instance FromJSON NewScene where
 data SceneActor = HttpSceneActor
     { _sceneId         :: UUID
     , _sceneActorId    :: UUID
+    , _sceneVariables  :: Variables
     , _scenePrescript  :: String
     , _scenePostscript :: String
     }
     | PgSceneActor
     { _sceneId         :: UUID
     , _sceneActorId    :: UUID
+    , _sceneVariables  :: Variables
     , _scenePrescript  :: String
     , _scenePostscript :: String
     }
@@ -104,7 +108,8 @@ instance FromJSON SceneActor where
 
 
 data UpdateScene = UpdateScene
-    { _updateScenePrescript  :: String
+    { _updateSceneVariables  :: Variables
+    , _updateScenePrescript  :: String
     , _updateScenePostscript :: String
     }
     deriving (Eq, Show, Generic)
@@ -130,18 +135,43 @@ instance FromJSON SceneFromPG where
       HttpActor -> do
         _sceneId <- o .: "id"
         _sceneActorId <- o .: "http_actor_id"
+        _sceneVariables <- o .: "variables"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return HttpSceneActor{..}
       PgActor -> do
         _sceneId <- o .: "id"
         _sceneActorId <- o .: "pg_actor_id"
+        _sceneVariables <- o .: "variables"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return PgSceneActor{..}
 
 fromSceneFromPGTOScene :: SceneFromPG -> SceneActor
 fromSceneFromPGTOScene (SceneFromPG scene) = scene
+
+
+-- * scene variables
+
+
+newtype Variables = Variables [(String, String)] deriving (Eq, Show, Generic)
+
+instance PG.ToField Variables where
+  toField = PG.toField . Aeson.toJSON
+
+instance FromField Variables where
+  fromField field mdata = do
+    value <- fromField field mdata :: Conversion Value
+    let eRes = parseEither parseJSON value :: Either String Variables
+    either (returnError ConversionFailed field) return eRes
+
+instance ToJSON Variables where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON Variables where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
 -- * scenario node

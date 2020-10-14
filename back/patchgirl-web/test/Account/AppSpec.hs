@@ -7,21 +7,21 @@
 
 module Account.AppSpec where
 
-import           Data.Function          ((&))
-import qualified Data.Maybe             as Maybe
-import           Data.UUID              (UUID)
-import qualified Data.UUID              as UUID
+import           Data.Function                        ((&))
+import qualified Data.Maybe                           as Maybe
+import           Data.UUID                            (UUID)
+import qualified Data.UUID                            as UUID
 import           Servant
-import           Servant.Client         (ClientM, client)
+import           Servant.Client                       (ClientM, client)
 import           Test.Hspec
 
 import           DBUtil
 import           Helper.App
-import           PatchGirl.Web.Server
+import           PatchGirl.Web.Api
 import           PatchGirl.Web.PgCollection.Sql
 import           PatchGirl.Web.RequestCollection.Sql
 import           PatchGirl.Web.ScenarioCollection.Sql
-import           PatchGirl.Web.Api
+import           PatchGirl.Web.Server
 
 
 -- * client

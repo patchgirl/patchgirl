@@ -210,6 +210,7 @@ insertScene scenarioNodeId NewScene{..} connection = do
     Nothing ->
       PG.execute connection insertRootSceneRawQuery ( _newSceneSceneActorParentId
                                                     , _newSceneId
+                                                    , _newSceneVariables
                                                     , _newScenePrescript
                                                     , _newScenePostscript
                                                     , _newSceneActorType
@@ -220,6 +221,7 @@ insertScene scenarioNodeId NewScene{..} connection = do
     Just sceneNodeParentId ->
       PG.execute connection insertSceneRawQuery ( sceneNodeParentId
                                                 , _newSceneId
+                                                , _newSceneVariables
                                                 , _newScenePrescript
                                                 , _newScenePostscript
                                                 , _newSceneActorType
@@ -233,13 +235,14 @@ insertScene scenarioNodeId NewScene{..} connection = do
             INSERT INTO scene_node (
               scene_node_parent_id,
               id,
+              variables,
               prescript,
               postscript,
               actor_type,
               http_actor_id,
               pg_actor_id
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
              RETURNING id
           ), current_scenario_node AS(
             SELECT id, scene_node_id
@@ -260,13 +263,14 @@ insertScene scenarioNodeId NewScene{..} connection = do
             INSERT INTO scene_node (
               scene_node_parent_id,
               id,
+              variables,
               prescript,
               postscript,
               actor_type,
               http_actor_id,
               pg_actor_id
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
              RETURNING id, scene_node_parent_id
           ) UPDATE scene_node
             SET scene_node_parent_id = (SELECT id FROM new_scene)
@@ -303,7 +307,8 @@ deleteScene sceneId connection =
 
 updateSceneDB :: UUID -> UpdateScene -> PG.Connection -> IO Int.Int64
 updateSceneDB sceneId UpdateScene{..} connection =
-  PG.execute connection updateQuery ( _updateScenePrescript
+  PG.execute connection updateQuery ( _updateSceneVariables
+                                    , _updateScenePrescript
                                     , _updateScenePostscript
                                     , sceneId
                                     )
@@ -311,6 +316,9 @@ updateSceneDB sceneId UpdateScene{..} connection =
     updateQuery =
       [sql|
           UPDATE scene_node
-          SET prescript = ?, postscript = ?
+          SET
+            variables = ?,
+            prescript = ?,
+            postscript = ?
           WHERE id = ?
           |]
