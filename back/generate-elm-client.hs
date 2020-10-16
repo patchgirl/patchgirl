@@ -14,33 +14,36 @@
 {-# LANGUAGE TypeOperators         #-}
 
 
-import           Control.Lens              ((&), (<>~))
-import qualified Data.Aeson                as Aeson
-import qualified Data.Text                 as T
+import           Control.Lens                           ((&), (<>~))
+import qualified Data.Aeson                             as Aeson
+import qualified Data.Text                              as T
 import           Data.Word
-import           Elm.Module                as Elm
+import           Elm.Module                             as Elm
 import           Elm.TyRep
-import           GHC.TypeLits              (ErrorMessage (Text), KnownSymbol,
-                                            Symbol, TypeError, symbolVal)
-import           Servant                   ((:<|>))
-import           Servant.API               ((:>), Capture, Get, JSON)
-import qualified Servant.API.ContentTypes  as Servant
-import           Servant.API.Flatten       (Flat)
-import           Servant.Auth              (Auth (..), Cookie)
-import qualified Servant.Auth.Client       as Servant
-import           Servant.Auth.Server       (JWT)
+import           GHC.TypeLits                           (ErrorMessage (Text),
+                                                         KnownSymbol, Symbol,
+                                                         TypeError, symbolVal)
+import           Servant                                ((:<|>))
+import           Servant.API                            ((:>), Capture, Get,
+                                                         JSON)
+import qualified Servant.API.ContentTypes               as Servant
+import           Servant.API.Flatten                    (Flat)
+import           Servant.Auth                           (Auth (..), Cookie)
+import qualified Servant.Auth.Client                    as Servant
+import           Servant.Auth.Server                    (JWT)
 import           Servant.Elm
-import           Servant.Foreign           hiding (Static)
+import           Servant.Foreign                        hiding (Static)
 
 
+import           PatchGirl.Web.Api                      as Web
 import           PatchGirl.Web.CaseInsensitive          as Web
-import           PatchGirl.Web.ElmOption                (deriveWithSingleFieldObject, deriveWithTaggedObject)
+import           PatchGirl.Web.ElmOption                (deriveWithSingleFieldObject,
+                                                         deriveWithTaggedObject)
 import           PatchGirl.Web.Environment.Model        as Web
 import           PatchGirl.Web.Github.App               as Web
 import           PatchGirl.Web.Health.App               as Web
 import           PatchGirl.Web.Http                     as Web
-import           PatchGirl.Web.Api            as Web
-import           PatchGirl.Web.Internal.Env   as Web
+import           PatchGirl.Web.Internal.Env             as Web
 import           PatchGirl.Web.PgCollection.Model       as Web
 import           PatchGirl.Web.PgNode.Model             as Web
 import           PatchGirl.Web.RequestCollection.Model  as Web
@@ -49,12 +52,12 @@ import           PatchGirl.Web.ScenarioCollection.Model as Web
 import           PatchGirl.Web.ScenarioNode.Model       as Web
 import           PatchGirl.Web.Session.Model            as Web
 
-import qualified Api                       as Runner
-import qualified Interpolator              as Runner
-import qualified PgSqlComputation.Model    as Runner
-import qualified RequestComputation.Model  as Runner
-import qualified ScenarioComputation.Model as Runner
-import qualified TangoScript.Model         as Runner
+import qualified Api                                    as Runner
+import qualified Interpolator                           as Runner
+import qualified PgSqlComputation.Model                 as Runner
+import qualified RequestComputation.Model               as Runner
+import qualified ScenarioComputation.Model              as Runner
+import qualified TangoScript.Model                      as Runner
 
 
 -- * util
@@ -267,6 +270,7 @@ deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.NewPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.ActorType
+deriveElmDef deriveWithTaggedObject ''Web.Variables
 
 
 -- * main
@@ -337,6 +341,7 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewRootPgFolder)
       , DefineElm (Proxy :: Proxy Web.NewPgFolder)
       , DefineElm (Proxy :: Proxy Web.ActorType)
+      , DefineElm (Proxy :: Proxy Web.Variables)
       ]
     proxyApi =
       (Proxy :: Proxy (Web.RestApi '[Cookie]))

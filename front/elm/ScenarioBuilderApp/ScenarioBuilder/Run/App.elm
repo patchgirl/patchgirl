@@ -40,6 +40,7 @@ import Parser as P
 import TangoScript.Parser exposing (..)
 import Set exposing (Set)
 import Process
+import StringTemplate exposing (..)
 
 
 -- * model
@@ -81,8 +82,13 @@ type Msg
     | AskDeleteScene Uuid
     | DeleteScene Uuid
       -- update scene
-    | UpdateScene Scene
-    | SceneUpdated Scene
+    | AskUpdateSceneScript Scene
+    | SceneScriptUpdated Scene
+      -- change scene variables
+    | ChangeSceneVariable Scene String String
+    | AskUpdateSceneVariables Scene
+    | SceneVariablesUpdated Scene
+    | OverrideVariable Scene String Bool
       -- scenario
     | AskSaveScenario (Maybe Uuid)
     | UpdateScenarioFile (Maybe Uuid)
@@ -132,6 +138,7 @@ update msg model file sceneDetailView =
                     , newSceneSceneActorParentId = sceneParentId
                     , newSceneActorId = fileNodeId
                     , newSceneActorType = Client.convertActorTypeFromFrontToBack actorType
+                    , newSceneVariables = []
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
@@ -256,10 +263,11 @@ update msg model file sceneDetailView =
 -- ** update scene
 
 
-        UpdateScene scene ->
+        AskUpdateSceneScript scene ->
             let
                 payload =
-                    { updateScenePrescript = editedOrNotEditedValue scene.prescriptStr
+                    { updateSceneVariables = notEditedValue scene.variables |> Dict.map (\_ { value } -> value ) |> Dict.toList
+                    , updateScenePrescript = editedOrNotEditedValue scene.prescriptStr
                     , updateScenePostscript = editedOrNotEditedValue scene.postscriptStr
                     }
 
@@ -268,12 +276,105 @@ update msg model file sceneDetailView =
             in
             ( model, file, newMsg )
 
-        SceneUpdated updatedScene ->
+        SceneScriptUpdated updatedScene ->
             let
                 newScene =
                     { updatedScene
                         | prescriptStr = NotEdited <| editedOrNotEditedValue updatedScene.prescriptStr
                         , postscriptStr = NotEdited <| editedOrNotEditedValue updatedScene.postscriptStr
+                    }
+
+                newScenes =
+                    List.updateIf (\scene -> scene.id == updatedScene.id) (always newScene) file.scenes
+
+                newFile =
+                    { file | scenes = newScenes }
+            in
+            ( model, newFile, Cmd.none )
+
+
+-- ** change scene variable
+
+
+        OverrideVariable scene key enabled ->
+            let
+                oldVariables =
+                    editedOrNotEditedValue scene.variables
+
+                oldValue =
+                    Dict.get key oldVariables
+                        |> Maybe.map .value
+                        |> Maybe.withDefault ""
+
+                newVariables =
+                    oldVariables
+                        |> Dict.insert key { value = oldValue
+                                           , enabled = enabled
+                                           }
+
+                newScene =
+                    { scene
+                        | variables = changeEditedValue newVariables scene.variables
+                    }
+
+                newScenes =
+                    List.updateIf (\s -> s.id == scene.id) (always newScene) file.scenes
+
+                newFile =
+                    { file | scenes = newScenes }
+            in
+            ( model, newFile, Cmd.none )
+
+        ChangeSceneVariable scene key newVar ->
+            let
+                oldVariables =
+                    editedOrNotEditedValue scene.variables
+
+                newValue =
+                    case Dict.get key oldVariables of
+                        Nothing ->
+                            { enabled = False
+                            , value = newVar
+                            }
+
+                        Just definedValue ->
+                            { definedValue | value = newVar }
+
+                newVariables =
+                    oldVariables
+                        |> Dict.insert key newValue
+
+                newScene =
+                    { scene
+                        | variables = changeEditedValue newVariables scene.variables
+                    }
+
+                newScenes =
+                    List.updateIf (\s -> s.id == scene.id) (always newScene) file.scenes
+
+                newFile =
+                    { file | scenes = newScenes }
+            in
+            ( model, newFile, Cmd.none )
+
+        AskUpdateSceneVariables scene ->
+            let
+                payload =
+                    { updateSceneVariables = editedOrNotEditedValue scene.variables |> Dict.map (\_ { value } -> value ) |> Dict.toList
+                    , updateScenePrescript = notEditedValue scene.prescriptStr
+                    , updateScenePostscript = notEditedValue scene.postscriptStr
+                    }
+
+                newMsg =
+                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id scene.id payload (updateSceneVariablesResultToMsg scene)
+            in
+            ( model, file, newMsg )
+
+        SceneVariablesUpdated updatedScene ->
+            let
+                newScene =
+                    { updatedScene
+                        | variables = NotEdited <| editedOrNotEditedValue updatedScene.variables
                     }
 
                 newScenes =
@@ -345,18 +446,6 @@ update msg model file sceneDetailView =
 
                         _ -> Nothing
 
-                environmentKeyValues : Dict String (List Client.Template)
-                environmentKeyValues =
-                    editedOrNotEditedValue file.environmentId
-                        |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
-                        |> Maybe.map .keyValues
-                        |> Maybe.withDefault []
-                        |> List.map (\{key, value} -> ( editedOrNotEditedValue key
-                                                      , Client.convertStringTemplateFromFrontToBack (editedOrNotEditedValue value)
-                                                      )
-                                    )
-                        |> Dict.fromList
-
                 mScenes : Maybe (List Client.SceneFile)
                 mScenes =
                     let
@@ -372,7 +461,9 @@ update msg model file sceneDetailView =
                            (\scenes ->
                                 { scenarioInputId = file.id
                                 , scenarioInputScenes = scenes
-                                , scenarioInputEnvVars = environmentKeyValues
+                                , scenarioInputEnvVars =
+                                    environmentKeyValues model file
+                                        |> Dict.map ( \_ value -> Client.convertStringTemplateFromFrontToBack value )
                                 }
                            )
 
@@ -483,6 +574,7 @@ update msg model file sceneDetailView =
         DoNothing ->
             (model, file, Cmd.none)
 
+
 -- * util
 
 
@@ -492,6 +584,7 @@ mkDefaultScene id nodeId actorType =
     , nodeId = nodeId
     , actorType = actorType
     , sceneComputation = Nothing
+    , variables = NotEdited Dict.empty
     , prescriptStr = NotEdited ""
     , prescriptAst = Ok []
     , postscriptStr = NotEdited ""
@@ -507,7 +600,7 @@ runScenarioResultToMsg result =
 
         Err err ->
             PrintNotification <|
-                AlertNotification ("Could not run SQL request. Is <a href=\"" ++ (href (DocumentationPage PatchGirlRunnerAppDoc)) ++ "\">patchgirl-runner</a> running?") (httpErrorToString err)
+                AlertNotification ("Could not run scenario. Is <a href=\"" ++ (href (DocumentationPage PatchGirlRunnerAppDoc)) ++ "\">patchgirl-runner</a> running?") (httpErrorToString err)
 
 
 deleteSceneResultToMsg : Uuid -> Result Http.Error () -> Msg
@@ -538,7 +631,16 @@ updateSceneResultToMsg : Scene -> Result Http.Error () -> Msg
 updateSceneResultToMsg scene result =
     case result of
         Ok () ->
-            SceneUpdated scene
+            SceneScriptUpdated scene
+
+        Err err ->
+            PrintNotification <| AlertNotification "Could not update the scene, try reloading the page!" (httpErrorToString err)
+
+updateSceneVariablesResultToMsg : Scene -> Result Http.Error () -> Msg
+updateSceneVariablesResultToMsg scene result =
+    case result of
+        Ok () ->
+            SceneVariablesUpdated scene
 
         Err err ->
             PrintNotification <| AlertNotification "Could not update the scene, try reloading the page!" (httpErrorToString err)
@@ -568,6 +670,17 @@ findRecord model scene =
         PgActor ->
             findPgFile pgNodes scene.nodeId |> Maybe.map PgRecord
 
+environmentKeyValues : Model a -> ScenarioFileRecord -> Dict String StringTemplate
+environmentKeyValues model file =
+    editedOrNotEditedValue file.environmentId
+        |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
+        |> Maybe.map .keyValues
+        |> Maybe.withDefault []
+        |> List.map (\{key, value} -> ( editedOrNotEditedValue key
+                                      , editedOrNotEditedValue value
+                                      )
+                    )
+        |> Dict.fromList
 
 
 -- * view
@@ -576,7 +689,6 @@ findRecord model scene =
 view : Model a -> ScenarioFileRecord -> SceneDetailView -> Element Msg
 view model file sceneDetailView =
     let
-
         scenesView =
             case file.scenes of
                 [] ->
@@ -585,77 +697,9 @@ view model file sceneDetailView =
                 scenes ->
                     column [ centerX, spacing 10 ] (List.map (sceneView model file sceneDetailView) scenes)
 
-        envSelectionView : Element Msg
-        envSelectionView =
-            let
-                noEnvironmentOption : Input.Option (Maybe Uuid) Msg
-                noEnvironmentOption =
-                    Input.option Nothing <|
-                        el [ width fill ] (text "No environment")
-
-                option : Environment -> Input.Option (Maybe Uuid) Msg
-                option environment =
-                    Input.option (Just environment.id) <|
-                        el [ width fill ] (text <| editedOrNotEditedValue environment.name)
-            in
-            Input.radio [ padding 10, spacing 10 ]
-                { onChange = SetEnvironmentId
-                , selected = Just (editedOrNotEditedValue file.environmentId)
-                , label = Input.labelAbove [] <| text "Environment to run with: "
-                , options = noEnvironmentOption :: List.map option model.environments
-                }
-
-        saveScenarioView : Element Msg
-        saveScenarioView =
-            case file.environmentId of
-                NotEdited _ -> none
-                Edited _ environmentId ->
-                    Input.button [ centerX
-                                 , Border.solid
-                                 , Border.color secondaryColor
-                                 , Border.width 1
-                                 , Border.rounded 5
-                                 , Background.color secondaryColor
-                                 , paddingXY 10 10
-                                 ]
-                    { onPress = Just (AskSaveScenario environmentId)
-                    , label =
-                        row [ centerX, centerY ]
-                            [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
-                            ]
-                    }
-
-        scenarioSettingView : Element Msg
-        scenarioSettingView =
-            column [ width fill, centerX, spacing 20 ]
-                [ row [ spacing 10, width fill ]
-                      [ el [] <| iconWithTextAndColor "label" (editedOrNotEditedValue file.name) secondaryColor
-                      , el [ alignRight ] saveScenarioView
-                      , el [] <|
-                          Input.button [ centerX
-                                       , Border.solid
-                                       , Border.color secondaryColor
-                                       , Border.width 1
-                                       , Border.rounded 5
-                                       , Background.color secondaryColor
-                                       , paddingXY 10 10
-                                       ]
-                              { onPress = Just AskRunScenario
-                              , label =
-                                  row [ centerX, centerY ]
-                                      [ iconWithTextAndColorAndAttr "send" "Run" primaryColor []
-                                      ]
-                              }
-                      , link []
-                          { url = href <| ScenarioPage (RichLandingView  DefaultView)
-                          , label = el [] clearIcon
-                          }
-                      ]
-                , envSelectionView
-                ]
     in
     wrappedRow [ height fill, width fill, spacing 20 ]
-        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) scenarioSettingView
+        [ el ( box [ width <| fillPortion 1, alignTop, padding 20 ] ) (scenarioSettingView model file)
         , row [ width <| fillPortion 9, alignTop, spacing 20 ]
             [ el [ width <| fillPortion 2, height fill ] scenesView
             , el [ width <| fillPortion 8, height fill, alignRight ] <|
@@ -672,6 +716,257 @@ view model file sceneDetailView =
         ]
 
 
+-- ** scenario setting view
+
+
+envSelectionView : Model a -> ScenarioFileRecord -> Element Msg
+envSelectionView model file =
+    let
+        noEnvironmentOption : Input.Option (Maybe Uuid) Msg
+        noEnvironmentOption =
+            Input.option Nothing <|
+                el [ width fill ] (text "No environment")
+
+        option : Environment -> Input.Option (Maybe Uuid) Msg
+        option environment =
+            Input.option (Just environment.id) <|
+                el [ width fill ] (text <| editedOrNotEditedValue environment.name)
+    in
+    Input.radio [ padding 10, spacing 10, width fill ]
+        { onChange = SetEnvironmentId
+        , selected = Just (editedOrNotEditedValue file.environmentId)
+        , label = Input.labelHidden "Scenario environment"
+        , options = noEnvironmentOption :: List.map option model.environments
+        }
+
+sceneToKeyValues : Model a
+                 -> ScenarioFileRecord
+                 -> Scene
+                 -> Maybe
+                    { scene : Scene
+                    , sceneName : String
+                    , sceneKeys : List String
+                    , sceneUserDefinedKeyValue : Dict String UserSceneVariableValue
+                    }
+sceneToKeyValues model file scene =
+    case scene.actorType of
+        PgActor ->
+            Debug.todo ""
+
+        HttpActor ->
+            let
+                (RequestCollection _ nodes) =
+                    model.requestCollection
+            in
+            case findRequestNode nodes scene.nodeId of
+                Just (File requestFileRecord) ->
+                    ( [ editedOrNotEditedValue requestFileRecord.name
+                      , editedOrNotEditedValue requestFileRecord.httpUrl
+                      , editedOrNotEditedValue requestFileRecord.httpBody
+                      ] ++ (editedOrNotEditedValue requestFileRecord.httpHeaders |> List.concatMap (\(headerKey, headerValue) -> [ headerKey, headerValue ] ))
+                    )
+                        |> List.andThen stringToTemplate
+                        |> List.filterMap
+                           ( \template ->
+                                 case template of
+                                     Sentence _ -> Nothing
+                                     Key s -> Just s
+                           )
+                        |> \sceneKeys -> Just { scene = scene
+                                              , sceneName = editedOrNotEditedValue requestFileRecord.name
+                                              , sceneKeys = sceneKeys
+                                              , sceneUserDefinedKeyValue = editedOrNotEditedValue scene.variables
+                                              }
+
+                _ -> Nothing
+
+currentEnvironmentKeyValues : Model a -> ScenarioFileRecord -> Dict String String
+currentEnvironmentKeyValues model file =
+    environmentKeyValues model file
+        |> Dict.map (\_ value -> stringTemplateToString value)
+
+sceneFormView : Dict String String
+              -> { scene : Scene
+                 , sceneName : String
+                 , sceneKeys : List String
+                 , sceneUserDefinedKeyValue : Dict String UserSceneVariableValue
+                 }
+              -> Element Msg
+sceneFormView scenarioKeyValues { scene, sceneName, sceneKeys, sceneUserDefinedKeyValue } =
+    let
+        keyValueView : String -> Element Msg
+        keyValueView key =
+            let
+                mUserValue =
+                    Dict.get key sceneUserDefinedKeyValue
+
+                enabled =
+                    mUserValue
+                        |> Maybe.map .enabled
+                        |> Maybe.withDefault False
+            in
+            row [ width fill, spacing 10 ]
+                [ row [width fill ]
+                      [ el [ alignLeft ] <| text (key ++ ": ")
+                      , case Dict.get key scenarioKeyValues of
+                            Nothing ->
+                                el [ centerY
+                                   , padding 10
+                                   , htmlAttribute (Html.class "left-arrow-box")
+                                   , Font.color redColor, Font.bold
+                                   ] (text "undefined")
+
+                            Just defaultValue ->
+                                el [ centerY
+                                   , padding 10
+                                   , htmlAttribute (Html.class "left-arrow-box")
+                                   , Font.color greenColor, Font.bold
+                                   ] (text defaultValue)
+                      ]
+                 , row [ width fill, alignRight ]
+                     [ Input.checkbox []
+                           { onChange = OverrideVariable scene key
+                           , icon = Input.defaultCheckbox
+                           , checked = enabled
+                           , label =
+                               Input.labelRight [ height fill, centerY ] <|
+                                   el [ centerY ] <| text "override with: "
+                           }
+                     , Input.text [ height fill, centerY
+                                  , case enabled of
+                                        True -> noAttribute
+                                        False -> Background.color lightGrey
+                                  ]
+                           { onChange = ChangeSceneVariable scene key
+                           , text = Maybe.map .value mUserValue |> Maybe.withDefault ""
+                           , placeholder = Nothing
+                           , label = Input.labelHidden "override value"
+                           }
+                     ]
+                ]
+
+    in
+    column [ spacing 20, width fill ]
+        [ row [ width fill ]
+              [ iconWithAttr { defaultIconAttribute
+                                 | title = sceneName
+                                 , icon = "label"
+                                 , primIconColor = Just secondaryColor
+                             }
+              , case isDirty scene.variables of
+                    False -> none
+                    True ->
+                        Input.button [ alignRight
+                                     , Border.solid
+                                     , Border.color secondaryColor
+                                     , Border.width 1
+                                     , Border.rounded 5
+                                     , Background.color secondaryColor
+                                     , paddingXY 10 10
+                                     ]
+                            { onPress = Just (AskUpdateSceneVariables scene)
+                            , label =
+                                row [ centerX, centerY ]
+                                    [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
+                                    ]
+                            }
+
+              ]
+        , column [ spacing 10, width fill ] <|
+            List.map keyValueView sceneKeys
+        ]
+
+variablesFormView : Model a -> ScenarioFileRecord -> Element Msg
+variablesFormView model file =
+    let
+        scenesInfo =
+            List.map (sceneToKeyValues model file) file.scenes
+                |> catMaybes
+                |> List.filter ( \{ sceneKeys } -> (not << List.isEmpty) sceneKeys )
+    in
+    column [ spacing 20, width fill ] <|
+        List.map (sceneFormView (currentEnvironmentKeyValues model file)) scenesInfo
+
+saveScenarioView : ScenarioFileRecord -> Element Msg
+saveScenarioView file =
+    case file.environmentId of
+        NotEdited _ -> none
+        Edited _ environmentId ->
+            Input.button [ centerX
+                         , Border.solid
+                         , Border.color secondaryColor
+                         , Border.width 1
+                         , Border.rounded 5
+                         , Background.color secondaryColor
+                         , paddingXY 10 10
+                         ]
+            { onPress = Just (AskSaveScenario environmentId)
+            , label =
+                row [ centerX, centerY ]
+                    [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
+                    ]
+            }
+
+scenarioSettingView : Model a -> ScenarioFileRecord -> Element Msg
+scenarioSettingView model file =
+    let
+        title =
+            iconWithAttr { defaultIconAttribute
+                             | title = (editedOrNotEditedValue file.name)
+                             , icon = "label"
+                             , primIconColor = Just secondaryColor
+                         }
+
+        runButton =
+            Input.button [ centerX
+                         , Border.solid
+                         , Border.color secondaryColor
+                         , Border.width 1
+                         , Border.rounded 5
+                         , Background.color secondaryColor
+                         , paddingXY 10 10
+                         ]
+                { onPress = Just AskRunScenario
+                , label =
+                    el [ centerX, centerY ] <|
+                        iconWithAttr { defaultIconAttribute
+                                     | title = "Run"
+                                     , icon = "send"
+                                     , primIconColor = Just primaryColor
+                                     }
+                }
+
+        quitLink =
+            link []
+                { url = href <| ScenarioPage (RichLandingView  DefaultView)
+                , label = el [] clearIcon
+                }
+
+    in
+    column [ width fill, centerX, spacing 30 ]
+        [ row [ spacing 10, width fill ]
+              [ title
+              , el [ alignRight ] (saveScenarioView file)
+              , runButton
+              , quitLink
+              ]
+        , column [ spacing 30, width fill]
+            [ el [ width fill
+                 , Font.center
+                 , Font.size 22
+                 , Font.underline
+                 ] <| text "Select scenario environment"
+            , envSelectionView model file
+            ]
+        , column [ spacing 30, width fill ]
+            [ el [ width fill
+                 , Font.center
+                 , Font.size 22
+                 , Font.underline
+                 ] <| text "Override scenario variables"
+            , variablesFormView model file
+            ]
+        ]
 
 
 -- ** scene view
@@ -870,7 +1165,7 @@ httpDetailedSceneView file scene fileRecord =
                                  , Background.color secondaryColor
                                  , paddingXY 10 10
                                  ]
-                        { onPress = Just (UpdateScene scene)
+                        { onPress = Just (AskUpdateSceneScript scene)
                         , label =
                             row [ centerX, centerY ]
                                 [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []
@@ -895,12 +1190,11 @@ httpDetailedSceneView file scene fileRecord =
                         , label = el [ alignRight ] clearIcon
                         }
                     ]
-              , Input.multiline [ Background.color lightGrey ]
+              , Input.text [ Background.color lightGrey ]
                   { onChange = always DoNothing
                   , text = methodAndUrl
                   , placeholder = Nothing
                   , label = Input.labelHidden "http gist"
-                  , spellcheck = False
                   }
               ]
 
@@ -1005,7 +1299,7 @@ pgDetailedSceneView file scene fileRecord =
                                  , Background.color secondaryColor
                                  , paddingXY 10 10
                                  ]
-                        { onPress = Just (UpdateScene scene)
+                        { onPress = Just (AskUpdateSceneScript scene)
                         , label =
                             row [ centerX, centerY ]
                                 [ iconWithTextAndColorAndAttr "save" "Save" primaryColor []

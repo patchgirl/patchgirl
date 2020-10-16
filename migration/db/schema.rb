@@ -298,6 +298,7 @@ BEGIN
         'actor_type', actor_type,
         'http_actor_id', http_actor_id,
         'pg_actor_id', pg_actor_id,
+        'variables', variables,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -361,6 +362,7 @@ BEGIN
         'actor_type', actor_type,
         'http_actor_id', http_actor_id,
         'pg_actor_id', pg_actor_id,
+        'variables', variables,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -619,6 +621,7 @@ CREATE TABLE public.scene_node (
     actor_type public.scene_type NOT NULL,
     http_actor_id uuid,
     pg_actor_id uuid,
+    variables json NOT NULL,
     prescript text NOT NULL,
     postscript text NOT NULL,
     CONSTRAINT scene_node_check CHECK ((((actor_type = 'HttpActor'::public.scene_type) AND (http_actor_id IS NOT NULL) AND (pg_actor_id IS NULL)) OR ((actor_type = 'PgActor'::public.scene_type) AND (pg_actor_id IS NOT NULL) AND (http_actor_id IS NULL))))

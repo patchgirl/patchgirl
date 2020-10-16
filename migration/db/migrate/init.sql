@@ -113,6 +113,7 @@ CREATE TABLE scene_node(
   actor_type scene_type NOT NULL,
   http_actor_id UUID REFERENCES request_node(id),
   pg_actor_id UUID REFERENCES pg_node(id),
+  variables JSON NOT NULL,
   prescript TEXT NOT NULL,
   postscript TEXT NOT NULL,
   CHECK (
@@ -382,6 +383,7 @@ BEGIN
         'actor_type', actor_type,
         'http_actor_id', http_actor_id,
         'pg_actor_id', pg_actor_id,
+        'variables', variables,
         'prescript', prescript,
         'postscript', postscript
       )
@@ -405,6 +407,7 @@ BEGIN
         'actor_type', actor_type,
         'http_actor_id', http_actor_id,
         'pg_actor_id', pg_actor_id,
+        'variables', variables,
         'prescript', prescript,
         'postscript', postscript
       )

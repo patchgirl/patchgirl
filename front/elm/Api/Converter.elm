@@ -151,6 +151,7 @@ convertSceneActorFromBackToFront sceneActor =
             , nodeId = s.sceneActorId
             , actorType = Front.HttpActor
             , sceneComputation = Nothing
+            , variables = NotEdited (Dict.fromList s.sceneVariables |> Dict.map (\_ value -> { enabled = False, value = value }))
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = parseTangoscript s.scenePrescript
             , postscriptStr = NotEdited s.scenePostscript
@@ -162,6 +163,7 @@ convertSceneActorFromBackToFront sceneActor =
             , nodeId = s.sceneActorId
             , actorType = Front.PgActor
             , sceneComputation = Nothing
+            , variables = NotEdited (Dict.fromList s.sceneVariables |> Dict.map (\_ value -> { enabled = False, value = value }))
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = parseTangoscript s.scenePrescript
             , postscriptStr = NotEdited s.scenePostscript

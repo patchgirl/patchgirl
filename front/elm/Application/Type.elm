@@ -394,15 +394,20 @@ type alias ScenarioFileRecord =
     }
 
 
-
 -- ** scene
 
+
+type alias UserSceneVariableValue =
+    { enabled : Bool
+    , value : String
+    }
 
 type alias Scene
     = { id : Uuid
       , nodeId : Uuid
       , actorType : ActorType
       , sceneComputation : Maybe SceneComputation
+      , variables : Editable (Dict String UserSceneVariableValue)
       , prescriptStr : Editable String
       , prescriptAst : Result (List DeadEnd) TangoAst
       , postscriptStr : Editable String

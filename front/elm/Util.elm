@@ -319,6 +319,14 @@ smallLoader =
             ]
 
 
+-- * attribute
+
+
+noAttribute : Attribute a
+noAttribute =
+    htmlAttribute (Html.style "" "")
+
+
 -- * label
 
 
@@ -507,6 +515,13 @@ traverseListMaybe list =
         )
         (Just [])
         list
+
+isJust : Maybe a -> Bool
+isJust maybe =
+    case maybe of
+        Nothing -> False
+        Just _ -> True
+
 
 -- * list
 
