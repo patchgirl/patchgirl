@@ -10,6 +10,7 @@ import qualified Data.ByteString                        as BS
 import qualified Data.ByteString.UTF8                   as BSU
 import           Data.Function                          ((&))
 import           Data.Functor                           ((<&>))
+import qualified Data.Map.Strict                        as Map
 import qualified Data.Maybe                             as Maybe
 import qualified Data.Strings                           as Strings
 import           Data.UUID
@@ -779,7 +780,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakeHttpScene { _newFakeSceneParentId = Nothing
                          , _newFakeSceneRequestId = requestFileId
-                         , _newFakeSceneVariables = Variables []
+                         , _newFakeSceneVariables = Variables Map.empty
                          , _newFakeScenePrescript = ""
                          , _newFakeScenePostscript = ""
                          }
@@ -798,7 +799,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakePgScene { _newFakePgSceneParentId = Nothing
                        , _newFakePgSceneActorId = pgFileId
-                       , _newFakePgSceneVariables = Variables []
+                       , _newFakePgSceneVariables = Variables Map.empty
                        , _newFakePgScenePrescript = ""
                        , _newFakePgScenePostscript = ""
                        }

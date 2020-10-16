@@ -17,12 +17,14 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        parseEither, withObject,
                                                        (.:))
 import qualified Data.ByteString.Char8                as B
+import           Data.Map.Strict                      (Map)
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
+
 import           PatchGirl.Web.NodeType.Model
 
 
@@ -154,7 +156,22 @@ fromSceneFromPGTOScene (SceneFromPG scene) = scene
 -- * scene variables
 
 
-newtype Variables = Variables [(String, String)] deriving (Eq, Show, Generic)
+newtype Variables = Variables (Map String SceneVariableValue) deriving (Eq, Show, Generic)
+
+data SceneVariableValue = SceneVariableValue
+    { _sceneVariableValueValue   :: String
+    , _sceneVariableValueEnabled :: Bool
+    }
+    deriving (Eq, Show, Generic)
+
+instance ToJSON SceneVariableValue where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON SceneVariableValue where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
 
 instance PG.ToField Variables where
   toField = PG.toField . Aeson.toJSON

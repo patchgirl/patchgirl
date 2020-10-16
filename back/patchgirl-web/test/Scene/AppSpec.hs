@@ -7,6 +7,7 @@
 module Scene.AppSpec where
 
 import           Data.Function                          ((&))
+import qualified Data.Map.Strict                        as Map
 import qualified Data.Maybe                             as Maybe
 import           Data.UUID                              (UUID)
 import qualified Data.UUID                              as UUID
@@ -53,20 +54,20 @@ spec =
     describe "create a scene" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newScene = mkNewScene UUID.nil Nothing UUID.nil (Variables []) "" ""
+          let newScene = mkNewScene UUID.nil Nothing UUID.nil mkEmptyVariables "" ""
           try clientEnv (createSceneHandler token UUID.nil newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           _ <- insertSampleScenarioCollection accountId connection
-          let newScene = mkNewScene UUID.nil Nothing UUID.nil (Variables []) "" ""
+          let newScene = mkNewScene UUID.nil Nothing UUID.nil mkEmptyVariables "" ""
           try clientEnv (createSceneHandler token UUID.nil newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node exists but isn't a scenario file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) & _scenarioNodeId
-          let newScene = mkNewScene UUID.nil Nothing UUID.nil (Variables []) "" ""
+          let newScene = mkNewScene UUID.nil Nothing UUID.nil mkEmptyVariables "" ""
           try clientEnv (createSceneHandler token folderId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the related request file doesnt belong to the account" $ \clientEnv ->
@@ -77,7 +78,7 @@ spec =
           let requestFileId = Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
-          let newScene = mkNewScene UUID.nil Nothing requestFileId (Variables []) "" ""
+          let newScene = mkNewScene UUID.nil Nothing requestFileId mkEmptyVariables "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "creates a root scene" $ \clientEnv ->
@@ -87,13 +88,17 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene UUID.nil Nothing requestFileId (Variables [("foo", "bar")]) "" ""
+          let newScene = mkNewScene UUID.nil Nothing requestFileId (Variables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+                                                                                            , ("bar", SceneVariableValue "baz" False)
+                                                                                            ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Nothing
                                                      , _fakeSceneId = requestFileId
                                                      , _fakeActorType = HttpActor
-                                                     , _fakeSceneVariables = Variables [("foo", "bar")]
+                                                     , _fakeSceneVariables = Variables (Map.fromList[ ("foo", SceneVariableValue "fee" True)
+                                                                                                    , ("bar", SceneVariableValue "baz" False)
+                                                                                                    ])
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
@@ -101,7 +106,7 @@ spec =
           newSon `shouldBe` Just (FakeScene { _fakeSceneParentId = Just UUID.nil
                                             , _fakeSceneId = scenarioFirstScene & _sceneActorId
                                             , _fakeActorType = HttpActor
-                                            , _fakeSceneVariables = Variables []
+                                            , _fakeSceneVariables = mkEmptyVariables
                                             , _fakeScenePrescript = ""
                                             , _fakeScenePostscript = ""
                                             })
@@ -113,13 +118,17 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) requestFileId (Variables [("foo", "bar")]) "" ""
+          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) requestFileId (Variables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+                                                                                                                           , ("bar", SceneVariableValue "baz" False)
+                                                                                                                           ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene & _sceneId
                                                      , _fakeSceneId = requestFileId
                                                      , _fakeActorType = HttpActor
-                                                     , _fakeSceneVariables = Variables [("foo", "bar")]
+                                                     , _fakeSceneVariables = Variables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+                                                                                                     , ("bar", SceneVariableValue "baz" False)
+                                                                                                     ])
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
@@ -131,13 +140,17 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) requestFileId (Variables [("foo", "bar")]) "" ""
+          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) requestFileId (Variables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+                                                                                                                           , ("bar", SceneVariableValue "baz" False)
+                                                                                                                           ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene & _sceneId
                                                      , _fakeSceneId = requestFileId
                                                      , _fakeActorType = HttpActor
-                                                     , _fakeSceneVariables = Variables [("foo", "bar")]
+                                                     , _fakeSceneVariables = Variables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+                                                                                                     , ("bar", SceneVariableValue "baz" False)
+                                                                                                     ])
                                                      , _fakeScenePrescript = ""
                                                      , _fakeScenePostscript = ""
                                                      })
@@ -178,13 +191,13 @@ spec =
     describe "update a scene" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let updateScene = mkUpdateScene (Variables []) "" ""
+          let updateScene = mkUpdateScene mkEmptyVariables "" ""
           try clientEnv (updateSceneHandler token UUID.nil UUID.nil updateScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node exists but is a scenario folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
-          let updateScene = mkUpdateScene (Variables []) "" ""
+          let updateScene = mkUpdateScene mkEmptyVariables "" ""
           let folderId = Maybe.fromJust (getFirstScenarioFolder scenarioNodes) & _scenarioNodeId
           try clientEnv (updateSceneHandler token folderId UUID.nil updateScene) `shouldThrow` errorsWithStatus HTTP.notFound404
 
@@ -194,7 +207,9 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let sceneId' = head (scenarioFile & _scenarioNodeScenes) & _sceneId
-          let updateScene = mkUpdateScene (Variables [("foo", "bar")]) "prescript!" "postscript!"
+          let updateScene = mkUpdateScene (Variables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+                                                                   , ("bar", SceneVariableValue "baz" False)
+                                                                   ])) "prescript!" "postscript!"
           try clientEnv (updateSceneHandler token scenarioFileId sceneId' updateScene)
           FakeScene{..} <- Maybe.fromJust <$> selectFakeScene sceneId' connection
           _fakeScenePrescript `shouldBe` "prescript!"
@@ -219,3 +234,6 @@ spec =
                   , _updateScenePrescript = prescript
                   , _updateScenePostscript = postscript
                   }
+
+    mkEmptyVariables :: Variables
+    mkEmptyVariables = Variables Map.empty

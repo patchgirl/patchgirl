@@ -138,7 +138,7 @@ update msg model file sceneDetailView =
                     , newSceneSceneActorParentId = sceneParentId
                     , newSceneActorId = fileNodeId
                     , newSceneActorType = Client.convertActorTypeFromFrontToBack actorType
-                    , newSceneVariables = []
+                    , newSceneVariables = Dict.empty
                     , newScenePrescript = ""
                     , newScenePostscript = ""
                     }
@@ -266,7 +266,7 @@ update msg model file sceneDetailView =
         AskUpdateSceneScript scene ->
             let
                 payload =
-                    { updateSceneVariables = notEditedValue scene.variables |> Dict.map (\_ { value } -> value ) |> Dict.toList
+                    { updateSceneVariables = notEditedValue scene.variables |> Dict.map (\_ { value } -> value )
                     , updateScenePrescript = editedOrNotEditedValue scene.prescriptStr
                     , updateScenePostscript = editedOrNotEditedValue scene.postscriptStr
                     }
@@ -360,7 +360,7 @@ update msg model file sceneDetailView =
         AskUpdateSceneVariables scene ->
             let
                 payload =
-                    { updateSceneVariables = editedOrNotEditedValue scene.variables |> Dict.map (\_ { value } -> value ) |> Dict.toList
+                    { updateSceneVariables = editedOrNotEditedValue scene.variables |> Dict.map (\_ { value } -> value )
                     , updateScenePrescript = notEditedValue scene.prescriptStr
                     , updateScenePostscript = notEditedValue scene.postscriptStr
                     }
