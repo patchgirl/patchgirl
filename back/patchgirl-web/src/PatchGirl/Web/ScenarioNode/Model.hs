@@ -18,6 +18,7 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        (.:))
 import qualified Data.ByteString.Char8                as B
 import           Data.Map.Strict                      (Map)
+import qualified Data.Map.Strict                      as Map
 import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
@@ -63,7 +64,7 @@ data NewScene = NewScene
     , _newSceneSceneActorParentId :: Maybe UUID
     , _newSceneActorId            :: UUID
     , _newSceneActorType          :: ActorType
-    , _newSceneVariables          :: Variables
+    , _newSceneVariables          :: SceneVariables
     , _newScenePrescript          :: String
     , _newScenePostscript         :: String
     }
@@ -84,14 +85,14 @@ instance FromJSON NewScene where
 data SceneActor = HttpSceneActor
     { _sceneId         :: UUID
     , _sceneActorId    :: UUID
-    , _sceneVariables  :: Variables
+    , _sceneVariables  :: SceneVariables
     , _scenePrescript  :: String
     , _scenePostscript :: String
     }
     | PgSceneActor
     { _sceneId         :: UUID
     , _sceneActorId    :: UUID
-    , _sceneVariables  :: Variables
+    , _sceneVariables  :: SceneVariables
     , _scenePrescript  :: String
     , _scenePostscript :: String
     }
@@ -110,7 +111,7 @@ instance FromJSON SceneActor where
 
 
 data UpdateScene = UpdateScene
-    { _updateSceneVariables  :: Variables
+    { _updateSceneVariables  :: SceneVariables
     , _updateScenePrescript  :: String
     , _updateScenePostscript :: String
     }
@@ -156,7 +157,31 @@ fromSceneFromPGTOScene (SceneFromPG scene) = scene
 -- * scene variables
 
 
-newtype Variables = Variables (Map String SceneVariableValue) deriving (Eq, Show, Generic)
+emptySceneVariable :: SceneVariables
+emptySceneVariable = SceneVariables Map.empty
+
+newtype SceneVariables = SceneVariables (Map String SceneVariableValue) deriving (Eq, Show, Generic)
+
+instance PG.ToField SceneVariables where
+  toField = PG.toField . Aeson.toJSON
+
+instance FromField SceneVariables where
+  fromField field mdata = do
+    value <- fromField field mdata :: Conversion Value
+    let eRes = parseEither parseJSON value :: Either String SceneVariables
+    either (returnError ConversionFailed field) return eRes
+
+instance ToJSON SceneVariables where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON SceneVariables where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+
+-- ** scene variable value
+
 
 data SceneVariableValue = SceneVariableValue
     { _sceneVariableValueValue   :: String
@@ -169,24 +194,6 @@ instance ToJSON SceneVariableValue where
     genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 instance FromJSON SceneVariableValue where
-  parseJSON =
-    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-
-instance PG.ToField Variables where
-  toField = PG.toField . Aeson.toJSON
-
-instance FromField Variables where
-  fromField field mdata = do
-    value <- fromField field mdata :: Conversion Value
-    let eRes = parseEither parseJSON value :: Either String Variables
-    either (returnError ConversionFailed field) return eRes
-
-instance ToJSON Variables where
-  toJSON =
-    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
-
-instance FromJSON Variables where
   parseJSON =
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 

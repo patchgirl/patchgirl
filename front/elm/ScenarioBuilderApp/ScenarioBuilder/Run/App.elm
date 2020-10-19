@@ -266,7 +266,7 @@ update msg model file sceneDetailView =
         AskUpdateSceneScript scene ->
             let
                 payload =
-                    { updateSceneVariables = notEditedValue scene.variables |> Dict.map (\_ { value } -> value )
+                    { updateSceneVariables = notEditedValue scene.variables |> Dict.map (\_ v -> Client.convertSceneVariableFromFrontToBack v )
                     , updateScenePrescript = editedOrNotEditedValue scene.prescriptStr
                     , updateScenePostscript = editedOrNotEditedValue scene.postscriptStr
                     }
@@ -360,7 +360,7 @@ update msg model file sceneDetailView =
         AskUpdateSceneVariables scene ->
             let
                 payload =
-                    { updateSceneVariables = editedOrNotEditedValue scene.variables |> Dict.map (\_ { value } -> value )
+                    { updateSceneVariables = editedOrNotEditedValue scene.variables |> Dict.map (\_ v -> Client.convertSceneVariableFromFrontToBack v )
                     , updateScenePrescript = notEditedValue scene.prescriptStr
                     , updateScenePostscript = notEditedValue scene.postscriptStr
                     }

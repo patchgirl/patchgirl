@@ -7,18 +7,19 @@
 
 module ScenarioComputation.AppSpec where
 
-import qualified Data.Map.Strict           as Map
-import qualified Data.UUID                 as UUID
-import qualified Network.HTTP.Client       as HTTP
+import qualified Data.Map.Strict                  as Map
+import qualified Data.UUID                        as UUID
+import qualified Network.HTTP.Client              as HTTP
 import           Servant
-import qualified Servant.Client            as Servant
+import qualified Servant.Client                   as Servant
 import           Test.Hspec
 
 import           Api
 import           FakeHttpRequest
 import           Helper.App
-import           PatchGirl.Web.Http
 import           Interpolator
+import           PatchGirl.Web.Http
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           ScenarioComputation.Model
@@ -279,7 +280,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\""
+            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\"")
             ]
           )
 
@@ -494,7 +495,7 @@ spec = do
             , _scenarioInputEnvVars = Map.empty
             }
           , ScenarioOutput
-            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) AssertionFailed LNull (LInt 1) "LNull is not equal to LInt 1"
+            [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) $ AssertionFailed LNull (LInt 1) "LNull is not equal to LInt 1"
             ]
           )
 
@@ -516,6 +517,7 @@ buildHttpSceneWithScript :: Method -> StringTemplate -> TangoAst -> TangoAst -> 
 buildHttpSceneWithScript method url prescript postscript =
   HttpSceneFile { _sceneId = UUID.nil
                 , _sceneFileId = UUID.nil
+                , _sceneVariables = Web.SceneVariables Map.empty
                 , _scenePrescript = prescript
                 , _scenePostscript = postscript
                 , _sceneHttpInput = defaultRequestComputationInput { _templatedRequestComputationInputMethod = method
@@ -535,6 +537,7 @@ buildPgSceneWithScript :: TangoAst -> TangoAst -> PgComputationInput -> SceneFil
 buildPgSceneWithScript prescript postscript pgComputationInput =
   PgSceneFile { _sceneId         = UUID.nil
               , _sceneFileId     = UUID.nil
+              , _sceneVariables = Web.SceneVariables Map.empty
               , _scenePrescript  = prescript
               , _scenePostscript = postscript
               , _scenePgInput    = pgComputationInput

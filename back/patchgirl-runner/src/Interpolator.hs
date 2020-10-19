@@ -7,16 +7,17 @@ module Interpolator ( Template(..)
                     , ScenarioVars
                     ) where
 
-import qualified Control.Monad   as Monad
-import qualified Data.Aeson      as Aeson
-import           Data.Function   ((&))
-import           Data.Functor    ((<&>))
-import qualified Data.List       as List
-import           Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
-import qualified Data.Maybe      as Maybe
-import           GHC.Generics    (Generic)
+import qualified Control.Monad                    as Monad
+import qualified Data.Aeson                       as Aeson
+import           Data.Function                    ((&))
+import           Data.Functor                     ((<&>))
+import qualified Data.List                        as List
+import           Data.Map.Strict                  (Map)
+import qualified Data.Map.Strict                  as Map
+import qualified Data.Maybe                       as Maybe
+import           GHC.Generics                     (Generic)
 
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           TangoScript.Model
 
 
@@ -38,10 +39,9 @@ type EnvironmentVars = Map String StringTemplate
 
 type StringTemplate = [Template]
 
-data Template
-  = Sentence String
-  | Key String
-  deriving(Eq, Show, Read, Generic, Ord)
+data Template = Sentence String
+    | Key String
+    deriving (Eq, Show, Read, Generic, Ord)
 
 instance Aeson.ToJSON Template where
   toJSON =
@@ -52,21 +52,28 @@ instance Aeson.FromJSON Template where
     Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
 
 
--- * interpolate request environment
+-- * interpolate
+
 
 interpolate
-  :: EnvironmentVars
+  :: Web.SceneVariables
+  -> EnvironmentVars
   -> ScenarioVars
   -> ScenarioVars
   -> StringTemplate
   -> String
-interpolate environmentVars scenarioGlobalVars scenarioLocalVars stringTemplate =
+interpolate sceneVariables environmentVars scenarioGlobalVars scenarioLocalVars stringTemplate =
   let
     interpolated :: [Template]
     interpolated =
-      stringTemplate >>= interpolateEnvironmentVars environmentVars
-      <&> interpolateScenarioVars scenarioGlobalVars
+      stringTemplate
+      <&> interpolateSceneVariable sceneVariables -- first interpolate scene variables
+      <&> interpolateScenarioVars scenarioLocalVars -- then local var
+      <&> interpolateScenarioVars scenarioGlobalVars -- then global vars
+      >>= interpolateEnvironmentVars environmentVars -- finally environment vars. Note that environment var can have a var itself eg: "http::{{host}}/api" is treated as [ Sentence "http::", Key "host", Sentence "/api" ]
+      <&> interpolateSceneVariable sceneVariables -- so we need another interpolation round :-P
       <&> interpolateScenarioVars scenarioLocalVars
+      <&> interpolateScenarioVars scenarioGlobalVars
   in
     List.intercalate "" $ map templateToString interpolated
 
@@ -83,6 +90,16 @@ interpolateScenarioVars scenarioVars = \case
       Just str -> Sentence str
       Nothing  -> Key key
   sentence -> sentence
+
+interpolateSceneVariable :: Web.SceneVariables -> Template -> Template
+interpolateSceneVariable (Web.SceneVariables sceneVariable) = \case
+  Key key ->
+    case Map.lookup key sceneVariable of
+      Just (Web.SceneVariableValue { _sceneVariableValueEnabled = True, _sceneVariableValueValue }) ->
+        Sentence _sceneVariableValueValue
+      _ -> Key key
+  sentence -> sentence
+
 
 
 -- * util

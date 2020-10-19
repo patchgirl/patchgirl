@@ -4,12 +4,13 @@
 module ScenarioComputation.Model where
 
 
-import           Control.Lens             (makeLenses)
-import qualified Data.Aeson               as Aeson
-import           Data.UUID                (UUID)
-import           GHC.Generics             (Generic)
+import           Control.Lens                     (makeLenses)
+import qualified Data.Aeson                       as Aeson
+import           Data.UUID                        (UUID)
+import           GHC.Generics                     (Generic)
 
 import           Interpolator
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           PgSqlComputation.Model
 import           RequestComputation.Model
 import           TangoScript.Model
@@ -18,12 +19,12 @@ import           TangoScript.Model
 -- * scenario input
 
 
-data ScenarioInput
-  = ScenarioInput { _scenarioInputId      :: UUID
-                  , _scenarioInputScenes  :: [SceneFile]
-                  , _scenarioInputEnvVars :: EnvironmentVars
-                  }
-  deriving (Eq, Show, Generic)
+data ScenarioInput = ScenarioInput
+    { _scenarioInputId      :: UUID
+    , _scenarioInputScenes  :: [SceneFile]
+    , _scenarioInputEnvVars :: EnvironmentVars
+    }
+    deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON ScenarioInput where
   toJSON =
@@ -37,20 +38,23 @@ instance Aeson.FromJSON ScenarioInput where
 -- * scene
 
 
-data SceneFile
-  = HttpSceneFile { _sceneId         :: UUID
-                  , _sceneFileId     :: UUID
-                  , _scenePrescript  :: TangoAst
-                  , _scenePostscript :: TangoAst
-                  , _sceneHttpInput  :: TemplatedRequestComputationInput
-                  }
-  | PgSceneFile { _sceneId         :: UUID
-                , _sceneFileId     :: UUID
-                , _scenePrescript  :: TangoAst
-                , _scenePostscript :: TangoAst
-                , _scenePgInput    :: PgComputationInput
-                }
-  deriving (Eq, Show, Generic)
+data SceneFile = HttpSceneFile
+    { _sceneId         :: UUID
+    , _sceneFileId     :: UUID
+    , _sceneVariables  :: Web.SceneVariables
+    , _scenePrescript  :: TangoAst
+    , _scenePostscript :: TangoAst
+    , _sceneHttpInput  :: TemplatedRequestComputationInput
+    }
+    | PgSceneFile
+    { _sceneId         :: UUID
+    , _sceneFileId     :: UUID
+    , _sceneVariables  :: Web.SceneVariables
+    , _scenePrescript  :: TangoAst
+    , _scenePostscript :: TangoAst
+    , _scenePgInput    :: PgComputationInput
+    }
+    deriving (Eq, Show, Generic)
 
 $(makeLenses ''SceneFile)
 
@@ -82,12 +86,12 @@ instance Aeson.FromJSON ScenarioOutput where
 -- * scene output
 
 
-data SceneOutput
-  = SceneOutput { _outputSceneId                :: UUID
-                , _outputSceneRequestFileNodeId :: UUID
-                , _outputSceneComputation       :: SceneComputation
-                }
-  deriving (Eq, Show, Generic)
+data SceneOutput = SceneOutput
+    { _outputSceneId                :: UUID
+    , _outputSceneRequestFileNodeId :: UUID
+    , _outputSceneComputation       :: SceneComputation
+    }
+    deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON SceneOutput where
   toJSON =
@@ -101,16 +105,15 @@ instance Aeson.FromJSON SceneOutput where
 -- * scene computation output
 
 
-data SceneComputation
-  = SceneNotRun
-  | PrescriptFailed ScriptException
-  | HttpSceneOk RequestComputation
-  | HttpSceneFailed HttpException
-  | PgSceneOk PgComputation
-  | PgSceneFailed PgError
-  | PgPostscriptFailed PgComputation ScriptException
-  | HttpPostscriptFailed RequestComputation ScriptException
-  deriving (Eq, Show, Generic)
+data SceneComputation = SceneNotRun
+    | PrescriptFailed ScriptException
+    | HttpSceneOk RequestComputation
+    | HttpSceneFailed HttpException
+    | PgSceneOk PgComputation
+    | PgSceneFailed PgError
+    | PgPostscriptFailed PgComputation ScriptException
+    | HttpPostscriptFailed RequestComputation ScriptException
+    deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON SceneComputation where
   toJSON =
@@ -128,15 +131,14 @@ instance Aeson.FromJSON SceneComputation where
 -- * script exception
 
 
-data ScriptException
-  = UnknownVariable Expr
-  | AssertionFailed Expr Expr String
-  | CannotUseFunction String
-  | EmptyResponse String
-  | AccessOutOfBound Expr Expr
-  | CantAccessElem Expr Expr
-  | ConversionFailed Expr String
-  deriving (Eq, Show, Generic)
+data ScriptException = UnknownVariable Expr
+    | AssertionFailed Expr Expr String
+    | CannotUseFunction String
+    | EmptyResponse String
+    | AccessOutOfBound Expr Expr
+    | CantAccessElem Expr Expr
+    | ConversionFailed Expr String
+    deriving (Eq, Show, Generic)
 
 instance Aeson.ToJSON ScriptException where
   toJSON =
@@ -246,11 +248,12 @@ fromTableToRichList rows =
 -- * script context
 
 
-data ScriptContext =
-  ScriptContext { environmentVars :: EnvironmentVars
-                , globalVars      :: ScenarioVars
-                , localVars       :: ScenarioVars
-                }
+data ScriptContext = ScriptContext
+    { sceneVars       :: Web.SceneVariables
+    , environmentVars :: EnvironmentVars
+    , globalVars      :: ScenarioVars
+    , localVars       :: ScenarioVars
+    }
 
 
 buildSceneOutput :: SceneFile -> SceneComputation -> SceneOutput

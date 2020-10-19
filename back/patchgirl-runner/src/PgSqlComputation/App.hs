@@ -1,19 +1,20 @@
 module PgSqlComputation.App where
 
-import qualified Control.Monad             as Monad
-import qualified Control.Monad.IO.Class    as IO
-import qualified Control.Monad.State       as State
-import qualified Data.ByteString           as BS
-import qualified Data.ByteString.UTF8      as BSU
-import           Data.Function             ((&))
-import           Data.Functor              ((<&>))
-import qualified Data.Map.Strict           as Map
-import qualified Data.Maybe                as Maybe
-import qualified Data.Traversable          as Traversable
-import qualified Database.PostgreSQL.LibPQ as LibPQ
-import qualified Text.Read                 as Text
+import qualified Control.Monad                    as Monad
+import qualified Control.Monad.IO.Class           as IO
+import qualified Control.Monad.State              as State
+import qualified Data.ByteString                  as BS
+import qualified Data.ByteString.UTF8             as BSU
+import           Data.Function                    ((&))
+import           Data.Functor                     ((<&>))
+import qualified Data.Map.Strict                  as Map
+import qualified Data.Maybe                       as Maybe
+import qualified Data.Traversable                 as Traversable
+import qualified Database.PostgreSQL.LibPQ        as LibPQ
+import qualified Text.Read                        as Text
 
 import           Interpolator
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           PgSqlComputation.Model
 import           ScenarioComputation.Model
 
@@ -26,7 +27,7 @@ runPgSqlComputationHandler
   => (EnvironmentVars, PgComputationInput)
   -> m PgComputationOutput
 runPgSqlComputationHandler (environmentVars, pgComputationInput) =
-  State.evalStateT (runPgComputationWithScenarioContext pgComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
+  State.evalStateT (runPgComputationWithScenarioContext pgComputationInput) (ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty)
 
 
 -- * run pg computation with scenario context
@@ -85,7 +86,7 @@ runPgComputationWithScenarioContext PgComputationInput{..} = do
       -> m String
     substitute stringTemplate = do
       ScriptContext{..} <- State.get
-      return $ interpolate environmentVars globalVars localVars stringTemplate
+      return $ interpolate sceneVars environmentVars globalVars localVars stringTemplate
 
 
 -- * to table

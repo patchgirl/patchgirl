@@ -14,8 +14,8 @@ import           PgSqlComputation.Model
 import           RequestComputation.App
 import           RequestComputation.Model
 import           ScenarioComputation.Model
-import           TangoScript.Model
 import           TangoScript.App
+import           TangoScript.Model
 
 
 -- * handler
@@ -44,7 +44,7 @@ runScenarioComputationHandler ScenarioInput{..} =
                         , scenes ++ [ buildSceneOutput sceneFile SceneNotRun ]
                         )
         True -> do
-          (scene, scriptContext) <- State.runStateT (buildScene sceneFile) (ScriptContext environmentVars scenarioGlobalVars Map.empty)
+          (scene, scriptContext) <- State.runStateT (buildScene sceneFile) (ScriptContext (_sceneVariables sceneFile) environmentVars scenarioGlobalVars Map.empty)
           return ( globalVars scriptContext
                  , scenes ++ [ scene ]
                  )

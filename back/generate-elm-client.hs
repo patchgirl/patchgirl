@@ -270,7 +270,8 @@ deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFile
 deriveElmDef deriveWithTaggedObject ''Web.NewRootPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.NewPgFolder
 deriveElmDef deriveWithTaggedObject ''Web.ActorType
-deriveElmDef deriveWithTaggedObject ''Web.Variables
+deriveElmDef deriveWithTaggedObject ''Web.SceneVariables
+deriveElmDef deriveWithTaggedObject ''Web.SceneVariableValue
 
 
 -- * main
@@ -341,7 +342,8 @@ webModule =
       , DefineElm (Proxy :: Proxy Web.NewRootPgFolder)
       , DefineElm (Proxy :: Proxy Web.NewPgFolder)
       , DefineElm (Proxy :: Proxy Web.ActorType)
-      , DefineElm (Proxy :: Proxy Web.Variables)
+      , DefineElm (Proxy :: Proxy Web.SceneVariables)
+      , DefineElm (Proxy :: Proxy Web.SceneVariableValue)
       ]
     proxyApi =
       (Proxy :: Proxy (Web.RestApi '[Cookie]))

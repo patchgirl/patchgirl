@@ -1,13 +1,14 @@
 module TangoScript.AppSpec where
 
+import qualified Control.Monad.State              as State
+import qualified Data.Map.Strict                  as Map
 import           Test.Hspec
-import qualified Control.Monad.State       as State
-import qualified Data.Map.Strict           as Map
 
-import TangoScript.Model
-import TangoScript.App
-import           ScenarioComputation.Model
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           RequestComputation.Model
+import           ScenarioComputation.Model
+import           TangoScript.App
+import           TangoScript.Model
 
 spec :: Spec
 spec = do
@@ -74,7 +75,7 @@ spec = do
       it "reduce" $ do
         let input = LAccessOp (LVar "foo") (LInt 1)
         let output = LString "a"
-        let reduced = reduceWithScriptContext input $ ScriptContext Map.empty Map.empty (Map.fromList [ ("foo", LString "bar") ])
+        let reduced = reduceWithScriptContext input $ ScriptContext (Web.SceneVariables Map.empty) Map.empty Map.empty (Map.fromList [ ("foo", LString "bar") ])
         reduced `shouldBe` Right output
 
 
@@ -129,7 +130,7 @@ spec = do
 
   where
     emptyScriptContext :: ScriptContext
-    emptyScriptContext = ScriptContext Map.empty Map.empty Map.empty
+    emptyScriptContext = ScriptContext (Web.SceneVariables Map.empty) Map.empty Map.empty Map.empty
 
     reduce :: Expr -> Either ScriptException Expr
     reduce expr =

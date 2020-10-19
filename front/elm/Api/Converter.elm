@@ -151,7 +151,7 @@ convertSceneActorFromBackToFront sceneActor =
             , nodeId = s.sceneActorId
             , actorType = Front.HttpActor
             , sceneComputation = Nothing
-            , variables = NotEdited (s.sceneVariables |> Dict.map (\_ value -> { enabled = False, value = value }))
+            , variables = NotEdited (s.sceneVariables |> Dict.map (\_ v -> convertSceneVariableFromBackToFront v))
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = parseTangoscript s.scenePrescript
             , postscriptStr = NotEdited s.scenePostscript
@@ -163,13 +163,24 @@ convertSceneActorFromBackToFront sceneActor =
             , nodeId = s.sceneActorId
             , actorType = Front.PgActor
             , sceneComputation = Nothing
-            , variables = NotEdited (s.sceneVariables |> Dict.map (\_ value -> { enabled = False, value = value }))
+            , variables = NotEdited (s.sceneVariables |> Dict.map (\_ v -> convertSceneVariableFromBackToFront v))
             , prescriptStr = NotEdited s.scenePrescript
             , prescriptAst = parseTangoscript s.scenePrescript
             , postscriptStr = NotEdited s.scenePostscript
             , postscriptAst = parseTangoscript s.scenePostscript
             }
 
+convertSceneVariableFromBackToFront : Back.SceneVariableValue -> Front.UserSceneVariableValue
+convertSceneVariableFromBackToFront { sceneVariableValueValue, sceneVariableValueEnabled } =
+    { enabled = sceneVariableValueEnabled
+    , value = sceneVariableValueValue
+    }
+
+convertSceneVariableFromFrontToBack : Front.UserSceneVariableValue -> Back.SceneVariableValue
+convertSceneVariableFromFrontToBack { enabled, value } =
+    { sceneVariableValueEnabled = enabled
+    , sceneVariableValueValue = value
+    }
 
 convertActorTypeFromFrontToBack : Front.ActorType -> Back.ActorType
 convertActorTypeFromFrontToBack actorType =

@@ -780,7 +780,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakeHttpScene { _newFakeSceneParentId = Nothing
                          , _newFakeSceneRequestId = requestFileId
-                         , _newFakeSceneVariables = Variables Map.empty
+                         , _newFakeSceneVariables = SceneVariables Map.empty
                          , _newFakeScenePrescript = ""
                          , _newFakeScenePostscript = ""
                          }
@@ -799,7 +799,7 @@ insertSampleScenarioCollection accountId connection = do
   let newFakeScene =
         NewFakePgScene { _newFakePgSceneParentId = Nothing
                        , _newFakePgSceneActorId = pgFileId
-                       , _newFakePgSceneVariables = Variables Map.empty
+                       , _newFakePgSceneVariables = SceneVariables Map.empty
                        , _newFakePgScenePrescript = ""
                        , _newFakePgScenePostscript = ""
                        }
@@ -955,7 +955,7 @@ selectScenarioNodeExists id connection = do
 data NewFakeHttpScene = NewFakeHttpScene
     { _newFakeSceneParentId   :: Maybe UUID
     , _newFakeSceneRequestId  :: UUID
-    , _newFakeSceneVariables  :: Variables
+    , _newFakeSceneVariables  :: SceneVariables
     , _newFakeScenePrescript  :: String
     , _newFakeScenePostscript :: String
     }
@@ -989,7 +989,7 @@ insertFakeHttpScene newFakeScene connection = do
 data NewFakePgScene = NewFakePgScene
     { _newFakePgSceneParentId   :: Maybe UUID
     , _newFakePgSceneActorId    :: UUID
-    , _newFakePgSceneVariables  :: Variables
+    , _newFakePgSceneVariables  :: SceneVariables
     , _newFakePgScenePrescript  :: String
     , _newFakePgScenePostscript :: String
     }
@@ -1024,7 +1024,7 @@ data FakeScene = FakeScene
     { _fakeSceneParentId   :: Maybe UUID
     , _fakeActorType       :: ActorType
     , _fakeSceneId         :: UUID
-    , _fakeSceneVariables  :: Variables
+    , _fakeSceneVariables  :: SceneVariables
     , _fakeScenePrescript  :: String
     , _fakeScenePostscript :: String
     }

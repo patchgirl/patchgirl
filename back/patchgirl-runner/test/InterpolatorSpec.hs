@@ -7,9 +7,10 @@
 
 module InterpolatorSpec where
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map.Strict                  as Map
 
 import           Interpolator
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           TangoScript.Model
 import           Test.Hspec
 
@@ -23,13 +24,13 @@ spec =
       it "doesnt interpolate when there is no key" $ do
         let envVars = Map.empty
         let scenarioVars = Map.empty
-        interpolate envVars scenarioVars scenarioVars [ Sentence "hello ", Sentence "user" ]
+        interpolate Web.emptySceneVariable envVars scenarioVars scenarioVars [ Sentence "hello ", Sentence "user" ]
           `shouldBe` "hello user"
 
       it "interpolate existing key" $ do
         let envVars = Map.fromList [("user", [Sentence "John"])]
         let scenarioVars = Map.empty
-        interpolate envVars scenarioVars scenarioVars [ Sentence "hello ", Key "user" ]
+        interpolate Web.emptySceneVariable envVars scenarioVars scenarioVars [ Sentence "hello ", Key "user" ]
           `shouldBe` "hello John"
 
       it "interpolate multiple keys" $ do
@@ -37,7 +38,7 @@ spec =
                                    , ("lname", [Sentence "Doe"])
                                    ]
         let scenarioVars = Map.empty
-        interpolate envVars scenarioVars scenarioVars [ Sentence "hello "
+        interpolate Web.emptySceneVariable envVars scenarioVars scenarioVars [ Sentence "hello "
                                                       , Key "fname"
                                                       , Sentence " "
                                                       , Key "lname"
@@ -49,7 +50,7 @@ spec =
         let envVars = Map.fromList [ ("fname", [Sentence "John"])
                                    ]
         let scenarioVars = Map.empty
-        interpolate envVars scenarioVars scenarioVars [ Sentence "hello "
+        interpolate Web.emptySceneVariable envVars scenarioVars scenarioVars [ Sentence "hello "
                                                       , Key "fname"
                                                       , Sentence " "
                                                       , Key "lname"
@@ -57,20 +58,56 @@ spec =
                                                       ]
           `shouldBe` "hello John {{lname}}!"
 
-      it "interpolate with env first then global vars then local vars" $ do
+      it "interpolate with scene vars first then local vars then global vars then environment vars" $ do
         let envVars = Map.fromList [ ("a", [Sentence "env a"])
+                                   , ("b", [Sentence "env b"])
+                                   , ("c", [Sentence "env c"])
+                                   , ("d", [Sentence "env d"])
                                    ]
         let scenarioGlobalVars = Map.fromList [ ("a", LString "global a")
                                               , ("b", LString "global b")
+                                              , ("c", LString "global c")
                                               ]
         let scenariolocalVars = Map.fromList [ ("a", LString "local a")
                                              , ("b", LString "local b")
-                                             , ("c", LString "local c")
-                                              ]
-        interpolate envVars scenarioGlobalVars scenariolocalVars [ Key "a"
-                                                                 , Sentence " - "
-                                                                 , Key "b"
-                                                                 , Sentence " - "
-                                                                 , Key "c"
-                                                                 ]
-          `shouldBe` "env a - global b - local c"
+                                             ]
+        let sceneVars =
+              Web.SceneVariables $ Map.fromList [ ( "a"
+                                                  , Web.SceneVariableValue { _sceneVariableValueValue   = "scene a"
+                                                                           , _sceneVariableValueEnabled = True
+                                                                           }
+                                                  )
+                                                ]
+
+        interpolate sceneVars envVars scenarioGlobalVars scenariolocalVars [ Key "a"
+                                                                           , Sentence " - "
+                                                                           , Key "b"
+                                                                           , Sentence " - "
+                                                                           , Key "c"
+                                                                           , Sentence " - "
+                                                                           , Key "d"
+                                                                           ]
+          `shouldBe` "scene a - local b - global c - env d"
+
+      it "interpolate with scene vars if the scene var is enabled" $ do
+        let scenariolocalVars = Map.fromList [ ("a", LString "local a")
+                                             , ("b", LString "local b")
+                                             ]
+        let sceneVars =
+              Web.SceneVariables $ Map.fromList [ ( "a"
+                                                  , Web.SceneVariableValue { _sceneVariableValueValue   = "scene a"
+                                                                           , _sceneVariableValueEnabled = True
+                                                                           }
+                                                  )
+                                                , ( "b"
+                                                  , Web.SceneVariableValue { _sceneVariableValueValue   = "scene a"
+                                                                           , _sceneVariableValueEnabled = False
+                                                                           }
+                                                  )
+                                                ]
+
+        interpolate sceneVars Map.empty Map.empty scenariolocalVars [ Key "a"
+                                                                    , Sentence " - "
+                                                                    , Key "b"
+                                                                    ]
+          `shouldBe` "scene a - local b"

@@ -280,7 +280,7 @@ INSERT INTO scene_node(
   'PgActor',
   NULL,
   'e9dd7586-e0a4-4a3b-a2b7-3f5be1950ee6',
-  '[]'::json,
+  '{}'::json,
   '',
   ''
 );
@@ -300,7 +300,7 @@ INSERT INTO scene_node(
   'PgActor',
   NULL,
   'b87cf618-e4a8-441e-bb48-e65456aed260',
-  '[]'::json,
+  '{}'::json,
   '',
   ''
 );
@@ -320,7 +320,7 @@ INSERT INTO scene_node(
   'PgActor',
   NULL,
   '579f1274-045e-403f-b987-22caea511d9b',
-  '[]'::json,
+  '{}'::json,
   '',
   ''
 );
@@ -344,7 +344,7 @@ INSERT INTO scene_node(
   'HttpActor',
   '5ff67d3c-28a2-4aa1-b474-4b10dabd2852',
   NULL,
-  '[]'::json,
+  '{}'::json,
   '',
   'var userId = httpResponseBodyAsJson["id"];
 set("userId", userId);
@@ -366,7 +366,7 @@ INSERT INTO scene_node(
   'HttpActor',
   'b3b24406-a7c0-4c68-bdcc-279e843340a0',
   NULL,
-  '[]'::json,
+  '{}'::json,
   '',
   'var productId = httpResponseBodyAsJson["id"];
 set("productId", productId);
@@ -388,7 +388,7 @@ INSERT INTO scene_node(
   'HttpActor',
   'c4295e57-20eb-4bf0-ba0b-f5f070dfe862',
   NULL,
-  '[]'::json,
+  '{}'::json,
   '',
   'assertEqual(httpResponseStatus, 200);'
 );
@@ -408,7 +408,7 @@ INSERT INTO scene_node(
   'HttpActor',
   '8eb08e68-ebe3-4e20-ad38-2be6b2c98c8d',
   NULL,
-  '[]'::json,
+  '{}'::json,
   '',
   'assertEqual(httpResponseStatus, 200);'
 );

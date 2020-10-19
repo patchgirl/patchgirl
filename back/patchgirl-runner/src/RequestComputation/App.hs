@@ -8,23 +8,25 @@ module RequestComputation.App ( runRequestComputationHandler
                               ) where
 
 
-import qualified Control.Exception           as Exception
-import qualified Control.Monad.IO.Class      as IO
-import qualified Control.Monad.Reader        as Reader
-import qualified Control.Monad.State         as State
-import qualified Data.Bifunctor              as Bifunctor
-import qualified Data.ByteString.UTF8        as BSU
-import qualified Data.CaseInsensitive        as CI
-import           Data.Function               ((&))
-import           Data.Functor                ((<&>))
-import qualified Data.Map.Strict             as Map
-import qualified Network.HTTP.Client.Conduit as Http
-import qualified Network.HTTP.Simple         as Http
-import qualified Network.HTTP.Types          as Http
+import qualified Control.Exception                as Exception
+import qualified Control.Monad.IO.Class           as IO
+import qualified Control.Monad.Reader             as Reader
+import qualified Control.Monad.State              as State
+import qualified Data.Bifunctor                   as Bifunctor
+import qualified Data.ByteString.UTF8             as BSU
+import qualified Data.CaseInsensitive             as CI
+import           Data.Function                    ((&))
+import           Data.Functor                     ((<&>))
+import qualified Data.Map.Strict                  as Map
+import qualified Data.Traversable                 as Monad
+import qualified Network.HTTP.Client.Conduit      as Http
+import qualified Network.HTTP.Simple              as Http
+import qualified Network.HTTP.Types               as Http
 
 import           Env
-import           PatchGirl.Web.Http
 import           Interpolator
+import           PatchGirl.Web.Http
+import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           RequestComputation.Model
 import           ScenarioComputation.Model
 
@@ -39,7 +41,7 @@ runRequestComputationHandler
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationOutput
 runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
-  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) (ScriptContext environmentVars Map.empty Map.empty)
+  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) (ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty)
 
 
 -- * run request computation with scenario context
@@ -54,11 +56,8 @@ runRequestComputationWithScenarioContext
   -> m RequestComputationOutput
 runRequestComputationWithScenarioContext templatedRequestComputationInput = do
   runner <- Reader.ask <&> _envHttpRequest
-  ScriptContext{..} <- State.get
-  result <- IO.liftIO $
-    Exception.try (
-      buildRequest templatedRequestComputationInput environmentVars globalVars localVars >>= runner
-    )
+  request <- buildRequest templatedRequestComputationInput
+  result <- IO.liftIO $ Exception.try $ runner request
   responseToComputationResult result
 
 
@@ -66,14 +65,15 @@ runRequestComputationWithScenarioContext templatedRequestComputationInput = do
 
 
 buildRequest
-  :: TemplatedRequestComputationInput
-  -> EnvironmentVars
-  -> ScenarioVars
-  -> ScenarioVars
-  -> IO Http.Request
-buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars = do
-  buildRequestComputationInput templatedRequestComputationInput environmentVars scenarioGlobalVars scenarioLocalVars
-    & \RequestComputationInput{..} -> Http.parseRequest _requestComputationInputUrl
+  :: ( IO.MonadIO m
+     , State.MonadState ScriptContext m
+     )
+  => TemplatedRequestComputationInput
+  -> m Http.Request
+buildRequest templatedRequestComputationInput = do
+  RequestComputationInput{..} <- buildRequestComputationInput templatedRequestComputationInput
+  IO.liftIO $
+    Http.parseRequest _requestComputationInputUrl
     <&> Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
     <&> Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
     <&> Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
@@ -92,20 +92,29 @@ buildRequest templatedRequestComputationInput environmentVars scenarioGlobalVars
 
 
 buildRequestComputationInput
-  :: TemplatedRequestComputationInput
-  -> EnvironmentVars
-  -> ScenarioVars
-  -> ScenarioVars
-  -> RequestComputationInput
-buildRequestComputationInput TemplatedRequestComputationInput{..} environmentVars scenarioGlobalVars scenarioLocalVars =
-  RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
-                          , _requestComputationInputHeaders =
-                            _templatedRequestComputationInputHeaders <&> Bifunctor.bimap interpolate' interpolate'
-                          , _requestComputationInputUrl = interpolate' _templatedRequestComputationInputUrl
-                          , _requestComputationInputBody = interpolate' _templatedRequestComputationInputBody
-                          }
+  :: State.MonadState ScriptContext m
+  => TemplatedRequestComputationInput
+  -> m RequestComputationInput
+buildRequestComputationInput TemplatedRequestComputationInput{..} = do
+  url <- interpolate' _templatedRequestComputationInputUrl
+  body <- interpolate' _templatedRequestComputationInputBody
+  headers :: [(String, String)] <- Monad.forM _templatedRequestComputationInputHeaders $ \(oldK, oldV) -> do
+    k <- interpolate' oldK
+    v <- interpolate' oldV
+    return (k, v)
+  return $ RequestComputationInput { _requestComputationInputMethod = _templatedRequestComputationInputMethod
+                                   , _requestComputationInputHeaders = headers
+                                   , _requestComputationInputUrl = url
+                                   , _requestComputationInputBody = body
+                                   }
   where
-    interpolate' = interpolate environmentVars scenarioGlobalVars scenarioLocalVars
+    interpolate'
+      :: State.MonadState ScriptContext m
+      => StringTemplate
+      -> m String
+    interpolate' st = do
+      ScriptContext{..} <- State.get
+      return $ interpolate sceneVars environmentVars globalVars localVars st
 
 
 -- * run request
