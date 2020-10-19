@@ -95,7 +95,7 @@ interpolateSceneVariable :: Web.SceneVariables -> Template -> Template
 interpolateSceneVariable (Web.SceneVariables sceneVariable) = \case
   Key key ->
     case Map.lookup key sceneVariable of
-      Just (Web.SceneVariableValue { _sceneVariableValueEnabled = True, _sceneVariableValueValue }) ->
+      Just Web.SceneVariableValue { _sceneVariableValueEnabled = True, _sceneVariableValueValue } ->
         Sentence _sceneVariableValueValue
       _ -> Key key
   sentence -> sentence
