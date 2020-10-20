@@ -3,6 +3,9 @@
 # variables here.  See https://github.com/composewell/packcheck for all
 # options and their explanation.
 
+platform:
+  - x64
+
 environment:
     # ------------------------------------------------------------------------
     # Global options, you can use these per build as well
