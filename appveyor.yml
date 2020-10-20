@@ -94,6 +94,7 @@ before_test:
 - stack --version
 
 test_script:
+- setlocal EnableDelayedExpansion
 - stack setup > nul
 - for /f "usebackq tokens=*" %%i in (`where 7z.exe`) do set PATH7Z=%%i\..
 - for /f "usebackq tokens=*" %%i in (`where git.exe`) do set PATHGIT=%%i\..
@@ -101,7 +102,9 @@ test_script:
 - for /f "usebackq tokens=*" %%i in (`where pg_config.exe`) do set PATHPG2=%%i\..
 - echo "coucou"
 - echo %PATHPG%
+- echo !PATHPG!
 - echo "coucou2"
 - echo %PATHPG2%
+- echo !PATHPG2!
 - chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; ls /**/* | grep postgres"
 # chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; cd back/; ../%PACKCHECK_LOCAL_PATH% stack PATH=/usr/bin:\"%PATH7Z%\":\"%PATHGIT%\"
