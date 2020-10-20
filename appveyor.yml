@@ -76,6 +76,12 @@ cache:
 clone_folder: "c:\\pkg"
 build: off
 
+install:
+- vcpkg install libpq:x86-windows
+- vcpkg install libpq:x64-windows
+- cd c:\tools\vcpkg
+- vcpkg integrate install
+
 before_test:
 - if not exist %PACKCHECK_LOCAL_PATH% curl -sSkL -o%PACKCHECK_LOCAL_PATH% %PACKCHECK_GITHUB_URL%/%PACKCHECK_GITHUB_COMMIT%/packcheck.sh
 - if not exist %LOCAL_BIN% mkdir %LOCAL_BIN%
