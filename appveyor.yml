@@ -80,10 +80,9 @@ install:
 - cd C:\Tools\vcpkg
 - git pull
 - .\bootstrap-vcpkg.bat
-- cd %APPVEYOR_BUILD_FOLDER%
-- vcpkg install libpq:x86-windows
 - vcpkg install libpq:x64-windows
 - vcpkg integrate install
+- cd %APPVEYOR_BUILD_FOLDER%
 
 before_test:
 - if not exist %PACKCHECK_LOCAL_PATH% curl -sSkL -o%PACKCHECK_LOCAL_PATH% %PACKCHECK_GITHUB_URL%/%PACKCHECK_GITHUB_COMMIT%/packcheck.sh
