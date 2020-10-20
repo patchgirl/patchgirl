@@ -33,7 +33,7 @@ environment:
     # version.
     #STACKVER: "1.6.5"
     STACK_UPGRADE: "y"
-    RESOLVER: "lts-13.19" # using ghc 8.6.5 which works on windows
+    RESOLVER: "lts-14.27" # using ghc 8.6.5 which works on windows
     STACK_ROOT: "c:\\sr"
 
     # ------------------------------------------------------------------------
