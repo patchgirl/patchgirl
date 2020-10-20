@@ -56,7 +56,7 @@ environment:
     # you can use it by specifying the PACKCHECK_REPO_URL option below in which
     # case it will be automatically copied from the packcheck repo to this path
     # during CI tests. In any case it is finally invoked from this path.
-    # PACKCHECK_LOCAL_PATH: "./back/packcheck.sh"
+    PACKCHECK_LOCAL_PATH: "./packcheck.sh"
     # If you have not committed packcheck.sh in your repo at PACKCHECK_LOCAL_PATH
     # then it is automatically pulled from this URL.
     PACKCHECK_GITHUB_URL: "https://raw.githubusercontent.com/composewell/packcheck"
