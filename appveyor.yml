@@ -77,9 +77,12 @@ clone_folder: "c:\\pkg"
 build: off
 
 install:
+- cd C:\Tools\vcpkg
+- git pull
+- .\bootstrap-vcpkg.bat
+- cd %APPVEYOR_BUILD_FOLDER%
 - vcpkg install libpq:x86-windows
 - vcpkg install libpq:x64-windows
-- cd c:\tools\vcpkg
 - vcpkg integrate install
 
 before_test:
