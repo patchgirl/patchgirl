@@ -425,6 +425,9 @@ update msg model file sceneDetailView =
                                                                          , sceneFileId = scene.nodeId
                                                                          , sceneHttpInput =
                                                                                (Client.convertRequestComputationInputFromFrontToBack requestComputationInput)
+                                                                         , sceneVariables =
+                                                                               editedOrNotEditedValue scene.variables
+                                                                                   |> Dict.map (\_ value -> Client.convertSceneVariableFromFrontToBack value)
                                                                          , scenePrescript =
                                                                                Client.convertTangoscriptFromFrontToBack prescript
                                                                          , scenePostscript =
@@ -437,6 +440,9 @@ update msg model file sceneDetailView =
                                         |> \pgComputationInput ->
                                            Just <| Client.PgSceneFile { sceneId = scene.id
                                                                       , sceneFileId = scene.nodeId
+                                                                         , sceneVariables =
+                                                                               editedOrNotEditedValue scene.variables
+                                                                                   |> Dict.map (\_ value -> Client.convertSceneVariableFromFrontToBack value)
                                                                       , scenePrescript =
                                                                           Client.convertTangoscriptFromFrontToBack prescript
                                                                       , scenePostscript =
