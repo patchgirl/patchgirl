@@ -64,7 +64,7 @@ environment:
 
     # Override the temp directory to avoid sed escaping issues
     # See https://github.com/haskell/cabal/issues/5386
-    TMP: "c:\\tmp"
+    # TMP: "c:\\tmp"
 
 cache:
   - "%STACK_ROOT%"
