@@ -97,5 +97,5 @@ test_script:
 - stack setup > nul
 - for /f "usebackq tokens=*" %%i in (`where 7z.exe`) do set PATH7Z=%%i\..
 - for /f "usebackq tokens=*" %%i in (`where git.exe`) do set PATHGIT=%%i\..
-- chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; find / -name pg_config"
+- chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; ls /"
 # chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; cd back/; ../%PACKCHECK_LOCAL_PATH% stack PATH=/usr/bin:\"%PATH7Z%\":\"%PATHGIT%\"
