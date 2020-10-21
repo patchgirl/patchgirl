@@ -96,7 +96,7 @@ test_script:
 - for /f "usebackq tokens=*" %%i in (`where git.exe`) do set PATHGIT=%%i\..
 - for /f "usebackq tokens=*" %%i in (`where pg_config`) do set PATHPG=%%i\..
 - for /f "usebackq tokens=*" %%i in (`where pg_config.exe`) do set PATHPG2=%%i\..
-- tree "C:\Program Files\PostgreSQL"
+- tree "C:\Program Files\PostgreSQL\11\bin" /f
 - echo "coucou"
 - echo %PATHPG%
 - echo !PATHPG!
