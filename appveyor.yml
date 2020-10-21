@@ -3,6 +3,9 @@
 # variables here.  See https://github.com/composewell/packcheck for all
 # options and their explanation.
 
+services:
+  - postgresql101
+
 platform:
   - x64
 
@@ -79,13 +82,6 @@ cache:
 clone_folder: "c:\\pkg"
 build: off
 
-install:
-- vcpkg list
-- vcpkg update
-- vcpkg install libpq:x64-windows
-- cd c:\tools\vcpkg
-- vcpkg integrate install
-
 before_test:
 - if not exist %PACKCHECK_LOCAL_PATH% curl -sSkL -o%PACKCHECK_LOCAL_PATH% %PACKCHECK_GITHUB_URL%/%PACKCHECK_GITHUB_COMMIT%/packcheck.sh
 - if not exist %LOCAL_BIN% mkdir %LOCAL_BIN%
@@ -100,6 +96,7 @@ test_script:
 - for /f "usebackq tokens=*" %%i in (`where git.exe`) do set PATHGIT=%%i\..
 - for /f "usebackq tokens=*" %%i in (`where pg_config`) do set PATHPG=%%i\..
 - for /f "usebackq tokens=*" %%i in (`where pg_config.exe`) do set PATHPG2=%%i\..
+- tree C:\Program Files\PostgreSQL\
 - echo "coucou"
 - echo %PATHPG%
 - echo !PATHPG!
