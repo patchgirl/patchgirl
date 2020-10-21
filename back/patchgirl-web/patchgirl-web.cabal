@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dada130ec19eb7eba1976a0a831d8b3c072ca1d16862ad8a296159fd823925cd
+-- hash: b7c017ba97033d4a161adbeb38b37866bc3bc2abfc744c19022be6b4f365d683
 
 name:           patchgirl-web
 version:        0.0.0
@@ -55,7 +55,7 @@ library
   hs-source-dirs:
       src
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf StrictData TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , base
@@ -106,7 +106,7 @@ executable patchgirl-web-exe
   other-modules:
       Paths_patchgirl_web
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf StrictData TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , base
@@ -180,7 +180,7 @@ test-suite spec
   hs-source-dirs:
       test
   default-extensions: LambdaCase OverloadedStrings NamedFieldPuns QuasiQuotes ScopedTypeVariables TemplateHaskell RecordWildCards EmptyCase FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses MultiWayIf StrictData TypeApplications
-  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints -fwrite-ide-info -hiedir=.hie
+  ghc-options: -Wall -fno-warn-name-shadowing -Wincomplete-patterns -Wcompat -Wincomplete-record-updates -Wredundant-constraints
   build-depends:
       aeson
     , base
