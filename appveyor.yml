@@ -93,4 +93,4 @@ test_script:
 - set PATHPG="C:\Program Files\PostgreSQL\11\bin"
 - set PATHPG
 - set PATHGIT
-- chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; cd back/; ../%PACKCHECK_LOCAL_PATH% stack PATH=/usr/bin:\"%PATH7Z%\":\"%PATHGIT%\":\"%PATHPG%\"
+- chcp 65001 && stack exec bash -- -c "chmod +x %PACKCHECK_LOCAL_PATH%; cd back/; ../%PACKCHECK_LOCAL_PATH% stack PATH=/usr/bin:\"%PATH7Z%\":\"%PATHGIT%\":\"%PATHPG%\""
