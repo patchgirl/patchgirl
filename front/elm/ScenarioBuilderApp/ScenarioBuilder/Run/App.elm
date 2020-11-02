@@ -109,7 +109,7 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> ScenarioFileRecord -> SceneDetailView -> (Model a, ScenarioFileRecord, Cmd Msg)
+update : Msg -> Model a -> NodeRecord ScenarioFileRecord -> SceneDetailView -> (Model a, NodeRecord ScenarioFileRecord, Cmd Msg)
 update msg model file sceneDetailView =
     case msg of
 
@@ -671,12 +671,14 @@ findRecord model scene =
     in
     case scene.actorType of
         HttpActor ->
-            findRequestFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+            findFile requestNodes scene.nodeId
+                |> Maybe.map HttpRecord
 
         PgActor ->
-            findPgFile pgNodes scene.nodeId |> Maybe.map PgRecord
+            findFile pgNodes scene.nodeId
+                |> Maybe.map PgRecord
 
-environmentKeyValues : Model a -> ScenarioFileRecord -> Dict String StringTemplate
+environmentKeyValues : Model a -> NodeRecord ScenarioFileRecord -> Dict String StringTemplate
 environmentKeyValues model file =
     editedOrNotEditedValue file.environmentId
         |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
@@ -692,7 +694,7 @@ environmentKeyValues model file =
 -- * view
 
 
-view : Model a -> ScenarioFileRecord -> SceneDetailView -> Element Msg
+view : Model a -> NodeRecord ScenarioFileRecord -> SceneDetailView -> Element Msg
 view model file sceneDetailView =
     let
         scenesView =
@@ -725,7 +727,7 @@ view model file sceneDetailView =
 -- ** scenario setting view
 
 
-envSelectionView : Model a -> ScenarioFileRecord -> Element Msg
+envSelectionView : Model a -> NodeRecord ScenarioFileRecord -> Element Msg
 envSelectionView model file =
     let
         noEnvironmentOption : Input.Option (Maybe Uuid) Msg
@@ -746,7 +748,7 @@ envSelectionView model file =
         }
 
 sceneToKeyValues : Model a
-                 -> ScenarioFileRecord
+                 -> NodeRecord ScenarioFileRecord
                  -> Scene
                  -> Maybe
                     { scene : Scene
@@ -764,7 +766,7 @@ sceneToKeyValues model file scene =
                 (RequestCollection _ nodes) =
                     model.requestCollection
             in
-            case findRequestNode nodes scene.nodeId of
+            case findNode nodes scene.nodeId of
                 Just (File requestFileRecord) ->
                     ( [ editedOrNotEditedValue requestFileRecord.name
                       , editedOrNotEditedValue requestFileRecord.httpUrl
@@ -786,7 +788,7 @@ sceneToKeyValues model file scene =
 
                 _ -> Nothing
 
-currentEnvironmentKeyValues : Model a -> ScenarioFileRecord -> Dict String String
+currentEnvironmentKeyValues : Model a -> NodeRecord ScenarioFileRecord -> Dict String String
 currentEnvironmentKeyValues model file =
     environmentKeyValues model file
         |> Dict.map (\_ value -> stringTemplateToString value)
@@ -882,7 +884,7 @@ sceneFormView scenarioKeyValues { scene, sceneName, sceneKeys, sceneUserDefinedK
             List.map keyValueView sceneKeys
         ]
 
-variablesFormView : Model a -> ScenarioFileRecord -> Element Msg
+variablesFormView : Model a -> NodeRecord ScenarioFileRecord -> Element Msg
 variablesFormView model file =
     let
         scenesInfo =
@@ -893,7 +895,7 @@ variablesFormView model file =
     column [ spacing 20, width fill ] <|
         List.map (sceneFormView (currentEnvironmentKeyValues model file)) scenesInfo
 
-saveScenarioView : ScenarioFileRecord -> Element Msg
+saveScenarioView : NodeRecord ScenarioFileRecord -> Element Msg
 saveScenarioView file =
     case file.environmentId of
         NotEdited _ -> none
@@ -913,7 +915,7 @@ saveScenarioView file =
                     ]
             }
 
-scenarioSettingView : Model a -> ScenarioFileRecord -> Element Msg
+scenarioSettingView : Model a -> NodeRecord ScenarioFileRecord -> Element Msg
 scenarioSettingView model file =
     let
         title =
@@ -978,7 +980,7 @@ scenarioSettingView model file =
 -- ** scene view
 
 
-sceneView : Model a -> ScenarioFileRecord -> SceneDetailView -> Scene -> Element Msg
+sceneView : Model a -> NodeRecord ScenarioFileRecord -> SceneDetailView -> Scene -> Element Msg
 sceneView model file sceneDetailView scene =
     let
         selected =
@@ -1109,7 +1111,7 @@ arrowView model sceneDetailView id sceneId =
 -- ** detailed scene view
 
 
-detailedSceneView : Model a -> ScenarioFileRecord -> Uuid -> Element Msg
+detailedSceneView : Model a -> NodeRecord ScenarioFileRecord -> Uuid -> Element Msg
 detailedSceneView model file sceneId =
     let
         mSceneAndRecord =
@@ -1147,7 +1149,7 @@ detailedSceneView model file sceneId =
 -- *** http detailed scene view
 
 
-httpDetailedSceneView : ScenarioFileRecord -> Scene -> RequestFileRecord -> List (Element Msg)
+httpDetailedSceneView : NodeRecord ScenarioFileRecord -> Scene -> NodeRecord RequestFileRecord -> List (Element Msg)
 httpDetailedSceneView file scene fileRecord =
     let
         { method, url } =
@@ -1285,7 +1287,7 @@ httpDetailedSceneView file scene fileRecord =
 -- *** pg detailed scene view
 
 
-pgDetailedSceneView : ScenarioFileRecord -> Scene -> PgFileRecord -> List (Element Msg)
+pgDetailedSceneView : NodeRecord ScenarioFileRecord -> Scene -> NodeRecord PgFileRecord -> List (Element Msg)
 pgDetailedSceneView file scene fileRecord =
     let
         sqlText =
@@ -1483,11 +1485,8 @@ selectSceneView model sceneParentId =
                     case node of
                         Folder { id, name, open, children } ->
                             let
-                                (RequestChildren c) =
-                                    children
-
                                 folderChildrenView =
-                                    httpNodeView c
+                                    httpNodeView children
 
                                 tailView =
                                     httpNodeView tail
@@ -1541,11 +1540,8 @@ selectSceneView model sceneParentId =
                     case node of
                         Folder { id, name, open, children } ->
                             let
-                                (PgChildren c) =
-                                    children
-
                                 folderChildrenView =
-                                    pgNodeView c
+                                    pgNodeView children
 
                                 tailView =
                                     pgNodeView tail

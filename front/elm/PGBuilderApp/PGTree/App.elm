@@ -51,7 +51,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (modifyPgNode id toggleFolder) pgNodes
+                    List.map (modifyNode id toggleFolder) pgNodes
 
                 newModel =
                     { model
@@ -84,11 +84,8 @@ nodeView model pgCollection =
             case node of
                 Folder { id, name, open, children } ->
                     let
-                        (PgChildren c) =
-                            children
-
                         folderChildrenView =
-                            nodeView model c
+                            nodeView model children
 
                         tailView =
                             nodeView model tail

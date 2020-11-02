@@ -128,7 +128,7 @@ update msg model =
                     model.scenarioCollection
 
                 newFolder =
-                    mkDefaultScenarioFolder newId newNode.name
+                    mkDefaultFolder newId newNode.name
 
                 newScenarioNodes =
                     case newNode.parentFolderId of
@@ -136,7 +136,7 @@ update msg model =
                             scenarioNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (modifyScenarioNode folderId (mkdirScenario newFolder)) scenarioNodes
+                            List.map (modifyNode folderId (mkdirNode newFolder)) scenarioNodes
 
                 newModel =
                     { model
@@ -199,7 +199,7 @@ update msg model =
                             scenarioNodes ++ [ newScenarioNode ]
 
                         Just folderId ->
-                            List.map (modifyScenarioNode folderId (touchScenario newScenarioNode)) scenarioNodes
+                            List.map (modifyNode folderId (touchNode newScenarioNode)) scenarioNodes
 
                 newModel =
                     { model
@@ -403,11 +403,8 @@ nodeView model selectFolderMsg scenarioNodes =
                 File _ -> nodeView model selectFolderMsg tail
                 Folder { id, name, children } ->
                     let
-                        (ScenarioChildren c) =
-                            children
-
                         folderChildrenView =
-                            nodeView model selectFolderMsg c
+                            nodeView model selectFolderMsg children
 
                         tailView =
                             nodeView model selectFolderMsg tail

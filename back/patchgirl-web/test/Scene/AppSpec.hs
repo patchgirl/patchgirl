@@ -6,6 +6,7 @@
 
 module Scene.AppSpec where
 
+import           Data.Coerce                            (coerce)
 import           Data.Function                          ((&))
 import qualified Data.Map.Strict                        as Map
 import qualified Data.Maybe                             as Maybe
@@ -21,6 +22,7 @@ import           Test.Hspec
 import           DBUtil
 import           Helper.App
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.RequestCollection.Model
 import           PatchGirl.Web.RequestNode.Model
 import           PatchGirl.Web.ScenarioCollection.Model
@@ -75,7 +77,7 @@ spec =
           (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
           (_, ScenarioCollection _ scenarioNodes) <- insertSampleScenarioCollection accountId connection
           RequestCollection _ requestNodes <- insertSampleRequestCollection accountId2 connection
-          let requestFileId = Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
+          let requestFileId = coerce $ Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let newScene = mkNewScene UUID.nil Nothing requestFileId mkEmptyVariables "" ""
@@ -88,13 +90,13 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene UUID.nil Nothing requestFileId (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+          let newScene = mkNewScene UUID.nil Nothing (coerce requestFileId) (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                  , ("bar", SceneVariableValue "baz" False)
                                                                                                  ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Nothing
-                                                     , _fakeSceneId = requestFileId
+                                                     , _fakeSceneId = (coerce requestFileId)
                                                      , _fakeActorType = HttpActor
                                                      , _fakeSceneVariables = SceneVariables (Map.fromList[ ("foo", SceneVariableValue "fee" True)
                                                                                                     , ("bar", SceneVariableValue "baz" False)
@@ -118,13 +120,13 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) requestFileId (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) (coerce requestFileId) (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                                            , ("bar", SceneVariableValue "baz" False)
                                                                                                                            ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene & _sceneId
-                                                     , _fakeSceneId = requestFileId
+                                                     , _fakeSceneId = coerce requestFileId
                                                      , _fakeActorType = HttpActor
                                                      , _fakeSceneVariables = SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                      , ("bar", SceneVariableValue "baz" False)
@@ -140,13 +142,13 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) requestFileId (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+          let newScene = mkNewScene UUID.nil (Just $ scenarioFirstScene & _sceneId) (coerce requestFileId) (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                                                 , ("bar", SceneVariableValue "baz" False)
                                                                                                                                 ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene & _sceneId
-                                                     , _fakeSceneId = requestFileId
+                                                     , _fakeSceneId = (coerce requestFileId)
                                                      , _fakeActorType = HttpActor
                                                      , _fakeSceneVariables = SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                           , ("bar", SceneVariableValue "baz" False)

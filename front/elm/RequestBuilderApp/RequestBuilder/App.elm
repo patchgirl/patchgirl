@@ -98,7 +98,7 @@ update msg model =
                                     model.requestCollection
 
                                 newBuilderTree =
-                                    List.map (modifyRequestNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
+                                    List.map (modifyNode newRequestRecord.id (always (File newRequestRecord))) requestNodes
                             in
                             ( { updatedModel | requestCollection = RequestCollection requestCollectionId newBuilderTree }
                             , Cmd.map RunAppMsg updatedMsg
@@ -124,10 +124,10 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            EditView (mapEditView (findRequestNode requestNodes) whichEditView)
+            EditView (mapEditView (findNode requestNodes) whichEditView)
 
         RunView id ->
-            RunView (findRequestNode requestNodes id)
+            RunView (findNode requestNodes id)
 
 
 -- * view

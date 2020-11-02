@@ -27,20 +27,21 @@ module PatchGirl.Web.Api( WebApi
 
 
 import           Data.UUID
-import           Servant                               hiding (BadPassword,
-                                                        NoSuchUser)
-import           Servant.API.Flatten                   (Flat)
-import           Servant.Auth.Server                   (Auth, AuthResult (..),
-                                                        CookieSettings,
-                                                        JWTSettings, SetCookie,
-                                                        throwAll)
-import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
+import           Servant                                hiding (BadPassword,
+                                                         NoSuchUser)
+import           Servant.API.Flatten                    (Flat)
+import           Servant.Auth.Server                    (Auth, AuthResult (..),
+                                                         CookieSettings,
+                                                         JWTSettings, SetCookie,
+                                                         throwAll)
+import           Servant.Auth.Server.Internal.ThrowAll  (ThrowAll)
 
 import           PatchGirl.Web.Account.App
 import           PatchGirl.Web.Environment.App
 import           PatchGirl.Web.Environment.Model
 import           PatchGirl.Web.Github.App
 import           PatchGirl.Web.Health.App
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.Model
 import           PatchGirl.Web.PgCollection.App
 import           PatchGirl.Web.PgCollection.Model
@@ -280,7 +281,7 @@ sceneApiServer =
 
 
 type RequestNodeApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" (Id Request) :> (
     -- rename node
     ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
     -- delete node
@@ -288,8 +289,8 @@ type RequestNodeApi auths =
   ))
 
 requestNodeApiServer
-  :: (AuthResult CookieSession -> Int -> UUID -> UpdateRequestNode -> AppM ())
-  :<|> (AuthResult CookieSession -> Int -> UUID -> AppM ())
+  :: (AuthResult CookieSession -> Int -> Id Request -> UpdateRequestNode -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> Id Request -> AppM ())
 requestNodeApiServer =
   authorizeWithAccountId updateRequestNodeHandler
   :<|> authorizeWithAccountId deleteRequestNodeHandler
@@ -306,13 +307,13 @@ type RequestFileApi auths =
     ) :<|> "rootRequestFile" :> (
       -- create root request file
       ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
-    ) :<|> Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
+    ) :<|> Capture "requestNodeId" (Id Request) :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
   ))
 
 requestFileApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFile -> AppM ())
   :<|> (AuthResult CookieSession -> Int -> NewRootRequestFile -> AppM ())
-  :<|> (AuthResult CookieSession -> Int -> UUID -> UpdateRequestFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> Id Request -> UpdateRequestFile -> AppM ())
 requestFileApiServer =
   authorizeWithAccountId createRequestFileHandler
   :<|> authorizeWithAccountId createRootRequestFileHandler

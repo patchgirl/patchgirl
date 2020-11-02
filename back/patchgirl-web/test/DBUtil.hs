@@ -8,6 +8,7 @@ module DBUtil where
 
 import qualified Data.ByteString                        as BS
 import qualified Data.ByteString.UTF8                   as BSU
+import           Data.Coerce                            (coerce)
 import           Data.Function                          ((&))
 import           Data.Functor                           ((<&>))
 import qualified Data.Map.Strict                        as Map
@@ -19,12 +20,12 @@ import qualified Database.PostgreSQL.Simple             as PG
 import qualified Database.PostgreSQL.Simple.FromField   as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple.Types       as PG
-
 import           GHC.Generics
 
 import           PatchGirl.Web.CaseInsensitive
 import           PatchGirl.Web.Environment.Model
 import           PatchGirl.Web.Http
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgNode.Model
 import           PatchGirl.Web.PgNode.Sql
@@ -776,7 +777,7 @@ insertSampleScenarioCollection accountId connection = do
                                              , _newFakeEnvironmentName      = "env1"
                                              }
   _ <- insertNewFakeEnvironment newFakeEnvironment connection
-  let requestFileId = (Maybe.fromJust . getFirstFile) requestNodes & _requestNodeId
+  let requestFileId = coerce $ (Maybe.fromJust . getFirstFile) requestNodes & _requestNodeId
   let newFakeScene =
         NewFakeHttpScene { _newFakeSceneParentId = Nothing
                          , _newFakeSceneRequestId = requestFileId

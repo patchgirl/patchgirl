@@ -2,10 +2,10 @@
 module PatchGirl.Web.RequestNode.Sql where
 
 import qualified Control.Monad                    as Monad
-import           Data.UUID
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.RequestNode.Model
 
 
@@ -26,7 +26,7 @@ selectRequestNodesFromRequestCollectionId requestCollectionId connection = do
 -- * update request node (rename)
 
 
-updateRequestNodeDB :: UUID -> UpdateRequestNode -> PG.Connection -> IO ()
+updateRequestNodeDB :: Id Request -> UpdateRequestNode -> PG.Connection -> IO ()
 updateRequestNodeDB requestNodeId updateRequestNode connection = do
   -- todo search func with : m a -> m b
   let newName = _updateRequestNodeName updateRequestNode
@@ -44,7 +44,7 @@ updateRequestNodeDB requestNodeId updateRequestNode connection = do
 -- * delete request node
 
 
-deleteRequestNodeDB :: UUID -> PG.Connection -> IO ()
+deleteRequestNodeDB :: Id Request -> PG.Connection -> IO ()
 deleteRequestNodeDB requestNodeId connection =
   Monad.void $ PG.execute connection updateQuery (PG.Only requestNodeId)
   where
@@ -175,7 +175,7 @@ insertRequestFolder NewRequestFolder {..} connection =
 -- * update request file
 
 
-updateRequestFileDB :: UUID -> UpdateRequestFile -> PG.Connection -> IO ()
+updateRequestFileDB :: Id Request -> UpdateRequestFile -> PG.Connection -> IO ()
 updateRequestFileDB requestNodeId UpdateRequestFile{..} connection = do
   _ <- PG.execute connection updateQuery ( _updateRequestFileName
                                          , _updateRequestFileHttpUrl

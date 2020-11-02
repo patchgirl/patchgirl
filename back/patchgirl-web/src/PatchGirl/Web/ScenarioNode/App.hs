@@ -16,6 +16,7 @@ import qualified Database.PostgreSQL.Simple           as PG
 import qualified Servant
 
 import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.PgCollection.Sql
 import           PatchGirl.Web.PgNode.App
@@ -244,7 +245,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
         Nothing -> pure False
         Just collectionId -> do
           selectRequestNodesFromRequestCollectionId collectionId connection
-            <&> findNodeInRequestNodes (_newSceneActorId newScene)
+            <&> findNodeInRequestNodes (Id $ _newSceneActorId newScene)
             <&> Maybe.isJust
 
     pgAuthorized :: IO Bool

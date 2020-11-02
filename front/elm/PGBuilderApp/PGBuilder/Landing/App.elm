@@ -129,7 +129,7 @@ update msg model =
                     model.pgCollection
 
                 newFolder =
-                    mkDefaultPgFolder newId newNode.name
+                    mkDefaultFolder newId newNode.name
 
                 newPgNodes =
                     case newNode.parentFolderId of
@@ -137,7 +137,7 @@ update msg model =
                             pgNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (modifyPgNode folderId (mkdirPg newFolder)) pgNodes
+                            List.map (modifyNode folderId (mkdirNode newFolder)) pgNodes
 
                 newModel =
                     { model
@@ -209,7 +209,7 @@ update msg model =
                             pgNodes ++ [ newPgNode ]
 
                         Just folderId ->
-                            List.map (modifyPgNode folderId (touchPg newPgNode)) pgNodes
+                            List.map (modifyNode folderId (touchNode newPgNode)) pgNodes
 
                 newModel =
                     { model
@@ -413,11 +413,8 @@ nodeView model selectFolderMsg pgNodes =
                 File _ -> nodeView model selectFolderMsg tail
                 Folder { id, name, children } ->
                     let
-                        (PgChildren c) =
-                            children
-
                         folderChildrenView =
-                            nodeView model selectFolderMsg c
+                            nodeView model selectFolderMsg children
 
                         tailView =
                             nodeView model selectFolderMsg tail

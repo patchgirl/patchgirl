@@ -2,7 +2,7 @@ module RequestBuilderApp.RequestBuilder.Landing.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -51,7 +51,7 @@ type Msg
     -- touch
     | GenerateRandomUUIDForFile NewNode
     | AskTouch NewNode Uuid
-    | Touch RequestFileRecord (Maybe Uuid)
+    | Touch (NodeRecord RequestFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -118,7 +118,7 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    { newRootRequestFolderId = newId
+                                    { newRootRequestFolderId = Id newId
                                     , newRootRequestFolderName = newNode.name
                                     }
                             in
@@ -127,8 +127,8 @@ update msg model =
                         Just folderId ->
                             let
                                 payload =
-                                    { newRequestFolderId = newId
-                                    , newRequestFolderParentNodeId = folderId
+                                    { newRequestFolderId = Id newId
+                                    , newRequestFolderParentNodeId = Id folderId
                                     , newRequestFolderName = newNode.name
                                     }
                             in
@@ -143,7 +143,7 @@ update msg model =
                     model.requestCollection
 
                 newFolder =
-                    mkDefaultRequestFolder newId newNode.name
+                    mkDefaultFolder newId newNode.name
 
                 newRequestNodes =
                     case newNode.parentFolderId of
@@ -151,7 +151,7 @@ update msg model =
                             requestNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (mkdirRequest newFolder)) requestNodes
+                            List.map (modifyNode folderId (mkdirNode newFolder)) requestNodes
 
                 newModel =
                     { model
@@ -181,7 +181,7 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                       { newRootRequestFileId = newFile.id
+                                       { newRootRequestFileId = Id newFile.id
                                        , newRootRequestFileName = notEditedValue newFile.name
                                        , newRootRequestFileHttpUrl = notEditedValue newFile.httpUrl
                                        , newRootRequestFileMethod = notEditedValue newFile.httpMethod |> Client.convertMethodFromFrontToBack
@@ -194,8 +194,8 @@ update msg model =
                         Just folderId ->
                             let
                                 payload =
-                                    { newRequestFileId = newFile.id
-                                    , newRequestFileParentNodeId = folderId
+                                    { newRequestFileId = Id newFile.id
+                                    , newRequestFileParentNodeId = Id folderId
                                     , newRequestFileName = notEditedValue newFile.name
                                     , newRequestFileHttpUrl = notEditedValue newFile.httpUrl
                                     , newRequestFileMethod = notEditedValue newFile.httpMethod |> Client.convertMethodFromFrontToBack
@@ -219,7 +219,7 @@ update msg model =
                             File newFile :: requestNodes
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (touchRequest (File newFile))) requestNodes
+                            List.map (modifyNode folderId (touchNode (File newFile))) requestNodes
 
                 newModel =
                     { model
@@ -237,7 +237,7 @@ update msg model =
 
 
 
-createRequestFileResultToMsg : RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+createRequestFileResultToMsg : NodeRecord RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 createRequestFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->

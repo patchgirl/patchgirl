@@ -30,15 +30,23 @@ convertRequestNodesFromBackToFront backRequestNodes =
             case backRequestNode of
                 Back.RequestFolder folder ->
                     Front.Folder
-                        { id = folder.requestNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = folder.requestNodeId
+                              in
+                                  id
                         , name = NotEdited folder.requestNodeName
                         , open = not <| List.isEmpty folder.requestNodeChildren
-                        , children = Front.RequestChildren (convertRequestNodesFromBackToFront folder.requestNodeChildren)
+                        , children = convertRequestNodesFromBackToFront folder.requestNodeChildren
                         }
 
                 Back.RequestFile file ->
                     Front.File
-                        { id = file.requestNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = file.requestNodeId
+                              in
+                                  id
                         , name = NotEdited file.requestNodeName
                         , httpUrl = NotEdited file.requestNodeHttpUrl
                         , httpMethod = NotEdited (convertMethodFromBackToFront file.requestNodeHttpMethod)
@@ -77,7 +85,7 @@ convertPgNodesFromBackToFront backPgNodes =
                         { id = folder.pgNodeId
                         , name = NotEdited folder.pgNodeName
                         , open = not <| List.isEmpty folder.pgNodeChildren
-                        , children = Front.PgChildren (convertPgNodesFromBackToFront folder.pgNodeChildren)
+                        , children = convertPgNodesFromBackToFront folder.pgNodeChildren
                         }
 
                 Back.PgFile file ->
@@ -124,7 +132,7 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                     Front.Folder
                         { id = folder.scenarioNodeId
                         , name = NotEdited folder.scenarioNodeName
-                        , children = Front.ScenarioChildren (convertScenarioNodesFromBackToFront folder.scenarioNodeChildren)
+                        , children = convertScenarioNodesFromBackToFront folder.scenarioNodeChildren
                         , open = not (List.isEmpty folder.scenarioNodeChildren)
                         }
 

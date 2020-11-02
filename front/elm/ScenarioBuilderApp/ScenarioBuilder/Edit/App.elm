@@ -66,7 +66,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode id (tempRename newName)) scenarioNodes
+                    List.map (modifyNode id (tempRename newName)) scenarioNodes
 
                 newModel =
                     { model
@@ -95,7 +95,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (Tree.modifyScenarioNode id (Tree.rename newName)) scenarioNodes
+                    List.map (modifyNode id (Tree.rename newName)) scenarioNodes
 
                 newModel =
                     { model
@@ -121,7 +121,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.concatMap (deleteScenarioNode id) scenarioNodes
+                    List.concatMap (deleteNode id) scenarioNodes
 
                 newModel =
                     { model

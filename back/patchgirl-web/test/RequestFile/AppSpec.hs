@@ -7,6 +7,7 @@
 
 module RequestFile.AppSpec where
 
+import           Data.Coerce                           (coerce)
 import           Data.Function                         ((&))
 import qualified Data.Maybe                            as Maybe
 import           Data.UUID
@@ -22,6 +23,7 @@ import           DBUtil
 import           Helper.App
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.Http
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.RequestCollection.Model
 import           PatchGirl.Web.RequestNode.Model
 import           PatchGirl.Web.Server
@@ -32,7 +34,7 @@ import           PatchGirl.Web.Server
 
 createRequestFileHandler :: Auth.Token -> Int -> NewRequestFile -> ClientM ()
 createRootRequestFileHandler :: Auth.Token -> Int -> NewRootRequestFile -> ClientM ()
-updateRequestFileHandler :: Auth.Token -> Int -> UUID -> UpdateRequestFile -> ClientM ()
+updateRequestFileHandler :: Auth.Token -> Int -> Id Request -> UpdateRequestFile -> ClientM ()
 createRequestFileHandler
   :<|> createRootRequestFileHandler
   :<|> updateRequestFileHandler =
@@ -65,14 +67,14 @@ spec =
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
+          let fileId = coerce $ Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
           let newRequestFile = mkNewRequestFile UUID.nil fileId
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
+          let folderId = coerce $ Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
           let newRequestFile = mkNewRequestFile UUID.nil folderId
           _ <- try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile)
           fakeRequestFile <- selectFakeRequestFile UUID.nil connection
@@ -115,14 +117,14 @@ spec =
       it "returns 404 when request file doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
           let updateRequestFile = mkUpdateRequestFile
-          try clientEnv (updateRequestFileHandler token 1 UUID.nil updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateRequestFileHandler token 1 (Id UUID.nil) updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "update the request file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let RequestFile {..} = Maybe.fromJust $ getFirstFile requestNodes
-          _ <- try clientEnv (updateRequestFileHandler token requestCollectionId _requestNodeId mkUpdateRequestFile)
-          FakeRequestFile{..} <- selectFakeRequestFile _requestNodeId connection
+          _ <- try clientEnv (updateRequestFileHandler token requestCollectionId (coerce _requestNodeId) mkUpdateRequestFile)
+          FakeRequestFile{..} <- selectFakeRequestFile (coerce _requestNodeId) connection
           _fakeRequestFileName `shouldBe` "new name"
           _fakeRequestFileHttpUrl `shouldBe` "https://newUrl.com"
           _fakeRequestFileHttpMethod `shouldBe` Patch
@@ -138,8 +140,8 @@ spec =
   where
     mkNewRequestFile :: UUID -> UUID -> NewRequestFile
     mkNewRequestFile id parentId =
-      NewRequestFile { _newRequestFileId           = id
-                     , _newRequestFileParentNodeId = parentId
+      NewRequestFile { _newRequestFileId           = Id id
+                     , _newRequestFileParentNodeId = (Id parentId)
                      , _newRequestFileName         = "test"
                      , _newRequestFileHttpUrl = "http://foo.com"
                      , _newRequestFileMethod  = Get
@@ -149,7 +151,7 @@ spec =
 
     mkNewRootRequestFile :: UUID -> NewRootRequestFile
     mkNewRootRequestFile id =
-      NewRootRequestFile { _newRootRequestFileId = id
+      NewRootRequestFile { _newRootRequestFileId = Id id
                          , _newRootRequestFileName = "test"
                          , _newRootRequestFileHttpUrl = "http://foo.com"
                          , _newRootRequestFileMethod = Get

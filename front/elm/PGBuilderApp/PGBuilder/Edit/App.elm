@@ -53,9 +53,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | GenerateRandomUUIDForDuplicate PgFileRecord
-    | AskDuplicate PgFileRecord Uuid
-    | Duplicate PgFileRecord (Maybe Uuid)
+    | GenerateRandomUUIDForDuplicate (NodeRecord PgFileRecord)
+    | AskDuplicate (NodeRecord PgFileRecord) Uuid
+    | Duplicate (NodeRecord PgFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -98,7 +98,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.tempRename newName)) pgNodes
+                    List.map (modifyNode id (Tree.tempRename newName)) pgNodes
 
                 newModel =
                     { model
@@ -127,7 +127,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.rename newName)) pgNodes
+                    List.map (modifyNode id (Tree.rename newName)) pgNodes
 
                 newModel =
                     { model
@@ -153,7 +153,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.concatMap (Tree.deletePgNode id) pgNodes
+                    List.concatMap (deleteNode id) pgNodes
 
                 newModel =
                     { model
@@ -232,7 +232,7 @@ update msg model =
                             pgNodes ++ [ File newFile ]
 
                         Just folderId ->
-                            List.map (modifyPgNode folderId (touchPg (File newFile))) pgNodes
+                            List.map (modifyNode folderId (touchNode (File newFile))) pgNodes
 
                 newModel =
                     { model
@@ -271,7 +271,7 @@ deletePgNodeResultToMsg id result =
         Err error ->
             PrintNotification <| AlertNotification "Could not delete, maybe this HTTP pg is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
-duplicatePgFileResultToMsg : PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicatePgFileResultToMsg : NodeRecord PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 duplicatePgFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->
@@ -420,7 +420,7 @@ deleteView model pgNode =
 -- ** duplicate view
 
 
-duplicateView : Model a -> PgFileRecord -> Element Msg
+duplicateView : Model a -> NodeRecord PgFileRecord -> Element Msg
 duplicateView model fileRecord =
     let
         name =

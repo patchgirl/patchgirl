@@ -2,7 +2,7 @@ module RequestBuilderApp.RequestBuilder.Edit.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -53,9 +53,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | GenerateRandomUUIDForDuplicate RequestFileRecord
-    | AskDuplicate RequestFileRecord Uuid
-    | Duplicate RequestFileRecord (Maybe Uuid)
+    | GenerateRandomUUIDForDuplicate (NodeRecord RequestFileRecord)
+    | AskDuplicate (NodeRecord RequestFileRecord) Uuid
+    | Duplicate (NodeRecord RequestFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -98,7 +98,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode id (tempRename newName)) requestNodes
+                    List.map (modifyNode id (tempRename newName)) requestNodes
 
                 newModel =
                     { model
@@ -117,7 +117,7 @@ update msg model =
                     Client.UpdateRequestNode { updateRequestNodeName = newName }
 
                 newMsg =
-                    Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id payload (renameNodeResultToMsg id newName)
+                    Client.putApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId (Client.Id id) payload (renameNodeResultToMsg id newName)
             in
             ( model, newMsg )
 
@@ -127,7 +127,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode id (rename newName)) requestNodes
+                    List.map (modifyNode id (rename newName)) requestNodes
 
                 newModel =
                     { model
@@ -143,7 +143,7 @@ update msg model =
                     model.requestCollection
 
                 newMsg =
-                    Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId id (deleteRequestNodeResultToMsg id)
+                    Client.deleteApiRequestCollectionByRequestCollectionIdRequestNodeByRequestNodeId "" "" requestCollectionId (Client.Id id) (deleteRequestNodeResultToMsg id)
             in
             ( model, newMsg )
 
@@ -153,7 +153,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.concatMap (deleteRequestNode id) requestNodes
+                    List.concatMap (deleteNode id) requestNodes
 
                 newModel =
                     { model
@@ -190,7 +190,7 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                       { newRootRequestFileId = newFileRecord.id
+                                       { newRootRequestFileId = Id newFileRecord.id
                                        , newRootRequestFileName = editedOrNotEditedValue newFileRecord.name
                                        , newRootRequestFileHttpUrl = editedOrNotEditedValue newFileRecord.httpUrl
                                        , newRootRequestFileMethod = editedOrNotEditedValue newFileRecord.httpMethod |> Client.convertMethodFromFrontToBack
@@ -203,8 +203,8 @@ update msg model =
                         Just folderId ->
                             let
                                 payload =
-                                    { newRequestFileId = newFileRecord.id
-                                    , newRequestFileParentNodeId = folderId
+                                    { newRequestFileId = Id newFileRecord.id
+                                    , newRequestFileParentNodeId = Id folderId
                                     , newRequestFileName = editedOrNotEditedValue newFileRecord.name
                                     , newRequestFileHttpUrl = editedOrNotEditedValue newFileRecord.httpUrl
                                     , newRequestFileMethod = editedOrNotEditedValue newFileRecord.httpMethod |> Client.convertMethodFromFrontToBack
@@ -227,7 +227,7 @@ update msg model =
                             requestNodes ++ [ File newFile ]
 
                         Just folderId ->
-                            List.map (modifyRequestNode folderId (touchRequest (File newFile))) requestNodes
+                            List.map (modifyNode folderId (touchNode (File newFile))) requestNodes
 
                 newModel =
                     { model
@@ -248,7 +248,7 @@ update msg model =
 -- * util
 
 
-duplicateRequestFileResultToMsg : RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicateRequestFileResultToMsg : NodeRecord RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 duplicateRequestFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->
@@ -416,7 +416,7 @@ deleteView model requestNode =
 -- ** duplicate view
 
 
-duplicateView : Model a -> RequestFileRecord -> Element Msg
+duplicateView : Model a -> NodeRecord RequestFileRecord -> Element Msg
 duplicateView model fileRecord =
     let
         name =

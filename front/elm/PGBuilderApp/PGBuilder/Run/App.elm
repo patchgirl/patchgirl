@@ -73,7 +73,7 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> PgFileRecord -> (Model a, PgFileRecord, Cmd Msg)
+update : Msg -> Model a -> NodeRecord PgFileRecord -> (Model a, NodeRecord PgFileRecord, Cmd Msg)
 update msg model file =
     case msg of
         UpdateSqlQuery newSqlQuery ->
@@ -197,7 +197,7 @@ keyValuesToRun model =
     Application.getEnvironmentKeyValuesToRun model
 
 
-buildPgComputationPayload : PgFileRecord -> Model a -> (Dict String (List Client.Template), Client.PgComputationInput)
+buildPgComputationPayload : NodeRecord PgFileRecord -> Model a -> (Dict String (List Client.Template), Client.PgComputationInput)
 buildPgComputationPayload file model =
     let
         keyValuesInput =
@@ -239,7 +239,7 @@ postPgSqlComputationResultToMsg result =
                 AlertNotification
                     ("Could not run SQL request. Is <a href=\"" ++ (href (DocumentationPage PatchGirlRunnerAppDoc)) ++ "\">patchgirl-runner</a> running?") (httpErrorToString error)
 
-isBuilderDirty : PgFileRecord -> Bool
+isBuilderDirty : NodeRecord PgFileRecord -> Bool
 isBuilderDirty file =
     List.any isDirty
         [ file.dbHost
@@ -278,7 +278,7 @@ parseHeaders headers =
 -- * view
 
 
-view : Model a -> PgFileRecord -> Element Msg
+view : Model a -> NodeRecord PgFileRecord -> Element Msg
 view model file =
     column [ alignTop, width fill, spacing 20 ]
         [ el ( box  [ width (fillPortion 1), alignTop, padding 20 ] ) <|
@@ -301,7 +301,7 @@ view model file =
 -- ** builder
 
 
-builderView : Model a -> PgFileRecord -> Element Msg
+builderView : Model a -> NodeRecord PgFileRecord -> Element Msg
 builderView model file =
     let
         showInterpolatedCredentials : String -> Element Msg

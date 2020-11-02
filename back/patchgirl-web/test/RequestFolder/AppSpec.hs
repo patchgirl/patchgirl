@@ -7,6 +7,7 @@
 
 module RequestFolder.AppSpec where
 
+import           Data.Coerce                           (coerce)
 import           Data.Function                         ((&))
 import qualified Data.Maybe                            as Maybe
 import           Data.UUID
@@ -21,9 +22,9 @@ import           Test.Hspec
 import           DBUtil
 import           Helper.App
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.RequestCollection.Model
 import           PatchGirl.Web.RequestNode.Model
-
 import           PatchGirl.Web.Server
 
 
@@ -62,14 +63,14 @@ spec =
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let fileId = Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
+          let fileId = coerce $ Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
           let newRequestFile = mkNewRequestFolder UUID.nil fileId
           try clientEnv (createRequestFolder token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
-          let folderId = Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
+          let folderId = coerce $ Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
           let newRequestFolder = mkNewRequestFolder UUID.nil folderId
           _ <- try clientEnv (createRequestFolder token requestCollectionId newRequestFolder)
           fakeRequestFolder <- selectFakeRequestFolder UUID.nil connection
@@ -98,11 +99,13 @@ spec =
   where
     mkNewRequestFolder :: UUID -> UUID -> NewRequestFolder
     mkNewRequestFolder id parentId =
-      NewRequestFolder { _newRequestFolderId           = id
-                       , _newRequestFolderParentNodeId = parentId
+      NewRequestFolder { _newRequestFolderId           = Id id
+                       , _newRequestFolderParentNodeId = Id parentId
                        , _newRequestFolderName = "whatever"
                        }
 
     mkNewRootRequestFolder :: UUID -> NewRootRequestFolder
     mkNewRootRequestFolder id =
-      NewRootRequestFolder { _newRootRequestFolderId = id, _newRootRequestFolderName = "test" }
+      NewRootRequestFolder { _newRootRequestFolderId = Id id
+                           , _newRootRequestFolderName = "test"
+                           }

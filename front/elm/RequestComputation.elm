@@ -10,7 +10,13 @@ import StringTemplate exposing(..)
 -- * build request computation input
 
 
-buildRequestComputationInput : RequestFileRecord -> RequestComputationInput
+buildRequestComputationInput :     { a | httpUrl : Editable String
+    , httpMethod : Editable HttpMethod
+    , httpHeaders : Editable (List ( String, String ))
+    , httpBody : Editable String
+    , requestComputationResult : Maybe RequestComputationOutput
+    }
+ -> RequestComputationInput
 buildRequestComputationInput model =
     { method =
         editedOrNotEditedValue model.httpMethod

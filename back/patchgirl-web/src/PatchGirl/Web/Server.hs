@@ -24,7 +24,7 @@ import           Servant.Auth.Server               (Cookie, CookieSettings, JWT,
                                                     sessionCookieName)
 
 
-import PatchGirl.Web.Api (webApiServer, WebApi)
+import           PatchGirl.Web.Api                 (WebApi, webApiServer)
 import           PatchGirl.Web.Internal.Env
 import           PatchGirl.Web.Model
 

@@ -51,7 +51,7 @@ update msg model =
                     model.requestCollection
 
                 newRequestNodes =
-                    List.map (modifyRequestNode id toggleFolder) requestNodes
+                    List.map (modifyNode id toggleFolder) requestNodes
 
                 newModel =
                     { model
@@ -84,11 +84,8 @@ nodeView model requestCollection =
             case node of
                 Folder { id, name, open, children } ->
                     let
-                        (RequestChildren c) =
-                            children
-
                         folderChildrenView =
-                            nodeView model c
+                            nodeView model children
 
                         tailView =
                             nodeView model tail

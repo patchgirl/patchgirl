@@ -105,7 +105,7 @@ update msg model =
                                     model.scenarioCollection
 
                                 newBuilderTree =
-                                    List.map (modifyScenarioNode newScenarioRecord.id (always (File newScenarioRecord))) scenarioNodes
+                                    List.map (modifyNode newScenarioRecord.id (always (File newScenarioRecord))) scenarioNodes
                             in
                             ( { updatedModel | scenarioCollection = ScenarioCollection scenarioCollectionId newBuilderTree }
                             , Cmd.map RunAppMsg updatedMsg
@@ -134,15 +134,10 @@ getBuilder model =
             RichLandingView whichDefaultView
 
         RichEditView whichEditView ->
-            let
-                getChildren folder =
-                    let (ScenarioChildren children) = folder.children
-                    in children
-            in
-            RichEditView (mapEditView (findNode nodes getChildren) whichEditView)
+            RichEditView (mapEditView (findNode nodes) whichEditView)
 
         RichRunView id sceneDetailView ->
-            RichRunView (findScenarioNode nodes id) sceneDetailView
+            RichRunView (findNode nodes id) sceneDetailView
 
 
 -- * view

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dada130ec19eb7eba1976a0a831d8b3c072ca1d16862ad8a296159fd823925cd
+-- hash: 206569d1f0784d6ebcec0e9f4afef770c5fd38332839eb28ac6b31b9e9151332
 
 name:           patchgirl-web
 version:        0.0.0
@@ -24,6 +24,7 @@ library
       PatchGirl.Web.Github.App
       PatchGirl.Web.Health.App
       PatchGirl.Web.Http
+      PatchGirl.Web.Id
       PatchGirl.Web.Internal.Env
       PatchGirl.Web.Model
       PatchGirl.Web.NodeType.Model
@@ -67,6 +68,7 @@ library
     , cookie
     , dhall
     , filepath
+    , http-api-data
     , http-client
     , http-client-tls
     , http-conduit
@@ -118,6 +120,7 @@ executable patchgirl-web-exe
     , cookie
     , dhall
     , filepath
+    , http-api-data
     , http-client
     , http-client-tls
     , http-conduit
@@ -193,6 +196,7 @@ test-suite spec
     , dhall
     , filepath
     , hspec
+    , http-api-data
     , http-client
     , http-client-tls
     , http-conduit
