@@ -14,7 +14,6 @@ import           Data.Aeson                 (FromJSON, ToJSON (..),
                                              defaultOptions, fieldLabelModifier,
                                              genericToJSON, parseJSON)
 import           Data.Aeson.Types           (genericParseJSON)
-import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Generics
 
@@ -25,7 +24,7 @@ import           PatchGirl.Web.Id
 
 
 data KeyValue = KeyValue
-    { _keyValueId     :: UUID
+    { _keyValueId     :: Id KeyValueId
     , _keyValueKey    :: String
     , _keyValueValue  :: String
     , _keyValueHidden :: Bool
@@ -66,7 +65,7 @@ instance ToJSON Environment where
 data PGEnvironmentWithKeyValue = PGEnvironmentWithKeyValue
     { _pgEnvironmentWithKeyValueEnvironmentId   :: Id EnvId
     , _pgEnvironmentWithKeyValueEnvironmentName :: String
-    , _pgEnvironmentWithKeyValueKeyValueId      :: UUID
+    , _pgEnvironmentWithKeyValueKeyValueId      :: Id KeyValueId
     , _pgEnvironmentWithKeyValueKey             :: String
     , _pgEnvironmentWithKeyValueValue           :: String
     , _pgEnvironmentWithKeyValueHidden          :: Bool
@@ -118,7 +117,7 @@ instance FromJSON UpdateEnvironment where
 
 
 data NewKeyValue = NewKeyValue
-    { _newKeyValueId     :: UUID
+    { _newKeyValueId     :: Id KeyValueId
     , _newKeyValueKey    :: String
     , _newKeyValueValue  :: String
     , _newKeyValueHidden :: Bool

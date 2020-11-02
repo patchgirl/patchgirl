@@ -273,6 +273,7 @@ Elm.deriveElmDef deriveWithTaggedObject ''Web.Request
 Elm.deriveElmDef deriveWithTaggedObject ''Web.Account
 Elm.deriveElmDef deriveWithTaggedObject ''Web.Postgres
 Elm.deriveElmDef deriveWithTaggedObject ''Web.EnvId
+Elm.deriveElmDef deriveWithTaggedObject ''Web.KeyValueId
 
 {-
 'Id a' is a phantom type and elm-bridge doesn't handle them
@@ -381,6 +382,7 @@ webModule =
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.Account)
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.Postgres)
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.EnvId)
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.KeyValueId)
       ]
     proxyApi =
       (Elm.Proxy :: Elm.Proxy (Web.RestApi '[Servant.Cookie]))

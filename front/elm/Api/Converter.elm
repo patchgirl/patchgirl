@@ -234,7 +234,9 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
 
 convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.KeyValue
 convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue, keyValueHidden } =
-    { id = keyValueId
+    { id =
+          let (Back.Id id) = keyValueId
+          in id
     , key = NotEdited keyValueKey
     , value = NotEdited (stringToTemplate keyValueValue)
     , hidden = NotEdited keyValueHidden
@@ -250,7 +252,7 @@ convertEnvironmentKeyValueFromFrontToBack { id, key, value, hidden } =
                 |> List.map templateAsString
                 |> String.join ""
     in
-    { newKeyValueId = id
+    { newKeyValueId = Back.Id id
     , newKeyValueKey = editedOrNotEditedValue key
     , newKeyValueValue = templatedStringsToString (editedOrNotEditedValue value)
     , newKeyValueHidden = (editedOrNotEditedValue hidden)

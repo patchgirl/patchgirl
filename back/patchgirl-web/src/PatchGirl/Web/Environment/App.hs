@@ -16,7 +16,6 @@ import           Data.Foldable                    (foldl')
 import           Data.List                        (find)
 import           Data.Map.Strict                  (Map)
 import qualified Data.Map.Strict                  as Map
-import           Data.UUID                        (UUID)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import           Prelude                          hiding (id)
@@ -235,7 +234,7 @@ deleteKeyValueHandler
      )
   => Id Account
   -> Id EnvId
-  -> UUID
+  -> Id KeyValueId
   -> m ()
 deleteKeyValueHandler accountId environmentId' keyValueId' = do
   connection <- getDBConnection
@@ -249,7 +248,7 @@ deleteKeyValueHandler accountId environmentId' keyValueId' = do
       liftIO $ deleteKeyValueDB (_keyValueId keyValue) connection
     Nothing -> throwError err404
 
-deleteKeyValueDB :: UUID -> PG.Connection -> IO ()
+deleteKeyValueDB :: Id KeyValueId -> PG.Connection -> IO ()
 deleteKeyValueDB keyValueId connection = do
   _ <- PG.execute connection deleteKeyValueQuery $ PG.Only keyValueId
   return ()

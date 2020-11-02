@@ -163,7 +163,7 @@ type EnvironmentApi auths =
       Delete '[JSON] () :<|>  -- deleteEnvironment
       "keyValue" :> (
         ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] () :<|> -- updateKeyValues
-        Capture "keyValueId" UUID :> Delete '[JSON] () -- deleteKeyValues
+        Capture "keyValueId" (Id KeyValueId) :> Delete '[JSON] () -- deleteKeyValues
       )
     )
   ))
@@ -174,7 +174,7 @@ environmentApiServer
   :<|> ((AuthResult CookieSession -> Id EnvId -> UpdateEnvironment -> AppM ())
   :<|> ((AuthResult CookieSession -> Id EnvId -> AppM ())
   :<|> ((AuthResult CookieSession -> Id EnvId -> [NewKeyValue] -> AppM ())
-  :<|> (AuthResult CookieSession -> Id EnvId -> UUID -> AppM ())))))
+  :<|> (AuthResult CookieSession -> Id EnvId -> (Id KeyValueId) -> AppM ())))))
 environmentApiServer =
   authorizeWithAccountId createEnvironmentHandler
   :<|> authorizeWithAccountId getEnvironmentsHandler

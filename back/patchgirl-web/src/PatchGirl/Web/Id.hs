@@ -41,3 +41,4 @@ data Request = Request
 data Postgres = Postgres
 data Account = Account
 data EnvId = EnvId
+data KeyValueId = KeyValueId

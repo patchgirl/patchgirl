@@ -129,7 +129,7 @@ update msg model environment =
         AskDeleteKeyValue id ->
             let
                 newMsg =
-                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken model.session) (Id environment.id) id (deleteKeyValueResultToMsg id)
+                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken model.session) (Id environment.id) (Id id) (deleteKeyValueResultToMsg id)
             in
             ( model, environment, newMsg )
 
