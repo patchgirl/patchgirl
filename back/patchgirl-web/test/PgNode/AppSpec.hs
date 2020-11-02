@@ -9,7 +9,6 @@
 module PgNode.AppSpec where
 
 import           Data.Function                    ((&))
-import           Data.UUID
 import qualified Data.UUID                        as UUID
 import qualified Network.HTTP.Types               as HTTP
 import           Servant
@@ -21,6 +20,7 @@ import           Test.Hspec
 import           DBUtil
 import           Helper.App
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgNode.Model
 import           PatchGirl.Web.Server
@@ -29,8 +29,8 @@ import           PatchGirl.Web.Server
 -- * client
 
 
-updatePgNodeHandler :: Auth.Token -> UUID -> UUID -> UpdatePgNode -> ClientM ()
-deletePgNodeHandler :: Auth.Token -> UUID -> UUID -> ClientM ()
+updatePgNodeHandler :: Auth.Token -> Id PgCollection -> Id Postgres -> UpdatePgNode -> ClientM ()
+deletePgNodeHandler :: Auth.Token -> Id PgCollection -> Id Postgres -> ClientM ()
 updatePgNodeHandler :<|> deletePgNodeHandler =
   client (Proxy :: Proxy (PgNodeApi '[Auth.JWT]))
 
@@ -49,7 +49,7 @@ spec =
     describe "update pg node" $ do
       it "returns 404 when pg node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updatePgNodeHandler token UUID.nil UUID.nil updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updatePgNodeHandler token (Id UUID.nil) (Id UUID.nil) updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the pg node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -73,7 +73,7 @@ spec =
     describe "delete pg node" $ do
       it "returns 404 when pg node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deletePgNodeHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deletePgNodeHandler token (Id UUID.nil) (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the pg node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do

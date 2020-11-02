@@ -7,7 +7,7 @@ import Parser exposing(DeadEnd)
 import Json.Encode as Json exposing(Value)
 import List.Extra as List
 import Set exposing (Set)
-import Api.WebGeneratedClient as Client exposing(Account, Id)
+import Api.WebGeneratedClient as Client exposing(Account, Id(..))
 
 
 -- * menu

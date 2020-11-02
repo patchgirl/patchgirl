@@ -296,7 +296,7 @@ insertSampleRequestCollection accountId connection = do
 -- ** new fake pg collection
 
 
-insertFakePgCollection :: UUID -> PG.Connection -> IO UUID
+insertFakePgCollection :: UUID -> PG.Connection -> IO (Id PgCollection)
 insertFakePgCollection accountId connection = do
   [PG.Only id] <- PG.query connection rawQuery (PG.Only accountId)
   return id
@@ -313,10 +313,10 @@ insertFakePgCollection accountId connection = do
 
 
 data NewFakePgCollectionToPgNode = NewFakePgCollectionToPgNode
-    { _fakePgCollectionToPgNodePgCollectionId :: UUID
-    , _fakePgCollectionToPgNodePgPgNodeId     :: UUID
+    { _fakePgCollectionToPgNodePgCollectionId :: Id PgCollection
+    , _fakePgCollectionToPgNodePgPgNodeId     :: Id Postgres
     }
-    deriving (Eq, Show, Read, Generic, PG.ToRow)
+    deriving (Eq, Show, Generic, PG.ToRow)
 
 insertFakePgCollectionToPgNode :: NewFakePgCollectionToPgNode -> PG.Connection -> IO ()
 insertFakePgCollectionToPgNode fakePgCollectionToPgNode connection = do
@@ -334,14 +334,14 @@ insertFakePgCollectionToPgNode fakePgCollectionToPgNode connection = do
 
 
 data NewFakePgFolder = NewFakePgFolder
-    { _newFakePgFolderId       :: UUID
-    , _newFakePgFolderParentId :: Maybe UUID
+    { _newFakePgFolderId       :: Id Postgres
+    , _newFakePgFolderParentId :: Maybe (Id Postgres)
     , _newFakePgName           :: String
     }
-    deriving (Eq, Show, Read, Generic, PG.ToRow)
+    deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakePgFolder :: NewFakePgFolder -> PG.Connection -> IO UUID
+insertFakePgFolder :: NewFakePgFolder -> PG.Connection -> IO (Id Postgres)
 insertFakePgFolder fakePgFolder connection = do
   [PG.Only id] <- PG.query connection rawQuery fakePgFolder
   return id
@@ -358,8 +358,8 @@ insertFakePgFolder fakePgFolder connection = do
 
 
 data NewFakePgFile = NewFakePgFile
-    { _newFakePgFileId       :: UUID
-    , _newFakePgFileParentId :: Maybe UUID
+    { _newFakePgFileId       :: Id Postgres
+    , _newFakePgFileParentId :: Maybe (Id Postgres)
     , _newFakePgFileName     :: String
     , _newFakePgFileSql      :: String
     , _newFakePgFileHost     :: String
@@ -368,10 +368,10 @@ data NewFakePgFile = NewFakePgFile
     , _newFakePgFileUser     :: String
     , _newFakePgFileDbName   :: String
     }
-    deriving (Eq, Show, Read, Generic, PG.ToRow)
+    deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakePgFile :: NewFakePgFile -> PG.Connection -> IO UUID
+insertFakePgFile :: NewFakePgFile -> PG.Connection -> IO (Id Postgres)
 insertFakePgFile newFakePgFile connection = do
   [PG.Only id] <- PG.query connection rawQuery newFakePgFile
   return id
@@ -412,12 +412,12 @@ insertFakePgFile newFakePgFile connection = do
 
 insertSamplePgCollection :: UUID -> PG.Connection -> IO PgCollection
 insertSamplePgCollection accountId connection = do
-  n1Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n1 id) connection
-  n2Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n2 id) connection
-  n3Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n3 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 id n3Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 id n3Id) connection
+  n1Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n1 $ Id id) connection
+  n2Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n2 $ Id id) connection
+  n3Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n3 (Id id) n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n4 (Id id) n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n5 (Id id) n3Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakePgFile (n6 (Id id) n3Id) connection
   pgCollectionId <- insertFakePgCollection accountId connection
   let fakePgCollectionToPgNode1 =
         NewFakePgCollectionToPgNode { _fakePgCollectionToPgNodePgCollectionId = pgCollectionId
@@ -592,13 +592,13 @@ selectRequestNodeExists id connection = do
 
 
 data FakePgFile = FakePgFile
-    { _fakePgFileParentId :: Maybe UUID
+    { _fakePgFileParentId :: Maybe (Id Postgres)
     , _fakePgFileName     :: String
     , _fakePgFileSql      :: String
     }
-    deriving (Eq, Show, Read, Generic, PG.FromRow)
+    deriving (Eq, Show, Generic, PG.FromRow)
 
-selectFakePgFile :: UUID -> PG.Connection -> IO FakePgFile
+selectFakePgFile :: Id Postgres -> PG.Connection -> IO FakePgFile
 selectFakePgFile id connection = do
   [fakePgFile] <- PG.query connection rawQuery (PG.Only id)
   return fakePgFile
@@ -615,13 +615,13 @@ selectFakePgFile id connection = do
 
 
 data FakePgFolder = FakePgFolder
-    { _fakePgFolderParentId :: Maybe UUID
+    { _fakePgFolderParentId :: Maybe (Id Postgres)
     , _fakePgFolderName     :: String
     }
-    deriving (Eq, Show, Read, Generic, PG.FromRow)
+    deriving (Eq, Show, Generic, PG.FromRow)
 
 
-selectFakePgFolder :: UUID -> PG.Connection -> IO FakePgFolder
+selectFakePgFolder :: Id Postgres -> PG.Connection -> IO FakePgFolder
 selectFakePgFolder fakePgFolderId connection = do
   [fakePgFolder] <- PG.query connection rawQuery (PG.Only fakePgFolderId)
   return fakePgFolder
@@ -637,7 +637,7 @@ selectFakePgFolder fakePgFolderId connection = do
 -- ** select pg node exist
 
 
-selectPgNodeExists :: UUID -> PG.Connection -> IO Bool
+selectPgNodeExists :: Id Postgres -> PG.Connection -> IO Bool
 selectPgNodeExists id connection = do
   [PG.Only nodeExists] <- PG.query connection rawQuery (PG.Only id)
   return nodeExists
@@ -989,7 +989,7 @@ insertFakeHttpScene newFakeScene connection = do
 
 data NewFakePgScene = NewFakePgScene
     { _newFakePgSceneParentId   :: Maybe UUID
-    , _newFakePgSceneActorId    :: UUID
+    , _newFakePgSceneActorId    :: Id Postgres
     , _newFakePgSceneVariables  :: SceneVariables
     , _newFakePgScenePrescript  :: String
     , _newFakePgScenePostscript :: String

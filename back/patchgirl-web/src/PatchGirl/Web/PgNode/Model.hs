@@ -15,11 +15,12 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        genericToJSON,
                                                        parseEither, withObject,
                                                        (.:))
-import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
+
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.NodeType.Model
 
 
@@ -27,12 +28,12 @@ import           PatchGirl.Web.NodeType.Model
 
 
 data PgNode = PgFolder
-    { _pgNodeId       :: UUID
+    { _pgNodeId       :: Id Postgres
     , _pgNodeName     :: String
     , _pgNodeChildren :: [PgNode]
     }
     | PgFile
-    { _pgNodeId       :: UUID
+    { _pgNodeId       :: Id Postgres
     , _pgNodeName     :: String
     , _pgNodeSql      :: String
     , _pgNodeHost     :: String
@@ -130,7 +131,7 @@ instance ToField UpdatePgNode where
 
 
 data NewRootPgFile = NewRootPgFile
-    { _newRootPgFileId       :: UUID
+    { _newRootPgFileId       :: Id Postgres
     , _newRootPgFileName     :: String
     , _newRootPgFileSql      :: String
     , _newRootPgFileHost     :: String
@@ -154,8 +155,8 @@ instance FromJSON NewRootPgFile where
 
 
 data NewPgFile = NewPgFile
-    { _newPgFileId           :: UUID
-    , _newPgFileParentNodeId :: UUID
+    { _newPgFileId           :: Id Postgres
+    , _newPgFileParentNodeId :: Id Postgres
     , _newPgFileName         :: String
     , _newPgFileSql          :: String
     , _newPgFileHost         :: String
@@ -179,7 +180,7 @@ instance FromJSON NewPgFile where
 
 
 data NewRootPgFolder = NewRootPgFolder
-    { _newRootPgFolderId   :: UUID
+    { _newRootPgFolderId   :: Id Postgres
     , _newRootPgFolderName :: String
     }
     deriving (Eq, Show, Generic, ToRow)
@@ -197,8 +198,8 @@ instance FromJSON NewRootPgFolder where
 
 
 data NewPgFolder = NewPgFolder
-    { _newPgFolderId           :: UUID
-    , _newPgFolderParentNodeId :: UUID
+    { _newPgFolderId           :: Id Postgres
+    , _newPgFolderParentNodeId :: Id Postgres
     , _newPgFolderName         :: String
     }
     deriving (Eq, Show, Generic)

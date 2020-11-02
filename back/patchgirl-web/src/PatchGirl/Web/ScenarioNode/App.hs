@@ -254,7 +254,7 @@ createSceneHandler accountId scenarioNodeId newScene = do
         Nothing -> pure False
         Just collectionId -> do
           selectPgNodesFromPgCollectionId collectionId connection
-            <&> findNodeInPgNodes (_newSceneActorId newScene)
+            <&> findNodeInPgNodes (Id $ _newSceneActorId newScene)
             <&> Maybe.isJust
 
     sceneAuthorized :: Bool

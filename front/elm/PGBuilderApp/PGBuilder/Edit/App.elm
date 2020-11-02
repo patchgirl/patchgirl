@@ -2,7 +2,7 @@ module PGBuilderApp.PGBuilder.Edit.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -117,7 +117,7 @@ update msg model =
                     Client.UpdatePgNode { updatePgNodeName = newName }
 
                 newMsg =
-                    Client.putApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" pgCollectionId id payload (renameNodeResultToMsg id newName)
+                    Client.putApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" (Id pgCollectionId) (Id id) payload (renameNodeResultToMsg id newName)
             in
             ( model, newMsg )
 
@@ -143,7 +143,7 @@ update msg model =
                     model.pgCollection
 
                 newMsg =
-                    Client.deleteApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" pgCollectionId id (deletePgNodeResultToMsg id)
+                    Client.deleteApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" (Id pgCollectionId) (Id id) (deletePgNodeResultToMsg id)
             in
             ( model, newMsg )
 
@@ -190,7 +190,7 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    { newRootPgFileId = newFileRecord.id
+                                    { newRootPgFileId = Id newFileRecord.id
                                     , newRootPgFileName = editedOrNotEditedValue newFileRecord.name
                                     , newRootPgFileSql = editedOrNotEditedValue newFileRecord.sql
                                     , newRootPgFileHost = editedOrNotEditedValue newFileRecord.dbHost
@@ -200,13 +200,13 @@ update msg model =
                                     , newRootPgFileDbName = editedOrNotEditedValue newFileRecord.dbName
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" pgCollectionId payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" (Id pgCollectionId) payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newPgFileId = newFileRecord.id
-                                    , newPgFileParentNodeId = folderId
+                                    { newPgFileId = Id newFileRecord.id
+                                    , newPgFileParentNodeId = Id folderId
                                     , newPgFileName = editedOrNotEditedValue newFileRecord.name
                                     , newPgFileSql = editedOrNotEditedValue newFileRecord.sql
                                     , newPgFileHost = editedOrNotEditedValue newFileRecord.dbHost
@@ -216,7 +216,7 @@ update msg model =
                                     , newPgFileDbName = editedOrNotEditedValue newFileRecord.dbName
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" pgCollectionId payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
+                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" (Id pgCollectionId) payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
 
             in
             ( model, newMsg )

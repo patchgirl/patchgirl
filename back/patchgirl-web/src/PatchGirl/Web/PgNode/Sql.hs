@@ -1,17 +1,18 @@
 module PatchGirl.Web.PgNode.Sql where
 
 import qualified Control.Monad                    as Monad
-import           Data.UUID                        (UUID)
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 
+import           PatchGirl.Web.Id
+import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgNode.Model
 
 
 -- * select pg nodes from pg collection id
 
 
-selectPgNodesFromPgCollectionId :: UUID -> PG.Connection -> IO [PgNode]
+selectPgNodesFromPgCollectionId :: Id PgCollection -> PG.Connection -> IO [PgNode]
 selectPgNodesFromPgCollectionId pgCollectionId connection = do
     res :: [PG.Only PgNodeFromPG] <- PG.query connection query (PG.Only pgCollectionId)
     return $ map (fromPgPgNodeToPgNode . (\(PG.Only r) -> r)) res
@@ -25,7 +26,7 @@ selectPgNodesFromPgCollectionId pgCollectionId connection = do
 -- * update pg node (rename)
 
 
-updatePgNodeDB :: UUID -> UpdatePgNode -> PG.Connection -> IO ()
+updatePgNodeDB :: Id Postgres -> UpdatePgNode -> PG.Connection -> IO ()
 updatePgNodeDB pgNodeId updatePgNode connection = do
   -- todo search func with : m a -> m b
   let newName = _updatePgNodeName updatePgNode
@@ -43,7 +44,7 @@ updatePgNodeDB pgNodeId updatePgNode connection = do
 -- * delete pg node
 
 
-deletePgNodeDB :: UUID -> PG.Connection -> IO ()
+deletePgNodeDB :: Id Postgres -> PG.Connection -> IO ()
 deletePgNodeDB pgNodeId connection =
   Monad.void $ PG.execute connection updateQuery (PG.Only pgNodeId)
   where
@@ -57,7 +58,7 @@ deletePgNodeDB pgNodeId connection =
 -- * insert root pg file
 
 
-insertRootPgFile :: NewRootPgFile -> UUID -> PG.Connection -> IO ()
+insertRootPgFile :: NewRootPgFile -> Id PgCollection -> PG.Connection -> IO ()
 insertRootPgFile NewRootPgFile {..} pgCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootPgFileId
@@ -124,7 +125,7 @@ insertPgFile newPgFile connection =
 -- * insert root pg folder
 
 
-insertRootPgFolder :: NewRootPgFolder -> UUID -> PG.Connection -> IO ()
+insertRootPgFolder :: NewRootPgFolder -> Id PgCollection -> PG.Connection -> IO ()
 insertRootPgFolder NewRootPgFolder{..} pgCollectionId connection =
   Monad.void $
     PG.execute connection rawQuery ( _newRootPgFolderId
@@ -173,7 +174,7 @@ insertPgFolder NewPgFolder {..} connection =
 -- * update pg file
 
 
-updatePgFileDB :: UUID -> UpdatePgFile -> PG.Connection -> IO ()
+updatePgFileDB :: Id Postgres -> UpdatePgFile -> PG.Connection -> IO ()
 updatePgFileDB pgNodeId UpdatePgFile{..} connection = do
   _ <- PG.execute connection updateQuery ( _updatePgFileName
                                          , _updatePgFileSql

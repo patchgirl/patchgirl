@@ -68,7 +68,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
 convertPgCollectionFromBackToFront : Back.PgCollection -> Front.PgCollection
 convertPgCollectionFromBackToFront backPgCollection =
     let
-        (Back.PgCollection id backPgNodes) =
+        (Back.PgCollection (Back.Id id) backPgNodes) =
             backPgCollection
     in
     Front.PgCollection id (convertPgNodesFromBackToFront backPgNodes)
@@ -82,7 +82,11 @@ convertPgNodesFromBackToFront backPgNodes =
             case backPgNode of
                 Back.PgFolder folder ->
                     Front.Folder
-                        { id = folder.pgNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = folder.pgNodeId
+                              in
+                                  id
                         , name = NotEdited folder.pgNodeName
                         , open = not <| List.isEmpty folder.pgNodeChildren
                         , children = convertPgNodesFromBackToFront folder.pgNodeChildren
@@ -90,7 +94,11 @@ convertPgNodesFromBackToFront backPgNodes =
 
                 Back.PgFile file ->
                     Front.File
-                        { id = file.pgNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = file.pgNodeId
+                              in
+                                  id
                         , name = NotEdited file.pgNodeName
                         , dbHost = NotEdited file.pgNodeHost
                         , dbPort = NotEdited file.pgNodePort

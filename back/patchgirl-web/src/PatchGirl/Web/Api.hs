@@ -346,7 +346,7 @@ requestFolderApiServer =
 
 
 type PgNodeApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> "pgNode" :> Capture "pgNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" (Id PgCollection) :> "pgNode" :> Capture "pgNodeId" (Id Postgres) :> (
     -- rename pg node
     ReqBody '[JSON] UpdatePgNode :> Put '[JSON] () :<|>
     -- delete pg node
@@ -354,8 +354,8 @@ type PgNodeApi auths =
   ))
 
 pgNodeApiServer
-  :: (AuthResult CookieSession -> UUID -> UUID -> UpdatePgNode -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+  :: (AuthResult CookieSession -> Id PgCollection -> Id Postgres -> UpdatePgNode -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> Id Postgres -> AppM ())
 pgNodeApiServer =
   authorizeWithAccountId updatePgNodeHandler
   :<|> authorizeWithAccountId deletePgNodeHandler
@@ -365,20 +365,20 @@ pgNodeApiServer =
 
 
 type PgFileApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" (Id PgCollection) :> (
     "pgFile" :> (
       -- createPgFile
       ReqBody '[JSON] NewPgFile :> Post '[JSON] ()
     ) :<|> "rootPgFile" :> (
       -- create root pg file
       ReqBody '[JSON] NewRootPgFile :> Post '[JSON] ()
-    ) :<|> Capture "pgNodeId" UUID :> ReqBody '[JSON] UpdatePgFile :> Put '[JSON] ()
+    ) :<|> Capture "pgNodeId" (Id Postgres) :> ReqBody '[JSON] UpdatePgFile :> Put '[JSON] ()
   ))
 
 pgFileApiServer
-  :: (AuthResult CookieSession -> UUID -> NewPgFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootPgFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> UpdatePgFile -> AppM ())
+  :: (AuthResult CookieSession -> Id PgCollection -> NewPgFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> NewRootPgFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> Id Postgres -> UpdatePgFile -> AppM ())
 pgFileApiServer =
   authorizeWithAccountId createPgFileHandler
   :<|> authorizeWithAccountId createRootPgFileHandler
@@ -389,7 +389,7 @@ pgFileApiServer =
 
 
 type PgFolderApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" (Id PgCollection) :> (
     "pgFolder" :> (
       -- create pg folder
       ReqBody '[JSON] NewPgFolder :> Post '[JSON] ()
@@ -400,8 +400,8 @@ type PgFolderApi auths =
   ))
 
 pgFolderApiServer
-  :: (AuthResult CookieSession -> UUID -> NewPgFolder -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootPgFolder -> AppM ())
+  :: (AuthResult CookieSession -> Id PgCollection -> NewPgFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> NewRootPgFolder -> AppM ())
 pgFolderApiServer =
   authorizeWithAccountId createPgFolderHandler
   :<|> authorizeWithAccountId createRootPgFolderHandler

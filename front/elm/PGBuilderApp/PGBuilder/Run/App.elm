@@ -5,6 +5,7 @@ import Api.Converter as Client
 import Random
 import Dict exposing (Dict)
 import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -151,7 +152,7 @@ update msg model file =
                     model.pgCollection
 
                 newMsg =
-                    Client.putApiPgCollectionByPgCollectionIdByPgNodeId "" "" pgCollectionId file.id payload updatePgFileResultToMsg
+                    Client.putApiPgCollectionByPgCollectionIdByPgNodeId "" "" (Id pgCollectionId) (Id file.id) payload updatePgFileResultToMsg
             in
             ( model, file, newMsg )
 

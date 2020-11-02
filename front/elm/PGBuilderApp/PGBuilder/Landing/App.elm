@@ -2,7 +2,7 @@ module PGBuilderApp.PGBuilder.Landing.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing(Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -104,21 +104,21 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    { newRootPgFolderId = newId
+                                    { newRootPgFolderId = (Id newId)
                                     , newRootPgFolderName = newNode.name
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdRootPgFolder "" "" pgCollectionId payload (createPgFolderResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFolder "" "" (Id pgCollectionId) payload (createPgFolderResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newPgFolderId = newId
-                                    , newPgFolderParentNodeId = folderId
+                                    { newPgFolderId = (Id newId)
+                                    , newPgFolderParentNodeId = (Id folderId)
                                     , newPgFolderName = newNode.name
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdPgFolder "" "" pgCollectionId payload (createPgFolderResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdPgFolder "" "" (Id pgCollectionId) payload (createPgFolderResultToMsg newNode newId)
 
             in
             ( model, newMsg )
@@ -164,7 +164,7 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    { newRootPgFileId = newId
+                                    { newRootPgFileId = (Id newId)
                                     , newRootPgFileName = newNode.name
                                     , newRootPgFileSql = ""
                                     , newRootPgFileHost = ""
@@ -174,13 +174,13 @@ update msg model =
                                     , newRootPgFileDbName = ""
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" pgCollectionId payload (createPgFileResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" (Id pgCollectionId) payload (createPgFileResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newPgFileId = newId
-                                    , newPgFileParentNodeId = folderId
+                                    { newPgFileId = (Id newId)
+                                    , newPgFileParentNodeId = (Id folderId)
                                     , newPgFileName = newNode.name
                                     , newPgFileSql = ""
                                     , newPgFileHost = ""
@@ -190,7 +190,7 @@ update msg model =
                                     , newPgFileDbName = ""
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" pgCollectionId payload (createPgFileResultToMsg newNode newId)
+                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" (Id pgCollectionId) payload (createPgFileResultToMsg newNode newId)
 
             in
             ( model, newMsg )
