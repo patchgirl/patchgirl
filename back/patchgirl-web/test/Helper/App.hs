@@ -30,6 +30,7 @@ import qualified Test.Hspec                       as Hspec
 
 import           PatchGirl.Web.CaseInsensitive
 import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.Internal.Env
 import           PatchGirl.Web.Session.Model
 
@@ -73,7 +74,7 @@ signedUserToken1 = do
   let
     id = Maybe.fromJust $ UUID.fromString "b644ca57-7181-4f0e-a253-39ce45f5364e"
     cookieSession =
-        SignedUserCookie { _cookieAccountId    = id
+        SignedUserCookie { _cookieAccountId   = Id id
                          , _cookieGithubEmail = Just $ CaseInsensitive "foo@mail.com"
                          , _cookieGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
                          }
@@ -82,7 +83,7 @@ signedUserToken1 = do
 signedUserToken :: UUID -> IO Auth.Token
 signedUserToken id = do
   let cookieSession =
-        SignedUserCookie { _cookieAccountId    = id
+        SignedUserCookie { _cookieAccountId   = Id id
                          , _cookieGithubEmail = Just $ CaseInsensitive "foo@mail.com"
                          , _cookieGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
                          }
@@ -96,7 +97,7 @@ visitorToken :: IO (Auth.Token, UUID)
 visitorToken = do
   let
     id = Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
-    cookieSession = VisitorCookie { _cookieAccountId = id }
+    cookieSession = VisitorCookie { _cookieAccountId = Id id }
   mkToken cookieSession Nothing <&> \token -> (token, id)
 
 

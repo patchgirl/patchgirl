@@ -21,7 +21,7 @@ instance ToField (Id a) where
 
 instance ToJSON (Id a) where
   toJSON =
-    genericToJSON $ defaultOptions
+    genericToJSON defaultOptions
 
 instance FromJSON (Id a) where
   parseJSON =
@@ -31,3 +31,4 @@ deriving instance FromHttpApiData (Id a)
 deriving instance ToHttpApiData (Id a)
 
 data Request = Request
+data Account = Account

@@ -25,13 +25,14 @@ import           Servant.Server                   (ServerError)
 
 import           PatchGirl.Web.DB
 import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 
 
 -- * environment
 
 
-selectEnvironments :: UUID -> PG.Connection -> IO [Environment]
+selectEnvironments :: Id Account -> PG.Connection -> IO [Environment]
 selectEnvironments accountId connection = do
   pgEnvironmentsWithKeyValue :: [PGEnvironmentWithKeyValue] <- PG.query connection selectEnvironmentQueryWithKeyValues (PG.Only accountId)
   pgEnvironmentsWithoutKeyValues :: [PGEnvironmentWithoutKeyValue] <- PG.query connection selectEnvironmentQueryWithoutKeyValues (PG.Only accountId)
@@ -107,7 +108,7 @@ getEnvironmentsHandler
   :: ( MonadReader Env m
      , MonadIO m
      )
-  => UUID
+  => Id Account
   -> m [Environment]
 getEnvironmentsHandler accountId = do
   connection <- getDBConnection
@@ -132,7 +133,7 @@ insertEnvironment NewEnvironment {..} connection = do
           RETURNING id
           |]
 
-bindEnvironmentToAccount :: UUID -> UUID -> PG.Connection -> IO ()
+bindEnvironmentToAccount :: Id Account -> UUID -> PG.Connection -> IO ()
 bindEnvironmentToAccount accountId environmentId connection = do
   _ <- PG.execute connection bindEnvironmentToAccountQuery (accountId, environmentId)
   return ()
@@ -152,7 +153,7 @@ createEnvironmentHandler
   :: ( MonadReader Env m
      , MonadIO m
      )
-  => UUID -> NewEnvironment -> m ()
+  => Id Account -> NewEnvironment -> m ()
 createEnvironmentHandler accountId newEnvironment = do
   connection <- getDBConnection
   environmentId <- liftIO $ insertEnvironment newEnvironment connection
@@ -168,7 +169,7 @@ updateEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID -> UUID -> UpdateEnvironment -> m ()
+  => Id Account -> UUID -> UpdateEnvironment -> m ()
 updateEnvironmentHandler accountId environmentId updateEnvironment = do
   connection <- getDBConnection
   environments <- liftIO $ selectEnvironments accountId connection
@@ -198,7 +199,7 @@ deleteEnvironmentHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> m ()
 deleteEnvironmentHandler accountId environmentId = do
@@ -229,7 +230,7 @@ deleteKeyValueHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> m ()
@@ -288,7 +289,7 @@ updateKeyValuesHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> [NewKeyValue]
   -> m ()

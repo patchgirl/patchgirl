@@ -2,7 +2,6 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE StandaloneDeriving    #-}
 
 module PatchGirl.Web.RequestNode.Model where
 

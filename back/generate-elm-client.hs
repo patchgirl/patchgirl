@@ -98,7 +98,7 @@ myDefaultElmToString :: Elm.EType -> T.Text
 myDefaultElmToString argType =
   case argType of
     Elm.ETyCon (Elm.ETCon "UUID")    -> "Uuid.toString"
-    Elm.ETyApp (Elm.ETyCon (Elm.ETCon { Elm.tc_name = "Id" })) (Elm.ETyCon (Elm.ETCon _)) -> "\\(Id a) -> Uuid.toString a"
+    Elm.ETyApp (Elm.ETyCon Elm.ETCon { Elm.tc_name = "Id" }) (Elm.ETyCon (Elm.ETCon _)) -> "\\(Id a) -> Uuid.toString a"
     _ ->  Elm.defaultElmToString argType
 
 
@@ -270,6 +270,7 @@ Elm.deriveElmDef deriveWithTaggedObject ''Web.ActorType
 Elm.deriveElmDef deriveWithTaggedObject ''Web.SceneVariables
 Elm.deriveElmDef deriveWithTaggedObject ''Web.SceneVariableValue
 Elm.deriveElmDef deriveWithTaggedObject ''Web.Request
+Elm.deriveElmDef deriveWithTaggedObject ''Web.Account
 
 {-
 'Id a' is a phantom type and elm-bridge doesn't handle them
@@ -286,7 +287,7 @@ instance Elm.IsElmDefinition (Web.Id a) where
                                                               , Elm._stcFields = Elm.Anonymous [Elm.ETyCon $ Elm.ETCon "Uuid"]
                                                               }
                                                     ]
-                            , Elm.es_type = Elm.SumEncoding' $ Elm.TwoElemArray
+                            , Elm.es_type = Elm.SumEncoding' Elm.TwoElemArray
                             , Elm.es_omit_null = True
                             , Elm.es_unary_strings = False
                             }
@@ -373,8 +374,9 @@ webModule =
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.ActorType)
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.SceneVariables)
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.SceneVariableValue)
-      , DefineElm (Elm.Proxy :: Elm.Proxy Web.Request)
       , DefineElm (Elm.Proxy :: Elm.Proxy (Web.Id a))
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.Request)
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.Account)
       ]
     proxyApi =
       (Elm.Proxy :: Elm.Proxy (Web.RestApi '[Servant.Cookie]))

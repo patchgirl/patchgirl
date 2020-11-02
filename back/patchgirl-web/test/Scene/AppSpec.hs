@@ -96,7 +96,7 @@ spec =
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Nothing
-                                                     , _fakeSceneId = (coerce requestFileId)
+                                                     , _fakeSceneId = coerce requestFileId
                                                      , _fakeActorType = HttpActor
                                                      , _fakeSceneVariables = SceneVariables (Map.fromList[ ("foo", SceneVariableValue "fee" True)
                                                                                                     , ("bar", SceneVariableValue "baz" False)
@@ -148,7 +148,7 @@ spec =
           try clientEnv (createSceneHandler token scenarioFileId newScene)
           newCreatedScene <- selectFakeScene UUID.nil connection
           newCreatedScene `shouldBe` Just (FakeScene { _fakeSceneParentId = Just $ scenarioFirstScene & _sceneId
-                                                     , _fakeSceneId = (coerce requestFileId)
+                                                     , _fakeSceneId = coerce requestFileId
                                                      , _fakeActorType = HttpActor
                                                      , _fakeSceneVariables = SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                           , ("bar", SceneVariableValue "baz" False)

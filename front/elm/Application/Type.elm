@@ -7,7 +7,7 @@ import Parser exposing(DeadEnd)
 import Json.Encode as Json exposing(Value)
 import List.Extra as List
 import Set exposing (Set)
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing(Account, Id)
 
 
 -- * menu
@@ -157,7 +157,7 @@ type Session
 
 
 type alias VisitorSession =
-    { id : Uuid
+    { id : Id Account
     , csrfToken : String
     , signInEmail : String
     , signInPassword : String
@@ -169,7 +169,7 @@ type alias VisitorSession =
 
 
 type alias SignedUserSession =
-    { id : Uuid
+    { id : Id Account
     , csrfToken : String
     , email : Maybe String
     , avatarUrl : String
@@ -184,16 +184,6 @@ getCsrfToken session =
 
         SignedUser { csrfToken } ->
             csrfToken
-
-
-getSessionId : Session -> Uuid
-getSessionId session =
-    case session of
-        Visitor { id } ->
-            id
-
-        SignedUser { id } ->
-            id
 
 
 -- * environment

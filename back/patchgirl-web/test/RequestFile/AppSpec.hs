@@ -141,7 +141,7 @@ spec =
     mkNewRequestFile :: UUID -> UUID -> NewRequestFile
     mkNewRequestFile id parentId =
       NewRequestFile { _newRequestFileId           = Id id
-                     , _newRequestFileParentNodeId = (Id parentId)
+                     , _newRequestFileParentNodeId = Id parentId
                      , _newRequestFileName         = "test"
                      , _newRequestFileHttpUrl = "http://foo.com"
                      , _newRequestFileMethod  = Get

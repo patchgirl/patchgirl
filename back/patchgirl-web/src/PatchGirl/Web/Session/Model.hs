@@ -2,16 +2,18 @@
 
 module PatchGirl.Web.Session.Model where
 
-import           Data.Aeson          (FromJSON (..), ToJSON (..),
-                                      genericParseJSON, genericToJSON,
-                                      parseJSON)
-import           Data.Aeson.Types    (defaultOptions, fieldLabelModifier)
-import           Data.Text           (Text)
-import           Data.UUID
-import           GHC.Generics        (Generic)
-import           Servant.Auth.Server (FromJWT, ToJWT)
+import           Data.Aeson                    (FromJSON (..), ToJSON (..),
+                                                genericParseJSON, genericToJSON,
+                                                parseJSON)
+import           Data.Aeson.Types              (defaultOptions,
+                                                fieldLabelModifier)
+import           Data.Text                     (Text)
+import           GHC.Generics                  (Generic)
+import           Servant.Auth.Server           (FromJWT, ToJWT)
 
 import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.Id
+
 
 -- * whoami
 
@@ -20,16 +22,17 @@ import           PatchGirl.Web.CaseInsensitive
 what will be sent from the server to the browser
 -}
 
-data Session
-  = VisitorSession { _sessionAccountId :: UUID
-                   , _sessionCsrfToken :: Text
-                   }
-  | SignedUserSession { _sessionAccountId       :: UUID
-                      , _sessionCsrfToken       :: Text
-                      , _sessionGithubEmail     :: Maybe String
-                      , _sessionGithubAvatarUrl :: String
-                      }
-  deriving (Eq, Show, Read, Generic)
+data Session = VisitorSession
+    { _sessionAccountId :: Id Account
+    , _sessionCsrfToken :: Text
+    }
+    | SignedUserSession
+    { _sessionAccountId       :: Id Account
+    , _sessionCsrfToken       :: Text
+    , _sessionGithubEmail     :: Maybe String
+    , _sessionGithubAvatarUrl :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON Session where
   toJSON =
@@ -50,14 +53,15 @@ instance FromJWT Session
 what will be sent from the browser to the server
 -}
 
-data CookieSession
-  = VisitorCookie { _cookieAccountId :: UUID
-                  }
-  | SignedUserCookie { _cookieAccountId       :: UUID
-                     , _cookieGithubEmail     :: Maybe CaseInsensitive
-                     , _cookieGithubAvatarUrl :: String
-                     }
-  deriving (Eq, Show, Read, Generic)
+data CookieSession = VisitorCookie
+    { _cookieAccountId :: Id Account
+    }
+    | SignedUserCookie
+    { _cookieAccountId       :: Id Account
+    , _cookieGithubEmail     :: Maybe CaseInsensitive
+    , _cookieGithubAvatarUrl :: String
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON CookieSession where
   toJSON =

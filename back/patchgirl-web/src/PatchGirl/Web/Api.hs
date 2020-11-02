@@ -545,7 +545,7 @@ type AssetApi =
 
 authorizeWithAccountId
   :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
-  => (UUID -> p) -> AuthResult CookieSession -> p
+  => (Id Account -> p) -> AuthResult CookieSession -> p
 authorizeWithAccountId f = \case
   BadPassword ->
     throwAll err402

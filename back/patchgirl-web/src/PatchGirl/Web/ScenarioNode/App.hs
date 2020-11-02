@@ -37,7 +37,7 @@ updateScenarioNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> UpdateScenarioNode
@@ -64,7 +64,7 @@ deleteScenarioNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> m ()
@@ -90,7 +90,7 @@ createRootScenarioFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewRootScenarioFile
   -> m ()
@@ -112,7 +112,7 @@ createScenarioFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewScenarioFile
   -> m ()
@@ -140,7 +140,7 @@ updateScenarioFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UpdateScenarioFile
   -> m ()
@@ -175,7 +175,7 @@ createRootScenarioFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewRootScenarioFolder
   -> m ()
@@ -199,7 +199,7 @@ createScenarioFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewScenarioFolder
   -> m ()
@@ -229,7 +229,7 @@ createSceneHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewScene
   -> m ()
@@ -286,7 +286,7 @@ deleteSceneHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> m ()
@@ -320,7 +320,7 @@ updateSceneHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> UpdateScene

@@ -18,6 +18,7 @@ import           Data.UUID
 import qualified Servant
 
 import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.PgCollection.Sql
 import           PatchGirl.Web.PgNode.Model
@@ -32,7 +33,7 @@ updatePgNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> UpdatePgNode
@@ -59,7 +60,7 @@ deletePgNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> m ()
@@ -106,7 +107,7 @@ createRootPgFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewRootPgFile
   -> m ()
@@ -127,7 +128,7 @@ createPgFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewPgFile
   -> m ()
@@ -155,7 +156,7 @@ updatePgFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> UUID
   -> UpdatePgFile
@@ -182,7 +183,7 @@ createRootPgFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewRootPgFolder
   -> m ()
@@ -203,7 +204,7 @@ createPgFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> UUID
   -> NewPgFolder
   -> m ()

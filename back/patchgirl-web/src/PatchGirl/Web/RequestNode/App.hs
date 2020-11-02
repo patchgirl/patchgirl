@@ -14,7 +14,6 @@ import qualified Control.Monad.Except                as Except (MonadError)
 import qualified Control.Monad.IO.Class              as IO
 import qualified Control.Monad.Reader                as Reader
 import qualified Data.Maybe                          as Maybe
-import           Data.UUID
 import qualified Database.PostgreSQL.Simple          as PG
 import qualified Servant
 
@@ -34,7 +33,7 @@ updateRequestNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> Id Request
   -> UpdateRequestNode
@@ -53,7 +52,7 @@ deleteRequestNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> Id Request
   -> m ()
@@ -72,7 +71,7 @@ createRootRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRootRequestFile
   -> m ()
@@ -90,7 +89,7 @@ createRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRequestFile
   -> m ()
@@ -112,7 +111,7 @@ updateRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> Id Request
   -> UpdateRequestFile
@@ -132,7 +131,7 @@ createRootRequestFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRootRequestFolder
   -> m ()
@@ -150,7 +149,7 @@ createRequestFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRequestFolder
   -> m ()
@@ -172,7 +171,7 @@ ifValidRequestCollection
      , Except.MonadError Servant.ServerError m
      )
   => PG.Connection
-  -> UUID
+  -> Id Account
   -> Int
   -> m ()
   -> m ()

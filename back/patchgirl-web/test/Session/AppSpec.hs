@@ -6,16 +6,17 @@
 
 module Session.AppSpec where
 
-import           Data.Functor        ((<&>))
+import           Data.Functor                ((<&>))
 import           Servant
 import           Servant.Auth.Client
-import           Servant.Auth.Server (JWT, SetCookie)
-import           Servant.Client      (ClientM, client)
+import           Servant.Auth.Server         (JWT, SetCookie)
+import           Servant.Client              (ClientM, client)
 import           Test.Hspec
 
 import           Helper.App
-import           PatchGirl.Web.Server
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Id
+import           PatchGirl.Web.Server
 import           PatchGirl.Web.Session.Model
 
 
@@ -56,7 +57,7 @@ spec =
           cleanDBBefore $ \_ -> do
           (token, accountId) <- signedUserToken1
           (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
-          session `shouldBe` SignedUserSession { _sessionAccountId = accountId
+          session `shouldBe` SignedUserSession { _sessionAccountId = Id accountId
                                                , _sessionCsrfToken = ""
                                                , _sessionGithubEmail = Just "foo@mail.com"
                                                , _sessionGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
@@ -67,7 +68,7 @@ spec =
           cleanDBBefore $ \_ -> do
             (token, accountId) <- visitorToken
             (_, session) <- try clientEnv (whoAmI token) <&> (\r -> (getHeaders r, getResponse r))
-            session `shouldBe` VisitorSession { _sessionAccountId = accountId
+            session `shouldBe` VisitorSession { _sessionAccountId = Id accountId
                                               , _sessionCsrfToken = ""
                                               }
 
@@ -81,6 +82,6 @@ spec =
           ([(headerName, headerValue), _], session) <- try clientEnv signOut <&> (\r -> (getHeaders r, getResponse r))
           headerName `shouldBe` "Set-Cookie"
           headerValue `shouldBe` "JWT=value; Path=/; Expires=Tue, 10-Oct-1995 00:00:00 GMT; Max-Age=0; HttpOnly; Secure"
-          session `shouldBe` VisitorSession { _sessionAccountId = visitorId
+          session `shouldBe` VisitorSession { _sessionAccountId = Id visitorId
                                             , _sessionCsrfToken = ""
                                             }

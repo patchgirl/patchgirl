@@ -91,9 +91,9 @@ data FakeAccount = FakeAccount
     }
     deriving (Eq, Show, Read, Generic, PG.FromRow)
 
-selectFakeAccount :: UUID -> PG.Connection -> IO (Maybe FakeAccount)
-selectFakeAccount id connection =
-  PG.query connection rawQuery (PG.Only id) <&> Maybe.listToMaybe
+selectFakeAccount :: Id Account -> PG.Connection -> IO (Maybe FakeAccount)
+selectFakeAccount accountId connection =
+  PG.query connection rawQuery (PG.Only accountId) <&> Maybe.listToMaybe
   where
     rawQuery =
       [sql|

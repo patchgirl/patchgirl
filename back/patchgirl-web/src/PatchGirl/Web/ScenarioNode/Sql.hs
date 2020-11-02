@@ -5,6 +5,7 @@ import qualified Database.PostgreSQL.Simple           as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified GHC.Int                              as Int
 
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.ScenarioCollection.Sql
 import           PatchGirl.Web.ScenarioNode.Model
 
@@ -12,7 +13,7 @@ import           PatchGirl.Web.ScenarioNode.Model
 -- * select scenario nodes from account id
 
 
-selectScenarioNodesFromAccountId :: UUID -> PG.Connection -> IO [ScenarioNode]
+selectScenarioNodesFromAccountId :: Id Account -> PG.Connection -> IO [ScenarioNode]
 selectScenarioNodesFromAccountId accountId connection =
   selectScenarioCollectionId accountId connection >>= \case
     Nothing -> pure []
@@ -123,7 +124,7 @@ insertScenarioFile NewScenarioFile {..} connection =
 -- * update scenario file
 
 
-updateScenarioFileDB :: UpdateScenarioFile -> UUID -> PG.Connection -> IO Int.Int64
+updateScenarioFileDB :: UpdateScenarioFile -> Id Account -> PG.Connection -> IO Int.Int64
 updateScenarioFileDB UpdateScenarioFile{..} accountId connection =
   PG.execute connection updateQuery ( accountId
                                     , _updateScenarioFileEnvironmentId
