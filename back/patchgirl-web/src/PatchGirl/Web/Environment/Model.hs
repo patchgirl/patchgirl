@@ -18,6 +18,8 @@ import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Generics
 
+import           PatchGirl.Web.Id
+
 
 -- * key value
 
@@ -43,7 +45,7 @@ instance ToJSON KeyValue where
 
 
 data Environment = Environment
-    { _environmentId        :: UUID
+    { _environmentId        :: Id EnvId
     , _environmentName      :: String
     , _environmentKeyValues :: [KeyValue]
     }
@@ -62,7 +64,7 @@ instance ToJSON Environment where
 
 
 data PGEnvironmentWithKeyValue = PGEnvironmentWithKeyValue
-    { _pgEnvironmentWithKeyValueEnvironmentId   :: UUID
+    { _pgEnvironmentWithKeyValueEnvironmentId   :: Id EnvId
     , _pgEnvironmentWithKeyValueEnvironmentName :: String
     , _pgEnvironmentWithKeyValueKeyValueId      :: UUID
     , _pgEnvironmentWithKeyValueKey             :: String
@@ -72,7 +74,7 @@ data PGEnvironmentWithKeyValue = PGEnvironmentWithKeyValue
     deriving (Generic, PG.FromRow)
 
 data PGEnvironmentWithoutKeyValue = PGEnvironmentWithoutKeyValue
-    { _pgEnvironmentWithoutKeyValueEnvironmentId   :: UUID
+    { _pgEnvironmentWithoutKeyValueEnvironmentId   :: Id EnvId
     , _pgEnvironmentWithoutKeyValueEnvironmentName :: String
     }
     deriving (Generic, PG.FromRow)
@@ -82,7 +84,7 @@ data PGEnvironmentWithoutKeyValue = PGEnvironmentWithoutKeyValue
 
 
 data NewEnvironment = NewEnvironment
-    { _newEnvironmentId   :: UUID
+    { _newEnvironmentId   :: Id EnvId
     , _newEnvironmentName :: String
     }
     deriving (Eq, Show, Generic)

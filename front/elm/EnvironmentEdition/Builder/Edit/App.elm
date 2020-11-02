@@ -2,7 +2,7 @@ module EnvironmentEdition.Builder.Edit.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -85,7 +85,7 @@ update msg model =
                     Client.UpdateEnvironment { updateEnvironmentName = newName }
 
                 newMsg =
-                    Client.putApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id payload (updateEnvironmentResultToMsg id newName)
+                    Client.putApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) (Id id) payload (updateEnvironmentResultToMsg id newName)
             in
             ( model, newMsg )
 
@@ -110,7 +110,7 @@ update msg model =
         AskDelete id ->
             let
                 newMsg =
-                    Client.deleteApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) id (deleteEnvironmentResultToMsg id)
+                    Client.deleteApiEnvironmentByEnvironmentId "" (getCsrfToken model.session) (Id id) (deleteEnvironmentResultToMsg id)
             in
             ( model, newMsg )
 

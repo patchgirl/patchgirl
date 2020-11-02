@@ -4,7 +4,7 @@ import Animation
 import Api.Converter as Client
 import Random
 import Dict exposing (Dict)
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -396,7 +396,7 @@ update msg model file sceneDetailView =
 
                 payload =
                     { updateScenarioFileId = file.id
-                    , updateScenarioFileEnvironmentId = newEnvironmentId
+                    , updateScenarioFileEnvironmentId = newEnvironmentId |> Maybe.map Id
                     }
 
                 newMsg =

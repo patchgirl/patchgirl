@@ -4,7 +4,7 @@ module EnvironmentEdition.Builder.Landing.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -80,7 +80,7 @@ update msg model =
         AskTouch newName newId ->
             let
                 payload =
-                    { newEnvironmentId = newId
+                    { newEnvironmentId = Id newId
                     , newEnvironmentName = newName
                     }
 

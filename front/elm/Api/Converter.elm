@@ -149,7 +149,14 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
                         { id = file.scenarioNodeId
                         , name = NotEdited file.scenarioNodeName
                         , scenes = List.map convertSceneActorFromBackToFront file.scenarioNodeScenes
-                        , environmentId = NotEdited file.scenarioNodeEnvironmentId
+                        , environmentId =
+                            case file.scenarioNodeEnvironmentId of
+                                Just (Back.Id id) ->
+                                    NotEdited (Just id)
+
+                                Nothing ->
+                                    NotEdited Nothing
+
                         }
     in
     List.map convertScenarioNodeFromBackToFront backScenarioNodes
@@ -213,7 +220,9 @@ convertActorTypeFromFrontToBack actorType =
 
 convertEnvironmentFromBackToFront : Back.Environment -> Front.Environment
 convertEnvironmentFromBackToFront { environmentId, environmentName, environmentKeyValues } =
-    { id = environmentId
+    { id =
+          let (Back.Id id) = environmentId
+          in id
     , name = NotEdited environmentName
     , showRenameInput = False
     , keyValues = List.map convertEnvironmentKeyValueFromBackToFront environmentKeyValues

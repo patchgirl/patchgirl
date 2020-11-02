@@ -16,7 +16,7 @@ import           GHC.Generics
 import           Web.HttpApiData                      (FromHttpApiData,
                                                        ToHttpApiData)
 
-newtype Id a = Id UUID deriving (Eq, Show, Generic)
+newtype Id a = Id UUID deriving (Eq, Ord, Show, Generic)
 
 instance ToField (Id a) where
     toField (Id uuid) = toField uuid
@@ -40,3 +40,4 @@ deriving instance ToHttpApiData (Id a)
 data Request = Request
 data Postgres = Postgres
 data Account = Account
+data EnvId = EnvId

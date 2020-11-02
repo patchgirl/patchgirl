@@ -26,6 +26,7 @@ import qualified Database.PostgreSQL.Simple.FromField as PG
 import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
 
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.NodeType.Model
 
 
@@ -209,7 +210,7 @@ data ScenarioNode = ScenarioFolder
     | ScenarioFile
     { _scenarioNodeId            :: UUID
     , _scenarioNodeName          :: String
-    , _scenarioNodeEnvironmentId :: Maybe UUID
+    , _scenarioNodeEnvironmentId :: Maybe (Id EnvId)
     , _scenarioNodeScenes        :: [SceneActor]
     }
     deriving (Eq, Show, Generic)
@@ -296,7 +297,7 @@ instance FromJSON UpdateScenarioNode where
 data NewRootScenarioFile = NewRootScenarioFile
     { _newRootScenarioFileId            :: UUID
     , _newRootScenarioFileName          :: String
-    , _newRootScenarioFileEnvironmentId :: Maybe UUID
+    , _newRootScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, ToRow)
 
@@ -316,7 +317,7 @@ data NewScenarioFile = NewScenarioFile
     { _newScenarioFileId            :: UUID
     , _newScenarioFileName          :: String
     , _newScenarioFileParentNodeId  :: UUID
-    , _newScenarioFileEnvironmentId :: Maybe UUID
+    , _newScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, ToRow)
 
@@ -334,7 +335,7 @@ instance FromJSON NewScenarioFile where
 
 data UpdateScenarioFile = UpdateScenarioFile
     { _updateScenarioFileId            :: UUID
-    , _updateScenarioFileEnvironmentId :: Maybe UUID
+    , _updateScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, ToRow)
 
