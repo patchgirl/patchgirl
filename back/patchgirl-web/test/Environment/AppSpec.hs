@@ -216,7 +216,7 @@ spec =
     mkNewEnvironment :: IO NewEnvironment
     mkNewEnvironment = do
       id <- UUID.nextRandom
-      return $ NewEnvironment { _newEnvironmentId = (Id id)
+      return $ NewEnvironment { _newEnvironmentId = Id id
                               , _newEnvironmentName = "test"
                               }
 

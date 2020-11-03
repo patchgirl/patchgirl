@@ -121,7 +121,7 @@ spec =
           let scenarioFile = Maybe.fromJust (getFirstScenarioFile scenarioNodes)
           let scenarioFileId = scenarioFile & _scenarioNodeId
           let scenarioFirstScene = head $ scenarioFile & _scenarioNodeScenes
-          let newScene = mkNewScene nilId (Just $ Id $ coerce $ scenarioFirstScene & _sceneId) (Id $ coerce $ requestFileId) (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
+          let newScene = mkNewScene nilId (Just $ Id $ coerce $ scenarioFirstScene & _sceneId) (Id $ coerce requestFileId) (SceneVariables (Map.fromList [ ("foo", SceneVariableValue "fee" True)
                                                                                                                            , ("bar", SceneVariableValue "baz" False)
                                                                                                                            ])) "" ""
           try clientEnv (createSceneHandler token scenarioFileId newScene)

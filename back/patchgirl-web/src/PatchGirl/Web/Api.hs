@@ -173,7 +173,7 @@ environmentApiServer
   :<|> ((AuthResult CookieSession -> Id EnvId -> UpdateEnvironment -> AppM ())
   :<|> ((AuthResult CookieSession -> Id EnvId -> AppM ())
   :<|> ((AuthResult CookieSession -> Id EnvId -> [NewKeyValue] -> AppM ())
-  :<|> (AuthResult CookieSession -> Id EnvId -> (Id KeyValueId) -> AppM ())))))
+  :<|> (AuthResult CookieSession -> Id EnvId -> Id KeyValueId -> AppM ())))))
 environmentApiServer =
   authorizeWithAccountId createEnvironmentHandler
   :<|> authorizeWithAccountId getEnvironmentsHandler
