@@ -9,7 +9,6 @@ module PgFolder.AppSpec where
 
 import           Data.Function                    ((&))
 import qualified Data.Maybe                       as Maybe
-import qualified Data.UUID                        as UUID
 import qualified Network.HTTP.Types               as HTTP
 import           Servant
 import qualified Servant.Auth.Client              as Auth
@@ -49,29 +48,29 @@ spec =
     describe "create a pg folder" $ do
       it "returns 404 when pg collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newPgFile = mkNewPgFolder (Id UUID.nil) (Id UUID.nil)
-          try clientEnv (createPgFolder token (Id UUID.nil) newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          let newPgFile = mkNewPgFolder nilId nilId
+          try clientEnv (createPgFolder token nilId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when pg node parent doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId _ <- insertSamplePgCollection accountId connection
-          let newPgFile = mkNewPgFolder (Id UUID.nil) (Id UUID.nil)
+          let newPgFile = mkNewPgFolder nilId nilId
           try clientEnv (createPgFolder token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when pg node parent exist but isn't a pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let fileId = Maybe.fromJust (getFirstPgFile pgNodes) & _pgNodeId
-          let newPgFile = mkNewPgFolder (Id UUID.nil) fileId
+          let newPgFile = mkNewPgFolder nilId fileId
           try clientEnv (createPgFolder token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let folderId = Maybe.fromJust (getFirstPgFolder pgNodes) & _pgNodeId
-          let newPgFolder = mkNewPgFolder (Id UUID.nil) folderId
+          let newPgFolder = mkNewPgFolder nilId folderId
           _ <- try clientEnv (createPgFolder token pgCollectionId newPgFolder)
-          fakePgFolder <- selectFakePgFolder (Id UUID.nil) connection
+          fakePgFolder <- selectFakePgFolder nilId connection
           fakePgFolder `shouldBe`  FakePgFolder { _fakePgFolderParentId   = Just folderId
                                                 , _fakePgFolderName       = "whatever"
                                                 }
@@ -81,15 +80,15 @@ spec =
     describe "create a root pg folder" $ do
       it "returns 404 when pg collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newRootPgFolder = mkNewRootPgFolder (Id UUID.nil)
-          try clientEnv (createRootPgFolder token (Id UUID.nil) newRootPgFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
+          let newRootPgFolder = mkNewRootPgFolder nilId
+          try clientEnv (createRootPgFolder token nilId newRootPgFolder) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           pgCollectionId <- insertFakePgCollection accountId connection
-          let newRootPgFolder = mkNewRootPgFolder (Id UUID.nil)
+          let newRootPgFolder = mkNewRootPgFolder nilId
           _ <- try clientEnv (createRootPgFolder token pgCollectionId newRootPgFolder)
-          fakePgFolder <- selectFakePgFolder (Id UUID.nil) connection
+          fakePgFolder <- selectFakePgFolder nilId connection
           fakePgFolder `shouldBe`  FakePgFolder { _fakePgFolderParentId = Nothing
                                                 , _fakePgFolderName       = "name"
                                                 }

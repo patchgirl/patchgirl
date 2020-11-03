@@ -10,7 +10,6 @@ module RequestNode.AppSpec where
 
 import           Data.Coerce                           (coerce)
 import           Data.Function                         ((&))
-import qualified Data.UUID                             as UUID
 import qualified Network.HTTP.Types                    as HTTP
 import           Servant
 import qualified Servant.Auth.Client                   as Auth
@@ -50,7 +49,7 @@ spec =
     describe "update request node" $ do
       it "returns 404 when request node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updateRequestNodeHandler token 1 (Id UUID.nil) updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateRequestNodeHandler token 1 nilId updateRequestNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -74,7 +73,7 @@ spec =
     describe "delete request node" $ do
       it "returns 404 when request node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deleteRequestNodeHandler token 1 (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteRequestNodeHandler token 1 nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the request node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do

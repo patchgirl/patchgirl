@@ -9,7 +9,6 @@ module PgFile.AppSpec where
 
 import           Data.Function                    ((&))
 import qualified Data.Maybe                       as Maybe
-import qualified Data.UUID                        as UUID
 import qualified Network.HTTP.Types               as HTTP
 import           Servant                          hiding (Header)
 import qualified Servant.Auth.Client              as Auth
@@ -52,29 +51,29 @@ spec =
     describe "create a pg file" $ do
       it "returns 404 when pg collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newPgFile = mkNewPgFile (Id UUID.nil) (Id UUID.nil)
-          try clientEnv (createPgFileHandler token (Id UUID.nil) newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          let newPgFile = mkNewPgFile nilId nilId
+          try clientEnv (createPgFileHandler token nilId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when pg node parent doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId _ <- insertSamplePgCollection accountId connection
-          let newPgFile = mkNewPgFile (Id UUID.nil) (Id UUID.nil)
+          let newPgFile = mkNewPgFile nilId nilId
           try clientEnv (createPgFileHandler token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 500 when pg node parent exist but isn't a pg folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let fileId = Maybe.fromJust (getFirstPgFile pgNodes) & _pgNodeId
-          let newPgFile = mkNewPgFile (Id UUID.nil) fileId
+          let newPgFile = mkNewPgFile nilId fileId
           try clientEnv (createPgFileHandler token pgCollectionId newPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           PgCollection pgCollectionId pgNodes <- insertSamplePgCollection accountId connection
           let folderId = Maybe.fromJust (getFirstPgFolder pgNodes) & _pgNodeId
-          let newPgFile = mkNewPgFile (Id UUID.nil) folderId
+          let newPgFile = mkNewPgFile nilId folderId
           _ <- try clientEnv (createPgFileHandler token pgCollectionId newPgFile)
-          fakePgFile <- selectFakePgFile (Id UUID.nil) connection
+          fakePgFile <- selectFakePgFile nilId connection
           fakePgFile `shouldBe`  FakePgFile { _fakePgFileParentId   = Just folderId
                                             , _fakePgFileName       = "name"
                                             , _fakePgFileSql = "sql"
@@ -86,15 +85,15 @@ spec =
     describe "create a root pg file" $ do
       it "returns 404 when pg collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newRootPgFile = mkNewRootPgFile (Id UUID.nil)
-          try clientEnv (createRootPgFileHandler token (Id UUID.nil) newRootPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          let newRootPgFile = mkNewRootPgFile nilId
+          try clientEnv (createRootPgFileHandler token nilId newRootPgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the pg file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           pgCollectionId <- insertFakePgCollection accountId connection
-          let newRootPgFile = mkNewRootPgFile (Id UUID.nil)
+          let newRootPgFile = mkNewRootPgFile nilId
           _ <- try clientEnv (createRootPgFileHandler token pgCollectionId newRootPgFile)
-          fakePgFile <- selectFakePgFile (Id UUID.nil) connection
+          fakePgFile <- selectFakePgFile nilId connection
           fakePgFile `shouldBe`  FakePgFile { _fakePgFileParentId   = Nothing
                                             , _fakePgFileName       = "name"
                                             , _fakePgFileSql = "sql"
@@ -108,7 +107,7 @@ spec =
       it "returns 404 when pg file doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
           let updatePgFile = mkUpdatePgFile
-          try clientEnv (updatePgFileHandler token (Id UUID.nil) (Id UUID.nil) updatePgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updatePgFileHandler token nilId nilId updatePgFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "update the pg file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do

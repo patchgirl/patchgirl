@@ -8,7 +8,6 @@
 module Environment.AppSpec where
 
 import qualified Data.Maybe                      as Maybe
-import qualified Data.UUID                       as UUID
 import qualified Data.UUID.V4                    as UUID
 import qualified Database.PostgreSQL.Simple      as PG
 import qualified Network.HTTP.Types              as HTTP
@@ -109,8 +108,8 @@ spec =
 
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
-        cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updateEnvironment token (Id UUID.nil) updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
+        cleanDBAndCreateAccount $ \Test { token } -> do
+          try clientEnv (updateEnvironment token nilId updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 when environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -132,7 +131,7 @@ spec =
     describe "delete environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deleteEnvironment token (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteEnvironment token nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -153,7 +152,7 @@ spec =
     describe "update key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updateKeyValues token (Id UUID.nil) []) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateKeyValues token nilId []) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -167,14 +166,14 @@ spec =
           selectFakeKeyValues environmentId connection `shouldReturn` []
 
           let newKeyValues =
-                [ NewKeyValue { _newKeyValueId = Id UUID.nil
+                [ NewKeyValue { _newKeyValueId = nilId
                               , _newKeyValueKey = "key1"
                               , _newKeyValueValue = "value1"
                               , _newKeyValueHidden = True
                               }
                 ]
           try clientEnv (updateKeyValues token environmentId newKeyValues)
-          selectFakeKeyValues environmentId connection `shouldReturn` [ KeyValue { _keyValueId = Id UUID.nil
+          selectFakeKeyValues environmentId connection `shouldReturn` [ KeyValue { _keyValueId = nilId
                                                                                  , _keyValueKey = "key1"
                                                                                  , _keyValueValue = "value1"
                                                                                  , _keyValueHidden = True
@@ -188,17 +187,17 @@ spec =
     describe "delete key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deleteKeyValue token (Id UUID.nil) (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteKeyValue token nilId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           environmentId <- environmentThatDoesntBelongToAccountToken connection
-          try clientEnv (deleteKeyValue token environmentId (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteKeyValue token environmentId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if the key value doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
-          try clientEnv (deleteKeyValue token environmentId (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteKeyValue token environmentId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes the key value" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do

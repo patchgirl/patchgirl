@@ -9,7 +9,6 @@
 module PgNode.AppSpec where
 
 import           Data.Function                    ((&))
-import qualified Data.UUID                        as UUID
 import qualified Network.HTTP.Types               as HTTP
 import           Servant
 import qualified Servant.Auth.Client              as Auth
@@ -49,7 +48,7 @@ spec =
     describe "update pg node" $ do
       it "returns 404 when pg node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updatePgNodeHandler token (Id UUID.nil) (Id UUID.nil) updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updatePgNodeHandler token nilId nilId updatePgNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the pg node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -73,7 +72,7 @@ spec =
     describe "delete pg node" $ do
       it "returns 404 when pg node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deletePgNodeHandler token (Id UUID.nil) (Id UUID.nil)) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deletePgNodeHandler token nilId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the pg node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
