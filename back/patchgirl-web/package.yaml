@@ -95,3 +95,4 @@ dependencies:
   - connection
   - wai-cors
   - http-api-data
+  - foreign-store
