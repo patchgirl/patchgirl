@@ -1,11 +1,13 @@
 module ScenarioComputation.App ( runScenarioComputationHandler) where
 
-import qualified Control.Monad             as Monad
-import qualified Control.Monad.IO.Class    as IO
-import qualified Control.Monad.Reader      as Reader
-import qualified Control.Monad.State       as State
-import           Data.Functor              ((<&>))
-import qualified Data.Map.Strict           as Map
+import qualified Control.Monad               as Monad
+import qualified Control.Monad.IO.Class      as IO
+import qualified Control.Monad.Reader        as Reader
+import qualified Control.Monad.State         as State
+import           Data.Function               ((&))
+import           Data.Functor                ((<&>))
+import qualified Data.Map.Strict             as Map
+import qualified Network.HTTP.Client.Conduit as Http
 
 import           Env
 import           Interpolator
@@ -14,6 +16,7 @@ import           PgSqlComputation.Model
 import           RequestComputation.App
 import           RequestComputation.Model
 import           ScenarioComputation.Model
+import           ScriptContext
 import           TangoScript.App
 import           TangoScript.Model
 
@@ -44,8 +47,12 @@ runScenarioComputationHandler ScenarioInput{..} =
                         , scenes ++ [ buildSceneOutput sceneFile SceneNotRun ]
                         )
         True -> do
-          (scene, scriptContext) <- State.runStateT (buildScene sceneFile) (ScriptContext (_sceneVariables sceneFile) environmentVars scenarioGlobalVars Map.empty)
-          return ( globalVars scriptContext
+          let httpComputationContext =
+                ScenarioContext { _scenarioContextScriptContext = ScriptContext (_sceneVariables sceneFile) environmentVars scenarioGlobalVars Map.empty
+                                , _scenarioContextCookieJar = Http.createCookieJar []
+                                }
+          (scene, newScenarioComputationContext) <- State.runStateT (buildScene sceneFile) httpComputationContext
+          return ( newScenarioComputationContext & _scenarioContextScriptContext & globalVars
                  , scenes ++ [ scene ]
                  )
 
@@ -61,7 +68,7 @@ runScenarioComputationHandler ScenarioInput{..} =
     buildScene
       :: ( Reader.MonadReader Env m
          , IO.MonadIO m
-         , State.MonadState ScriptContext m
+         , State.MonadState ScenarioContext m
          )
       => SceneFile
       -> m SceneOutput
@@ -80,13 +87,13 @@ runScenarioComputationHandler ScenarioInput{..} =
 runHttpScene
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
-     , State.MonadState ScriptContext m
+     , State.MonadState ScenarioContext m
      )
   => SceneFile
   -> TemplatedRequestComputationInput
   -> m SceneOutput
 runHttpScene scene sceneHttpInput = do
-  State.modify $ \s -> s { localVars = Map.empty }
+  State.modify $ \s -> s { _scenarioContextScriptContext = (s & _scenarioContextScriptContext) { localVars = Map.empty } }
   runScript (_scenePrescript scene) PreScene Nothing >>= \case
     Just scriptException ->
       return $ buildSceneOutput scene (PrescriptFailed scriptException)
@@ -111,13 +118,13 @@ runHttpScene scene sceneHttpInput = do
 runPgScene
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
-     , State.MonadState ScriptContext m
+     , State.MonadState ScenarioContext m
      )
   => SceneFile
   -> PgComputationInput
   -> m SceneOutput
 runPgScene scene scenePgInput = do
-  State.modify $ \s -> s { localVars = Map.empty }
+  State.modify $ \s -> s { _scenarioContextScriptContext = (s & _scenarioContextScriptContext) { localVars = Map.empty } }
   runScript (_scenePrescript scene) PreScene Nothing >>= \case
     Just scriptException ->
       return $ buildSceneOutput scene (PrescriptFailed scriptException)
@@ -140,7 +147,7 @@ runPgScene scene scenePgInput = do
 
 
 runScript
-  :: State.MonadState ScriptContext m
+  :: State.MonadState ScenarioContext m
   => TangoAst
   -> Context a
   -> Maybe ScriptException
@@ -158,7 +165,7 @@ runScript procs context = \case
 
 
 runProc
-  :: State.MonadState ScriptContext m
+  :: State.MonadState ScenarioContext m
   => Context a
   -> Proc
   -> m (Maybe ScriptException)
@@ -198,7 +205,11 @@ runProc context = \case
     case ex of
       Left s -> return $ Just s
       Right newExpr -> do
-        State.modify $ \state -> state { localVars = Map.insert var newExpr (localVars state) }
+        State.modify $ \s -> s { _scenarioContextScriptContext =
+                                 (s & _scenarioContextScriptContext) { localVars =
+                                                                       Map.insert var newExpr (s & _scenarioContextScriptContext & localVars)
+                                                                     }
+                               }
         return Nothing
 
   Set var expr -> do
@@ -206,5 +217,9 @@ runProc context = \case
     case ex of
       Left s -> return $ Just s
       Right newExpr -> do
-        State.modify $ \state -> state { globalVars = Map.insert var newExpr (globalVars state) }
+        State.modify $ \s -> s { _scenarioContextScriptContext =
+                                 (s & _scenarioContextScriptContext) { globalVars =
+                                                                       Map.insert var newExpr (s & _scenarioContextScriptContext & globalVars)
+                                                                     }
+                               }
         return Nothing

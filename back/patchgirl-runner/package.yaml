@@ -53,6 +53,7 @@ executables:
 dependencies:
   - patchgirl-web
   - base
+  - time
   - wai-cors
   - scientific
   - text

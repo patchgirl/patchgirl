@@ -8,12 +8,22 @@ import           Control.Lens                     (makeLenses)
 import qualified Data.Aeson                       as Aeson
 import           Data.UUID                        (UUID)
 import           GHC.Generics                     (Generic)
+import qualified Network.HTTP.Client              as Http
 
 import           Interpolator
 import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           PgSqlComputation.Model
 import           RequestComputation.Model
+import           ScriptContext
 import           TangoScript.Model
+
+
+-- * scenario context
+
+data ScenarioContext = ScenarioContext
+    { _scenarioContextScriptContext :: ScriptContext
+    , _scenarioContextCookieJar     :: Http.CookieJar
+    }
 
 
 -- * scenario input
@@ -245,15 +255,8 @@ fromTableToRichList rows =
       PgNull     -> LRowElem(name, LNull)
 
 
--- * script context
+-- * build scene output
 
-
-data ScriptContext = ScriptContext
-    { sceneVars       :: Web.SceneVariables
-    , environmentVars :: EnvironmentVars
-    , globalVars      :: ScenarioVars
-    , localVars       :: ScenarioVars
-    }
 
 
 buildSceneOutput :: SceneFile -> SceneComputation -> SceneOutput

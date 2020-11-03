@@ -11,12 +11,14 @@ import qualified Data.Map.Strict                  as Map
 import qualified Data.Maybe                       as Maybe
 import qualified Data.Traversable                 as Traversable
 import qualified Database.PostgreSQL.LibPQ        as LibPQ
+import qualified Network.HTTP.Client              as Http
 import qualified Text.Read                        as Text
 
 import           Interpolator
 import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           PgSqlComputation.Model
 import           ScenarioComputation.Model
+import           ScriptContext
 
 
 -- * handler
@@ -26,8 +28,11 @@ runPgSqlComputationHandler
   :: IO.MonadIO m
   => (EnvironmentVars, PgComputationInput)
   -> m PgComputationOutput
-runPgSqlComputationHandler (environmentVars, pgComputationInput) =
-  State.evalStateT (runPgComputationWithScenarioContext pgComputationInput) (ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty)
+runPgSqlComputationHandler (environmentVars, pgComputationInput) = do
+  let scenarioContext = ScenarioContext { _scenarioContextScriptContext = ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty
+                                        , _scenarioContextCookieJar = Http.createCookieJar []
+                                        }
+  State.evalStateT (runPgComputationWithScenarioContext pgComputationInput) scenarioContext
 
 
 -- * run pg computation with scenario context
@@ -35,7 +40,7 @@ runPgSqlComputationHandler (environmentVars, pgComputationInput) =
 
 runPgComputationWithScenarioContext
   :: ( IO.MonadIO m
-     , State.MonadState ScriptContext m
+     , State.MonadState ScenarioContext m
      )
   => PgComputationInput
   -> m PgComputationOutput
@@ -81,11 +86,11 @@ runPgComputationWithScenarioContext PgComputationInput{..} = do
           <&> \primaryMessage -> Left $ PgError (show error ++ " " ++ primaryMessage)
   where
     substitute
-      :: State.MonadState ScriptContext m
+      :: State.MonadState ScenarioContext m
       => StringTemplate
       -> m String
     substitute stringTemplate = do
-      ScriptContext{..} <- State.get
+      ScriptContext{..} <- State.get <&> _scenarioContextScriptContext
       return $ interpolate sceneVars environmentVars globalVars localVars stringTemplate
 
 

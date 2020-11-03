@@ -23,6 +23,7 @@ library
       RequestComputation.Model
       ScenarioComputation.App
       ScenarioComputation.Model
+      ScriptContext
       Server
       TangoScript.App
       TangoScript.Model
@@ -55,6 +56,7 @@ library
     , servant-server
     , stm
     , text
+    , time
     , unordered-containers
     , utf8-string
     , uuid
@@ -97,6 +99,7 @@ executable patchgirl-runner-exe
     , servant-server
     , stm
     , text
+    , time
     , unordered-containers
     , utf8-string
     , uuid
@@ -149,6 +152,7 @@ test-suite spec
     , servant-server
     , stm
     , text
+    , time
     , unordered-containers
     , utf8-string
     , uuid

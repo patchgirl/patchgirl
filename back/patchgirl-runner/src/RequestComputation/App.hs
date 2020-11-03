@@ -14,8 +14,10 @@ import qualified Control.Monad.Reader             as Reader
 import qualified Control.Monad.State              as State
 import qualified Data.ByteString.UTF8             as BSU
 import qualified Data.CaseInsensitive             as CI
+import           Data.Function                    ((&))
 import           Data.Functor                     ((<&>))
 import qualified Data.Map.Strict                  as Map
+import qualified Data.Time.Clock                  as Time
 import qualified Data.Traversable                 as Monad
 import qualified Network.HTTP.Client.Conduit      as Http
 import qualified Network.HTTP.Simple              as Http
@@ -27,6 +29,7 @@ import           PatchGirl.Web.Http
 import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           RequestComputation.Model
 import           ScenarioComputation.Model
+import           ScriptContext
 
 
 -- * handler
@@ -39,7 +42,10 @@ runRequestComputationHandler
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationOutput
 runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
-  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) (ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty)
+  let scenarioContext = ScenarioContext { _scenarioContextScriptContext = ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty
+                                        , _scenarioContextCookieJar = Http.createCookieJar []
+                                        }
+  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) scenarioContext
 
 
 -- * run request computation with scenario context
@@ -48,7 +54,7 @@ runRequestComputationHandler (templatedRequestComputationInput, environmentVars)
 runRequestComputationWithScenarioContext
   :: ( Reader.MonadReader Env m
      , IO.MonadIO m
-     , State.MonadState ScriptContext m
+     , State.MonadState ScenarioContext m
      )
   => TemplatedRequestComputationInput
   -> m RequestComputationOutput
@@ -64,7 +70,7 @@ runRequestComputationWithScenarioContext templatedRequestComputationInput = do
 
 buildRequest
   :: ( IO.MonadIO m
-     , State.MonadState ScriptContext m
+     , State.MonadState ScenarioContext m
      )
   => TemplatedRequestComputationInput
   -> m Http.Request
@@ -90,7 +96,7 @@ buildRequest templatedRequestComputationInput = do
 
 
 buildRequestComputationInput
-  :: State.MonadState ScriptContext m
+  :: State.MonadState ScenarioContext m
   => TemplatedRequestComputationInput
   -> m RequestComputationInput
 buildRequestComputationInput TemplatedRequestComputationInput{..} = do
@@ -107,28 +113,33 @@ buildRequestComputationInput TemplatedRequestComputationInput{..} = do
                                    }
   where
     interpolate'
-      :: State.MonadState ScriptContext m
+      :: State.MonadState ScenarioContext m
       => StringTemplate
       -> m String
     interpolate' st = do
-      ScriptContext{..} <- State.get
+      ScriptContext{..} <- State.get <&> _scenarioContextScriptContext
       return $ interpolate sceneVars environmentVars globalVars localVars st
 
 
 -- * run request
 
-
 ioRequestRunner :: Http.Request -> IO (HttpResponse BSU.ByteString)
-ioRequestRunner request =
+ioRequestRunner request = do
   Http.httpBS request <&> fromResponseToHttpResponse
 
+{-ioRequestRunner :: Http.CookieJar -> Http.Request -> IO (Http.CookieJar, HttpResponse BSU.ByteString)
+ioRequestRunner cookieJar request = do
+  response <- Http.httpBS request
+  time <- Time.getCurrentTime
+  let newCookieJar = Http.updateCookieJar response request time cookieJar & fst
+  return (newCookieJar, fromResponseToHttpResponse response)
+-}
 
 -- * create request computation output
 
 
 responseToComputationResult
-  :: ( Reader.MonadReader Env m
-     )
+  :: ( Reader.MonadReader Env m )
   => Either Http.HttpException (HttpResponse BSU.ByteString)
   -> m (Either HttpException RequestComputation)
 responseToComputationResult either = do
