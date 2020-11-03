@@ -6,7 +6,6 @@
 module PatchGirl.Web.ScenarioCollection.Sql where
 
 import           Data.Functor                     ((<&>))
-import           Data.UUID                        (UUID)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 
@@ -16,7 +15,7 @@ import           PatchGirl.Web.Id
 -- * does scenario collection belongs to account
 
 
-doesScenarioCollectionBelongsToAccount :: Id Account -> UUID -> Connection -> IO Bool
+doesScenarioCollectionBelongsToAccount :: Id Account -> Id ScenarioCol -> Connection -> IO Bool
 doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection =
   query connection scenarioCollectionSql (accountId, scenarioCollectionId) <&> \case
     [Only True] -> True
@@ -37,7 +36,7 @@ doesScenarioCollectionBelongsToAccount accountId scenarioCollectionId connection
 -- * select scenario collection id
 
 
-selectScenarioCollectionId :: Id Account -> Connection -> IO (Maybe UUID)
+selectScenarioCollectionId :: Id Account -> Connection -> IO (Maybe (Id ScenarioCol))
 selectScenarioCollectionId accountId connection =
   query connection scenarioCollectionSql (Only accountId) <&> \case
     [Only id] -> Just id

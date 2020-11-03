@@ -39,6 +39,10 @@ deriving instance ToHttpApiData (Id a)
 
 data Request = Request
 data Postgres = Postgres
+data ScenarioCol = ScenarioCol
+data Scenario = Scenario
+data Scene = Scene
+data Actor = Actor
 data Account = Account
 data EnvId = EnvId
 data KeyValueId = KeyValueId

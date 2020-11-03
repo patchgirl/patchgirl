@@ -26,7 +26,6 @@ module PatchGirl.Web.Api( WebApi
                         ) where
 
 
-import           Data.UUID
 import           Servant                                hiding (BadPassword,
                                                          NoSuchUser)
 import           Servant.API.Flatten                    (Flat)
@@ -188,7 +187,7 @@ environmentApiServer =
 
 
 type ScenarioNodeApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" (Id ScenarioCol) :> "scenarioNode" :> Capture "scenarioNodeId" (Id Scenario) :> (
     -- rename scenario node
     ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () :<|>
     -- delete scenario node
@@ -196,8 +195,8 @@ type ScenarioNodeApi auths =
   ))
 
 scenarioNodeApiServer
-  :: (AuthResult CookieSession -> UUID -> UUID -> UpdateScenarioNode -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+  :: (AuthResult CookieSession -> Id ScenarioCol -> Id Scenario -> UpdateScenarioNode -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> Id Scenario -> AppM ())
 scenarioNodeApiServer =
   authorizeWithAccountId updateScenarioNodeHandler
   :<|> authorizeWithAccountId deleteScenarioNodeHandler
@@ -207,7 +206,7 @@ scenarioNodeApiServer =
 
 
 type ScenarioFileApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" (Id ScenarioCol) :> (
     "scenarioFile" :> (
       -- createScenarioFile
       ReqBody '[JSON] NewScenarioFile :> Post '[JSON] () :<|>
@@ -220,9 +219,9 @@ type ScenarioFileApi auths =
   ))
 
 scenarioFileApiServer
-  :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UpdateScenarioFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFile -> AppM ())
+  :: (AuthResult CookieSession -> Id ScenarioCol -> NewScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> UpdateScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> NewRootScenarioFile -> AppM ())
 scenarioFileApiServer =
   authorizeWithAccountId createScenarioFileHandler
   :<|> authorizeWithAccountId updateScenarioFileHandler
@@ -233,7 +232,7 @@ scenarioFileApiServer =
 
 
 type ScenarioFolderApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" (Id ScenarioCol) :> (
     "scenarioFolder" :> (
       -- create scenario folder
       ReqBody '[JSON] NewScenarioFolder :> Post '[JSON] ()
@@ -245,8 +244,8 @@ type ScenarioFolderApi auths =
     ))
 
 scenarioFolderApiServer
-  :: (AuthResult CookieSession -> UUID -> NewScenarioFolder -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFolder -> AppM ())
+  :: (AuthResult CookieSession -> Id ScenarioCol -> NewScenarioFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> NewRootScenarioFolder -> AppM ())
 scenarioFolderApiServer =
   authorizeWithAccountId createScenarioFolderHandler
   :<|> authorizeWithAccountId createRootScenarioFolderHandler
@@ -256,21 +255,21 @@ scenarioFolderApiServer =
 
 
 type SceneActorApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" (Id Scenario) :> (
     "scene" :> (
       -- create scene
       ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
       -- delete scene
-      Capture "sceneId" UUID :> Delete '[JSON] () :<|>
+      Capture "sceneId" (Id Scene) :> Delete '[JSON] () :<|>
       -- update scene
-      Capture "sceneId" UUID :> ReqBody '[JSON] UpdateScene :> Put '[JSON] ()
+      Capture "sceneId" (Id Scene) :> ReqBody '[JSON] UpdateScene :> Put '[JSON] ()
     )
   ))
 
 sceneApiServer
-  :: (AuthResult CookieSession -> UUID -> NewScene -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> UpdateScene -> AppM ())
+  :: (AuthResult CookieSession -> Id Scenario -> NewScene -> AppM ())
+  :<|> (AuthResult CookieSession -> Id Scenario -> Id Scene -> AppM ())
+  :<|> (AuthResult CookieSession -> Id Scenario -> Id Scene -> UpdateScene -> AppM ())
 sceneApiServer =
   authorizeWithAccountId createSceneHandler
   :<|> authorizeWithAccountId deleteSceneHandler

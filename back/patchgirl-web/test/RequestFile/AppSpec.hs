@@ -10,8 +10,6 @@ module RequestFile.AppSpec where
 import           Data.Coerce                           (coerce)
 import           Data.Function                         ((&))
 import qualified Data.Maybe                            as Maybe
-import           Data.UUID
-import qualified Data.UUID                             as UUID
 import qualified Network.HTTP.Types                    as HTTP
 import           Servant                               hiding (Header)
 import qualified Servant.Auth.Client                   as Auth
@@ -55,29 +53,29 @@ spec =
     describe "create a request file" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
+          let newRequestFile = mkNewRequestFile nilId nilId
           try clientEnv (createRequestFileHandler token 1 newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when request node parent doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId _ <- insertSampleRequestCollection accountId connection
-          let newRequestFile = mkNewRequestFile UUID.nil UUID.nil
+          let newRequestFile = mkNewRequestFile nilId nilId
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 500 when request node parent exist but isn't a request folder" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let fileId = coerce $ Maybe.fromJust (getFirstFile requestNodes) & _requestNodeId
-          let newRequestFile = mkNewRequestFile UUID.nil fileId
+          let newRequestFile = mkNewRequestFile nilId fileId
           try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           RequestCollection requestCollectionId requestNodes <- insertSampleRequestCollection accountId connection
           let folderId = coerce $ Maybe.fromJust (getFirstFolder requestNodes) & _requestNodeId
-          let newRequestFile = mkNewRequestFile UUID.nil folderId
+          let newRequestFile = mkNewRequestFile nilId folderId
           _ <- try clientEnv (createRequestFileHandler token requestCollectionId newRequestFile)
-          fakeRequestFile <- selectFakeRequestFile UUID.nil connection
+          fakeRequestFile <- selectFakeRequestFile nilId connection
           fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Just folderId
                                                       , _fakeRequestFileName       = "test"
                                                       , _fakeRequestFileHttpUrl    = "http://foo.com"
@@ -92,15 +90,15 @@ spec =
     describe "create a root request file" $ do
       it "returns 404 when request collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
-          let newRootRequestFile = mkNewRootRequestFile UUID.nil
+          let newRootRequestFile = mkNewRootRequestFile nilId
           try clientEnv (createRootRequestFileHandler token 1 newRootRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "create the request file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           requestCollectionId <- insertFakeRequestCollection accountId connection
-          let newRootRequestFile = mkNewRootRequestFile UUID.nil
+          let newRootRequestFile = mkNewRootRequestFile nilId
           _ <- try clientEnv (createRootRequestFileHandler token requestCollectionId newRootRequestFile)
-          fakeRequestFile <- selectFakeRequestFile UUID.nil connection
+          fakeRequestFile <- selectFakeRequestFile nilId connection
           fakeRequestFile `shouldBe`  FakeRequestFile { _fakeRequestFileParentId   = Nothing
                                                       , _fakeRequestFileName       = "test"
                                                       , _fakeRequestFileHttpUrl    = "http://foo.com"
@@ -117,7 +115,7 @@ spec =
       it "returns 404 when request file doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } -> do
           let updateRequestFile = mkUpdateRequestFile
-          try clientEnv (updateRequestFileHandler token 1 (Id UUID.nil) updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateRequestFileHandler token 1 nilId updateRequestFile) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "update the request file" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
@@ -138,10 +136,10 @@ spec =
 
 
   where
-    mkNewRequestFile :: UUID -> UUID -> NewRequestFile
+    mkNewRequestFile :: Id Request -> Id Request -> NewRequestFile
     mkNewRequestFile id parentId =
-      NewRequestFile { _newRequestFileId           = Id id
-                     , _newRequestFileParentNodeId = Id parentId
+      NewRequestFile { _newRequestFileId           = id
+                     , _newRequestFileParentNodeId = parentId
                      , _newRequestFileName         = "test"
                      , _newRequestFileHttpUrl = "http://foo.com"
                      , _newRequestFileMethod  = Get
@@ -149,9 +147,9 @@ spec =
                      , _newRequestFileBody    = "body"
                      }
 
-    mkNewRootRequestFile :: UUID -> NewRootRequestFile
+    mkNewRootRequestFile :: Id Request -> NewRootRequestFile
     mkNewRootRequestFile id =
-      NewRootRequestFile { _newRootRequestFileId = Id id
+      NewRootRequestFile { _newRootRequestFileId = id
                          , _newRootRequestFileName = "test"
                          , _newRootRequestFileHttpUrl = "http://foo.com"
                          , _newRootRequestFileMethod = Get

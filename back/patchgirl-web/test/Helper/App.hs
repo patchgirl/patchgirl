@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Helper.App (Test(..), cleanDBAndCreateAccount, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBBefore, withAccountAndToken, signedUserToken1, visitorId) where
+module Helper.App (Test(..), cleanDBAndCreateAccount, withClient, try, errorsWithStatus, defaultEnv, defaultEnv2, mkToken, signedUserToken, visitorToken, cleanDBBefore, withAccountAndToken, signedUserToken1, visitorId, nilId) where
 
 import           Control.Concurrent.STM
 import           Control.Exception                (throwIO)
@@ -63,7 +63,7 @@ withClient app innerSpec =
 -- ** user
 
 
-withAccountAndToken :: Int -> Connection -> IO (UUID, Auth.Token)
+withAccountAndToken :: Int -> Connection -> IO (Id Account, Auth.Token)
 withAccountAndToken githubId connection = do
   accountId <- insertFakeAccount githubId connection
   token <- signedUserToken accountId
@@ -80,10 +80,10 @@ signedUserToken1 = do
                          }
   mkToken cookieSession Nothing <&> \token -> (token, id)
 
-signedUserToken :: UUID -> IO Auth.Token
+signedUserToken :: Id Account -> IO Auth.Token
 signedUserToken id = do
   let cookieSession =
-        SignedUserCookie { _cookieAccountId   = Id id
+        SignedUserCookie { _cookieAccountId   = id
                          , _cookieGithubEmail = Just $ CaseInsensitive "foo@mail.com"
                          , _cookieGithubAvatarUrl = "https://foo.com/someAvatar.jpg"
                          }
@@ -110,6 +110,8 @@ mkToken cookieSession mexp = do
 
 -- * config
 
+nilId :: Id a
+nilId = Id UUID.nil
 
 defaultEnv :: Env
 defaultEnv =
@@ -162,7 +164,7 @@ cleanDBBefore f = do
 
 data Test = Test
     { connection :: Connection
-    , accountId  :: UUID
+    , accountId  :: Id Account
     , token      :: Auth.Token
     }
 

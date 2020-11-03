@@ -8,7 +8,6 @@
 module Environment.AppSpec where
 
 import qualified Data.Maybe                      as Maybe
-import           Data.UUID                       (UUID)
 import qualified Data.UUID                       as UUID
 import qualified Data.UUID.V4                    as UUID
 import qualified Database.PostgreSQL.Simple      as PG
@@ -222,7 +221,7 @@ spec =
                               , _newEnvironmentName = "test"
                               }
 
-    newFakeEnvironment :: UUID -> String -> NewFakeEnvironment
+    newFakeEnvironment :: Id Account -> String -> NewFakeEnvironment
     newFakeEnvironment accountId name =
       NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                          , _newFakeEnvironmentName = name

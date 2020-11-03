@@ -14,7 +14,6 @@ import           Data.Functor                           ((<&>))
 import qualified Data.Map.Strict                        as Map
 import qualified Data.Maybe                             as Maybe
 import qualified Data.Strings                           as Strings
-import           Data.UUID
 import qualified Data.UUID.V4                           as UUID
 import qualified Database.PostgreSQL.Simple             as PG
 import qualified Database.PostgreSQL.Simple.FromField   as PG
@@ -51,7 +50,7 @@ defaultNewFakeAccount2 :: Int
 defaultNewFakeAccount2 =
   2
 
-insertFakeAccount :: Int -> PG.Connection -> IO UUID
+insertFakeAccount :: Int -> PG.Connection -> IO (Id Account)
 insertFakeAccount githubId connection = do
   [PG.Only id] <- PG.query connection rawQuery (PG.Only githubId)
   return id
@@ -71,7 +70,7 @@ newtype NewFakeAccountWithoutPassword =
   NewFakeAccountWithoutPassword { _newFakeAccountWithoutPasswordEmail :: CaseInsensitive }
   deriving (Eq, Show,  Generic, PG.ToRow)
 
-insertFakeAccountWithoutPassword :: NewFakeAccountWithoutPassword -> PG.Connection -> IO (UUID, String)
+insertFakeAccountWithoutPassword :: NewFakeAccountWithoutPassword -> PG.Connection -> IO (Id Account, String)
 insertFakeAccountWithoutPassword newFakeAccount connection = do
   [(id, signupToken)] <- PG.query connection rawQuery newFakeAccount
   return (id, signupToken)
@@ -86,7 +85,7 @@ insertFakeAccountWithoutPassword newFakeAccount connection = do
 
 
 data FakeAccount = FakeAccount
-    { _fakeAccountId    :: UUID
+    { _fakeAccountId    :: Id Account
     , _fakeAccountEmail :: Maybe CaseInsensitive
     }
     deriving (Eq, Show, Generic, PG.FromRow)
@@ -109,7 +108,7 @@ selectFakeAccount accountId connection =
 -- ** new fake request collection
 
 
-insertFakeRequestCollection :: UUID -> PG.Connection -> IO Int
+insertFakeRequestCollection :: Id Account -> PG.Connection -> IO Int
 insertFakeRequestCollection accountId connection = do
   [PG.Only id] <- PG.query connection rawQuery (PG.Only accountId)
   return id
@@ -127,7 +126,7 @@ insertFakeRequestCollection accountId connection = do
 
 data NewFakeRequestCollectionToRequestNode = NewFakeRequestCollectionToRequestNode
     { _fakeRequestCollectionToRequestNodeRequestCollectionId  :: Int
-    , _fakeRequestCollectionToRequestNodeRequestRequestNodeId :: UUID
+    , _fakeRequestCollectionToRequestNodeRequestRequestNodeId :: Id Request
     }
     deriving (Eq, Show, Generic, PG.ToRow)
 
@@ -147,14 +146,14 @@ insertFakeRequestCollectionToRequestNode fakeRequestCollectionToRequestNode conn
 
 
 data NewFakeRequestFolder = NewFakeRequestFolder
-    { _newFakeRequestFolderId       :: UUID
-    , _newFakeRequestFolderParentId :: Maybe UUID
+    { _newFakeRequestFolderId       :: Id Request
+    , _newFakeRequestFolderParentId :: Maybe (Id Request)
     , _newFakeRequestName           :: String
     }
     deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakeRequestFolder :: NewFakeRequestFolder -> PG.Connection -> IO UUID
+insertFakeRequestFolder :: NewFakeRequestFolder -> PG.Connection -> IO (Id Request)
 insertFakeRequestFolder fakeRequestFolder connection = do
   [PG.Only id] <- PG.query connection rawQuery fakeRequestFolder
   return id
@@ -171,8 +170,8 @@ insertFakeRequestFolder fakeRequestFolder connection = do
 
 
 data NewFakeRequestFile = NewFakeRequestFile
-    { _newFakeRequestFileId         :: UUID
-    , _newFakeRequestFileParentId   :: Maybe UUID
+    { _newFakeRequestFileId         :: Id Request
+    , _newFakeRequestFileParentId   :: Maybe (Id Request)
     , _newFakeRequestFileName       :: String
     , _newFakeRequestFileHttpUrl    :: String
     , _newFakeRequestFileHttpMethod :: String
@@ -181,7 +180,7 @@ data NewFakeRequestFile = NewFakeRequestFile
     deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakeRequestFile :: NewFakeRequestFile -> PG.Connection -> IO UUID
+insertFakeRequestFile :: NewFakeRequestFile -> PG.Connection -> IO (Id Request)
 insertFakeRequestFile newFakeRequestFile connection = do
   [PG.Only id] <- PG.query connection rawQuery newFakeRequestFile
   return id
@@ -218,14 +217,14 @@ insertFakeRequestFile newFakeRequestFile connection = do
 
 -}
 
-insertSampleRequestCollection :: UUID -> PG.Connection -> IO RequestCollection
+insertSampleRequestCollection :: Id Account -> PG.Connection -> IO RequestCollection
 insertSampleRequestCollection accountId connection = do
-  n1Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n1 id) connection
-  n2Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n2 id) connection
-  n3Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n3 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeRequestFile (n4 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeRequestFile (n5 id n3Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeRequestFile (n6 id n3Id) connection
+  n1Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n1 (Id id)) connection
+  n2Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n2 (Id id)) connection
+  n3Id <- UUID.nextRandom >>= \id -> insertFakeRequestFolder (n3 (Id id) n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeRequestFile (n4 (Id id) n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeRequestFile (n5 (Id id) n3Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeRequestFile (n6 (Id id) n3Id) connection
   requestCollectionId <- insertFakeRequestCollection accountId connection
   let fakeRequestCollectionToRequestNode1 =
         NewFakeRequestCollectionToRequestNode { _fakeRequestCollectionToRequestNodeRequestCollectionId = requestCollectionId
@@ -296,7 +295,7 @@ insertSampleRequestCollection accountId connection = do
 -- ** new fake pg collection
 
 
-insertFakePgCollection :: UUID -> PG.Connection -> IO (Id PgCollection)
+insertFakePgCollection :: Id Account -> PG.Connection -> IO (Id PgCollection)
 insertFakePgCollection accountId connection = do
   [PG.Only id] <- PG.query connection rawQuery (PG.Only accountId)
   return id
@@ -410,7 +409,7 @@ insertFakePgFile newFakePgFile connection = do
 
 -}
 
-insertSamplePgCollection :: UUID -> PG.Connection -> IO PgCollection
+insertSamplePgCollection :: Id Account -> PG.Connection -> IO PgCollection
 insertSamplePgCollection accountId connection = do
   n1Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n1 $ Id id) connection
   n2Id <- UUID.nextRandom >>= \id -> insertFakePgFolder (n2 $ Id id) connection
@@ -496,7 +495,7 @@ insertSamplePgCollection accountId connection = do
 
 
 data FakeRequestFile = FakeRequestFile
-    { _fakeRequestFileParentId    :: Maybe UUID
+    { _fakeRequestFileParentId    :: Maybe (Id Request)
     , _fakeRequestFileName        :: String
     , _fakeRequestFileHttpUrl     :: String
     , _fakeRequestFileHttpMethod  :: Method
@@ -530,7 +529,7 @@ instance PG.FromField Header where
           (key, value) = Strings.strSplit "," $ init $ tail $ BSU.toString bs :: (String, String)
         in Header (key, value)
 
-selectFakeRequestFile :: UUID -> PG.Connection -> IO FakeRequestFile
+selectFakeRequestFile :: Id Request -> PG.Connection -> IO FakeRequestFile
 selectFakeRequestFile id connection = do
   [fakeRequestFile] <- PG.query connection rawQuery (PG.Only id)
   return fakeRequestFile
@@ -547,13 +546,13 @@ selectFakeRequestFile id connection = do
 
 
 data FakeRequestFolder = FakeRequestFolder
-    { _fakeRequestFolderParentId :: Maybe UUID
+    { _fakeRequestFolderParentId :: Maybe (Id Request)
     , _fakeRequestFolderName     :: String
     }
     deriving (Eq, Show, Generic, PG.FromRow)
 
 
-selectFakeRequestFolder :: UUID -> PG.Connection -> IO FakeRequestFolder
+selectFakeRequestFolder :: Id Request -> PG.Connection -> IO FakeRequestFolder
 selectFakeRequestFolder fakeRequestFolderId connection = do
   [fakeRequestFolder] <- PG.query connection rawQuery (PG.Only fakeRequestFolderId)
   return fakeRequestFolder
@@ -569,7 +568,7 @@ selectFakeRequestFolder fakeRequestFolderId connection = do
 -- ** select request node exist
 
 
-selectRequestNodeExists :: UUID -> PG.Connection -> IO Bool
+selectRequestNodeExists :: Id Request -> PG.Connection -> IO Bool
 selectRequestNodeExists id connection = do
   [PG.Only nodeExists] <- PG.query connection rawQuery (PG.Only id)
   return nodeExists
@@ -659,7 +658,7 @@ selectPgNodeExists id connection = do
 -- ** new fake scenario collection
 
 
-insertFakeScenarioCollection :: UUID -> PG.Connection -> IO UUID
+insertFakeScenarioCollection :: Id Account -> PG.Connection -> IO (Id ScenarioCol)
 insertFakeScenarioCollection accountId connection = do
   [PG.Only id] <- PG.query connection rawQuery (PG.Only accountId)
   return id
@@ -676,8 +675,8 @@ insertFakeScenarioCollection accountId connection = do
 
 
 data NewFakeScenarioCollectionToScenarioNode = NewFakeScenarioCollectionToScenarioNode
-    { _fakeScenarioCollectionToScenarioNodeScenarioCollectionId :: UUID
-    , _fakeScenarioCollectionToScenarioNodeScenarioNodeId       :: UUID
+    { _fakeScenarioCollectionToScenarioNodeScenarioCollectionId :: Id ScenarioCol
+    , _fakeScenarioCollectionToScenarioNodeScenarioNodeId :: Id Scenario
     }
     deriving (Eq, Show, Generic, PG.ToRow)
 
@@ -697,14 +696,14 @@ insertFakeScenarioCollectionToScenarioNode fakeScenarioCollectionToScenarioNode 
 
 
 data NewFakeScenarioFolder = NewFakeScenarioFolder
-    { _newFakeScenarioFolderId       :: UUID
-    , _newFakeScenarioFolderParentId :: Maybe UUID
+    { _newFakeScenarioFolderId       :: Id Scenario
+    , _newFakeScenarioFolderParentId :: Maybe (Id Scenario)
     , _newFakeScenarioName           :: String
     }
     deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakeScenarioFolder :: NewFakeScenarioFolder -> PG.Connection -> IO UUID
+insertFakeScenarioFolder :: NewFakeScenarioFolder -> PG.Connection -> IO (Id Scenario)
 insertFakeScenarioFolder fakeScenarioFolder connection = do
   [PG.Only id] <- PG.query connection rawQuery fakeScenarioFolder
   return id
@@ -721,16 +720,16 @@ insertFakeScenarioFolder fakeScenarioFolder connection = do
 
 
 data NewFakeScenarioFile = NewFakeScenarioFile
-    { _newFakeScenarioFileId            :: UUID
-    , _newFakeScenarioFileParentId      :: Maybe UUID
+    { _newFakeScenarioFileId            :: Id Scenario
+    , _newFakeScenarioFileParentId      :: Maybe (Id Scenario)
     , _newFakeScenarioFileName          :: String
-    , _newFakeScenarioFileSceneId       :: Maybe UUID
+    , _newFakeScenarioFileSceneId       :: Maybe (Id Scene)
     , _newFakeScenarioFileEnvironmentId :: Id EnvId
     }
     deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakeScenarioFile :: NewFakeScenarioFile -> PG.Connection -> IO UUID
+insertFakeScenarioFile :: NewFakeScenarioFile -> PG.Connection -> IO (Id Scenario)
 insertFakeScenarioFile newFakeScenarioFile connection = do
   [PG.Only id] <- PG.query connection rawQuery newFakeScenarioFile
   return id
@@ -765,7 +764,7 @@ insertFakeScenarioFile newFakeScenarioFile connection = do
                scene1
 -}
 
-insertSampleScenarioCollection :: UUID -> PG.Connection -> IO (RequestCollection, ScenarioCollection)
+insertSampleScenarioCollection :: Id Account -> PG.Connection -> IO (RequestCollection, ScenarioCollection)
 insertSampleScenarioCollection accountId connection = do
 
 
@@ -810,11 +809,11 @@ insertSampleScenarioCollection accountId connection = do
 -- *** insert scenario collection
 
 
-  n1Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n1 id) connection
-  n2Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n2 id) connection
-  n3Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n3 id n1Id) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 id n3Id (Just scene1Id) envId) connection
-  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 id n3Id (Just scene2Id) envId) connection
+  n1Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n1 (Id id)) connection
+  n2Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n2 (Id id)) connection
+  n3Id <- UUID.nextRandom >>= \id -> insertFakeScenarioFolder (n3 (Id id) n1Id) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n5 (Id id) n3Id (Just scene1Id) envId) connection
+  _ <- UUID.nextRandom >>= \id -> insertFakeScenarioFile (n6 (Id id) n3Id (Just scene2Id) envId) connection
   scenarioCollectionId <- insertFakeScenarioCollection accountId connection
   let fakeScenarioCollectionToScenarioNode1 =
         NewFakeScenarioCollectionToScenarioNode { _fakeScenarioCollectionToScenarioNodeScenarioCollectionId = scenarioCollectionId
@@ -827,7 +826,6 @@ insertSampleScenarioCollection accountId connection = do
   _ <- insertFakeScenarioCollectionToScenarioNode fakeScenarioCollectionToScenarioNode1 connection
   _ <- insertFakeScenarioCollectionToScenarioNode fakeScenarioCollectionToScenarioNode2 connection
   scenarioNodes <- selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection
-
   return (requestCollection, ScenarioCollection scenarioCollectionId scenarioNodes)
 
   where
@@ -885,15 +883,15 @@ insertSampleScenarioCollection accountId connection = do
 
 
 data FakeScenarioFile = FakeScenarioFile
-    { _fakeScenarioFileParentId      :: Maybe UUID
+    { _fakeScenarioFileParentId      :: Maybe (Id Scenario)
     , _fakeScenarioFileName          :: String
-    , _fakeScenarioFileSceneActorId  :: Maybe UUID
+    , _fakeScenarioFileSceneActorId  :: Maybe (Id ActorId)
     , _fakeScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, PG.FromRow)
 
 
-selectFakeScenarioFile :: UUID -> PG.Connection -> IO FakeScenarioFile
+selectFakeScenarioFile :: Id Scenario -> PG.Connection -> IO FakeScenarioFile
 selectFakeScenarioFile id connection = do
   [fakeScenarioFile] <- PG.query connection rawQuery (PG.Only id)
   return fakeScenarioFile
@@ -911,13 +909,13 @@ selectFakeScenarioFile id connection = do
 
 
 data FakeScenarioFolder = FakeScenarioFolder
-    { _fakeScenarioFolderParentId :: Maybe UUID
+    { _fakeScenarioFolderParentId :: Maybe (Id Scenario)
     , _fakeScenarioFolderName     :: String
     }
     deriving (Eq, Show, Generic, PG.FromRow)
 
 
-selectFakeScenarioFolder :: UUID -> PG.Connection -> IO FakeScenarioFolder
+selectFakeScenarioFolder :: Id Scenario -> PG.Connection -> IO FakeScenarioFolder
 selectFakeScenarioFolder scenarioNodeId connection = do
   [fakeScenarioFolder] <- PG.query connection rawQuery (PG.Only scenarioNodeId)
   return fakeScenarioFolder
@@ -933,7 +931,7 @@ selectFakeScenarioFolder scenarioNodeId connection = do
 -- ** select scenario node exist
 
 
-selectScenarioNodeExists :: UUID -> PG.Connection -> IO Bool
+selectScenarioNodeExists :: Id Scenario -> PG.Connection -> IO Bool
 selectScenarioNodeExists id connection = do
   [PG.Only nodeExists] <- PG.query connection rawQuery (PG.Only id)
   return nodeExists
@@ -954,8 +952,8 @@ selectScenarioNodeExists id connection = do
 
 
 data NewFakeHttpScene = NewFakeHttpScene
-    { _newFakeSceneParentId   :: Maybe UUID
-    , _newFakeSceneRequestId  :: UUID
+    { _newFakeSceneParentId   :: Maybe (Id Scene)
+    , _newFakeSceneRequestId  :: Id Request
     , _newFakeSceneVariables  :: SceneVariables
     , _newFakeScenePrescript  :: String
     , _newFakeScenePostscript :: String
@@ -963,7 +961,7 @@ data NewFakeHttpScene = NewFakeHttpScene
     deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakeHttpScene :: NewFakeHttpScene -> PG.Connection -> IO UUID
+insertFakeHttpScene :: NewFakeHttpScene -> PG.Connection -> IO (Id Scene)
 insertFakeHttpScene newFakeScene connection = do
   [PG.Only id] <- PG.query connection rawQuery newFakeScene
   return id
@@ -988,7 +986,7 @@ insertFakeHttpScene newFakeScene connection = do
 
 
 data NewFakePgScene = NewFakePgScene
-    { _newFakePgSceneParentId   :: Maybe UUID
+    { _newFakePgSceneParentId   :: Maybe (Id Postgres)
     , _newFakePgSceneActorId    :: Id Postgres
     , _newFakePgSceneVariables  :: SceneVariables
     , _newFakePgScenePrescript  :: String
@@ -997,7 +995,7 @@ data NewFakePgScene = NewFakePgScene
     deriving (Eq, Show, Generic, PG.ToRow)
 
 
-insertFakePgScene :: NewFakePgScene -> PG.Connection -> IO UUID
+insertFakePgScene :: NewFakePgScene -> PG.Connection -> IO (Id Scene)
 insertFakePgScene newFakeScene connection = do
   [PG.Only id] <- PG.query connection rawQuery newFakeScene
   return id
@@ -1022,16 +1020,16 @@ insertFakePgScene newFakeScene connection = do
 
 
 data FakeScene = FakeScene
-    { _fakeSceneParentId   :: Maybe UUID
+    { _fakeSceneParentId   :: Maybe (Id Scene)
     , _fakeActorType       :: ActorType
-    , _fakeSceneId         :: UUID
+    , _fakeSceneId         :: Id Scene
     , _fakeSceneVariables  :: SceneVariables
     , _fakeScenePrescript  :: String
     , _fakeScenePostscript :: String
     }
     deriving (Eq, Show, Generic, PG.FromRow)
 
-selectFakeScene :: UUID -> PG.Connection -> IO (Maybe FakeScene)
+selectFakeScene :: Id Scene -> PG.Connection -> IO (Maybe FakeScene)
 selectFakeScene id connection =
   PG.query connection rawQuery (PG.Only id) <&> Maybe.listToMaybe
   where
@@ -1053,7 +1051,7 @@ selectFakeScene id connection =
           WHERE id = ?
           |]
 
-selectFakeSceneWithParentId :: UUID -> PG.Connection -> IO (Maybe FakeScene)
+selectFakeSceneWithParentId :: Id Scene -> PG.Connection -> IO (Maybe FakeScene)
 selectFakeSceneWithParentId parentId connection =
   PG.query connection rawQuery (PG.Only parentId) <&> Maybe.listToMaybe
   where
@@ -1083,7 +1081,7 @@ selectFakeSceneWithParentId parentId connection =
 
 
 data NewFakeEnvironment = NewFakeEnvironment
-    { _newFakeEnvironmentAccountId :: UUID
+    { _newFakeEnvironmentAccountId :: Id Account
     , _newFakeEnvironmentName      :: String
     }
     deriving (Eq, Show, Generic, PG.ToRow)
@@ -1131,12 +1129,12 @@ selectFakeEnvironment environmentId connection =
 
 
 data FakeAccountEnvironment = FakeAccountEnvironment
-    { _fakeAccountEnvironmentAccountId     :: UUID
+    { _fakeAccountEnvironmentAccountId     :: Id Account
     , _fakeAccountEnvironmentEnvironmentId :: Id EnvId
     }
     deriving (Eq, Show, Generic, PG.FromRow)
 
-selectFakeAccountEnvironments :: UUID -> PG.Connection -> IO [FakeAccountEnvironment]
+selectFakeAccountEnvironments :: Id Account -> PG.Connection -> IO [FakeAccountEnvironment]
 selectFakeAccountEnvironments accountId connection =
   PG.query connection rawQuery (PG.Only accountId)
   where
@@ -1176,7 +1174,7 @@ insertNewFakeKeyValue newFakeKeyValue connection = do
 
 
 data FakeKeyValue = FakeKeyValue
-    { _fakeKeyValueId            :: UUID
+    { _fakeKeyValueId            :: Id KeyValue
     , _fakeKeyValueEnvironmentId :: Id EnvId
     , _fakeKeyValueKey           :: String
     , _fakeKeyValueValue         :: String

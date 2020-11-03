@@ -1,6 +1,5 @@
 module PatchGirl.Web.ScenarioNode.Sql where
 
-import           Data.UUID
 import qualified Database.PostgreSQL.Simple           as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified GHC.Int                              as Int
@@ -24,7 +23,7 @@ selectScenarioNodesFromAccountId accountId connection =
 -- * select scenario nodes from scenario collection id
 
 
-selectScenarioNodesFromScenarioCollectionId :: UUID -> PG.Connection -> IO [ScenarioNode]
+selectScenarioNodesFromScenarioCollectionId :: Id ScenarioCol -> PG.Connection -> IO [ScenarioNode]
 selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection = do
     res :: [PG.Only ScenarioNodeFromPG] <- PG.query connection selectScenarioNodeSql (PG.Only scenarioCollectionId)
     return $ map (fromPgScenarioNodeToScenarioNode . (\(PG.Only r) -> r)) res
@@ -38,7 +37,7 @@ selectScenarioNodesFromScenarioCollectionId scenarioCollectionId connection = do
 -- * update scenario node (rename)
 
 
-updateScenarioNodeDB :: UUID -> UpdateScenarioNode -> PG.Connection -> IO ()
+updateScenarioNodeDB :: Id Scenario -> UpdateScenarioNode -> PG.Connection -> IO ()
 updateScenarioNodeDB scenarioNodeId updateScenarioNode connection = do
   let newName = _updateScenarioNodeName updateScenarioNode
   _ <- PG.execute connection updateQuery (newName, scenarioNodeId)
@@ -55,7 +54,7 @@ updateScenarioNodeDB scenarioNodeId updateScenarioNode connection = do
 -- * delete scenario node
 
 
-deleteScenarioNodeDB :: UUID -> PG.Connection -> IO Int.Int64
+deleteScenarioNodeDB :: Id Scenario -> PG.Connection -> IO Int.Int64
 deleteScenarioNodeDB scenarioNodeId connection =
   PG.execute connection updateQuery (PG.Only scenarioNodeId)
   where
@@ -69,7 +68,7 @@ deleteScenarioNodeDB scenarioNodeId connection =
 -- * insert root scenario file
 
 
-insertRootScenarioFile :: NewRootScenarioFile -> UUID -> PG.Connection -> IO Int.Int64
+insertRootScenarioFile :: NewRootScenarioFile -> Id ScenarioCol -> PG.Connection -> IO Int.Int64
 insertRootScenarioFile NewRootScenarioFile {..} scenarioCollectionId connection =
   PG.execute connection rawQuery ( _newRootScenarioFileId
                                  , _newRootScenarioFileName
@@ -147,7 +146,7 @@ updateScenarioFileDB UpdateScenarioFile{..} accountId connection =
 -- * insert root scenario folder
 
 
-insertRootScenarioFolder :: NewRootScenarioFolder -> UUID -> PG.Connection -> IO Int.Int64
+insertRootScenarioFolder :: NewRootScenarioFolder -> Id ScenarioCol -> PG.Connection -> IO Int.Int64
 insertRootScenarioFolder NewRootScenarioFolder {..} scenarioCollectionId connection =
   PG.execute connection rawQuery ( _newRootScenarioFolderId
                                  , _newRootScenarioFolderName
@@ -198,7 +197,7 @@ insertScenarioFolder NewScenarioFolder {..} connection =
 -- * insert scene
 
 
-insertScene :: UUID -> NewScene -> PG.Connection -> IO Int.Int64
+insertScene :: Id Scenario -> NewScene -> PG.Connection -> IO Int.Int64
 insertScene scenarioNodeId NewScene{..} connection = do
   let (httpSceneId, pgSceneId) = case _newSceneActorType of
         HttpActor ->
@@ -208,9 +207,8 @@ insertScene scenarioNodeId NewScene{..} connection = do
           (Nothing, Just _newSceneActorId)
 
   case _newSceneSceneActorParentId of
-    Nothing ->
-      PG.execute connection insertRootSceneRawQuery ( _newSceneSceneActorParentId
-                                                    , _newSceneId
+    Nothing -> do
+      PG.execute connection insertRootSceneRawQuery ( _newSceneId
                                                     , _newSceneVariables
                                                     , _newScenePrescript
                                                     , _newScenePostscript
@@ -219,7 +217,7 @@ insertScene scenarioNodeId NewScene{..} connection = do
                                                     , pgSceneId
                                                     , scenarioNodeId
                                                     )
-    Just sceneNodeParentId ->
+    Just sceneNodeParentId -> do
       PG.execute connection insertSceneRawQuery ( sceneNodeParentId
                                                 , _newSceneId
                                                 , _newSceneVariables
@@ -243,7 +241,7 @@ insertScene scenarioNodeId NewScene{..} connection = do
               http_actor_id,
               pg_actor_id
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+             VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
              RETURNING id
           ), current_scenario_node AS(
             SELECT id, scene_node_id
@@ -275,14 +273,15 @@ insertScene scenarioNodeId NewScene{..} connection = do
              RETURNING id, scene_node_parent_id
           ) UPDATE scene_node
             SET scene_node_parent_id = (SELECT id FROM new_scene)
-            WHERE scene_node_parent_id = (SELECT scene_node_parent_id FROM new_scene)
+            WHERE scene_node_parent_id =
+              (SELECT scene_node_parent_id FROM new_scene)
           |]
 
 
 -- * delete scene
 
 
-deleteScene :: UUID -> PG.Connection -> IO Int.Int64
+deleteScene :: Id Scene -> PG.Connection -> IO Int.Int64
 deleteScene sceneId connection =
   PG.execute connection updateQuery (PG.Only sceneId)
   where
@@ -306,7 +305,7 @@ deleteScene sceneId connection =
 -- * update scene
 
 
-updateSceneDB :: UUID -> UpdateScene -> PG.Connection -> IO Int.Int64
+updateSceneDB :: Id Scene -> UpdateScene -> PG.Connection -> IO Int.Int64
 updateSceneDB sceneId UpdateScene{..} connection =
   PG.execute connection updateQuery ( _updateSceneVariables
                                     , _updateScenePrescript
