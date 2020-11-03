@@ -274,6 +274,10 @@ Elm.deriveElmDef deriveWithTaggedObject ''Web.Account
 Elm.deriveElmDef deriveWithTaggedObject ''Web.Postgres
 Elm.deriveElmDef deriveWithTaggedObject ''Web.EnvId
 Elm.deriveElmDef deriveWithTaggedObject ''Web.KeyValueId
+Elm.deriveElmDef deriveWithTaggedObject ''Web.Scenario
+Elm.deriveElmDef deriveWithTaggedObject ''Web.Scene
+Elm.deriveElmDef deriveWithTaggedObject ''Web.ActorId
+Elm.deriveElmDef deriveWithTaggedObject ''Web.ScenarioCol
 
 {-
 'Id a' is a phantom type and elm-bridge doesn't handle them
@@ -383,6 +387,10 @@ webModule =
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.Postgres)
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.EnvId)
       , DefineElm (Elm.Proxy :: Elm.Proxy Web.KeyValueId)
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.Scenario)
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.Scene)
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.ActorId)
+      , DefineElm (Elm.Proxy :: Elm.Proxy Web.ScenarioCol)
       ]
     proxyApi =
       (Elm.Proxy :: Elm.Proxy (Web.RestApi '[Servant.Cookie]))

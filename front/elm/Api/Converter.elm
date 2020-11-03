@@ -120,7 +120,7 @@ convertPgNodesFromBackToFront backPgNodes =
 convertScenarioCollectionFromBackToFront : Back.ScenarioCollection -> Front.ScenarioCollection
 convertScenarioCollectionFromBackToFront backScenarioCollection =
     let
-        (Back.ScenarioCollection id backScenarioNodes) =
+        (Back.ScenarioCollection (Back.Id id) backScenarioNodes) =
             backScenarioCollection
     in
     Front.ScenarioCollection id (convertScenarioNodesFromBackToFront backScenarioNodes)
@@ -138,7 +138,7 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
             case backScenarioNode of
                 Back.ScenarioFolder folder ->
                     Front.Folder
-                        { id = folder.scenarioNodeId
+                        { id = let (Back.Id id) = folder.scenarioNodeId in id
                         , name = NotEdited folder.scenarioNodeName
                         , children = convertScenarioNodesFromBackToFront folder.scenarioNodeChildren
                         , open = not (List.isEmpty folder.scenarioNodeChildren)
@@ -146,7 +146,7 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 
                 Back.ScenarioFile file ->
                     Front.File
-                        { id = file.scenarioNodeId
+                        { id = let (Back.Id id) = file.scenarioNodeId in id
                         , name = NotEdited file.scenarioNodeName
                         , scenes = List.map convertSceneActorFromBackToFront file.scenarioNodeScenes
                         , environmentId =
@@ -166,12 +166,17 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 -- ** scene
 
 
-convertSceneActorFromBackToFront : Back.SceneActor -> Front.Scene
+convertSceneActorFromBackToFront : Back.SceneActor -> Front.SceneRecord
 convertSceneActorFromBackToFront sceneActor =
     case sceneActor of
         Back.HttpSceneActor s ->
-            { id = s.sceneId
-            , nodeId = s.sceneActorId
+            { id =
+                  let (Back.Id id) = s.sceneId
+                  in id
+            , nodeId =
+                case s.sceneActorId of
+                                       Back.PostgresSceneId (Back.Id pid) -> pid
+                                       Back.RequestSceneId (Back.Id hid) -> hid
             , actorType = Front.HttpActor
             , sceneComputation = Nothing
             , variables = NotEdited (s.sceneVariables |> Dict.map (\_ v -> convertSceneVariableFromBackToFront v))
@@ -182,8 +187,13 @@ convertSceneActorFromBackToFront sceneActor =
             }
 
         Back.PgSceneActor s ->
-            { id = s.sceneId
-            , nodeId = s.sceneActorId
+            { id =
+                  let (Back.Id id) = s.sceneId
+                  in id
+            , nodeId =
+                case s.sceneActorId of
+                                       Back.PostgresSceneId (Back.Id pid) -> pid
+                                       Back.RequestSceneId (Back.Id hid) -> hid
             , actorType = Front.PgActor
             , sceneComputation = Nothing
             , variables = NotEdited (s.sceneVariables |> Dict.map (\_ v -> convertSceneVariableFromBackToFront v))

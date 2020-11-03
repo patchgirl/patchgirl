@@ -283,7 +283,7 @@ type alias PgFileRecord =
 
 type alias ScenarioFileRecord =
     { environmentId : Editable (Maybe Uuid)
-    , scenes : List Scene
+    , scenes : List SceneRecord
     }
 
 type alias RequestFileRecord =
@@ -336,7 +336,7 @@ type alias UserSceneVariableValue =
     , value : String
     }
 
-type alias Scene
+type alias SceneRecord
     = { id : Uuid
       , nodeId : Uuid
       , actorType : ActorType

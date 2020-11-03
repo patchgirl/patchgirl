@@ -85,7 +85,7 @@ update msg model =
                     Client.UpdateScenarioNode { updateScenarioNodeName = newName }
 
                 newMsg =
-                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id payload (renameNodeResultToMsg id newName)
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" (Id scenarioCollectionId) (Id id) payload (renameNodeResultToMsg id newName)
             in
             ( model, newMsg )
 
@@ -111,7 +111,7 @@ update msg model =
                     model.scenarioCollection
 
                 newMsg =
-                    Client.deleteApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id (deleteScenarioNodeResultToMsg id)
+                    Client.deleteApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" (Id scenarioCollectionId) (Id id) (deleteScenarioNodeResultToMsg id)
             in
             ( model, newMsg )
 
