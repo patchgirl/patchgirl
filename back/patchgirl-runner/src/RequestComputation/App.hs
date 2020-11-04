@@ -12,7 +12,6 @@ import qualified Control.Exception                as Exception
 import qualified Control.Monad.IO.Class           as IO
 import qualified Control.Monad.Reader             as Reader
 import qualified Control.Monad.State              as State
-import qualified Control.Monad.State              as State
 import qualified Data.ByteString.UTF8             as BSU
 import qualified Data.CaseInsensitive             as CI
 import           Data.Functor                     ((<&>))
