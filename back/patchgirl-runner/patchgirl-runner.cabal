@@ -11,6 +11,7 @@ build-type:     Simple
 library
   exposed-modules:
       Api
+      DevelMain
       Env
       Health.App
       Interpolator
@@ -41,6 +42,7 @@ library
     , connection
     , containers
     , dhall
+    , foreign-store
     , http-client
     , http-client-tls
     , http-conduit
@@ -83,6 +85,7 @@ executable patchgirl-runner-exe
     , connection
     , containers
     , dhall
+    , foreign-store
     , http-client
     , http-client-tls
     , http-conduit
@@ -134,6 +137,7 @@ test-suite spec
     , connection
     , containers
     , dhall
+    , foreign-store
     , hspec
     , http-client
     , http-client-tls

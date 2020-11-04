@@ -13,7 +13,7 @@ app:
 	clear; echo "building back/$(PACKAGE)"; stack build $(PACKAGE) --ghc-options="-threaded -rtsopts -with-rtsopts=-T -Werror"
 
 ghcid-devel:
-	clear; LC_ALL=C.UTF-8 ghcid --command "stack ghci patchgirl-web" --test "DevelMain.update"
+	clear; LC_ALL=C.UTF-8 ghcid --command "stack ghci $(PACKAGE)" --test "DevelMain.update"
 
 static:
 	clear; echo "building static back/$(PACKAGE)"; nix-build -A $(PACKAGE)-static

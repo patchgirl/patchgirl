@@ -18,7 +18,6 @@ import qualified Network.HTTP.Types  as Http
 
 import           Interpolator
 import           PatchGirl.Web.Http
-import           ScriptContext
 
 
 -- * http response

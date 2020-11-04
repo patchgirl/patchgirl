@@ -14,10 +14,8 @@ import qualified Control.Monad.Reader             as Reader
 import qualified Control.Monad.State              as State
 import qualified Data.ByteString.UTF8             as BSU
 import qualified Data.CaseInsensitive             as CI
-import           Data.Function                    ((&))
 import           Data.Functor                     ((<&>))
 import qualified Data.Map.Strict                  as Map
-import qualified Data.Time.Clock                  as Time
 import qualified Data.Traversable                 as Monad
 import qualified Network.HTTP.Client.Conduit      as Http
 import qualified Network.HTTP.Simple              as Http

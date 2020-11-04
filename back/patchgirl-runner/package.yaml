@@ -83,3 +83,4 @@ dependencies:
   - prometheus-metrics-ghc
   - stm
   - postgresql-libpq
+  - foreign-store
