@@ -51,7 +51,7 @@ type Msg
     -- touch
     | GenerateRandomUUIDForFile NewNode
     | AskTouch NewNode Uuid
-    | Touch (NodeRecord RequestFileRecord) (Maybe Uuid)
+    | Touch (FileRecord RequestFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -237,7 +237,7 @@ update msg model =
 
 
 
-createRequestFileResultToMsg : NodeRecord RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+createRequestFileResultToMsg : FileRecord RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 createRequestFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->

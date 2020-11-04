@@ -76,7 +76,7 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> NodeRecord RequestFileRecord -> (Model a, NodeRecord RequestFileRecord, Cmd Msg)
+update : Msg -> Model a -> FileRecord RequestFileRecord -> (Model a, FileRecord RequestFileRecord, Cmd Msg)
 update msg model file =
     case msg of
         UpdateUrl newHttpUrl ->
@@ -291,7 +291,7 @@ update msg model file =
 -- * util
 
 
-isBuilderDirty : NodeRecord RequestFileRecord -> Bool
+isBuilderDirty : FileRecord RequestFileRecord -> Bool
 isBuilderDirty request =
     isDirty request.httpMethod
         || isDirty request.httpHeaders
@@ -301,7 +301,7 @@ isBuilderDirty request =
             , request.httpBody
             ]
 
-buildRequestToRun : List KeyValue -> NodeRecord RequestFileRecord -> Model a -> Cmd Msg
+buildRequestToRun : List KeyValue -> FileRecord RequestFileRecord -> Model a -> Cmd Msg
 buildRequestToRun envKeyValues file model =
     let
         request : RequestComputationInput
@@ -344,7 +344,7 @@ remoteComputationDoneToMsg result =
 -- * view
 
 
-view : NodeRecord RequestFileRecord -> Model a -> Element Msg
+view : FileRecord RequestFileRecord -> Model a -> Element Msg
 view file model =
     let
         keyValuesToRun : List KeyValue
@@ -384,7 +384,7 @@ view file model =
 -- ** title
 
 
-titleView : Model a -> NodeRecord RequestFileRecord -> Element Msg
+titleView : Model a -> FileRecord RequestFileRecord -> Element Msg
 titleView model file =
     let
         name =
@@ -397,7 +397,7 @@ titleView model file =
         ]
 
 
-mainActionButtonsView : NodeRecord RequestFileRecord -> Element Msg
+mainActionButtonsView : FileRecord RequestFileRecord -> Element Msg
 mainActionButtonsView file =
     let
         rowParam =
@@ -442,7 +442,7 @@ mainActionButtonsView file =
 -- ** response
 
 
-responseView : NodeRecord RequestFileRecord -> Element Msg
+responseView : FileRecord RequestFileRecord -> Element Msg
 responseView file =
     let
         errorAttributes =
@@ -498,7 +498,7 @@ responseView file =
 -- ** url
 
 
-urlView : NodeRecord RequestFileRecord -> List KeyValue -> Element Msg
+urlView : FileRecord RequestFileRecord -> List KeyValue -> Element Msg
 urlView file keyValues =
     el [ alignLeft, width fill ] <|
         row [ width fill, spacing 30 ]
@@ -515,7 +515,7 @@ urlView file keyValues =
 -- ** method
 
 
-methodView : NodeRecord RequestFileRecord -> Element Msg
+methodView : FileRecord RequestFileRecord -> Element Msg
 methodView file =
     Input.radioRow [ padding 10, spacing 10 ]
         { onChange = SetHttpMethod
@@ -537,7 +537,7 @@ methodView file =
 -- ** header
 
 
-headersView : NodeRecord RequestFileRecord -> List KeyValue -> Element Msg
+headersView : FileRecord RequestFileRecord -> List KeyValue -> Element Msg
 headersView file keyValues =
     let
         headerInputs =
@@ -600,7 +600,7 @@ headerView keyValues idx ( headerKey, headerValue ) =
 -- ** body
 
 
-bodyView : NodeRecord RequestFileRecord -> List KeyValue -> Element Msg
+bodyView : FileRecord RequestFileRecord -> List KeyValue -> Element Msg
 bodyView file keyValues =
     wrappedRow [ width fill, spacing 30 ]
         [ Input.multiline []

@@ -718,7 +718,7 @@ set("userId", get("userId"));"""
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        getRequestFiles : List RequestNode -> List (NodeRecord RequestFileRecord)
+        getRequestFiles : List RequestNode -> List (FileRecord RequestFileRecord)
         getRequestFiles nodes =
             case nodes of
                 [] ->

@@ -255,7 +255,7 @@ type alias FolderRecord file =
     , open : Bool
     }
 
-type alias NodeRecord file =
+type alias FileRecord file =
     { file
         | id : Uuid
         , name : Editable String
@@ -263,8 +263,13 @@ type alias NodeRecord file =
 
 type Node file
     = Folder (FolderRecord file)
-    | File (NodeRecord file)
+    | File (FileRecord file)
 
+getNodeId : Node file -> Uuid
+getNodeId node =
+    case node of
+        Folder f -> f.id
+        File f -> f.id
 
 type alias RequestNode = Node RequestFileRecord
 type alias PgNode = Node PgFileRecord
@@ -352,9 +357,9 @@ type ActorType
     = HttpActor
     | PgActor
 
-type FileRecord
-    = HttpRecord (NodeRecord RequestFileRecord)
-    | PgRecord (NodeRecord PgFileRecord)
+type ActorRecord
+    = HttpRecord (FileRecord RequestFileRecord)
+    | PgRecord (FileRecord PgFileRecord)
 
 
 -- * builder

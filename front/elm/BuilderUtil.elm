@@ -19,7 +19,7 @@ import Page exposing(..)
 -- ** find
 
 
-findFile : List (Node file) -> Uuid -> Maybe (NodeRecord file)
+findFile : List (Node file) -> Uuid -> Maybe (FileRecord file)
 findFile nodes id =
     case findNode nodes id of
         Just (File file) -> Just file
@@ -203,7 +203,7 @@ mkDefaultFolder id name =
 
 
 
-mkDefaultRequestFile : Uuid -> String -> NodeRecord RequestFileRecord
+mkDefaultRequestFile : Uuid -> String -> FileRecord RequestFileRecord
 mkDefaultRequestFile id name =
     { id = id
     , name = NotEdited name
@@ -221,7 +221,7 @@ mkDefaultRequestFile id name =
 -- *** pg
 
 
-mkDefaultPgFile : Uuid -> String -> NodeRecord PgFileRecord
+mkDefaultPgFile : Uuid -> String -> FileRecord PgFileRecord
 mkDefaultPgFile id name =
     { id = id
     , name = NotEdited name
@@ -239,7 +239,7 @@ mkDefaultPgFile id name =
 -- *** scenario
 
 
-mkDefaultScenarioFile : Uuid -> String -> NodeRecord ScenarioFileRecord
+mkDefaultScenarioFile : Uuid -> String -> FileRecord ScenarioFileRecord
 mkDefaultScenarioFile id name =
     { id = id
     , name = NotEdited name

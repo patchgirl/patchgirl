@@ -53,9 +53,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | GenerateRandomUUIDForDuplicate (NodeRecord RequestFileRecord)
-    | AskDuplicate (NodeRecord RequestFileRecord) Uuid
-    | Duplicate (NodeRecord RequestFileRecord) (Maybe Uuid)
+    | GenerateRandomUUIDForDuplicate (FileRecord RequestFileRecord)
+    | AskDuplicate (FileRecord RequestFileRecord) Uuid
+    | Duplicate (FileRecord RequestFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -248,7 +248,7 @@ update msg model =
 -- * util
 
 
-duplicateRequestFileResultToMsg : NodeRecord RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicateRequestFileResultToMsg : FileRecord RequestFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 duplicateRequestFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->
@@ -416,7 +416,7 @@ deleteView model requestNode =
 -- ** duplicate view
 
 
-duplicateView : Model a -> NodeRecord RequestFileRecord -> Element Msg
+duplicateView : Model a -> FileRecord RequestFileRecord -> Element Msg
 duplicateView model fileRecord =
     let
         name =

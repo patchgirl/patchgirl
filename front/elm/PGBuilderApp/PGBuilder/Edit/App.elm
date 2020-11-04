@@ -53,9 +53,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | GenerateRandomUUIDForDuplicate (NodeRecord PgFileRecord)
-    | AskDuplicate (NodeRecord PgFileRecord) Uuid
-    | Duplicate (NodeRecord PgFileRecord) (Maybe Uuid)
+    | GenerateRandomUUIDForDuplicate (FileRecord PgFileRecord)
+    | AskDuplicate (FileRecord PgFileRecord) Uuid
+    | Duplicate (FileRecord PgFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -271,7 +271,7 @@ deletePgNodeResultToMsg id result =
         Err error ->
             PrintNotification <| AlertNotification "Could not delete, maybe this HTTP pg is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
-duplicatePgFileResultToMsg : NodeRecord PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicatePgFileResultToMsg : FileRecord PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 duplicatePgFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->
@@ -420,7 +420,7 @@ deleteView model pgNode =
 -- ** duplicate view
 
 
-duplicateView : Model a -> NodeRecord PgFileRecord -> Element Msg
+duplicateView : Model a -> FileRecord PgFileRecord -> Element Msg
 duplicateView model fileRecord =
     let
         name =

@@ -477,6 +477,8 @@ healthApiServer =
 type TestApi =
   Flat (
     "test" :> (
+      "signIn" :> ReqBody '[JSON] SignInTest :> Post '[JSON] (Headers '[ Header "Set-Cookie" String ] String) :<|>
+      "checkSuperSecret" :> Header "Admin" Bool :> Get '[JSON] String :<|>
       "deleteNoContent" :> DeleteNoContent '[JSON] NoContent :<|>
       "getStatusCode" :> Capture "statusCode" Int :> Get '[JSON] () :<|>
       "users" :> (
@@ -516,8 +518,11 @@ type TestApi =
     )
   )
 
+
 testApiServer :: ServerT TestApi AppM
 testApiServer =
+  signInHandler :<|>
+  checkSuperSecretHandler :<|>
   deleteNoContentHandler :<|>
   getStatusCodeHandler :<|>
   createUserHandler :<|>
