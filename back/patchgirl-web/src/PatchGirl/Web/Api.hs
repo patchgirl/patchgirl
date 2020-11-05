@@ -478,7 +478,7 @@ type TestApi =
   Flat (
     "test" :> (
       "signIn" :> ReqBody '[JSON] SignInTest :> Post '[JSON] (Headers '[ Header "Set-Cookie" String ] String) :<|>
-      "checkSuperSecret" :> Header "Admin" Bool :> Get '[JSON] String :<|>
+      "checkSuperSecret" :> Header "Cookie" String :> Get '[JSON] String :<|>
       "deleteNoContent" :> DeleteNoContent '[JSON] NoContent :<|>
       "getStatusCode" :> Capture "statusCode" Int :> Get '[JSON] () :<|>
       "users" :> (

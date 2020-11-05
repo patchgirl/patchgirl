@@ -6,6 +6,7 @@ module ScenarioComputation.Model where
 
 import           Control.Lens                     (makeLenses)
 import qualified Data.Aeson                       as Aeson
+import qualified Data.Map.Strict                  as Map
 import           Data.UUID                        (UUID)
 import           GHC.Generics                     (Generic)
 import qualified Network.HTTP.Client              as Http
@@ -14,17 +15,27 @@ import           Interpolator
 import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           PgSqlComputation.Model
 import           RequestComputation.Model
-import           ScriptContext
 import           TangoScript.Model
 
 
 -- * scenario context
 
+
 data ScenarioContext = ScenarioContext
-    { _scenarioContextScriptContext :: ScriptContext
-    , _scenarioContextCookieJar     :: Http.CookieJar
+    { _scenarioContextCookieJar       :: Http.CookieJar
+    , _scenarioContextSceneVars       :: Web.SceneVariables
+    , _scenarioContextEnvironmentVars :: EnvironmentVars
+    , _scenarioContextGlobalVars      :: ScenarioVars
+    , _scenarioContextLocalVars       :: ScenarioVars
     }
 
+emptyScenarioContext :: ScenarioContext
+emptyScenarioContext = ScenarioContext { _scenarioContextCookieJar       = Http.createCookieJar []
+                                       , _scenarioContextSceneVars       = Web.SceneVariables Map.empty
+                                       , _scenarioContextEnvironmentVars = EnvironmentVars Map.empty
+                                       , _scenarioContextGlobalVars      = emptyScenarioVars
+                                       , _scenarioContextLocalVars       = emptyScenarioVars
+                                       }
 
 -- * scenario input
 

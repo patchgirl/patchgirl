@@ -7,7 +7,6 @@
 
 module RequestComputation.AppSpec where
 
-import           Data.Map.Strict          (Map)
 import qualified Data.Map.Strict          as Map
 import qualified Network.HTTP.Client      as HTTP
 import           Servant
@@ -84,10 +83,10 @@ spec = do
 
     withClient (withHttpMock mock) $
       it "interpolate env vars" $ \clientEnv -> do
-        let envVars = Map.fromList [ ( "host"
-                                     , [ Sentence "http://foo.com" ]
-                                     )
-                                   ]
+        let envVars = EnvironmentVars $ Map.fromList [ ( "host"
+                                                       , [ Sentence "http://foo.com" ]
+                                                       )
+                                                     ]
         try clientEnv (runRequestComputation (input2, envVars)) `shouldReturn` output2
 
 
@@ -110,5 +109,5 @@ spec = do
         try clientEnv (runRequestComputation (defaultRequestComputationInput, envVars)) `shouldReturn` Left ConnectionTimeout
 
 
-envVars :: Map String StringTemplate
-envVars = Map.empty
+envVars :: EnvironmentVars
+envVars = emptyEnvironmentVars

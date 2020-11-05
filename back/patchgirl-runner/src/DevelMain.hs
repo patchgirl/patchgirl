@@ -50,10 +50,10 @@ update = do
           -> IO ThreadId
     start done =
         forkIO (finally run
-                        -- Note that this implies concurrency
-                        -- between shutdownApp and the next app that is starting.
-                        -- Normally this should be fine
-                        (putMVar done ()))
+               -- Note that this implies concurrency
+               -- between shutdownApp and the next app that is starting.
+               -- Normally this should be fine
+                (putMVar done ()))
 
 -- | kill the server
 shutdown :: IO ()

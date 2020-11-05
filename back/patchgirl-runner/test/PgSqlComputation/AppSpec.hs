@@ -42,7 +42,7 @@ spec = do
       it "returns different integers size" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select 1::smallint as \"a\", 1::integer as \"b\", 1::bigint as \"c\";"]
                 validPgConnection
@@ -55,7 +55,7 @@ spec = do
       it "returns reals" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select 12.345 as \"a\", 12.345::real as \"b\", 12.345::double precision as \"c\", 12.345::decimal as \"d\";"]
                 validPgConnection
@@ -69,7 +69,7 @@ spec = do
       it "returns strings" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select \'coucou\' as \"a\", 'coucou'::text as \"b\", 'coucou'::varchar as \"c\";"]
                 validPgConnection
@@ -82,7 +82,7 @@ spec = do
       it "returns null" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select null as \"null\";"]
                 validPgConnection
@@ -95,7 +95,7 @@ spec = do
       it "returns bool" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select True as \"bool\";"]
                 validPgConnection
@@ -107,7 +107,7 @@ spec = do
       it "returns tables" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select * from (values(1,2), (3,4)) as foo(a,b);"]
                 validPgConnection
@@ -121,7 +121,7 @@ spec = do
       it "returns array as string" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select ARRAY[1,2]::integer array;"]
                 validPgConnection
@@ -133,7 +133,7 @@ spec = do
       it "returns tuples as string" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [Sentence "select (1,2);"]
                 validPgConnection
@@ -150,7 +150,7 @@ spec = do
       it "inserts" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [ Sentence "insert into user_test (firstname, lastname, role) values ('a', 'b', 'manager');" ]
                 validPgConnection
@@ -161,7 +161,7 @@ spec = do
       it "inserts and return table" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [ Sentence "insert into user_test (firstname, lastname, role) values ('a', 'b', 'manager') RETURNING firstname, lastname;"]
                 validPgConnection
@@ -174,7 +174,7 @@ spec = do
       it "updates" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [ Sentence "update user_test set firstname = '' where id = 0;"]
                 validPgConnection
@@ -185,7 +185,7 @@ spec = do
       it "deletes" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [ Sentence "delete from user_test where id = 0;"]
                 validPgConnection
@@ -200,7 +200,7 @@ spec = do
       it "sustitute one var" $ \clientEnv -> do
         let
           input =
-            ( Map.fromList [ ( "name", [ Sentence "John" ]) ]
+            ( EnvironmentVars $ Map.fromList [ ( "name", [ Sentence "John" ]) ]
             , PgComputationInput
                 [ Sentence "select '"
                 , Key "name"
@@ -216,9 +216,9 @@ spec = do
       it "sustitute multiple vars" $ \clientEnv -> do
         let
           input =
-            ( Map.fromList [ ( "firstname", [ Sentence "John" ])
-                           , ( "lastname", [ Sentence "Doe" ])
-                           ]
+            ( EnvironmentVars $ Map.fromList [ ( "firstname", [ Sentence "John" ])
+                                             , ( "lastname", [ Sentence "Doe" ])
+                                             ]
             , PgComputationInput
                 [ Sentence "select '"
                 , Key "firstname"
@@ -236,8 +236,8 @@ spec = do
       it "works when var doesn't exist" $ \clientEnv -> do
         let
           input =
-            ( Map.fromList [ ( "firstname", [ Sentence "John" ])
-                           ]
+            ( EnvironmentVars $ Map.fromList [ ( "firstname", [ Sentence "John" ])
+                                             ]
             , PgComputationInput
                 [ Sentence "select '"
                 , Key "firstname"
@@ -259,7 +259,7 @@ spec = do
       it "fails on bad syntax" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [ Sentence "selec t;"]
                 validPgConnection
@@ -275,7 +275,7 @@ spec = do
       it "fails on invalid connection" $ \clientEnv -> do
         let
           input =
-            ( Map.empty
+            ( emptyEnvironmentVars
             , PgComputationInput
                 [ Sentence "select 1;"]
                 TemplatedPgConnection { _templatedPgConnectionHost     = [ Sentence "localhosti" ]

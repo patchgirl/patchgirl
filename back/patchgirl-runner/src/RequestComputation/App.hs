@@ -8,27 +8,25 @@ module RequestComputation.App ( runRequestComputationHandler
                               ) where
 
 
-import qualified Control.Exception                as Exception
-import qualified Control.Monad.IO.Class           as IO
-import qualified Control.Monad.Reader             as Reader
-import qualified Control.Monad.State              as State
-import qualified Data.ByteString.UTF8             as BSU
-import qualified Data.CaseInsensitive             as CI
-import           Data.Functor                     ((<&>))
-import qualified Data.Map.Strict                  as Map
-import qualified Data.Time                        as Time
-import qualified Data.Traversable                 as Monad
-import qualified Network.HTTP.Client.Conduit      as Http
-import qualified Network.HTTP.Simple              as Http
-import qualified Network.HTTP.Types               as Http
+import qualified Control.Exception           as Exception
+import qualified Control.Monad               as Monad
+import qualified Control.Monad.IO.Class      as IO
+import qualified Control.Monad.Reader        as Reader
+import qualified Control.Monad.State         as State
+import qualified Data.ByteString.UTF8        as BSU
+import qualified Data.CaseInsensitive        as CI
+import           Data.Function               ((&))
+import           Data.Functor                ((<&>))
+import qualified Data.Time                   as Time
+import qualified Network.HTTP.Client.Conduit as Http
+import qualified Network.HTTP.Simple         as Http
+import qualified Network.HTTP.Types          as Http
 
 import           Env
 import           Interpolator
 import           PatchGirl.Web.Http
-import qualified PatchGirl.Web.ScenarioNode.Model as Web
 import           RequestComputation.Model
 import           ScenarioComputation.Model
-import           ScriptContext
 
 
 -- * handler
@@ -40,11 +38,9 @@ runRequestComputationHandler
      )
   => (TemplatedRequestComputationInput, EnvironmentVars)
   -> m RequestComputationOutput
-runRequestComputationHandler (templatedRequestComputationInput, environmentVars) = do
-  let scenarioContext = ScenarioContext { _scenarioContextScriptContext = ScriptContext Web.emptySceneVariable environmentVars Map.empty Map.empty
-                                        , _scenarioContextCookieJar = Http.createCookieJar []
-                                        }
-  State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) scenarioContext
+runRequestComputationHandler (templatedRequestComputationInput, environmentVars) =
+  let scenarioContext = emptyScenarioContext { _scenarioContextEnvironmentVars = environmentVars }
+  in State.evalStateT (runRequestComputationWithScenarioContext templatedRequestComputationInput) scenarioContext
 
 
 -- * run request computation with scenario context
@@ -60,8 +56,16 @@ runRequestComputationWithScenarioContext
 runRequestComputationWithScenarioContext templatedRequestComputationInput = do
   runner <- Reader.ask <&> _envHttpRequest
   request <- buildRequest templatedRequestComputationInput
-  result <- IO.liftIO $ Exception.try $ runner request
-  responseToComputationResult result
+  cookieJar <- State.get <&> _scenarioContextCookieJar
+  result <- IO.liftIO $ Exception.try $ runner cookieJar request
+
+  case result of
+    Right (newCookieJar, _) ->
+      State.modify $ \s -> s { _scenarioContextCookieJar = newCookieJar }
+
+    _ -> return ()
+
+  responseToComputationResult (result <&> snd)
 
 
 -- * build request
@@ -80,8 +84,8 @@ buildRequest templatedRequestComputationInput = do
     <&> Http.setRequestHeaders (map mkHeader _requestComputationInputHeaders)
     <&> Http.setRequestBody (Http.RequestBodyBS $ BSU.fromString _requestComputationInputBody)
     <&> Http.setRequestMethod (BSU.fromString $ methodToString _requestComputationInputMethod)
-    <&> setPortAndSecure _requestComputationInputUrl
   setCookie requestWithoutCookie
+
   where
     {-| fetch the latest cookie and add it to the current request, also update the `last-access-time` value of the cookieJar -}
     setCookie
@@ -96,15 +100,6 @@ buildRequest templatedRequestComputationInput = do
       let (newRequest, newCookieJar) = Http.insertCookiesIntoRequest request cookieJar time
       State.modify $ \s -> s { _scenarioContextCookieJar = newCookieJar }
       return newRequest
-
-    setPortAndSecure :: String -> Http.Request -> Http.Request
-    setPortAndSecure = \case
-        ('h' : 't' : 't' : 'p' : 's' : _) ->
-          Http.setRequestSecure True . Http.setRequestPort 443
-
-        _ ->
-          Http.setRequestSecure False . Http.setRequestPort 80
-
 
 -- * build request computation input
 
@@ -131,19 +126,27 @@ buildRequestComputationInput TemplatedRequestComputationInput{..} = do
       => StringTemplate
       -> m String
     interpolate' st = do
-      ScriptContext{..} <- State.get <&> _scenarioContextScriptContext
-      return $ interpolate sceneVars environmentVars globalVars localVars st
+      sceneVars <- State.get <&> _scenarioContextSceneVars
+      envVars <- State.get <&> _scenarioContextEnvironmentVars
+      globalVars <- State.get <&> _scenarioContextGlobalVars
+      localVars <- State.get <&> _scenarioContextLocalVars
+      return $ interpolate sceneVars envVars globalVars localVars st
 
 
 -- * run request
 
+ioRequestRunner :: Http.CookieJar -> Http.Request -> IO (Http.CookieJar, HttpResponse BSU.ByteString)
+ioRequestRunner cookieJar request = do
+  response <- Http.httpBS request
+  now <- Time.getCurrentTime
+  let newCookieJar = Http.updateCookieJar response request now cookieJar & fst
+  return ( newCookieJar
+         , fromResponseToHttpResponse response
+         )
 
-ioRequestRunner :: Http.Request -> IO (HttpResponse BSU.ByteString)
-ioRequestRunner request = do
-  Http.httpBS request <&> fromResponseToHttpResponse
 
 
--- * create request computation output
+-- * response to computation result
 
 
 responseToComputationResult

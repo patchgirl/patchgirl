@@ -49,6 +49,7 @@ library
     , http-types
     , lens
     , mtl
+    , network-uri
     , patchgirl-web
     , postgresql-libpq
     , prometheus-client
@@ -92,6 +93,7 @@ executable patchgirl-runner-exe
     , http-types
     , lens
     , mtl
+    , network-uri
     , patchgirl-runner
     , patchgirl-web
     , postgresql-libpq
@@ -145,6 +147,7 @@ test-suite spec
     , http-types
     , lens
     , mtl
+    , network-uri
     , patchgirl-runner
     , patchgirl-web
     , postgresql-libpq

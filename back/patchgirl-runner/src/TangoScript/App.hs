@@ -5,6 +5,7 @@ import qualified Control.Monad.State       as State
 import qualified Data.Aeson                as Aeson
 import qualified Data.Bifunctor            as Bifunctor
 import           Data.ByteString.Lazy.UTF8 as BLU
+import           Data.Coerce               (coerce)
 import           Data.Function             ((&))
 import           Data.Functor              ((<&>))
 import qualified Data.HashMap.Strict       as HashMap
@@ -15,8 +16,8 @@ import           Data.Text                 as TS
 import qualified Data.Vector               as Vector
 import           GHC.Natural               (Natural)
 
+import           Interpolator
 import           ScenarioComputation.Model
-import           ScriptContext
 import           TangoScript.Model
 
 
@@ -72,12 +73,14 @@ reduceExprToPrimitive context = \case
     return $ Right rowElem
 
   lvar@(LVar var) -> do
-    State.get <&> (localVars . _scenarioContextScriptContext) <&> Map.lookup var >>= \case
+    scenarioVars <- State.get <&> _scenarioContextLocalVars <&> coerce
+    case Map.lookup var scenarioVars of
       Nothing   -> return $ Left $ UnknownVariable lvar
       Just expr -> return $ Right expr
 
   lfetch@(LFetch var) -> do
-    State.get <&> (globalVars . _scenarioContextScriptContext) <&> Map.lookup var >>= \case
+    scenarioVars <- State.get <&> _scenarioContextGlobalVars <&> coerce
+    case Map.lookup var scenarioVars of
       Nothing   -> return $ Left $ UnknownVariable lfetch
       Just expr -> return $ Right expr
 

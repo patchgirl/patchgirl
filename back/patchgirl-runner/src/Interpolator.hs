@@ -3,8 +3,10 @@
 module Interpolator ( Template(..)
                     , StringTemplate
                     , interpolate
-                    , EnvironmentVars
-                    , ScenarioVars
+                    , EnvironmentVars(..)
+                    , emptyEnvironmentVars
+                    , ScenarioVars(..)
+                    , emptyScenarioVars
                     ) where
 
 import qualified Control.Monad                    as Monad
@@ -23,19 +25,53 @@ import           TangoScript.Model
 
 -- * model
 
+
+-- ** scenario vars
+
+
 {--
 scenario variables are variables defined in scripts and can only
 be used in a scenario context.
 They can be modified accross pre or post script scene and only
 live accross a given scenario.
 --}
-type ScenarioVars = Map String Expr
+newtype ScenarioVars = ScenarioVars (Map String Expr) deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON ScenarioVars where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON ScenarioVars where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+emptyScenarioVars :: ScenarioVars
+emptyScenarioVars = ScenarioVars Map.empty
+
+
+-- ** environment vars
+
 
 {--
 environment variables are variables defined in the environment
 section. they live accross requests and scenario
 --}
-type EnvironmentVars = Map String StringTemplate
+newtype EnvironmentVars = EnvironmentVars (Map String StringTemplate) deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON EnvironmentVars where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+instance Aeson.FromJSON EnvironmentVars where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop 1 }
+
+emptyEnvironmentVars :: EnvironmentVars
+emptyEnvironmentVars = EnvironmentVars Map.empty
+
+
+-- ** string template
+
 
 type StringTemplate = [Template]
 
@@ -78,13 +114,13 @@ interpolate sceneVariables environmentVars scenarioGlobalVars scenarioLocalVars 
     List.intercalate "" $ map templateToString interpolated
 
 interpolateEnvironmentVars :: EnvironmentVars -> Template -> StringTemplate
-interpolateEnvironmentVars environmentVars = \case
+interpolateEnvironmentVars (EnvironmentVars environmentVars) = \case
   Key key ->
     Maybe.fromMaybe [Key key] (Map.lookup key environmentVars)
   sentence -> [ sentence ]
 
 interpolateScenarioVars :: ScenarioVars -> Template -> Template
-interpolateScenarioVars scenarioVars = \case
+interpolateScenarioVars (ScenarioVars scenarioVars) = \case
   Key key ->
     case Map.lookup key scenarioVars >>= exprToString of
       Just str -> Sentence str

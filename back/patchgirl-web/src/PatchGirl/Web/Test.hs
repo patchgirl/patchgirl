@@ -13,7 +13,9 @@ import qualified Data.Aeson                           as Aeson
 import           Data.Aeson.Types                     (FromJSON (..),
                                                        ToJSON (..), parseEither)
 import qualified Data.ByteString.Char8                as B
+import           Data.Function                        ((&))
 import           Data.Functor                         ((<&>))
+import qualified Data.List                            as List
 import qualified Data.Maybe                           as Maybe
 import           Database.PostgreSQL.Simple
 import qualified Database.PostgreSQL.Simple           as PG
@@ -276,17 +278,29 @@ instance Aeson.FromJSON UserRole where
 signInHandler :: IO.MonadIO m => SignInTest -> m (Headers '[ Header "Set-Cookie" String] String)
 signInHandler SignInTest{..} = do
   return $ case (signInTest_email, signInTest_password) of
-    ("admin", "admin") -> addHeader ("Admin" <> ":" <> show True) "ok, you're signed in"
+    ("admin", "admin") -> addHeader adminCookie "ok, you're signed in"
     _                  -> noHeader "wrong password"
+    where
+      adminCookie :: String
+      adminCookie =
+        [ ("Admin", show True)
+        , ( "Path", "/" )
+        ] <&> makeHeader  & List.intercalate ";"
+
+      makeHeader :: (String, String) -> String
+      makeHeader (key, value) = key <> "=" <> value
 
 
 -- ** check super secret
 
 
-checkSuperSecretHandler :: IO.MonadIO m => Maybe Bool -> m String
-checkSuperSecretHandler m = case m of
-  Just True -> return "this is the super secret: coucou"
-  _         -> return "you need to be admin to see the super secret"
+checkSuperSecretHandler :: IO.MonadIO m => Maybe String -> m String
+checkSuperSecretHandler = return . \case
+  Just "Admin=True" ->
+    "this is the super secret: coucou"
+
+  _ ->
+    "you need to be admin to see the super secret"
 
 
 -- ** product
