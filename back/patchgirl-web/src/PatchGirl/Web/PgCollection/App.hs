@@ -2,17 +2,17 @@
 
 module PatchGirl.Web.PgCollection.App where
 
-import           Control.Monad.Except   (MonadError)
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Reader   (MonadReader)
-import           Data.UUID              (UUID)
+import           Control.Monad.Except             (MonadError)
+import           Control.Monad.IO.Class           (MonadIO, liftIO)
+import           Control.Monad.Reader             (MonadReader)
 import           Servant
 
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgCollection.Sql
 import           PatchGirl.Web.PgNode.Sql
-import           PatchGirl.Web.DB
 
 
 -- * handler
@@ -23,7 +23,7 @@ getPgCollectionHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID
+  => Id Account
   -> m PgCollection
 getPgCollectionHandler accountId = do
   connection <- getDBConnection

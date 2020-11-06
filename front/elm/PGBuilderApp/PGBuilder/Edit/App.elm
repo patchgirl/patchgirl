@@ -2,7 +2,7 @@ module PGBuilderApp.PGBuilder.Edit.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -53,9 +53,9 @@ type Msg
     | AskDelete Uuid
     | Delete Uuid
     -- duplicate
-    | GenerateRandomUUIDForDuplicate PgFileRecord
-    | AskDuplicate PgFileRecord Uuid
-    | Duplicate PgFileRecord (Maybe Uuid)
+    | GenerateRandomUUIDForDuplicate (FileRecord PgFileRecord)
+    | AskDuplicate (FileRecord PgFileRecord) Uuid
+    | Duplicate (FileRecord PgFileRecord) (Maybe Uuid)
     -- other
     | PrintNotification Notification
 
@@ -98,7 +98,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.tempRename newName)) pgNodes
+                    List.map (modifyNode id (Tree.tempRename newName)) pgNodes
 
                 newModel =
                     { model
@@ -117,7 +117,7 @@ update msg model =
                     Client.UpdatePgNode { updatePgNodeName = newName }
 
                 newMsg =
-                    Client.putApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" pgCollectionId id payload (renameNodeResultToMsg id newName)
+                    Client.putApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" (Id pgCollectionId) (Id id) payload (renameNodeResultToMsg id newName)
             in
             ( model, newMsg )
 
@@ -127,7 +127,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.map (Tree.modifyPgNode id (Tree.rename newName)) pgNodes
+                    List.map (modifyNode id (Tree.rename newName)) pgNodes
 
                 newModel =
                     { model
@@ -143,7 +143,7 @@ update msg model =
                     model.pgCollection
 
                 newMsg =
-                    Client.deleteApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" pgCollectionId id (deletePgNodeResultToMsg id)
+                    Client.deleteApiPgCollectionByPgCollectionIdPgNodeByPgNodeId "" "" (Id pgCollectionId) (Id id) (deletePgNodeResultToMsg id)
             in
             ( model, newMsg )
 
@@ -153,7 +153,7 @@ update msg model =
                     model.pgCollection
 
                 newPgNodes =
-                    List.concatMap (Tree.deletePgNode id) pgNodes
+                    List.concatMap (deleteNode id) pgNodes
 
                 newModel =
                     { model
@@ -190,7 +190,7 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    { newRootPgFileId = newFileRecord.id
+                                    { newRootPgFileId = Id newFileRecord.id
                                     , newRootPgFileName = editedOrNotEditedValue newFileRecord.name
                                     , newRootPgFileSql = editedOrNotEditedValue newFileRecord.sql
                                     , newRootPgFileHost = editedOrNotEditedValue newFileRecord.dbHost
@@ -200,13 +200,13 @@ update msg model =
                                     , newRootPgFileDbName = editedOrNotEditedValue newFileRecord.dbName
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" pgCollectionId payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
+                            Client.postApiPgCollectionByPgCollectionIdRootPgFile "" "" (Id pgCollectionId) payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newPgFileId = newFileRecord.id
-                                    , newPgFileParentNodeId = folderId
+                                    { newPgFileId = Id newFileRecord.id
+                                    , newPgFileParentNodeId = Id folderId
                                     , newPgFileName = editedOrNotEditedValue newFileRecord.name
                                     , newPgFileSql = editedOrNotEditedValue newFileRecord.sql
                                     , newPgFileHost = editedOrNotEditedValue newFileRecord.dbHost
@@ -216,7 +216,7 @@ update msg model =
                                     , newPgFileDbName = editedOrNotEditedValue newFileRecord.dbName
                                     }
                             in
-                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" pgCollectionId payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
+                            Client.postApiPgCollectionByPgCollectionIdPgFile "" "" (Id pgCollectionId) payload (duplicatePgFileResultToMsg newFileRecord model.pgNewNode.parentFolderId)
 
             in
             ( model, newMsg )
@@ -232,7 +232,7 @@ update msg model =
                             pgNodes ++ [ File newFile ]
 
                         Just folderId ->
-                            List.map (modifyPgNode folderId (touchPg (File newFile))) pgNodes
+                            List.map (modifyNode folderId (touchNode (File newFile))) pgNodes
 
                 newModel =
                     { model
@@ -271,7 +271,7 @@ deletePgNodeResultToMsg id result =
         Err error ->
             PrintNotification <| AlertNotification "Could not delete, maybe this HTTP pg is used in a scenario? Check the scenario and try reloading the page!" (httpErrorToString error)
 
-duplicatePgFileResultToMsg : PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
+duplicatePgFileResultToMsg : FileRecord PgFileRecord -> Maybe Uuid -> Result Http.Error () -> Msg
 duplicatePgFileResultToMsg newFile mParentId result =
     case result of
         Ok _ ->
@@ -420,7 +420,7 @@ deleteView model pgNode =
 -- ** duplicate view
 
 
-duplicateView : Model a -> PgFileRecord -> Element Msg
+duplicateView : Model a -> FileRecord PgFileRecord -> Element Msg
 duplicateView model fileRecord =
     let
         name =

@@ -8,8 +8,6 @@
 module Environment.AppSpec where
 
 import qualified Data.Maybe                      as Maybe
-import           Data.UUID                       (UUID)
-import qualified Data.UUID                       as UUID
 import qualified Data.UUID.V4                    as UUID
 import qualified Database.PostgreSQL.Simple      as PG
 import qualified Network.HTTP.Types              as HTTP
@@ -23,6 +21,7 @@ import           DBUtil
 import           Helper.App
 import           PatchGirl.Web.Api
 import           PatchGirl.Web.Environment.Model
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.Server
 
 
@@ -31,10 +30,10 @@ import           PatchGirl.Web.Server
 
 createEnvironment :: Auth.Token -> NewEnvironment -> ClientM ()
 getEnvironments :: Auth.Token -> ClientM [Environment]
-updateEnvironment :: Auth.Token -> UUID -> UpdateEnvironment -> ClientM ()
-deleteEnvironment :: Auth.Token -> UUID -> ClientM ()
-updateKeyValues :: Auth.Token -> UUID -> [NewKeyValue] -> ClientM ()
-deleteKeyValue :: Auth.Token -> UUID -> UUID -> ClientM ()
+updateEnvironment :: Auth.Token -> Id EnvId -> UpdateEnvironment -> ClientM ()
+deleteEnvironment :: Auth.Token -> Id EnvId -> ClientM ()
+updateKeyValues :: Auth.Token -> Id EnvId -> [NewKeyValue] -> ClientM ()
+deleteKeyValue :: Auth.Token -> Id EnvId -> Id KeyValueId -> ClientM ()
 createEnvironment
   :<|> getEnvironments
   :<|> updateEnvironment
@@ -109,8 +108,8 @@ spec =
 
     describe "update environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
-        cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updateEnvironment token UUID.nil updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
+        cleanDBAndCreateAccount $ \Test { token } -> do
+          try clientEnv (updateEnvironment token nilId updateEnvironmentPayload) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 when environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -132,7 +131,7 @@ spec =
     describe "delete environment" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deleteEnvironment token UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteEnvironment token nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -153,7 +152,7 @@ spec =
     describe "update key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updateKeyValues token UUID.nil []) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateKeyValues token nilId []) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -167,14 +166,14 @@ spec =
           selectFakeKeyValues environmentId connection `shouldReturn` []
 
           let newKeyValues =
-                [ NewKeyValue { _newKeyValueId = UUID.nil
+                [ NewKeyValue { _newKeyValueId = nilId
                               , _newKeyValueKey = "key1"
                               , _newKeyValueValue = "value1"
                               , _newKeyValueHidden = True
                               }
                 ]
           try clientEnv (updateKeyValues token environmentId newKeyValues)
-          selectFakeKeyValues environmentId connection `shouldReturn` [ KeyValue { _keyValueId = UUID.nil
+          selectFakeKeyValues environmentId connection `shouldReturn` [ KeyValue { _keyValueId = nilId
                                                                                  , _keyValueKey = "key1"
                                                                                  , _keyValueValue = "value1"
                                                                                  , _keyValueHidden = True
@@ -188,17 +187,17 @@ spec =
     describe "delete key values" $ do
       it "return 404 if environment doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deleteKeyValue token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteKeyValue token nilId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if environment doesnt belong to account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
           environmentId <- environmentThatDoesntBelongToAccountToken connection
-          try clientEnv (deleteKeyValue token environmentId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteKeyValue token environmentId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "return 404 if the key value doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           environmentId <- insertNewFakeEnvironment (newFakeEnvironment accountId "test") connection
-          try clientEnv (deleteKeyValue token environmentId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteKeyValue token environmentId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "deletes the key value" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
@@ -210,24 +209,24 @@ spec =
                                                   , _newFakeKeyValueHidden = True
                                                   } connection
           try clientEnv (deleteKeyValue token environmentId _keyValueId )
-          selectFakeKeyValues _keyValueId connection `shouldReturn` []
+          selectFakeKeyValues environmentId connection `shouldReturn` []
 
 
   where
     mkNewEnvironment :: IO NewEnvironment
     mkNewEnvironment = do
       id <- UUID.nextRandom
-      return $ NewEnvironment { _newEnvironmentId = id
+      return $ NewEnvironment { _newEnvironmentId = Id id
                               , _newEnvironmentName = "test"
                               }
 
-    newFakeEnvironment :: UUID -> String -> NewFakeEnvironment
+    newFakeEnvironment :: Id Account -> String -> NewFakeEnvironment
     newFakeEnvironment accountId name =
       NewFakeEnvironment { _newFakeEnvironmentAccountId = accountId
                          , _newFakeEnvironmentName = name
                          }
 
-    environmentThatDoesntBelongToAccountToken :: PG.Connection -> IO UUID
+    environmentThatDoesntBelongToAccountToken :: PG.Connection -> IO (Id EnvId)
     environmentThatDoesntBelongToAccountToken connection = do
       (accountId2, _) <- withAccountAndToken defaultNewFakeAccount2 connection
       insertNewFakeEnvironment (newFakeEnvironment accountId2 "test") connection

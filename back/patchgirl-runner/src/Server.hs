@@ -33,7 +33,7 @@ import           RequestComputation.App
 
 run :: IO ()
 run = do
-  putStrLn "Patchgirl-runner is running! Visit https://patchgirl.io/"
+  Say.sayString "Patchgirl-runner is running! Visit https://patchgirl.io/"
   env :: Env <- createEnv Say.sayString ioRequestRunner ioPgRunner
   _ <- Prometheus.register Prometheus.ghcMetrics
   app :: Application <- mkApp env <&> cors

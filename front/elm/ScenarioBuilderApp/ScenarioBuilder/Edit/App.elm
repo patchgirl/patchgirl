@@ -2,7 +2,7 @@ module ScenarioBuilderApp.ScenarioBuilder.Edit.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -66,7 +66,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode id (tempRename newName)) scenarioNodes
+                    List.map (modifyNode id (tempRename newName)) scenarioNodes
 
                 newModel =
                     { model
@@ -85,7 +85,7 @@ update msg model =
                     Client.UpdateScenarioNode { updateScenarioNodeName = newName }
 
                 newMsg =
-                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id payload (renameNodeResultToMsg id newName)
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" (Id scenarioCollectionId) (Id id) payload (renameNodeResultToMsg id newName)
             in
             ( model, newMsg )
 
@@ -95,7 +95,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (Tree.modifyScenarioNode id (Tree.rename newName)) scenarioNodes
+                    List.map (modifyNode id (Tree.rename newName)) scenarioNodes
 
                 newModel =
                     { model
@@ -111,7 +111,7 @@ update msg model =
                     model.scenarioCollection
 
                 newMsg =
-                    Client.deleteApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" scenarioCollectionId id (deleteScenarioNodeResultToMsg id)
+                    Client.deleteApiScenarioCollectionByScenarioCollectionIdScenarioNodeByScenarioNodeId "" "" (Id scenarioCollectionId) (Id id) (deleteScenarioNodeResultToMsg id)
             in
             ( model, newMsg )
 
@@ -121,7 +121,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.concatMap (deleteScenarioNode id) scenarioNodes
+                    List.concatMap (deleteNode id) scenarioNodes
 
                 newModel =
                     { model

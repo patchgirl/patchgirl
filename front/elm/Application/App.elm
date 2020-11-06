@@ -718,7 +718,7 @@ set("userId", get("userId"));"""
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        getRequestFiles : List RequestNode -> List RequestFileRecord
+        getRequestFiles : List RequestNode -> List (FileRecord RequestFileRecord)
         getRequestFiles nodes =
             case nodes of
                 [] ->
@@ -730,11 +730,7 @@ subscriptions model =
                             file :: getRequestFiles rest
 
                         Folder { children } ->
-                            let
-                                (RequestChildren c) =
-                                    children
-                            in
-                            getRequestFiles c ++ getRequestFiles rest
+                            getRequestFiles children ++ getRequestFiles rest
     in
     Sub.batch
         ([ Animation.subscription Animate [ model.loadingAnimation ]

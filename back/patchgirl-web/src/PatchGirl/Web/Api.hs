@@ -26,21 +26,21 @@ module PatchGirl.Web.Api( WebApi
                         ) where
 
 
-import           Data.UUID
-import           Servant                               hiding (BadPassword,
-                                                        NoSuchUser)
-import           Servant.API.Flatten                   (Flat)
-import           Servant.Auth.Server                   (Auth, AuthResult (..),
-                                                        CookieSettings,
-                                                        JWTSettings, SetCookie,
-                                                        throwAll)
-import           Servant.Auth.Server.Internal.ThrowAll (ThrowAll)
+import           Servant                                hiding (BadPassword,
+                                                         NoSuchUser)
+import           Servant.API.Flatten                    (Flat)
+import           Servant.Auth.Server                    (Auth, AuthResult (..),
+                                                         CookieSettings,
+                                                         JWTSettings, SetCookie,
+                                                         throwAll)
+import           Servant.Auth.Server.Internal.ThrowAll  (ThrowAll)
 
 import           PatchGirl.Web.Account.App
 import           PatchGirl.Web.Environment.App
 import           PatchGirl.Web.Environment.Model
 import           PatchGirl.Web.Github.App
 import           PatchGirl.Web.Health.App
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.Model
 import           PatchGirl.Web.PgCollection.App
 import           PatchGirl.Web.PgCollection.Model
@@ -157,12 +157,12 @@ type EnvironmentApi auths =
   Flat (Auth auths CookieSession :> "api" :> "environment" :> (
     ReqBody '[JSON] NewEnvironment :> Post '[JSON] () :<|> -- createEnvironment
     Get '[JSON] [Environment] :<|> -- getEnvironments
-    Capture "environmentId" UUID :> (
+    Capture "environmentId" (Id EnvId) :> (
       ReqBody '[JSON] UpdateEnvironment :> Put '[JSON] () :<|> -- updateEnvironment
       Delete '[JSON] () :<|>  -- deleteEnvironment
       "keyValue" :> (
         ReqBody '[JSON] [NewKeyValue] :> Put '[JSON] () :<|> -- updateKeyValues
-        Capture "keyValueId" UUID :> Delete '[JSON] () -- deleteKeyValues
+        Capture "keyValueId" (Id KeyValueId) :> Delete '[JSON] () -- deleteKeyValues
       )
     )
   ))
@@ -170,10 +170,10 @@ type EnvironmentApi auths =
 environmentApiServer
   :: (AuthResult CookieSession -> NewEnvironment -> AppM ())
   :<|> ((AuthResult CookieSession -> AppM [Environment])
-  :<|> ((AuthResult CookieSession -> UUID -> UpdateEnvironment -> AppM ())
-  :<|> ((AuthResult CookieSession -> UUID -> AppM ())
-  :<|> ((AuthResult CookieSession -> UUID -> [NewKeyValue] -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())))))
+  :<|> ((AuthResult CookieSession -> Id EnvId -> UpdateEnvironment -> AppM ())
+  :<|> ((AuthResult CookieSession -> Id EnvId -> AppM ())
+  :<|> ((AuthResult CookieSession -> Id EnvId -> [NewKeyValue] -> AppM ())
+  :<|> (AuthResult CookieSession -> Id EnvId -> Id KeyValueId -> AppM ())))))
 environmentApiServer =
   authorizeWithAccountId createEnvironmentHandler
   :<|> authorizeWithAccountId getEnvironmentsHandler
@@ -187,7 +187,7 @@ environmentApiServer =
 
 
 type ScenarioNodeApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" (Id ScenarioCol) :> "scenarioNode" :> Capture "scenarioNodeId" (Id Scenario) :> (
     -- rename scenario node
     ReqBody '[JSON] UpdateScenarioNode :> Put '[JSON] () :<|>
     -- delete scenario node
@@ -195,8 +195,8 @@ type ScenarioNodeApi auths =
   ))
 
 scenarioNodeApiServer
-  :: (AuthResult CookieSession -> UUID -> UUID -> UpdateScenarioNode -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+  :: (AuthResult CookieSession -> Id ScenarioCol -> Id Scenario -> UpdateScenarioNode -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> Id Scenario -> AppM ())
 scenarioNodeApiServer =
   authorizeWithAccountId updateScenarioNodeHandler
   :<|> authorizeWithAccountId deleteScenarioNodeHandler
@@ -206,7 +206,7 @@ scenarioNodeApiServer =
 
 
 type ScenarioFileApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" (Id ScenarioCol) :> (
     "scenarioFile" :> (
       -- createScenarioFile
       ReqBody '[JSON] NewScenarioFile :> Post '[JSON] () :<|>
@@ -219,9 +219,9 @@ type ScenarioFileApi auths =
   ))
 
 scenarioFileApiServer
-  :: (AuthResult CookieSession -> UUID -> NewScenarioFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UpdateScenarioFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFile -> AppM ())
+  :: (AuthResult CookieSession -> Id ScenarioCol -> NewScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> UpdateScenarioFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> NewRootScenarioFile -> AppM ())
 scenarioFileApiServer =
   authorizeWithAccountId createScenarioFileHandler
   :<|> authorizeWithAccountId updateScenarioFileHandler
@@ -232,7 +232,7 @@ scenarioFileApiServer =
 
 
 type ScenarioFolderApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioCollection" :> Capture "scenarioCollectionId" (Id ScenarioCol) :> (
     "scenarioFolder" :> (
       -- create scenario folder
       ReqBody '[JSON] NewScenarioFolder :> Post '[JSON] ()
@@ -244,8 +244,8 @@ type ScenarioFolderApi auths =
     ))
 
 scenarioFolderApiServer
-  :: (AuthResult CookieSession -> UUID -> NewScenarioFolder -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootScenarioFolder -> AppM ())
+  :: (AuthResult CookieSession -> Id ScenarioCol -> NewScenarioFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> Id ScenarioCol -> NewRootScenarioFolder -> AppM ())
 scenarioFolderApiServer =
   authorizeWithAccountId createScenarioFolderHandler
   :<|> authorizeWithAccountId createRootScenarioFolderHandler
@@ -255,21 +255,21 @@ scenarioFolderApiServer =
 
 
 type SceneActorApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "scenarioNode" :> Capture "scenarioNodeId" (Id Scenario) :> (
     "scene" :> (
       -- create scene
       ReqBody '[JSON] NewScene :> Post '[JSON] () :<|>
       -- delete scene
-      Capture "sceneId" UUID :> Delete '[JSON] () :<|>
+      Capture "sceneId" (Id Scene) :> Delete '[JSON] () :<|>
       -- update scene
-      Capture "sceneId" UUID :> ReqBody '[JSON] UpdateScene :> Put '[JSON] ()
+      Capture "sceneId" (Id Scene) :> ReqBody '[JSON] UpdateScene :> Put '[JSON] ()
     )
   ))
 
 sceneApiServer
-  :: (AuthResult CookieSession -> UUID -> NewScene -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> UpdateScene -> AppM ())
+  :: (AuthResult CookieSession -> Id Scenario -> NewScene -> AppM ())
+  :<|> (AuthResult CookieSession -> Id Scenario -> Id Scene -> AppM ())
+  :<|> (AuthResult CookieSession -> Id Scenario -> Id Scene -> UpdateScene -> AppM ())
 sceneApiServer =
   authorizeWithAccountId createSceneHandler
   :<|> authorizeWithAccountId deleteSceneHandler
@@ -280,7 +280,7 @@ sceneApiServer =
 
 
 type RequestNodeApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "requestCollection" :> Capture "requestCollectionId" Int :> "requestNode" :> Capture "requestNodeId" (Id Request) :> (
     -- rename node
     ReqBody '[JSON] UpdateRequestNode :> Put '[JSON] () :<|>
     -- delete node
@@ -288,8 +288,8 @@ type RequestNodeApi auths =
   ))
 
 requestNodeApiServer
-  :: (AuthResult CookieSession -> Int -> UUID -> UpdateRequestNode -> AppM ())
-  :<|> (AuthResult CookieSession -> Int -> UUID -> AppM ())
+  :: (AuthResult CookieSession -> Int -> Id Request -> UpdateRequestNode -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> Id Request -> AppM ())
 requestNodeApiServer =
   authorizeWithAccountId updateRequestNodeHandler
   :<|> authorizeWithAccountId deleteRequestNodeHandler
@@ -306,13 +306,13 @@ type RequestFileApi auths =
     ) :<|> "rootRequestFile" :> (
       -- create root request file
       ReqBody '[JSON] NewRootRequestFile :> Post '[JSON] ()
-    ) :<|> Capture "requestNodeId" UUID :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
+    ) :<|> Capture "requestNodeId" (Id Request) :> ReqBody '[JSON] UpdateRequestFile :> Put '[JSON] ()
   ))
 
 requestFileApiServer
   :: (AuthResult CookieSession -> Int -> NewRequestFile -> AppM ())
   :<|> (AuthResult CookieSession -> Int -> NewRootRequestFile -> AppM ())
-  :<|> (AuthResult CookieSession -> Int -> UUID -> UpdateRequestFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Int -> Id Request -> UpdateRequestFile -> AppM ())
 requestFileApiServer =
   authorizeWithAccountId createRequestFileHandler
   :<|> authorizeWithAccountId createRootRequestFileHandler
@@ -345,7 +345,7 @@ requestFolderApiServer =
 
 
 type PgNodeApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> "pgNode" :> Capture "pgNodeId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" (Id PgCollection) :> "pgNode" :> Capture "pgNodeId" (Id Postgres) :> (
     -- rename pg node
     ReqBody '[JSON] UpdatePgNode :> Put '[JSON] () :<|>
     -- delete pg node
@@ -353,8 +353,8 @@ type PgNodeApi auths =
   ))
 
 pgNodeApiServer
-  :: (AuthResult CookieSession -> UUID -> UUID -> UpdatePgNode -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> AppM ())
+  :: (AuthResult CookieSession -> Id PgCollection -> Id Postgres -> UpdatePgNode -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> Id Postgres -> AppM ())
 pgNodeApiServer =
   authorizeWithAccountId updatePgNodeHandler
   :<|> authorizeWithAccountId deletePgNodeHandler
@@ -364,20 +364,20 @@ pgNodeApiServer =
 
 
 type PgFileApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" (Id PgCollection) :> (
     "pgFile" :> (
       -- createPgFile
       ReqBody '[JSON] NewPgFile :> Post '[JSON] ()
     ) :<|> "rootPgFile" :> (
       -- create root pg file
       ReqBody '[JSON] NewRootPgFile :> Post '[JSON] ()
-    ) :<|> Capture "pgNodeId" UUID :> ReqBody '[JSON] UpdatePgFile :> Put '[JSON] ()
+    ) :<|> Capture "pgNodeId" (Id Postgres) :> ReqBody '[JSON] UpdatePgFile :> Put '[JSON] ()
   ))
 
 pgFileApiServer
-  :: (AuthResult CookieSession -> UUID -> NewPgFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootPgFile -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> UUID -> UpdatePgFile -> AppM ())
+  :: (AuthResult CookieSession -> Id PgCollection -> NewPgFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> NewRootPgFile -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> Id Postgres -> UpdatePgFile -> AppM ())
 pgFileApiServer =
   authorizeWithAccountId createPgFileHandler
   :<|> authorizeWithAccountId createRootPgFileHandler
@@ -388,7 +388,7 @@ pgFileApiServer =
 
 
 type PgFolderApi auths =
-  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" UUID :> (
+  Flat (Auth auths CookieSession :> "api" :> "pgCollection" :> Capture "pgCollectionId" (Id PgCollection) :> (
     "pgFolder" :> (
       -- create pg folder
       ReqBody '[JSON] NewPgFolder :> Post '[JSON] ()
@@ -399,8 +399,8 @@ type PgFolderApi auths =
   ))
 
 pgFolderApiServer
-  :: (AuthResult CookieSession -> UUID -> NewPgFolder -> AppM ())
-  :<|> (AuthResult CookieSession -> UUID -> NewRootPgFolder -> AppM ())
+  :: (AuthResult CookieSession -> Id PgCollection -> NewPgFolder -> AppM ())
+  :<|> (AuthResult CookieSession -> Id PgCollection -> NewRootPgFolder -> AppM ())
 pgFolderApiServer =
   authorizeWithAccountId createPgFolderHandler
   :<|> authorizeWithAccountId createRootPgFolderHandler
@@ -477,6 +477,8 @@ healthApiServer =
 type TestApi =
   Flat (
     "test" :> (
+      "signIn" :> ReqBody '[JSON] SignInTest :> Post '[JSON] (Headers '[ Header "Set-Cookie" String ] String) :<|>
+      "checkSuperSecret" :> Header "Cookie" String :> Get '[JSON] String :<|>
       "deleteNoContent" :> DeleteNoContent '[JSON] NoContent :<|>
       "getStatusCode" :> Capture "statusCode" Int :> Get '[JSON] () :<|>
       "users" :> (
@@ -516,8 +518,11 @@ type TestApi =
     )
   )
 
+
 testApiServer :: ServerT TestApi AppM
 testApiServer =
+  signInHandler :<|>
+  checkSuperSecretHandler :<|>
   deleteNoContentHandler :<|>
   getStatusCodeHandler :<|>
   createUserHandler :<|>
@@ -544,7 +549,7 @@ type AssetApi =
 
 authorizeWithAccountId
   :: Servant.Auth.Server.Internal.ThrowAll.ThrowAll p
-  => (UUID -> p) -> AuthResult CookieSession -> p
+  => (Id Account -> p) -> AuthResult CookieSession -> p
 authorizeWithAccountId f = \case
   BadPassword ->
     throwAll err402

@@ -52,7 +52,7 @@ update msg model =
                     model.scenarioCollection
 
                 newScenarioNodes =
-                    List.map (modifyScenarioNode id toggleFolder) scenarioNodes
+                    List.map (modifyNode id toggleFolder) scenarioNodes
 
                 newModel =
                     { model
@@ -85,11 +85,8 @@ nodeView model scenarioCollection =
             case node of
                 Folder { id, name, open, children } ->
                     let
-                        (ScenarioChildren c) =
-                            children
-
                         folderChildrenView =
-                            nodeView model c
+                            nodeView model children
 
                         tailView =
                             nodeView model tail

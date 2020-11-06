@@ -4,7 +4,7 @@ import Animation
 import Api.Converter as Client
 import Random
 import Dict exposing (Dict)
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -82,24 +82,24 @@ type Msg
     | AskDeleteScene Uuid
     | DeleteScene Uuid
       -- update scene
-    | AskUpdateSceneScript Scene
-    | SceneScriptUpdated Scene
+    | AskUpdateSceneScript SceneRecord
+    | SceneScriptUpdated SceneRecord
       -- change scene variables
-    | ChangeSceneVariable Scene String String
-    | AskUpdateSceneVariables Scene
-    | SceneVariablesUpdated Scene
-    | OverrideVariable Scene String Bool
+    | ChangeSceneVariable SceneRecord String String
+    | AskUpdateSceneVariables SceneRecord
+    | SceneVariablesUpdated SceneRecord
+    | OverrideVariable SceneRecord String Bool
       -- scenario
     | AskSaveScenario (Maybe Uuid)
     | UpdateScenarioFile (Maybe Uuid)
     | AskRunScenario
     | ScenarioProcessed ScenarioOutput
       -- detailed view
-    | ShowBodyResponseView
-    | ShowHeaderResponseView
+    | ShowBodyResponseView (FileRecord RequestFileRecord)
+    | ShowHeaderResponseView (FileRecord RequestFileRecord)
     -- script
-    | SetPrescript Scene String
-    | SetPostscript Scene String
+    | SetPrescript SceneRecord String
+    | SetPostscript SceneRecord String
       -- other
     | SetEnvironmentId (Maybe Uuid)
     | PrintNotification Notification
@@ -109,7 +109,7 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> ScenarioFileRecord -> SceneDetailView -> (Model a, ScenarioFileRecord, Cmd Msg)
+update : Msg -> Model a -> FileRecord ScenarioFileRecord -> SceneDetailView -> (Model a, FileRecord ScenarioFileRecord, Cmd Msg)
 update msg model file sceneDetailView =
     case msg of
 
@@ -134,9 +134,14 @@ update msg model file sceneDetailView =
         AskCreateScene sceneParentId fileNodeId actorType newSceneId ->
             let
                 payload =
-                    { newSceneId = newSceneId
-                    , newSceneSceneActorParentId = sceneParentId
-                    , newSceneActorId = fileNodeId
+                    { newSceneId = Id newSceneId
+                    , newSceneSceneActorParentId = sceneParentId |> Maybe.map Id
+                    , newSceneActorId =
+                        case actorType of
+                            HttpActor ->
+                                Client.RequestSceneId (Id fileNodeId)
+                            PgActor ->
+                                Client.PostgresSceneId (Id fileNodeId)
                     , newSceneActorType = Client.convertActorTypeFromFrontToBack actorType
                     , newSceneVariables = Dict.empty
                     , newScenePrescript = ""
@@ -147,7 +152,7 @@ update msg model file sceneDetailView =
                     { model | isLoading = (SceneCreationPending sceneParentId) :: model.isLoading }
 
                 newMsg =
-                    Cmd.batch [ Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) file.id payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId actorType)
+                    Cmd.batch [ Client.postApiScenarioNodeByScenarioNodeIdScene "" (getCsrfToken model.session) (Id file.id) payload (createSceneResultToMsg sceneParentId fileNodeId newSceneId actorType)
                               , Navigation.pushUrl model.navigationKey (href (ScenarioPage (RichRunView file.id NoSceneDetailView)))
                               ]
             in
@@ -215,7 +220,7 @@ update msg model file sceneDetailView =
         AskDeleteScene sceneId ->
             let
                 newMsg =
-                    Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id sceneId (deleteSceneResultToMsg sceneId)
+                    Client.deleteApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) (Id file.id) (Id sceneId) (deleteSceneResultToMsg sceneId)
 
                 newModel =
                     { model | isLoading = SceneDeletionPending sceneId :: model.isLoading }
@@ -272,7 +277,7 @@ update msg model file sceneDetailView =
                     }
 
                 newMsg =
-                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id scene.id payload (updateSceneResultToMsg scene)
+                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) (Id file.id) (Id scene.id) payload (updateSceneResultToMsg scene)
             in
             ( model, file, newMsg )
 
@@ -366,7 +371,7 @@ update msg model file sceneDetailView =
                     }
 
                 newMsg =
-                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) file.id scene.id payload (updateSceneVariablesResultToMsg scene)
+                    Client.putApiScenarioNodeByScenarioNodeIdSceneBySceneId "" (getCsrfToken model.session) (Id file.id) (Id scene.id) payload (updateSceneVariablesResultToMsg scene)
             in
             ( model, file, newMsg )
 
@@ -395,12 +400,12 @@ update msg model file sceneDetailView =
                     model.scenarioCollection
 
                 payload =
-                    { updateScenarioFileId = file.id
-                    , updateScenarioFileEnvironmentId = newEnvironmentId
+                    { updateScenarioFileId = Id file.id
+                    , updateScenarioFileEnvironmentId = newEnvironmentId |> Maybe.map Id
                     }
 
                 newMsg =
-                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) scenarioId payload (updateScenarioResultToMsg newEnvironmentId)
+                    Client.putApiScenarioCollectionByScenarioCollectionIdScenarioFile "" (getCsrfToken model.session) (Id scenarioId) payload (updateScenarioResultToMsg newEnvironmentId)
             in
             (model, file, newMsg)
 
@@ -413,7 +418,7 @@ update msg model file sceneDetailView =
 
         AskRunScenario ->
             let
-                sceneToSceneInput : Scene -> Maybe Client.SceneFile
+                sceneToSceneInput : SceneRecord -> Maybe Client.SceneFile
                 sceneToSceneInput scene =
                     case (scene.prescriptAst, scene.postscriptAst, findRecord model scene) of
                         (Ok prescript, Ok postscript, Just record) ->
@@ -493,7 +498,7 @@ update msg model file sceneDetailView =
 
         ScenarioProcessed scenarioOutput ->
             let
-                mergeSceneComputationOutputResult : Scene -> Scene
+                mergeSceneComputationOutputResult : SceneRecord -> SceneRecord
                 mergeSceneComputationOutputResult scene =
                     let
                         newSceneComputation =
@@ -513,19 +518,43 @@ update msg model file sceneDetailView =
 
 -- ** detailed view
 
-        ShowBodyResponseView ->
---            let
---                newFile =
---                    { file | whichResponseView = BodyResponseView }
---            in
-            ( model, file, Cmd.none )
+        ShowBodyResponseView requestFileRecord ->
+            let
+                newRequestFileRecord =
+                    { requestFileRecord
+                        | whichResponseView = BodyResponseView
+                    }
 
-        ShowHeaderResponseView ->
---            let
---                newFile =
---                    { file | whichResponseView = HeaderResponseView }
---            in
-            ( model, file, Cmd.none )
+                (RequestCollection id nodes) =
+                    model.requestCollection
+
+                newNodes : List RequestNode
+                newNodes =
+                    List.map (modifyNode requestFileRecord.id (always (File newRequestFileRecord))) nodes
+
+                newModel =
+                    { model | requestCollection = RequestCollection id newNodes }
+            in
+            ( newModel, file, Cmd.none )
+
+        ShowHeaderResponseView requestFileRecord ->
+            let
+                newRequestFileRecord =
+                    { requestFileRecord
+                        | whichResponseView = HeaderResponseView
+                    }
+
+                (RequestCollection id nodes) =
+                    model.requestCollection
+
+                newNodes : List RequestNode
+                newNodes =
+                    List.map (modifyNode requestFileRecord.id (always (File newRequestFileRecord))) nodes
+
+                newModel =
+                    { model | requestCollection = RequestCollection id newNodes }
+            in
+            ( newModel, file, Cmd.none )
 
 
 -- ** script
@@ -584,7 +613,7 @@ update msg model file sceneDetailView =
 -- * util
 
 
-mkDefaultScene : Uuid -> Uuid -> ActorType -> Scene
+mkDefaultScene : Uuid -> Uuid -> ActorType -> SceneRecord
 mkDefaultScene id nodeId actorType =
     { id = id
     , nodeId = nodeId
@@ -633,7 +662,7 @@ createSceneResultToMsg sceneParentId nodeId newSceneId actorType result =
         Err err ->
             PrintNotification <| AlertNotification "Could not create the scene, try reloading the page!" (httpErrorToString err)
 
-updateSceneResultToMsg : Scene -> Result Http.Error () -> Msg
+updateSceneResultToMsg : SceneRecord -> Result Http.Error () -> Msg
 updateSceneResultToMsg scene result =
     case result of
         Ok () ->
@@ -642,7 +671,7 @@ updateSceneResultToMsg scene result =
         Err err ->
             PrintNotification <| AlertNotification "Could not update the scene, try reloading the page!" (httpErrorToString err)
 
-updateSceneVariablesResultToMsg : Scene -> Result Http.Error () -> Msg
+updateSceneVariablesResultToMsg : SceneRecord -> Result Http.Error () -> Msg
 updateSceneVariablesResultToMsg scene result =
     case result of
         Ok () ->
@@ -660,7 +689,7 @@ updateScenarioResultToMsg newEnvironmentId result =
         Err err ->
             PrintNotification  <| AlertNotification "Could not update the scenario, try reloading the page!" (httpErrorToString err)
 
-findRecord : Model a -> Scene -> Maybe FileRecord
+findRecord : Model a -> SceneRecord -> Maybe ActorRecord
 findRecord model scene =
     let
         (RequestCollection _ requestNodes) =
@@ -671,12 +700,14 @@ findRecord model scene =
     in
     case scene.actorType of
         HttpActor ->
-            findRequestFile requestNodes scene.nodeId |> Maybe.map HttpRecord
+            findFile requestNodes scene.nodeId
+                |> Maybe.map HttpRecord
 
         PgActor ->
-            findPgFile pgNodes scene.nodeId |> Maybe.map PgRecord
+            findFile pgNodes scene.nodeId
+                |> Maybe.map PgRecord
 
-environmentKeyValues : Model a -> ScenarioFileRecord -> Dict String StringTemplate
+environmentKeyValues : Model a -> FileRecord ScenarioFileRecord -> Dict String StringTemplate
 environmentKeyValues model file =
     editedOrNotEditedValue file.environmentId
         |> Maybe.andThen (\scenarioEnvId -> List.find (\env -> (env.id == scenarioEnvId)) model.environments)
@@ -692,7 +723,7 @@ environmentKeyValues model file =
 -- * view
 
 
-view : Model a -> ScenarioFileRecord -> SceneDetailView -> Element Msg
+view : Model a -> FileRecord ScenarioFileRecord -> SceneDetailView -> Element Msg
 view model file sceneDetailView =
     let
         scenesView =
@@ -725,7 +756,7 @@ view model file sceneDetailView =
 -- ** scenario setting view
 
 
-envSelectionView : Model a -> ScenarioFileRecord -> Element Msg
+envSelectionView : Model a -> FileRecord ScenarioFileRecord -> Element Msg
 envSelectionView model file =
     let
         noEnvironmentOption : Input.Option (Maybe Uuid) Msg
@@ -746,10 +777,10 @@ envSelectionView model file =
         }
 
 sceneToKeyValues : Model a
-                 -> ScenarioFileRecord
-                 -> Scene
+                 -> FileRecord ScenarioFileRecord
+                 -> SceneRecord
                  -> Maybe
-                    { scene : Scene
+                    { scene : SceneRecord
                     , sceneName : String
                     , sceneKeys : List String
                     , sceneUserDefinedKeyValue : Dict String UserSceneVariableValue
@@ -757,14 +788,41 @@ sceneToKeyValues : Model a
 sceneToKeyValues model file scene =
     case scene.actorType of
         PgActor ->
-            Debug.todo ""
+            let
+                (PgCollection _ nodes) =
+                    model.pgCollection
+            in
+            case findNode nodes scene.nodeId of
+                Just (File pgFileRecord) ->
+                    ( [ editedOrNotEditedValue pgFileRecord.dbHost
+                      , editedOrNotEditedValue pgFileRecord.dbPassword
+                      , editedOrNotEditedValue pgFileRecord.dbPort
+                      , editedOrNotEditedValue pgFileRecord.dbUser
+                      , editedOrNotEditedValue pgFileRecord.dbName
+                      , editedOrNotEditedValue pgFileRecord.sql
+                      ]
+                    )
+                        |> List.andThen stringToTemplate
+                        |> List.filterMap
+                           ( \template ->
+                                 case template of
+                                     Sentence _ -> Nothing
+                                     Key s -> Just s
+                           )
+                        |> \sceneKeys -> Just { scene = scene
+                                              , sceneName = editedOrNotEditedValue pgFileRecord.name
+                                              , sceneKeys = sceneKeys
+                                              , sceneUserDefinedKeyValue = editedOrNotEditedValue scene.variables
+                                              }
+
+                _ -> Nothing
 
         HttpActor ->
             let
                 (RequestCollection _ nodes) =
                     model.requestCollection
             in
-            case findRequestNode nodes scene.nodeId of
+            case findNode nodes scene.nodeId of
                 Just (File requestFileRecord) ->
                     ( [ editedOrNotEditedValue requestFileRecord.name
                       , editedOrNotEditedValue requestFileRecord.httpUrl
@@ -786,13 +844,13 @@ sceneToKeyValues model file scene =
 
                 _ -> Nothing
 
-currentEnvironmentKeyValues : Model a -> ScenarioFileRecord -> Dict String String
+currentEnvironmentKeyValues : Model a -> FileRecord ScenarioFileRecord -> Dict String String
 currentEnvironmentKeyValues model file =
     environmentKeyValues model file
         |> Dict.map (\_ value -> stringTemplateToString value)
 
 sceneFormView : Dict String String
-              -> { scene : Scene
+              -> { scene : SceneRecord
                  , sceneName : String
                  , sceneKeys : List String
                  , sceneUserDefinedKeyValue : Dict String UserSceneVariableValue
@@ -882,7 +940,7 @@ sceneFormView scenarioKeyValues { scene, sceneName, sceneKeys, sceneUserDefinedK
             List.map keyValueView sceneKeys
         ]
 
-variablesFormView : Model a -> ScenarioFileRecord -> Element Msg
+variablesFormView : Model a -> FileRecord ScenarioFileRecord -> Element Msg
 variablesFormView model file =
     let
         scenesInfo =
@@ -893,7 +951,7 @@ variablesFormView model file =
     column [ spacing 20, width fill ] <|
         List.map (sceneFormView (currentEnvironmentKeyValues model file)) scenesInfo
 
-saveScenarioView : ScenarioFileRecord -> Element Msg
+saveScenarioView : FileRecord ScenarioFileRecord -> Element Msg
 saveScenarioView file =
     case file.environmentId of
         NotEdited _ -> none
@@ -913,7 +971,7 @@ saveScenarioView file =
                     ]
             }
 
-scenarioSettingView : Model a -> ScenarioFileRecord -> Element Msg
+scenarioSettingView : Model a -> FileRecord ScenarioFileRecord -> Element Msg
 scenarioSettingView model file =
     let
         title =
@@ -978,7 +1036,7 @@ scenarioSettingView model file =
 -- ** scene view
 
 
-sceneView : Model a -> ScenarioFileRecord -> SceneDetailView -> Scene -> Element Msg
+sceneView : Model a -> FileRecord ScenarioFileRecord -> SceneDetailView -> SceneRecord -> Element Msg
 sceneView model file sceneDetailView scene =
     let
         selected =
@@ -1109,7 +1167,7 @@ arrowView model sceneDetailView id sceneId =
 -- ** detailed scene view
 
 
-detailedSceneView : Model a -> ScenarioFileRecord -> Uuid -> Element Msg
+detailedSceneView : Model a -> FileRecord ScenarioFileRecord -> Uuid -> Element Msg
 detailedSceneView model file sceneId =
     let
         mSceneAndRecord =
@@ -1147,7 +1205,7 @@ detailedSceneView model file sceneId =
 -- *** http detailed scene view
 
 
-httpDetailedSceneView : ScenarioFileRecord -> Scene -> RequestFileRecord -> List (Element Msg)
+httpDetailedSceneView : FileRecord ScenarioFileRecord -> SceneRecord -> FileRecord RequestFileRecord -> List (Element Msg)
 httpDetailedSceneView file scene fileRecord =
     let
         { method, url } =
@@ -1250,8 +1308,8 @@ httpDetailedSceneView file scene fileRecord =
                     column [ width fill ]
                         [ statusResponseView requestComputationOutput
                         , whichResponseButtonView
-                              [ ("Body", fileRecord.whichResponseView == BodyResponseView, ShowBodyResponseView)
-                              , ("Headers", fileRecord.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
+                              [ ("Body", fileRecord.whichResponseView == BodyResponseView, ShowBodyResponseView fileRecord)
+                              , ("Headers", fileRecord.whichResponseView == HeaderResponseView, ShowHeaderResponseView fileRecord)
                               ]
                         , case fileRecord.whichResponseView of
                               BodyResponseView ->
@@ -1285,7 +1343,7 @@ httpDetailedSceneView file scene fileRecord =
 -- *** pg detailed scene view
 
 
-pgDetailedSceneView : ScenarioFileRecord -> Scene -> PgFileRecord -> List (Element Msg)
+pgDetailedSceneView : FileRecord ScenarioFileRecord -> SceneRecord -> FileRecord PgFileRecord -> List (Element Msg)
 pgDetailedSceneView file scene fileRecord =
     let
         sqlText =
@@ -1394,7 +1452,7 @@ scriptValidityView result =
         Err err ->
             text ("Error in script: " ++ showErrors err)
 
-prescriptView : Scene -> Element Msg
+prescriptView : SceneRecord -> Element Msg
 prescriptView scene =
     column [ width fill, spacing 10 ]
         [ el [] <| scriptValidityView scene.prescriptAst
@@ -1408,7 +1466,7 @@ prescriptView scene =
         ]
 
 
-postscriptView : Scene -> Element Msg
+postscriptView : SceneRecord -> Element Msg
 postscriptView scene =
     column [ width fill, spacing 10 ]
         [ el [] <| scriptValidityView scene.postscriptAst
@@ -1483,11 +1541,8 @@ selectSceneView model sceneParentId =
                     case node of
                         Folder { id, name, open, children } ->
                             let
-                                (RequestChildren c) =
-                                    children
-
                                 folderChildrenView =
-                                    httpNodeView c
+                                    httpNodeView children
 
                                 tailView =
                                     httpNodeView tail
@@ -1541,11 +1596,8 @@ selectSceneView model sceneParentId =
                     case node of
                         Folder { id, name, open, children } ->
                             let
-                                (PgChildren c) =
-                                    children
-
                                 folderChildrenView =
-                                    pgNodeView c
+                                    pgNodeView children
 
                                 tailView =
                                     pgNodeView tail

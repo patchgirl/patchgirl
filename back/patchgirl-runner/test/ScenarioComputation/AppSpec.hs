@@ -50,7 +50,7 @@ spec = do
     let (input, output) =
           ( ScenarioInput { _scenarioInputId = UUID.nil
                           , _scenarioInputScenes = []
-                          , _scenarioInputEnvVars = Map.empty
+                          , _scenarioInputEnvVars = emptyEnvironmentVars
                           }
           , ScenarioOutput []
           )
@@ -72,7 +72,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildScene Get [Sentence "http://foo.com"] ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk requestComputation
@@ -99,7 +99,7 @@ spec = do
             , _scenarioInputScenes = [ buildScene Get [Sentence "http://foo.com"]
                                      , buildScene Post [Sentence "http://foo.com"]
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk requestComputation
@@ -127,7 +127,7 @@ spec = do
             , _scenarioInputScenes = [ buildScene Get [Sentence "http://foo.com"]
                                      , buildScene Post [Sentence "http://foo.com"]
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneFailed $ InvalidUrlException "" ""
@@ -152,7 +152,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "foo.com"] [ AssertEqual (LString "a") (LString "b") ] [] ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PrescriptFailed $ AssertionFailed (LString "a") (LString "b") "LString \"a\" is not equal to LString \"b\""
@@ -176,7 +176,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "foo.com"] [ Let "myVar" (LFetch "unknownVariable") ] [] ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PrescriptFailed $ UnknownVariable $ LFetch "unknownVariable"
@@ -200,7 +200,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (LString "a") (LString "a") ] [] ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk requestComputation
@@ -226,7 +226,7 @@ spec = do
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
                                      , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ AssertEqual (LFetch "a") (LInt 1) ] []
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk requestComputation
@@ -252,7 +252,7 @@ spec = do
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual LHttpResponseBodyAsString (LString "foo") ]
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk $ requestComputation { _requestComputationBody = "foo" }
@@ -277,7 +277,7 @@ spec = do
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual LHttpResponseBodyAsString (LString "bar") ]
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\"")
@@ -303,7 +303,7 @@ spec = do
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ Set "a" (LInt 1) ]
                                      , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (LFetch "a") (LInt 1) ]
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk requestComputation
@@ -330,7 +330,7 @@ spec = do
             , _scenarioInputScenes = [ buildHttpSceneWithScript Get [Sentence "http://foo.com"] [ Set "a" (LInt 1) ] []
                                      , buildHttpSceneWithScript Get [Sentence "http://foo.com"] [] [ AssertEqual (LFetch "a") (LInt 1) ]
                                      ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ HttpSceneOk requestComputation
@@ -354,7 +354,7 @@ spec = do
           ( ScenarioInput
             { _scenarioInputId = UUID.nil
             , _scenarioInputScenes = [ buildPgSceneWithScript [] [] defaultPgComputationInput ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [("?column?", PgInt 1)]])
@@ -380,7 +380,7 @@ spec = do
                 [ AssertEqual LPgSimpleResponse (LList [ LList [ LInt 1, LInt 2 ] ] ) ]
                 (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1, 2;" ]})
               ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("?column?", PgInt 1), ("?column?", PgInt 2) ] ] )
@@ -408,7 +408,7 @@ spec = do
                 ]
                 (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
               ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
@@ -436,7 +436,7 @@ spec = do
                 ]
                 (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
               ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) (AccessOutOfBound (LList [LInt 1]) (LInt 2))
@@ -464,7 +464,7 @@ spec = do
                 ]
                 (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
               ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PgSceneOk (PgTuplesOk [ Row [ ("id", PgInt 1) ] ] )
@@ -492,7 +492,7 @@ spec = do
                 ]
                 (defaultPgComputationInput { _pgComputationInputSql = [ Sentence "select 1 as \"id\"" ]})
               ]
-            , _scenarioInputEnvVars = Map.empty
+            , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
             [ mkSceneOutput $ PgPostscriptFailed (PgTuplesOk [Row [("id",PgInt 1)]]) $ AssertionFailed LNull (LInt 1) "LNull is not equal to LInt 1"

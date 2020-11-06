@@ -9,16 +9,17 @@ module PatchGirl.Web.PgNode.App ( updatePgNodeHandler
                   , findNodeInPgNodes
                   ) where
 
-import qualified Control.Monad                  as Monad
-import qualified Control.Monad.Except           as Except (MonadError)
-import qualified Control.Monad.IO.Class         as IO
-import qualified Control.Monad.Reader           as Reader
-import qualified Data.Maybe                     as Maybe
-import           Data.UUID
+import qualified Control.Monad                    as Monad
+import qualified Control.Monad.Except             as Except (MonadError)
+import qualified Control.Monad.IO.Class           as IO
+import qualified Control.Monad.Reader             as Reader
+import qualified Data.Maybe                       as Maybe
 import qualified Servant
 
 import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
+import           PatchGirl.Web.PgCollection.Model
 import           PatchGirl.Web.PgCollection.Sql
 import           PatchGirl.Web.PgNode.Model
 import           PatchGirl.Web.PgNode.Sql
@@ -32,9 +33,9 @@ updatePgNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
+  -> Id Postgres
   -> UpdatePgNode
   -> m ()
 updatePgNodeHandler accountId _ pgNodeId updatePgNode = do
@@ -59,9 +60,9 @@ deletePgNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
+  -> Id Postgres
   -> m ()
 deletePgNodeHandler accountId pgCollectionId pgNodeId = do
   connection <- getDBConnection
@@ -82,7 +83,7 @@ deletePgNodeHandler accountId pgCollectionId pgNodeId = do
 -- * util
 
 
-findNodeInPgNodes :: UUID -> [PgNode] -> Maybe PgNode
+findNodeInPgNodes :: Id Postgres -> [PgNode] -> Maybe PgNode
 findNodeInPgNodes nodeIdToFind pgNodes =
   Maybe.listToMaybe (Maybe.mapMaybe findNodeInPgNode pgNodes)
   where
@@ -106,8 +107,8 @@ createRootPgFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
   -> NewRootPgFile
   -> m ()
 createRootPgFileHandler accountId pgCollectionId newRootPgFile = do
@@ -127,8 +128,8 @@ createPgFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
   -> NewPgFile
   -> m ()
 createPgFileHandler accountId pgCollectionId newPgFile = do
@@ -155,9 +156,9 @@ updatePgFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
+  -> Id Postgres
   -> UpdatePgFile
   -> m ()
 updatePgFileHandler accountId _ pgNodeId updatePgFile = do
@@ -182,8 +183,8 @@ createRootPgFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
   -> NewRootPgFolder
   -> m ()
 createRootPgFolderHandler accountId pgCollectionId newRootPgFolder = do
@@ -203,8 +204,8 @@ createPgFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id PgCollection
   -> NewPgFolder
   -> m ()
 createPgFolderHandler accountId pgCollectionId newPgFolder = do

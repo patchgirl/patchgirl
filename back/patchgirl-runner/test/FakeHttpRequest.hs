@@ -12,6 +12,7 @@ import           Control.Lens.Operators   ((.~))
 import qualified Control.Monad            as Monad
 import qualified Control.Monad.IO.Class   as IO
 import qualified Data.ByteString.UTF8     as BSU
+import           Data.Function            ((&))
 import           Data.Functor             ((<&>))
 import           Data.Map                 (Map)
 import qualified Data.Map                 as Map
@@ -93,7 +94,7 @@ withExceptionHttpMock mock = do
   env <- envWithLog <&> envHttpRequest .~ exceptionRunnerMock mock'
   mkApp env
   where
-    exceptionRunnerMock :: HTTP.HttpException -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
+    exceptionRunnerMock :: HTTP.HttpException -> (HTTP.CookieJar -> HTTP.Request -> m (HTTP.CookieJar, HttpResponse BSU.ByteString))
     exceptionRunnerMock exception =
       Exception.throw exception
 
@@ -124,13 +125,13 @@ withHttpMock rawMock = do
     requestRunnerMock
       :: IO.MonadIO m
       => Map FakeHttpRequest (Either HTTP.HttpException (HttpResponse BSU.ByteString))
-      -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
+--      -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
+      -> (HTTP.CookieJar -> HTTP.Request -> m (HTTP.CookieJar, HttpResponse BSU.ByteString))
     requestRunnerMock mock =
-      \input -> do
-        let either = Map.findWithDefault (Right notFoundResponse) (FakeHttpRequest input) mock
-        case either of
+      \cookieJar request -> do
+        Map.findWithDefault (Right notFoundResponse) (FakeHttpRequest request) mock & \case
           Left exception -> Exception.throw exception
-          Right response -> return response
+          Right response -> return (cookieJar, response)
         where
           notFoundResponse =
             HttpResponse { httpResponseStatus =

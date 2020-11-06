@@ -96,7 +96,7 @@ update msg model =
                                     model.pgCollection
 
                                 newBuilderTree =
-                                    List.map (modifyPgNode newPgRecord.id (always (File newPgRecord))) pgNodes
+                                    List.map (modifyNode newPgRecord.id (always (File newPgRecord))) pgNodes
                             in
                             ( { updatedModel | pgCollection = PgCollection pgCollectionId newBuilderTree }
                             , Cmd.map RunAppMsg updatedMsg
@@ -124,15 +124,10 @@ getBuilder model =
             LandingView whichDefaultView
 
         EditView whichEditView ->
-            let
-                getChildren folder =
-                    let (PgChildren children) = folder.children
-                    in children
-            in
-            EditView (mapEditView (findNode nodes getChildren) whichEditView)
+            EditView (mapEditView (findNode nodes) whichEditView)
 
         RunView id ->
-            RunView (findPgNode nodes id)
+            RunView (findNode nodes id)
 
 
 -- * view

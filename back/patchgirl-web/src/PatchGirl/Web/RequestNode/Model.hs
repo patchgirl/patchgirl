@@ -16,14 +16,15 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        parseEither, withObject,
                                                        (.:))
 import qualified Data.List                            as List
-import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
 
 import           PatchGirl.Web.Http
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.NodeType.Model
+
 
 -- * http header
 
@@ -54,12 +55,12 @@ instance ToField HttpHeader where
 
 
 data RequestNode = RequestFolder
-    { _requestNodeId       :: UUID
+    { _requestNodeId       :: Id Request
     , _requestNodeName     :: String
     , _requestNodeChildren :: [RequestNode]
     }
     | RequestFile
-    { _requestNodeId          :: UUID
+    { _requestNodeId          :: Id Request
     , _requestNodeName        :: String
     , _requestNodeHttpUrl     :: String
     , _requestNodeHttpMethod  :: Method
@@ -173,7 +174,7 @@ instance ToField UpdateRequestNode where
 
 
 data NewRootRequestFile = NewRootRequestFile
-    { _newRootRequestFileId      :: UUID
+    { _newRootRequestFileId      :: Id Request
     , _newRootRequestFileName    :: String
     , _newRootRequestFileHttpUrl :: String
     , _newRootRequestFileMethod  :: Method
@@ -195,8 +196,8 @@ instance FromJSON NewRootRequestFile where
 
 
 data NewRequestFile = NewRequestFile
-    { _newRequestFileId           :: UUID
-    , _newRequestFileParentNodeId :: UUID
+    { _newRequestFileId           :: Id Request
+    , _newRequestFileParentNodeId :: Id Request
     , _newRequestFileName         :: String
     , _newRequestFileHttpUrl      :: String
     , _newRequestFileMethod       :: Method
@@ -218,7 +219,7 @@ instance FromJSON NewRequestFile where
 
 
 data NewRootRequestFolder = NewRootRequestFolder
-    { _newRootRequestFolderId   :: UUID
+    { _newRootRequestFolderId   :: Id Request
     , _newRootRequestFolderName :: String
     }
     deriving (Eq, Show, Generic, ToRow)
@@ -236,8 +237,8 @@ instance FromJSON NewRootRequestFolder where
 
 
 data NewRequestFolder = NewRequestFolder
-    { _newRequestFolderId           :: UUID
-    , _newRequestFolderParentNodeId :: UUID
+    { _newRequestFolderId           :: Id Request
+    , _newRequestFolderParentNodeId :: Id Request
     , _newRequestFolderName         :: String
     }
     deriving (Eq, Show, Generic)
@@ -280,7 +281,7 @@ instance FromJSON UpdateRequestFile where
   or root (meaning it is at the top of a tree hierarchy so it doesn't have a parent)
 -}
 data ParentNodeId = RequestCollectionId Int
-    | RequestNodeId UUID
+    | RequestNodeId (Id Request)
     deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 
@@ -288,8 +289,8 @@ data ParentNodeId = RequestCollectionId Int
 
 
 data DuplicateNode = DuplicateNode
-    { _duplicateNodeNewId    :: UUID
-    , _duplicateNodeTargetId :: Maybe UUID
+    { _duplicateNodeNewId    :: Id Request
+    , _duplicateNodeTargetId :: Maybe (Id Request)
     }
     deriving (Eq, Show, Generic)
 

@@ -11,6 +11,7 @@ build-type:     Simple
 library
   exposed-modules:
       Api
+      DevelMain
       Env
       Health.App
       Interpolator
@@ -23,6 +24,7 @@ library
       RequestComputation.Model
       ScenarioComputation.App
       ScenarioComputation.Model
+      ScriptContext
       Server
       TangoScript.App
       TangoScript.Model
@@ -40,6 +42,7 @@ library
     , connection
     , containers
     , dhall
+    , foreign-store
     , http-client
     , http-client-tls
     , http-conduit
@@ -55,6 +58,7 @@ library
     , servant-server
     , stm
     , text
+    , time
     , unordered-containers
     , utf8-string
     , uuid
@@ -81,6 +85,7 @@ executable patchgirl-runner-exe
     , connection
     , containers
     , dhall
+    , foreign-store
     , http-client
     , http-client-tls
     , http-conduit
@@ -97,6 +102,7 @@ executable patchgirl-runner-exe
     , servant-server
     , stm
     , text
+    , time
     , unordered-containers
     , utf8-string
     , uuid
@@ -131,6 +137,7 @@ test-suite spec
     , connection
     , containers
     , dhall
+    , foreign-store
     , hspec
     , http-client
     , http-client-tls
@@ -149,6 +156,7 @@ test-suite spec
     , servant-server
     , stm
     , text
+    , time
     , unordered-containers
     , utf8-string
     , uuid

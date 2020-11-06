@@ -41,12 +41,13 @@ getConfig = do
 -- * env
 
 
-data Env
-  = Env { _envPort        :: Natural
-        , _envLog         :: String -> IO ()
-        , _envHttpRequest :: Http.Request -> IO (HttpResponse BSU.ByteString)
-        , _envPgRunner :: LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result)
-        }
+data Env = Env
+    { _envPort :: Natural
+    , _envLog :: String -> IO ()
+    , _envHttpRequest :: Http.CookieJar ->
+  Http.Request -> IO (Http.CookieJar, HttpResponse BSU.ByteString)
+    , _envPgRunner :: LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result)
+    }
 
 $(Lens.makeLenses ''Env)
 
@@ -56,7 +57,8 @@ $(Lens.makeLenses ''Env)
 
 createEnv
   :: (String -> IO ())
-  -> (Http.Request -> IO (HttpResponse BSU.ByteString))
+  -> (Http.CookieJar ->
+  Http.Request -> IO (Http.CookieJar, HttpResponse BSU.ByteString))
   -> (LibPQ.Connection -> BSU.ByteString -> IO (Maybe LibPQ.Result))
   -> IO Env
 createEnv log httpRequest pgRunner = do

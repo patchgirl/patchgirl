@@ -11,11 +11,11 @@ import           Data.Function                        ((&))
 import           Data.Functor                         ((<&>))
 import qualified Data.List                            as List
 import qualified Data.Maybe                           as Maybe
-import           Data.UUID
 import qualified Database.PostgreSQL.Simple           as PG
 import qualified Servant
 
 import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.PgCollection.Sql
 import           PatchGirl.Web.PgNode.App
@@ -36,9 +36,9 @@ updateScenarioNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
+  -> Id Scenario
   -> UpdateScenarioNode
   -> m ()
 updateScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId updateScenarioNode = do
@@ -63,9 +63,9 @@ deleteScenarioNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
+  -> Id Scenario
   -> m ()
 deleteScenarioNodeHandler accountId scenarioCollectionId scenarioNodeId = do
   connection <- getDBConnection
@@ -89,8 +89,8 @@ createRootScenarioFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
   -> NewRootScenarioFile
   -> m ()
 createRootScenarioFileHandler accountId scenarioCollectionId newRootScenarioFile = do
@@ -111,8 +111,8 @@ createScenarioFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
   -> NewScenarioFile
   -> m ()
 createScenarioFileHandler accountId scenarioCollectionId newScenarioFile = do
@@ -139,8 +139,8 @@ updateScenarioFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
   -> UpdateScenarioFile
   -> m ()
 updateScenarioFileHandler accountId scenarioCollectionId updateScenarioFile = do
@@ -174,8 +174,8 @@ createRootScenarioFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
   -> NewRootScenarioFolder
   -> m ()
 createRootScenarioFolderHandler accountId scenarioCollectionId newRootScenarioFolder = do
@@ -198,8 +198,8 @@ createScenarioFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id ScenarioCol
   -> NewScenarioFolder
   -> m ()
 createScenarioFolderHandler accountId scenarioCollectionId newScenarioFolder = do
@@ -228,8 +228,8 @@ createSceneHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
+  => Id Account
+  -> Id Scenario
   -> NewScene
   -> m ()
 createSceneHandler accountId scenarioNodeId newScene = do
@@ -238,23 +238,23 @@ createSceneHandler accountId scenarioNodeId newScene = do
     selectScenarioNodesFromAccountId accountId connection <&> findNodeInScenarioNodes scenarioNodeId
 
   let
-    requestAuthorized :: IO Bool
-    requestAuthorized = IO.liftIO $
-      selectRequestCollectionId accountId connection >>= \case
-        Nothing -> pure False
-        Just collectionId -> do
-          selectRequestNodesFromRequestCollectionId collectionId connection
-            <&> findNodeInRequestNodes (_newSceneActorId newScene)
-            <&> Maybe.isJust
+    actorAuthorized =
+      case _newSceneActorId newScene of
+        PostgresSceneId id ->
+          selectPgCollectionId accountId connection >>= \case
+            Nothing -> pure False
+            Just collectionId -> do
+              selectPgNodesFromPgCollectionId collectionId connection
+                <&> findNodeInPgNodes id
+                <&> Maybe.isJust
 
-    pgAuthorized :: IO Bool
-    pgAuthorized = IO.liftIO $
-      selectPgCollectionId accountId connection >>= \case
-        Nothing -> pure False
-        Just collectionId -> do
-          selectPgNodesFromPgCollectionId collectionId connection
-            <&> findNodeInPgNodes (_newSceneActorId newScene)
-            <&> Maybe.isJust
+        RequestSceneId id ->
+          selectRequestCollectionId accountId connection >>= \case
+            Nothing -> pure False
+            Just collectionId -> do
+              selectRequestNodesFromRequestCollectionId collectionId connection
+                <&> findNodeInRequestNodes id
+                <&> Maybe.isJust
 
     sceneAuthorized :: Bool
     sceneAuthorized =
@@ -267,13 +267,13 @@ createSceneHandler accountId scenarioNodeId newScene = do
             Nothing -> True
         _ -> False
 
-  authorized <- IO.liftIO $ Loops.andM [ Loops.orM [ requestAuthorized, pgAuthorized ]
+  authorized <- IO.liftIO $ Loops.andM [ actorAuthorized
                                        , pure sceneAuthorized
                                        ]
   case authorized of
     False ->
       Servant.throwError Servant.err404
-    True ->
+    True -> do
       IO.liftIO . Monad.void $ insertScene scenarioNodeId newScene connection
 
 
@@ -285,9 +285,9 @@ deleteSceneHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id Scenario
+  -> Id Scene
   -> m ()
 deleteSceneHandler accountId scenarioNodeId sceneId' = do
   connection <- getDBConnection
@@ -319,9 +319,9 @@ updateSceneHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
-  -> UUID
-  -> UUID
+  => Id Account
+  -> Id Scenario
+  -> Id Scene
   -> UpdateScene
   -> m ()
 updateSceneHandler accountId scenarioNodeId sceneId' updateScene = do
@@ -360,7 +360,7 @@ isScenarioFolder = \case
 isScenarioFile :: ScenarioNode -> Bool
 isScenarioFile = not . isScenarioFolder
 
-findNodeInScenarioNodes :: UUID -> [ScenarioNode] -> Maybe ScenarioNode
+findNodeInScenarioNodes :: Id Scenario -> [ScenarioNode] -> Maybe ScenarioNode
 findNodeInScenarioNodes nodeIdToFind scenarioNodes =
   Maybe.listToMaybe (Maybe.mapMaybe findNodeInScenarioNode scenarioNodes)
   where

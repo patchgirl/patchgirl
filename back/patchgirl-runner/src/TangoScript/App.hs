@@ -2,19 +2,21 @@ module TangoScript.App where
 
 import qualified Control.Monad             as Monad
 import qualified Control.Monad.State       as State
-import qualified Data.Scientific as Scientific
+import qualified Data.Aeson                as Aeson
+import qualified Data.Bifunctor            as Bifunctor
+import           Data.ByteString.Lazy.UTF8 as BLU
+import           Data.Coerce               (coerce)
+import           Data.Function             ((&))
 import           Data.Functor              ((<&>))
-import           Data.Function              ((&))
-import   qualified Data.Bifunctor as  Bifunctor
+import qualified Data.HashMap.Strict       as HashMap
 import qualified Data.List                 as List
 import qualified Data.Map.Strict           as Map
-import qualified Data.HashMap.Strict       as HashMap
-import Data.ByteString.Lazy.UTF8 as BLU
-import GHC.Natural (Natural)
-import qualified Data.Aeson as Aeson
-import Data.Text as TS
-import qualified Data.Vector as Vector
+import qualified Data.Scientific           as Scientific
+import           Data.Text                 as TS
+import qualified Data.Vector               as Vector
+import           GHC.Natural               (Natural)
 
+import           Interpolator
 import           ScenarioComputation.Model
 import           TangoScript.Model
 
@@ -32,20 +34,20 @@ import           TangoScript.Model
     ...
 -}
 reduceExprToPrimitive
-  :: State.MonadState ScriptContext m
+  :: State.MonadState ScenarioContext m
   => Context a
   -> Expr
   -> m (Either ScriptException Expr)
 reduceExprToPrimitive context = \case
   LJson json ->
     return . Right $ case json of
-      JInt int -> LInt int
-      JFloat float -> LFloat float
-      JBool bool -> LBool bool
-      JString str -> LString str
-      array@(JArray _) -> LJson array
+      JInt int           -> LInt int
+      JFloat float       -> LFloat float
+      JBool bool         -> LBool bool
+      JString str        -> LString str
+      array@(JArray _)   -> LJson array
       object@(JObject _) -> LJson object
-      JNull -> LNull
+      JNull              -> LNull
 
   LList exprs -> do
     Monad.mapM (reduceExprToPrimitive context) exprs <&> Monad.sequence >>= \case
@@ -71,12 +73,14 @@ reduceExprToPrimitive context = \case
     return $ Right rowElem
 
   lvar@(LVar var) -> do
-    State.get <&> localVars <&> Map.lookup var >>= \case
+    scenarioVars <- State.get <&> _scenarioContextLocalVars <&> coerce
+    case Map.lookup var scenarioVars of
       Nothing   -> return $ Left $ UnknownVariable lvar
       Just expr -> return $ Right expr
 
   lfetch@(LFetch var) -> do
-    State.get <&> globalVars <&> Map.lookup var >>= \case
+    scenarioVars <- State.get <&> _scenarioContextGlobalVars <&> coerce
+    case Map.lookup var scenarioVars of
       Nothing   -> return $ Left $ UnknownVariable lfetch
       Just expr -> return $ Right expr
 
@@ -121,7 +125,7 @@ reduceExprToPrimitive context = \case
     case (e1, e2) of
       (Right expr1, Right expr2) -> case reduceAccessOp expr1 expr2 of
         Left scriptException -> return $ Left scriptException
-        Right expr -> reduceExprToPrimitive context expr
+        Right expr           -> reduceExprToPrimitive context expr
 
       (Left other, _) -> return $ Left other
       (_, Left other) -> return $ Left other
@@ -218,7 +222,7 @@ valueToJson value =
 
     Aeson.Number scientific ->
       case Scientific.floatingOrInteger scientific of
-        Left l -> JFloat l
+        Left l  -> JFloat l
         Right i -> JInt i
 
     Aeson.Bool bool ->

@@ -2,7 +2,7 @@ module ScenarioBuilderApp.ScenarioBuilder.Landing.App exposing (..)
 
 import Api.Converter as Client
 import Random
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -103,21 +103,21 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                     { newRootScenarioFolderId = newId
+                                     { newRootScenarioFolderId = Id newId
                                      , newRootScenarioFolderName = newNode.name
                                      }
                             in
-                            Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFolder "" "" scenarioCollectionId payload (createScenarioFolderResultToMsg newNode newId)
+                            Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFolder "" "" (Id scenarioCollectionId) payload (createScenarioFolderResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newScenarioFolderId = newId
-                                    , newScenarioFolderParentNodeId = folderId
+                                    { newScenarioFolderId = Id newId
+                                    , newScenarioFolderParentNodeId = Id folderId
                                     , newScenarioFolderName = newNode.name
                                     }
                             in
-                            Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFolder "" "" scenarioCollectionId payload (createScenarioFolderResultToMsg newNode newId)
+                            Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFolder "" "" (Id scenarioCollectionId) payload (createScenarioFolderResultToMsg newNode newId)
 
             in
             ( model, newMsg )
@@ -128,7 +128,7 @@ update msg model =
                     model.scenarioCollection
 
                 newFolder =
-                    mkDefaultScenarioFolder newId newNode.name
+                    mkDefaultFolder newId newNode.name
 
                 newScenarioNodes =
                     case newNode.parentFolderId of
@@ -136,7 +136,7 @@ update msg model =
                             scenarioNodes ++ [ Folder newFolder ]
 
                         Just folderId ->
-                            List.map (modifyScenarioNode folderId (mkdirScenario newFolder)) scenarioNodes
+                            List.map (modifyNode folderId (mkdirNode newFolder)) scenarioNodes
 
                 newModel =
                     { model
@@ -163,24 +163,24 @@ update msg model =
                         Nothing ->
                             let
                                 payload =
-                                    { newRootScenarioFileId = newId
+                                    { newRootScenarioFileId = Id newId
                                     , newRootScenarioFileName = newNode.name
                                     , newRootScenarioFileEnvironmentId = Nothing
                                     }
 
                             in
-                            Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFile "" "" scenarioCollectionId payload (createScenarioFileResultToMsg newNode newId)
+                            Client.postApiScenarioCollectionByScenarioCollectionIdRootScenarioFile "" "" (Id scenarioCollectionId) payload (createScenarioFileResultToMsg newNode newId)
 
                         Just folderId ->
                             let
                                 payload =
-                                    { newScenarioFileId = newId
+                                    { newScenarioFileId = Id newId
                                     , newScenarioFileName = newNode.name
-                                    , newScenarioFileParentNodeId = folderId
+                                    , newScenarioFileParentNodeId = Id folderId
                                     , newScenarioFileEnvironmentId = Nothing
                                     }
                             in
-                            Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFile "" "" scenarioCollectionId payload (createScenarioFileResultToMsg newNode newId)
+                            Client.postApiScenarioCollectionByScenarioCollectionIdScenarioFile "" "" (Id scenarioCollectionId) payload (createScenarioFileResultToMsg newNode newId)
 
             in
             ( model, newMsg )
@@ -199,7 +199,7 @@ update msg model =
                             scenarioNodes ++ [ newScenarioNode ]
 
                         Just folderId ->
-                            List.map (modifyScenarioNode folderId (touchScenario newScenarioNode)) scenarioNodes
+                            List.map (modifyNode folderId (touchNode newScenarioNode)) scenarioNodes
 
                 newModel =
                     { model
@@ -403,11 +403,8 @@ nodeView model selectFolderMsg scenarioNodes =
                 File _ -> nodeView model selectFolderMsg tail
                 Folder { id, name, children } ->
                     let
-                        (ScenarioChildren c) =
-                            children
-
                         folderChildrenView =
-                            nodeView model selectFolderMsg c
+                            nodeView model selectFolderMsg children
 
                         tailView =
                             nodeView model selectFolderMsg tail

@@ -7,6 +7,7 @@ import Parser exposing(DeadEnd)
 import Json.Encode as Json exposing(Value)
 import List.Extra as List
 import Set exposing (Set)
+import Api.WebGeneratedClient as Client exposing(Account, Id(..))
 
 
 -- * menu
@@ -26,14 +27,6 @@ type MainMenuName
 type Loader
     = SceneCreationPending (Maybe Uuid)
     | SceneDeletionPending Uuid
-
-
--- * node type
-
-
-type NodeType a b
-    = Folder a
-    | File b
 
 
 -- * builder view
@@ -164,7 +157,7 @@ type Session
 
 
 type alias VisitorSession =
-    { id : Uuid
+    { id : Id Account
     , csrfToken : String
     , signInEmail : String
     , signInPassword : String
@@ -176,7 +169,7 @@ type alias VisitorSession =
 
 
 type alias SignedUserSession =
-    { id : Uuid
+    { id : Id Account
     , csrfToken : String
     , email : Maybe String
     , avatarUrl : String
@@ -191,16 +184,6 @@ getCsrfToken session =
 
         SignedUser { csrfToken } ->
             csrfToken
-
-
-getSessionId : Session -> Uuid
-getSessionId session =
-    case session of
-        Visitor { id } ->
-            id
-
-        SignedUser { id } ->
-            id
 
 
 -- * environment
@@ -262,39 +245,54 @@ stringTemplateContainsKey stringTemplate =
     List.any templateIsKey stringTemplate
 
 
--- * request collection
+-- * node
 
 
-type RequestCollection
-    = RequestCollection Int (List RequestNode)
-
-
--- ** request node
-
-
-type alias RequestNode = NodeType RequestFolderRecord RequestFileRecord
-
-
--- ** folder
-
-
-type alias RequestFolderRecord =
+type alias FolderRecord file =
     { id : Uuid
     , name : Editable String
+    , children : List (Node file)
     , open : Bool
-    , children : RequestChildren
     }
 
-type RequestChildren = RequestChildren (List RequestNode)
+type alias FileRecord file =
+    { file
+        | id : Uuid
+        , name : Editable String
+    }
 
+type Node file
+    = Folder (FolderRecord file)
+    | File (FileRecord file)
 
--- ** file
+getNodeId : Node file -> Uuid
+getNodeId node =
+    case node of
+        Folder f -> f.id
+        File f -> f.id
 
+type alias RequestNode = Node RequestFileRecord
+type alias PgNode = Node PgFileRecord
+type alias ScenarioNode = Node ScenarioFileRecord
+
+type alias PgFileRecord =
+    { dbHost : Editable String
+    , dbPassword : Editable String
+    , dbPort : Editable String
+    , dbUser : Editable String
+    , dbName : Editable String
+    , sql : Editable String
+    , pgComputationOutput : Maybe PgComputationOutput
+    , showResponseView : Bool
+    }
+
+type alias ScenarioFileRecord =
+    { environmentId : Editable (Maybe Uuid)
+    , scenes : List SceneRecord
+    }
 
 type alias RequestFileRecord =
-    { id : Uuid
-    , name : Editable String
-    , httpUrl : Editable String
+    { httpUrl : Editable String
     , httpMethod : Editable HttpMethod
     , httpHeaders : Editable (List ( String, String ))
     , httpBody : Editable String
@@ -303,6 +301,13 @@ type alias RequestFileRecord =
     , whichResponseView : HttpResponseView
     , runRequestIconAnimation : Animation.State
     }
+
+
+-- * request collection
+
+
+type RequestCollection
+    = RequestCollection Int (List RequestNode)
 
 
 -- ** which response view
@@ -321,77 +326,11 @@ type PgCollection
 
 
 
--- ** pg node
-
-
-type alias PgNode = NodeType PgFolderRecord PgFileRecord
-
-
--- ** folder
-
-
-type alias PgFolderRecord =
-    { id : Uuid
-    , name : Editable String
-    , open : Bool
-    , children : PgChildren
-    }
-
-type PgChildren = PgChildren (List PgNode)
-
-
--- ** file
-
-
-type alias PgFileRecord =
-    { id : Uuid
-    , name : Editable String
-    , dbHost : Editable String
-    , dbPassword : Editable String
-    , dbPort : Editable String
-    , dbUser : Editable String
-    , dbName : Editable String
-    , sql : Editable String
-    , pgComputationOutput : Maybe PgComputationOutput
-    , showResponseView : Bool
-    }
-
-
 -- * scenario collection
 
 
 type ScenarioCollection
     = ScenarioCollection Uuid (List ScenarioNode)
-
-
--- ** scenario node
-
-
-type alias ScenarioNode = NodeType ScenarioFolderRecord ScenarioFileRecord
-
-
--- ** scenario folder record
-
-
-type alias ScenarioFolderRecord =
-    { id : Uuid
-    , name : Editable String
-    , children : ScenarioChildren
-    , open : Bool
-    }
-
-type ScenarioChildren = ScenarioChildren (List ScenarioNode)
-
-
--- ** scenario file record
-
-
-type alias ScenarioFileRecord =
-    { id : Uuid
-    , environmentId : Editable (Maybe Uuid)
-    , name : Editable String
-    , scenes : List Scene
-    }
 
 
 -- ** scene
@@ -402,7 +341,7 @@ type alias UserSceneVariableValue =
     , value : String
     }
 
-type alias Scene
+type alias SceneRecord
     = { id : Uuid
       , nodeId : Uuid
       , actorType : ActorType
@@ -418,9 +357,9 @@ type ActorType
     = HttpActor
     | PgActor
 
-type FileRecord
-    = HttpRecord RequestFileRecord
-    | PgRecord PgFileRecord
+type ActorRecord
+    = HttpRecord (FileRecord RequestFileRecord)
+    | PgRecord (FileRecord PgFileRecord)
 
 
 -- * builder

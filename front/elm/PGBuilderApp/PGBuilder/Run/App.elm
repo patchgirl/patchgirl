@@ -5,6 +5,7 @@ import Api.Converter as Client
 import Random
 import Dict exposing (Dict)
 import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -73,7 +74,7 @@ type Msg
 -- * update
 
 
-update : Msg -> Model a -> PgFileRecord -> (Model a, PgFileRecord, Cmd Msg)
+update : Msg -> Model a -> FileRecord PgFileRecord -> (Model a, FileRecord PgFileRecord, Cmd Msg)
 update msg model file =
     case msg of
         UpdateSqlQuery newSqlQuery ->
@@ -151,7 +152,7 @@ update msg model file =
                     model.pgCollection
 
                 newMsg =
-                    Client.putApiPgCollectionByPgCollectionIdByPgNodeId "" "" pgCollectionId file.id payload updatePgFileResultToMsg
+                    Client.putApiPgCollectionByPgCollectionIdByPgNodeId "" "" (Id pgCollectionId) (Id file.id) payload updatePgFileResultToMsg
             in
             ( model, file, newMsg )
 
@@ -197,7 +198,7 @@ keyValuesToRun model =
     Application.getEnvironmentKeyValuesToRun model
 
 
-buildPgComputationPayload : PgFileRecord -> Model a -> (Dict String (List Client.Template), Client.PgComputationInput)
+buildPgComputationPayload : FileRecord PgFileRecord -> Model a -> (Dict String (List Client.Template), Client.PgComputationInput)
 buildPgComputationPayload file model =
     let
         keyValuesInput =
@@ -239,7 +240,7 @@ postPgSqlComputationResultToMsg result =
                 AlertNotification
                     ("Could not run SQL request. Is <a href=\"" ++ (href (DocumentationPage PatchGirlRunnerAppDoc)) ++ "\">patchgirl-runner</a> running?") (httpErrorToString error)
 
-isBuilderDirty : PgFileRecord -> Bool
+isBuilderDirty : FileRecord PgFileRecord -> Bool
 isBuilderDirty file =
     List.any isDirty
         [ file.dbHost
@@ -278,7 +279,7 @@ parseHeaders headers =
 -- * view
 
 
-view : Model a -> PgFileRecord -> Element Msg
+view : Model a -> FileRecord PgFileRecord -> Element Msg
 view model file =
     column [ alignTop, width fill, spacing 20 ]
         [ el ( box  [ width (fillPortion 1), alignTop, padding 20 ] ) <|
@@ -301,7 +302,7 @@ view model file =
 -- ** builder
 
 
-builderView : Model a -> PgFileRecord -> Element Msg
+builderView : Model a -> FileRecord PgFileRecord -> Element Msg
 builderView model file =
     let
         showInterpolatedCredentials : String -> Element Msg

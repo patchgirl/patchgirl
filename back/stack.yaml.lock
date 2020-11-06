@@ -19,19 +19,40 @@ packages:
   original:
     hackage: servant-elm-0.7.2
 - completed:
-    hackage: http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
+    hackage: http-client-0.7.2.1@sha256:2550f699beeb445e55781f486f02d65a6c7180395cd052e3b0be65a563488174,5352
     pantry-tree:
-      size: 2457
-      sha256: 02bcffba9cad572fefb4640f5fc9be68e770b32ab73efcac649db20290994c6d
+      size: 2459
+      sha256: bfce2f574abad1551ae7c64f2efd592ed05837af603efe2efb6f0136f8f0c4d8
   original:
-    hackage: http-client-0.5.14
+    hackage: http-client-0.7.2.1
 - completed:
-    hackage: dhall-1.28.0@sha256:a0b38be83ab76c59adf6d67868b9b183591edc68d2c3727d38598ddc12c36c95,31625
+    hackage: http-conduit-2.3.7.3@sha256:56017290a2d6e4fd9017f6ed7d87e9ee18530d4a787309df5683a4cad19b3535,2968
     pantry-tree:
-      size: 241424
-      sha256: 8c92a349408edf2c72760025740b4950cd0a1d2ce0ba393333332c1bbc469967
+      size: 784
+      sha256: 6485c7aaed822f9a8e646d665adb1e34f2cdc0cdd428d7d07a3e400c353cc005
   original:
-    hackage: dhall-1.28.0
+    hackage: http-conduit-2.3.7.3
+- completed:
+    hackage: dhall-1.36.0@sha256:49d22019392c73a4d50d0f7741423d1c848215c2d0bfa118225940b2c234a550,34191
+    pantry-tree:
+      size: 304480
+      sha256: 3371c489a0b2d387052b1895ea0ceeb28860f0763337b73d8d4e979ec712ee96
+  original:
+    hackage: dhall-1.36.0
+- completed:
+    hackage: repline-0.4.0.0@sha256:3324479e497d27c40c3d4762bffc52058f9921621d20d2947dcf9a554b94cd0d,2253
+    pantry-tree:
+      size: 564
+      sha256: bff43f9a5b0a212c29c12e2e22b528d9071b2a7d13489ce5bdc54ae9eac853cf
+  original:
+    hackage: repline-0.4.0.0
+- completed:
+    hackage: haskeline-0.8.1.0@sha256:6a6158c90b929ce7aa5331ff5e9819aa32c7df8f4a7ba324b3cc055ee96b48cb,5818
+    pantry-tree:
+      size: 2955
+      sha256: b80332551d20389637851299b618679a8435531bed1fed905195ae7163526999
+  original:
+    hackage: haskeline-0.8.1.0
 - completed:
     hackage: atomic-write-0.2.0.7@sha256:3b626dfbc288cd070f1ac31b1c15ddd49822a923778ffe21f92b2116ffc72dc3,4584
     pantry-tree:

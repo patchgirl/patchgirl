@@ -4,7 +4,7 @@ import Animation
 import Api.Converter as Client
 import Random
 import Dict exposing (Dict)
-import Api.WebGeneratedClient as Client
+import Api.WebGeneratedClient as Client exposing (Id(..))
 import Api.RunnerGeneratedClient as Client
 import Application.Type exposing (..)
 import Element exposing (..)
@@ -95,7 +95,7 @@ update msg model environment =
                     List.map Client.convertEnvironmentKeyValueFromFrontToBack newKeyValues
 
                 newMsg =
-                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken model.session) environment.id updateKeyValues (updateKeyValuesResultToMsg newKeyValues)
+                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken model.session) (Id environment.id) updateKeyValues (updateKeyValuesResultToMsg newKeyValues)
             in
             ( model, environment, newMsg )
 
@@ -129,7 +129,7 @@ update msg model environment =
         AskDeleteKeyValue id ->
             let
                 newMsg =
-                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken model.session) environment.id id (deleteKeyValueResultToMsg id)
+                    Client.deleteApiEnvironmentByEnvironmentIdKeyValueByKeyValueId "" (getCsrfToken model.session) (Id environment.id) (Id id) (deleteKeyValueResultToMsg id)
             in
             ( model, environment, newMsg )
 
@@ -163,7 +163,7 @@ update msg model environment =
                     List.map Client.convertEnvironmentKeyValueFromFrontToBack environment.keyValues
 
                 newMsg =
-                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken model.session) environment.id updateKeyValues (saveKeyValuesResultToMsg environment.keyValues)
+                    Client.putApiEnvironmentByEnvironmentIdKeyValue "" (getCsrfToken model.session) (Id environment.id) updateKeyValues (saveKeyValuesResultToMsg environment.keyValues)
             in
             ( model, environment, newMsg )
 

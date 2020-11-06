@@ -1,30 +1,30 @@
+{-# LANGUAGE DataKinds      #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 
 module PatchGirl.Web.Test where
 
-import qualified Control.Monad                    as Monad
-import qualified Data.Maybe                           as Maybe
-import qualified Control.Monad.Except             as Except
-import qualified Control.Monad.IO.Class           as IO
-import qualified Control.Monad.Reader             as Reader
-import qualified Data.Aeson                       as Aeson
-import qualified Database.PostgreSQL.Simple       as PG
-import           Database.PostgreSQL.Simple.SqlQQ
-import           GHC.Generics                     (Generic)
-import qualified GHC.Int                          as Int
-import           Servant.API.ContentTypes         (NoContent (..))
-import           Servant.Server                   (ServerError)
-import qualified Database.PostgreSQL.Simple.FromField as PG
-import qualified Data.ByteString.Char8                as B
-import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.FromField hiding (name)
-import qualified Servant
+import qualified Control.Monad                        as Monad
+import qualified Control.Monad.Except                 as Except
+import qualified Control.Monad.IO.Class               as IO
+import qualified Control.Monad.Reader                 as Reader
 import           Data.Aeson                           (Value)
+import qualified Data.Aeson                           as Aeson
 import           Data.Aeson.Types                     (FromJSON (..),
-                                                       ToJSON (..),
-                                                       parseEither)
-import Data.Functor ((<&>))
+                                                       ToJSON (..), parseEither)
+import qualified Data.ByteString.Char8                as B
+import           Data.Function                        ((&))
+import           Data.Functor                         ((<&>))
+import qualified Data.List                            as List
+import qualified Data.Maybe                           as Maybe
+import           Database.PostgreSQL.Simple
+import qualified Database.PostgreSQL.Simple           as PG
+import           Database.PostgreSQL.Simple.FromField hiding (name)
+import qualified Database.PostgreSQL.Simple.FromField as PG
+import           Database.PostgreSQL.Simple.SqlQQ
+import           GHC.Generics                         (Generic)
+import qualified GHC.Int                              as Int
+import           Servant
 
 import           PatchGirl.Web.DB
 import           PatchGirl.Web.Internal.Env
@@ -32,16 +32,35 @@ import           PatchGirl.Web.Internal.Env
 
 -- * model
 
+
+-- ** signin
+
+
+data SignInTest = SignInTest
+    { signInTest_email    :: String
+    , signInTest_password :: String
+    }
+    deriving (Eq, Show, Generic)
+
+instance Aeson.ToJSON SignInTest where
+  toJSON =
+    Aeson.genericToJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("signInTest_" :: String) }
+
+instance Aeson.FromJSON SignInTest where
+  parseJSON =
+    Aeson.genericParseJSON Aeson.defaultOptions { Aeson.fieldLabelModifier = drop $ length ("signInTest_" :: String) }
+
+
 -- ** product
 
 
-data ProductTest
-  = ProductTest { productTest_id    :: Int
-                , productTest_name  :: String
-                , productTest_quantity :: Int
-                , productTest_price :: Int
-                }
-  deriving (Eq, Show, Read, Generic, PG.FromRow)
+data ProductTest = ProductTest
+    { productTest_id       :: Int
+    , productTest_name     :: String
+    , productTest_quantity :: Int
+    , productTest_price    :: Int
+    }
+    deriving (Eq, Show, Read, Generic, PG.FromRow)
 
 instance Aeson.ToJSON ProductTest where
   toJSON =
@@ -55,12 +74,12 @@ instance Aeson.FromJSON ProductTest where
 -- *** new product
 
 
-data NewProductTest
-  = NewProductTest { newProductTest_name  :: String
-                   , newProductTest_quantity :: Int
-                   , newProductTest_price :: Int
-                   }
-  deriving (Eq, Show, Read, Generic, PG.FromRow, PG.ToRow)
+data NewProductTest = NewProductTest
+    { newProductTest_name     :: String
+    , newProductTest_quantity :: Int
+    , newProductTest_price    :: Int
+    }
+    deriving (Eq, Show, Read, Generic, PG.FromRow, PG.ToRow)
 
 instance Aeson.ToJSON NewProductTest where
   toJSON =
@@ -74,11 +93,11 @@ instance Aeson.FromJSON NewProductTest where
 -- *** update product
 
 
-data UpdateProductTest
-  = UpdateProductTest { updateProductTest_quantity :: Int
-                      , updateProductTest_price :: Int
-                      }
-  deriving (Eq, Show, Read, Generic)
+data UpdateProductTest = UpdateProductTest
+    { updateProductTest_quantity :: Int
+    , updateProductTest_price    :: Int
+    }
+    deriving (Eq, Show, Read, Generic)
 
 instance Aeson.ToJSON UpdateProductTest where
   toJSON =
@@ -92,11 +111,11 @@ instance Aeson.FromJSON UpdateProductTest where
 -- ** basket
 
 
-data BasketTest
-  = BasketTest { basketTest_userId    :: Int
-               , basketTest_purchases :: [PurchaseTest]
-               }
-  deriving (Eq, Show, Read, Generic)
+data BasketTest = BasketTest
+    { basketTest_userId    :: Int
+    , basketTest_purchases :: [PurchaseTest]
+    }
+    deriving (Eq, Show, Read, Generic)
 
 instance Aeson.ToJSON BasketTest where
   toJSON =
@@ -110,11 +129,11 @@ instance Aeson.FromJSON BasketTest where
 -- *** purchase
 
 
-data PurchaseTest
-  = PurchaseTest { purchaseTest_productId  :: Int
-                 , purchaseTest_quantity :: Int
-                 }
-  deriving (Eq, Show, Read, Generic)
+data PurchaseTest = PurchaseTest
+    { purchaseTest_productId :: Int
+    , purchaseTest_quantity  :: Int
+    }
+    deriving (Eq, Show, Read, Generic)
 
 instance PG.FromField [PurchaseTest] where
   fromField field mdata =
@@ -140,11 +159,11 @@ instance Aeson.FromJSON PurchaseTest where
 -- *** add to basket
 
 
-data AddToBasketTest
-  = AddToBasketTest { addToBasket_productId :: Int
-                    , addToBasket_quantity :: Int
-                    }
-  deriving (Eq, Show, Read, Generic)
+data AddToBasketTest = AddToBasketTest
+    { addToBasket_productId :: Int
+    , addToBasket_quantity  :: Int
+    }
+    deriving (Eq, Show, Read, Generic)
 
 instance Aeson.ToJSON AddToBasketTest where
   toJSON =
@@ -158,11 +177,11 @@ instance Aeson.FromJSON AddToBasketTest where
 -- *** remove from basket
 
 
-data RemoveFromBasketTest
-  = RemoveFromBasketTest { removeFromBasketTest_productId :: Int
-                         , removeFromBasketTest_productQuantity :: Int
-                         }
-  deriving (Eq, Show, Read, Generic)
+data RemoveFromBasketTest = RemoveFromBasketTest
+    { removeFromBasketTest_productId       :: Int
+    , removeFromBasketTest_productQuantity :: Int
+    }
+    deriving (Eq, Show, Read, Generic)
 
 instance Aeson.ToJSON RemoveFromBasketTest where
   toJSON =
@@ -176,12 +195,12 @@ instance Aeson.FromJSON RemoveFromBasketTest where
 -- ** user
 
 
-data UserTest
-  = UserTest { userTest_id        :: Int
-             , userTest_firstname :: String
-             , userTest_lastname  :: String
-             }
-  deriving (Eq, Show, Read, Generic, PG.FromRow)
+data UserTest = UserTest
+    { userTest_id        :: Int
+    , userTest_firstname :: String
+    , userTest_lastname  :: String
+    }
+    deriving (Eq, Show, Read, Generic, PG.FromRow)
 
 instance Aeson.ToJSON UserTest where
   toJSON =
@@ -195,11 +214,11 @@ instance Aeson.FromJSON UserTest where
 -- *** new user
 
 
-data NewUserTest
-  = NewUserTest { newUserTest_firstname :: String
-                , newUserTest_lastname  :: String
-                }
-  deriving (Eq, Show, Read, Generic, PG.ToRow)
+data NewUserTest = NewUserTest
+    { newUserTest_firstname :: String
+    , newUserTest_lastname  :: String
+    }
+    deriving (Eq, Show, Read, Generic, PG.ToRow)
 
 instance Aeson.ToJSON NewUserTest where
   toJSON =
@@ -213,11 +232,11 @@ instance Aeson.FromJSON NewUserTest where
 -- *** update user
 
 
-data UpdateUserTest
-  = UpdateUserTest { updateUserTest_firstname :: String
-                   , updateUserTest_lastname  :: String
-                   }
-  deriving (Eq, Show, Read, Generic)
+data UpdateUserTest = UpdateUserTest
+    { updateUserTest_firstname :: String
+    , updateUserTest_lastname  :: String
+    }
+    deriving (Eq, Show, Read, Generic)
 
 instance Aeson.ToJSON UpdateUserTest where
   toJSON =
@@ -238,8 +257,8 @@ newtype UserRole
 instance PG.FromField UserRole where
    fromField f mdata =
      case B.unpack `fmap` mdata of
-       Nothing       -> PG.returnError PG.UnexpectedNull f ""
-       Just role     -> return UserRole { userRole_role = role }
+       Nothing   -> PG.returnError PG.UnexpectedNull f ""
+       Just role -> return UserRole { userRole_role = role }
 
 instance Aeson.ToJSON UserRole where
   toJSON =
@@ -251,6 +270,37 @@ instance Aeson.FromJSON UserRole where
 
 
 -- * handler
+
+
+-- ** sign in
+
+
+signInHandler :: IO.MonadIO m => SignInTest -> m (Headers '[ Header "Set-Cookie" String] String)
+signInHandler SignInTest{..} = do
+  return $ case (signInTest_email, signInTest_password) of
+    ("admin", "admin") -> addHeader adminCookie "ok, you're signed in"
+    _                  -> noHeader "wrong password"
+    where
+      adminCookie :: String
+      adminCookie =
+        [ ("Admin", show True)
+        , ( "Path", "/" )
+        ] <&> makeHeader  & List.intercalate ";"
+
+      makeHeader :: (String, String) -> String
+      makeHeader (key, value) = key <> "=" <> value
+
+
+-- ** check super secret
+
+
+checkSuperSecretHandler :: IO.MonadIO m => Maybe String -> m String
+checkSuperSecretHandler = return . \case
+  Just "Admin=True" ->
+    "this is the super secret: coucou"
+
+  _ ->
+    "you need to be admin to see the super secret"
 
 
 -- ** product

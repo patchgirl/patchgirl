@@ -1,18 +1,18 @@
 module PatchGirl.Web.Account.Sql where
 
 import           Data.Functor                     ((<&>))
-import           Data.UUID
 import qualified Database.PostgreSQL.Simple       as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 
+import           PatchGirl.Web.Id
 
 -- * select account from github id
 
 
-selectAccountFromGithubId :: Int -> PG.Connection -> IO (Maybe UUID)
+selectAccountFromGithubId :: Int -> PG.Connection -> IO (Maybe (Id Account))
 selectAccountFromGithubId githubId connection =
   PG.query connection selectAccountQuery (PG.Only githubId) <&> \case
-    [PG.Only accountId] -> Just accountId
+    [PG.Only accountId] -> Just $ Id accountId
     _ -> Nothing
   where
     selectAccountQuery =
@@ -26,10 +26,10 @@ selectAccountFromGithubId githubId connection =
 -- * insert account
 
 
-insertAccount :: Int -> PG.Connection -> IO UUID
+insertAccount :: Int -> PG.Connection -> IO (Id Account)
 insertAccount githubId connection = do
   [PG.Only accountId] <- PG.query connection rawQuery (PG.Only githubId)
-  return accountId
+  return $ Id accountId
   where
     rawQuery =
       [sql|

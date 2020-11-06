@@ -24,7 +24,7 @@ import           Servant.Auth.Server               (Cookie, CookieSettings, JWT,
                                                     sessionCookieName)
 
 
-import PatchGirl.Web.Api (webApiServer, WebApi)
+import           PatchGirl.Web.Api                 (WebApi, webApiServer)
 import           PatchGirl.Web.Internal.Env
 import           PatchGirl.Web.Model
 
@@ -34,7 +34,7 @@ import           PatchGirl.Web.Model
 
 run :: IO ()
 run = do
-  putStrLn "Running web server for web"
+  Say.sayString "Running web server for web"
   env :: Env <- createEnv Say.sayString
   _ <- Prometheus.register Prometheus.ghcMetrics
   app :: Application <- mkApp env

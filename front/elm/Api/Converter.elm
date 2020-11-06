@@ -30,15 +30,23 @@ convertRequestNodesFromBackToFront backRequestNodes =
             case backRequestNode of
                 Back.RequestFolder folder ->
                     Front.Folder
-                        { id = folder.requestNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = folder.requestNodeId
+                              in
+                                  id
                         , name = NotEdited folder.requestNodeName
                         , open = not <| List.isEmpty folder.requestNodeChildren
-                        , children = Front.RequestChildren (convertRequestNodesFromBackToFront folder.requestNodeChildren)
+                        , children = convertRequestNodesFromBackToFront folder.requestNodeChildren
                         }
 
                 Back.RequestFile file ->
                     Front.File
-                        { id = file.requestNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = file.requestNodeId
+                              in
+                                  id
                         , name = NotEdited file.requestNodeName
                         , httpUrl = NotEdited file.requestNodeHttpUrl
                         , httpMethod = NotEdited (convertMethodFromBackToFront file.requestNodeHttpMethod)
@@ -60,7 +68,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
 convertPgCollectionFromBackToFront : Back.PgCollection -> Front.PgCollection
 convertPgCollectionFromBackToFront backPgCollection =
     let
-        (Back.PgCollection id backPgNodes) =
+        (Back.PgCollection (Back.Id id) backPgNodes) =
             backPgCollection
     in
     Front.PgCollection id (convertPgNodesFromBackToFront backPgNodes)
@@ -74,15 +82,23 @@ convertPgNodesFromBackToFront backPgNodes =
             case backPgNode of
                 Back.PgFolder folder ->
                     Front.Folder
-                        { id = folder.pgNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = folder.pgNodeId
+                              in
+                                  id
                         , name = NotEdited folder.pgNodeName
                         , open = not <| List.isEmpty folder.pgNodeChildren
-                        , children = Front.PgChildren (convertPgNodesFromBackToFront folder.pgNodeChildren)
+                        , children = convertPgNodesFromBackToFront folder.pgNodeChildren
                         }
 
                 Back.PgFile file ->
                     Front.File
-                        { id = file.pgNodeId
+                        { id =
+                              let
+                                  (Back.Id id) = file.pgNodeId
+                              in
+                                  id
                         , name = NotEdited file.pgNodeName
                         , dbHost = NotEdited file.pgNodeHost
                         , dbPort = NotEdited file.pgNodePort
@@ -104,7 +120,7 @@ convertPgNodesFromBackToFront backPgNodes =
 convertScenarioCollectionFromBackToFront : Back.ScenarioCollection -> Front.ScenarioCollection
 convertScenarioCollectionFromBackToFront backScenarioCollection =
     let
-        (Back.ScenarioCollection id backScenarioNodes) =
+        (Back.ScenarioCollection (Back.Id id) backScenarioNodes) =
             backScenarioCollection
     in
     Front.ScenarioCollection id (convertScenarioNodesFromBackToFront backScenarioNodes)
@@ -122,18 +138,25 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
             case backScenarioNode of
                 Back.ScenarioFolder folder ->
                     Front.Folder
-                        { id = folder.scenarioNodeId
+                        { id = let (Back.Id id) = folder.scenarioNodeId in id
                         , name = NotEdited folder.scenarioNodeName
-                        , children = Front.ScenarioChildren (convertScenarioNodesFromBackToFront folder.scenarioNodeChildren)
+                        , children = convertScenarioNodesFromBackToFront folder.scenarioNodeChildren
                         , open = not (List.isEmpty folder.scenarioNodeChildren)
                         }
 
                 Back.ScenarioFile file ->
                     Front.File
-                        { id = file.scenarioNodeId
+                        { id = let (Back.Id id) = file.scenarioNodeId in id
                         , name = NotEdited file.scenarioNodeName
                         , scenes = List.map convertSceneActorFromBackToFront file.scenarioNodeScenes
-                        , environmentId = NotEdited file.scenarioNodeEnvironmentId
+                        , environmentId =
+                            case file.scenarioNodeEnvironmentId of
+                                Just (Back.Id id) ->
+                                    NotEdited (Just id)
+
+                                Nothing ->
+                                    NotEdited Nothing
+
                         }
     in
     List.map convertScenarioNodeFromBackToFront backScenarioNodes
@@ -143,12 +166,17 @@ convertScenarioNodesFromBackToFront backScenarioNodes =
 -- ** scene
 
 
-convertSceneActorFromBackToFront : Back.SceneActor -> Front.Scene
+convertSceneActorFromBackToFront : Back.SceneActor -> Front.SceneRecord
 convertSceneActorFromBackToFront sceneActor =
     case sceneActor of
         Back.HttpSceneActor s ->
-            { id = s.sceneId
-            , nodeId = s.sceneActorId
+            { id =
+                  let (Back.Id id) = s.sceneId
+                  in id
+            , nodeId =
+                case s.sceneActorId of
+                                       Back.PostgresSceneId (Back.Id pid) -> pid
+                                       Back.RequestSceneId (Back.Id hid) -> hid
             , actorType = Front.HttpActor
             , sceneComputation = Nothing
             , variables = NotEdited (s.sceneVariables |> Dict.map (\_ v -> convertSceneVariableFromBackToFront v))
@@ -159,8 +187,13 @@ convertSceneActorFromBackToFront sceneActor =
             }
 
         Back.PgSceneActor s ->
-            { id = s.sceneId
-            , nodeId = s.sceneActorId
+            { id =
+                  let (Back.Id id) = s.sceneId
+                  in id
+            , nodeId =
+                case s.sceneActorId of
+                                       Back.PostgresSceneId (Back.Id pid) -> pid
+                                       Back.RequestSceneId (Back.Id hid) -> hid
             , actorType = Front.PgActor
             , sceneComputation = Nothing
             , variables = NotEdited (s.sceneVariables |> Dict.map (\_ v -> convertSceneVariableFromBackToFront v))
@@ -197,7 +230,9 @@ convertActorTypeFromFrontToBack actorType =
 
 convertEnvironmentFromBackToFront : Back.Environment -> Front.Environment
 convertEnvironmentFromBackToFront { environmentId, environmentName, environmentKeyValues } =
-    { id = environmentId
+    { id =
+          let (Back.Id id) = environmentId
+          in id
     , name = NotEdited environmentName
     , showRenameInput = False
     , keyValues = List.map convertEnvironmentKeyValueFromBackToFront environmentKeyValues
@@ -209,7 +244,9 @@ convertEnvironmentFromBackToFront { environmentId, environmentName, environmentK
 
 convertEnvironmentKeyValueFromBackToFront : Back.KeyValue -> Front.KeyValue
 convertEnvironmentKeyValueFromBackToFront { keyValueId, keyValueKey, keyValueValue, keyValueHidden } =
-    { id = keyValueId
+    { id =
+          let (Back.Id id) = keyValueId
+          in id
     , key = NotEdited keyValueKey
     , value = NotEdited (stringToTemplate keyValueValue)
     , hidden = NotEdited keyValueHidden
@@ -225,7 +262,7 @@ convertEnvironmentKeyValueFromFrontToBack { id, key, value, hidden } =
                 |> List.map templateAsString
                 |> String.join ""
     in
-    { newKeyValueId = id
+    { newKeyValueId = Back.Id id
     , newKeyValueKey = editedOrNotEditedValue key
     , newKeyValueValue = templatedStringsToString (editedOrNotEditedValue value)
     , newKeyValueHidden = (editedOrNotEditedValue hidden)

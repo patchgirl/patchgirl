@@ -17,15 +17,16 @@ import           Data.Aeson.Types                     (FromJSON (..), Parser,
                                                        parseEither, withObject,
                                                        (.:))
 import qualified Data.ByteString.Char8                as B
+import           Data.Functor                         ((<&>))
 import           Data.Map.Strict                      (Map)
 import qualified Data.Map.Strict                      as Map
-import           Data.UUID
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromField hiding (name)
 import qualified Database.PostgreSQL.Simple.FromField as PG
 import qualified Database.PostgreSQL.Simple.ToField   as PG
 import           GHC.Generics
 
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.NodeType.Model
 
 
@@ -56,13 +57,34 @@ instance FromJSON ActorType where
     genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 
+-- * actor id
+
+
+data ActorId = PostgresSceneId (Id Postgres)
+    | RequestSceneId (Id Request)
+    deriving (Eq, Show, Generic)
+
+instance ToJSON ActorId where
+  toJSON =
+    genericToJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance FromJSON ActorId where
+  parseJSON =
+    genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+
+instance PG.ToField ActorId where
+    toField = \case
+      PostgresSceneId id -> PG.toField id
+      RequestSceneId id -> PG.toField id
+
+
 -- * new scene
 
 
 data NewScene = NewScene
-    { _newSceneId                 :: UUID
-    , _newSceneSceneActorParentId :: Maybe UUID
-    , _newSceneActorId            :: UUID
+    { _newSceneId                 :: Id Scene
+    , _newSceneSceneActorParentId :: Maybe (Id Scene)
+    , _newSceneActorId            :: ActorId
     , _newSceneActorType          :: ActorType
     , _newSceneVariables          :: SceneVariables
     , _newScenePrescript          :: String
@@ -83,15 +105,15 @@ instance FromJSON NewScene where
 
 
 data SceneActor = HttpSceneActor
-    { _sceneId         :: UUID
-    , _sceneActorId    :: UUID
+    { _sceneId         :: Id Scene
+    , _sceneActorId    :: ActorId
     , _sceneVariables  :: SceneVariables
     , _scenePrescript  :: String
     , _scenePostscript :: String
     }
     | PgSceneActor
-    { _sceneId         :: UUID
-    , _sceneActorId    :: UUID
+    { _sceneId         :: Id Scene
+    , _sceneActorId    :: ActorId
     , _sceneVariables  :: SceneVariables
     , _scenePrescript  :: String
     , _scenePostscript :: String
@@ -137,14 +159,14 @@ instance FromJSON SceneFromPG where
     SceneFromPG <$> case actorType of
       HttpActor -> do
         _sceneId <- o .: "id"
-        _sceneActorId <- o .: "http_actor_id"
+        _sceneActorId <- o .: "http_actor_id" <&> RequestSceneId
         _sceneVariables <- o .: "variables"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
         return HttpSceneActor{..}
       PgActor -> do
         _sceneId <- o .: "id"
-        _sceneActorId <- o .: "pg_actor_id"
+        _sceneActorId <- o .: "pg_actor_id" <&> PostgresSceneId
         _sceneVariables <- o .: "variables"
         _scenePrescript <- o .: "prescript"
         _scenePostscript <- o .: "postscript"
@@ -202,14 +224,14 @@ instance FromJSON SceneVariableValue where
 
 
 data ScenarioNode = ScenarioFolder
-    { _scenarioNodeId       :: UUID
+    { _scenarioNodeId       :: Id Scenario
     , _scenarioNodeName     :: String
     , _scenarioNodeChildren :: [ScenarioNode]
     }
     | ScenarioFile
-    { _scenarioNodeId            :: UUID
+    { _scenarioNodeId            :: Id Scenario
     , _scenarioNodeName          :: String
-    , _scenarioNodeEnvironmentId :: Maybe UUID
+    , _scenarioNodeEnvironmentId :: Maybe (Id EnvId)
     , _scenarioNodeScenes        :: [SceneActor]
     }
     deriving (Eq, Show, Generic)
@@ -294,9 +316,9 @@ instance FromJSON UpdateScenarioNode where
 
 
 data NewRootScenarioFile = NewRootScenarioFile
-    { _newRootScenarioFileId            :: UUID
+    { _newRootScenarioFileId            :: Id Scenario
     , _newRootScenarioFileName          :: String
-    , _newRootScenarioFileEnvironmentId :: Maybe UUID
+    , _newRootScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, ToRow)
 
@@ -313,10 +335,10 @@ instance FromJSON NewRootScenarioFile where
 
 
 data NewScenarioFile = NewScenarioFile
-    { _newScenarioFileId            :: UUID
+    { _newScenarioFileId            :: Id Scenario
     , _newScenarioFileName          :: String
-    , _newScenarioFileParentNodeId  :: UUID
-    , _newScenarioFileEnvironmentId :: Maybe UUID
+    , _newScenarioFileParentNodeId  :: Id Scenario
+    , _newScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, ToRow)
 
@@ -333,8 +355,8 @@ instance FromJSON NewScenarioFile where
 
 
 data UpdateScenarioFile = UpdateScenarioFile
-    { _updateScenarioFileId            :: UUID
-    , _updateScenarioFileEnvironmentId :: Maybe UUID
+    { _updateScenarioFileId            :: Id Scenario
+    , _updateScenarioFileEnvironmentId :: Maybe (Id EnvId)
     }
     deriving (Eq, Show, Generic, ToRow)
 
@@ -351,7 +373,7 @@ instance FromJSON UpdateScenarioFile where
 
 
 data NewRootScenarioFolder = NewRootScenarioFolder
-    { _newRootScenarioFolderId   :: UUID
+    { _newRootScenarioFolderId   :: Id Scenario
     , _newRootScenarioFolderName :: String
     }
     deriving (Eq, Show, Generic, ToRow)
@@ -369,8 +391,8 @@ instance FromJSON NewRootScenarioFolder where
 
 
 data NewScenarioFolder = NewScenarioFolder
-    { _newScenarioFolderId           :: UUID
-    , _newScenarioFolderParentNodeId :: UUID
+    { _newScenarioFolderId           :: Id Scenario
+    , _newScenarioFolderParentNodeId :: Id Scenario
     , _newScenarioFolderName         :: String
     }
     deriving (Eq, Show, Generic)

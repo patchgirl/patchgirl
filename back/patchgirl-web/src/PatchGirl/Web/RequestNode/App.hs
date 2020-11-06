@@ -14,11 +14,11 @@ import qualified Control.Monad.Except                as Except (MonadError)
 import qualified Control.Monad.IO.Class              as IO
 import qualified Control.Monad.Reader                as Reader
 import qualified Data.Maybe                          as Maybe
-import           Data.UUID
 import qualified Database.PostgreSQL.Simple          as PG
 import qualified Servant
 
 import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.RequestCollection.Sql
 import           PatchGirl.Web.RequestNode.Model
@@ -33,16 +33,15 @@ updateRequestNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
-  -> UUID
+  -> Id Request
   -> UpdateRequestNode
   -> m ()
 updateRequestNodeHandler accountId requestCollectionId requestNodeId updateRequestNode = do
   connection <- getDBConnection
   ifValidRequestCollection connection accountId requestCollectionId $ do
-    ifValidRequestNode connection requestCollectionId requestNodeId $ \_ ->
-      IO.liftIO $ Monad.void (updateRequestNodeDB requestNodeId updateRequestNode connection)
+    IO.liftIO $ Monad.void (updateRequestNodeDB requestNodeId updateRequestNode connection)
 
 
 -- * delete request node
@@ -53,9 +52,9 @@ deleteRequestNodeHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
-  -> UUID
+  -> Id Request
   -> m ()
 deleteRequestNodeHandler accountId requestCollectionId requestNodeId = do
   connection <- getDBConnection
@@ -72,7 +71,7 @@ createRootRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRootRequestFile
   -> m ()
@@ -90,7 +89,7 @@ createRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRequestFile
   -> m ()
@@ -112,9 +111,9 @@ updateRequestFileHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
-  -> UUID
+  -> Id Request
   -> UpdateRequestFile
   -> m ()
 updateRequestFileHandler accountId requestCollectionId requestNodeId updateRequestFile = do
@@ -132,7 +131,7 @@ createRootRequestFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRootRequestFolder
   -> m ()
@@ -150,7 +149,7 @@ createRequestFolderHandler
      , IO.MonadIO m
      , Except.MonadError Servant.ServerError m
      )
-  => UUID
+  => Id Account
   -> Int
   -> NewRequestFolder
   -> m ()
@@ -172,7 +171,7 @@ ifValidRequestCollection
      , Except.MonadError Servant.ServerError m
      )
   => PG.Connection
-  -> UUID
+  -> Id Account
   -> Int
   -> m ()
   -> m ()
@@ -190,7 +189,7 @@ ifValidRequestNode
      )
   => PG.Connection
   -> Int
-  -> UUID
+  -> Id Request
   -> (RequestNode -> m a)
   -> m a
 ifValidRequestNode connection requestCollectionId nodeId f = do
@@ -202,7 +201,7 @@ ifValidRequestNode connection requestCollectionId nodeId f = do
     Just node ->
       f node
 
-findNodeInRequestNodes :: UUID -> [RequestNode] -> Maybe RequestNode
+findNodeInRequestNodes :: Id Request -> [RequestNode] -> Maybe RequestNode
 findNodeInRequestNodes nodeIdToFind requestNodes =
   Maybe.listToMaybe (Maybe.mapMaybe findNodeInRequestNode requestNodes)
   where

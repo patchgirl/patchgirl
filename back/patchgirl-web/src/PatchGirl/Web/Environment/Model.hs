@@ -14,16 +14,17 @@ import           Data.Aeson                 (FromJSON, ToJSON (..),
                                              defaultOptions, fieldLabelModifier,
                                              genericToJSON, parseJSON)
 import           Data.Aeson.Types           (genericParseJSON)
-import           Data.UUID                  (UUID)
 import qualified Database.PostgreSQL.Simple as PG
 import           GHC.Generics
+
+import           PatchGirl.Web.Id
 
 
 -- * key value
 
 
 data KeyValue = KeyValue
-    { _keyValueId     :: UUID
+    { _keyValueId     :: Id KeyValueId
     , _keyValueKey    :: String
     , _keyValueValue  :: String
     , _keyValueHidden :: Bool
@@ -43,7 +44,7 @@ instance ToJSON KeyValue where
 
 
 data Environment = Environment
-    { _environmentId        :: UUID
+    { _environmentId        :: Id EnvId
     , _environmentName      :: String
     , _environmentKeyValues :: [KeyValue]
     }
@@ -62,9 +63,9 @@ instance ToJSON Environment where
 
 
 data PGEnvironmentWithKeyValue = PGEnvironmentWithKeyValue
-    { _pgEnvironmentWithKeyValueEnvironmentId   :: UUID
+    { _pgEnvironmentWithKeyValueEnvironmentId   :: Id EnvId
     , _pgEnvironmentWithKeyValueEnvironmentName :: String
-    , _pgEnvironmentWithKeyValueKeyValueId      :: UUID
+    , _pgEnvironmentWithKeyValueKeyValueId      :: Id KeyValueId
     , _pgEnvironmentWithKeyValueKey             :: String
     , _pgEnvironmentWithKeyValueValue           :: String
     , _pgEnvironmentWithKeyValueHidden          :: Bool
@@ -72,7 +73,7 @@ data PGEnvironmentWithKeyValue = PGEnvironmentWithKeyValue
     deriving (Generic, PG.FromRow)
 
 data PGEnvironmentWithoutKeyValue = PGEnvironmentWithoutKeyValue
-    { _pgEnvironmentWithoutKeyValueEnvironmentId   :: UUID
+    { _pgEnvironmentWithoutKeyValueEnvironmentId   :: Id EnvId
     , _pgEnvironmentWithoutKeyValueEnvironmentName :: String
     }
     deriving (Generic, PG.FromRow)
@@ -82,7 +83,7 @@ data PGEnvironmentWithoutKeyValue = PGEnvironmentWithoutKeyValue
 
 
 data NewEnvironment = NewEnvironment
-    { _newEnvironmentId   :: UUID
+    { _newEnvironmentId   :: Id EnvId
     , _newEnvironmentName :: String
     }
     deriving (Eq, Show, Generic)
@@ -116,7 +117,7 @@ instance FromJSON UpdateEnvironment where
 
 
 data NewKeyValue = NewKeyValue
-    { _newKeyValueId     :: UUID
+    { _newKeyValueId     :: Id KeyValueId
     , _newKeyValueKey    :: String
     , _newKeyValueValue  :: String
     , _newKeyValueHidden :: Bool

@@ -18,9 +18,7 @@ import qualified Data.Maybe                          as Maybe
 import           Data.Text                           (Text)
 import qualified Data.Text                           as T
 import           Data.Text.Encoding                  (decodeUtf8)
-import           Data.UUID                           (UUID)
 import qualified Data.UUID                           as UUID
-import           Web.Cookie                          (setCookieValue)
 import           Servant
 import           Servant.Auth.Server                 (AuthResult (..),
                                                       CookieSettings,
@@ -28,18 +26,20 @@ import           Servant.Auth.Server                 (AuthResult (..),
                                                       acceptLogin, clearSession,
                                                       makeXsrfCookie)
 import           Servant.Auth.Server.SetCookieOrphan ()
+import           Web.Cookie                          (setCookieValue)
 
 import           PatchGirl.Web.Account.Sql
-import           PatchGirl.Web.DB
 import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.DB
 import           PatchGirl.Web.Github.App
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.Session.Model
 
 
-visitorId :: UUID
+visitorId :: Id Account
 visitorId =
-  Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
+  Id $ Maybe.fromJust $ UUID.fromString "00000000-0000-1000-a000-000000000000"
 
 
 -- * who am I
@@ -178,7 +178,7 @@ createSignedUserSession
   => CookieSettings
   -> JWTSettings
   -> GithubProfile
-  -> UUID
+  -> Id Account
   -> m (Headers '[ Header "Set-Cookie" SetCookie
                  , Header "Set-Cookie" SetCookie
                  ]

@@ -1,18 +1,18 @@
-{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module PatchGirl.Web.RequestCollection.App where
 
-import           Control.Monad.Except    (MonadError)
-import           Control.Monad.IO.Class  (MonadIO, liftIO)
-import           Control.Monad.Reader    (MonadReader)
-import           Data.UUID               (UUID)
+import           Control.Monad.Except                  (MonadError)
+import           Control.Monad.IO.Class                (MonadIO, liftIO)
+import           Control.Monad.Reader                  (MonadReader)
 import           Servant
 
+import           PatchGirl.Web.DB
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.PatchGirl
 import           PatchGirl.Web.RequestCollection.Model
 import           PatchGirl.Web.RequestCollection.Sql
 import           PatchGirl.Web.RequestNode.Sql
-import           PatchGirl.Web.DB
 
 
 -- * handler
@@ -23,7 +23,7 @@ getRequestCollectionHandler
      , MonadIO m
      , MonadError ServerError m
      )
-  => UUID
+  => Id Account
   -> m RequestCollection
 getRequestCollectionHandler accountId = do
   connection <- getDBConnection

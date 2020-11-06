@@ -8,13 +8,13 @@
 module TestSpec where
 
 import           Servant
-import           Servant.Client     (ClientM, client)
+import           Servant.Client       (ClientM, client)
 import           Test.Hspec
 
 import           Helper.App
+import           PatchGirl.Web.Api
 import           PatchGirl.Web.Server
 import           PatchGirl.Web.Test
-import           PatchGirl.Web.Api
 
 
 -- * client
@@ -34,7 +34,7 @@ listProducts :: ClientM [ProductTest]
 addToBasket :: Int -> AddToBasketTest -> ClientM ()
 removeFromBasket :: Int -> RemoveFromBasketTest -> ClientM ()
 showBasket :: Int -> ClientM BasketTest
-_ :<|> _
+_ :<|> _ :<|> _ :<|> _
   :<|> createUser
   :<|> deleteUser
   :<|> showUser

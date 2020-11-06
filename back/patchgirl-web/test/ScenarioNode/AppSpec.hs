@@ -10,8 +10,6 @@ module ScenarioNode.AppSpec where
 
 import           Data.Function                          ((&))
 import qualified Data.Maybe                             as Maybe
-import           Data.UUID
-import qualified Data.UUID                              as UUID
 import qualified Network.HTTP.Types                     as HTTP
 import           Servant
 import qualified Servant.Auth.Client                    as Auth
@@ -22,6 +20,7 @@ import           Test.Hspec
 import           DBUtil
 import           Helper.App
 import           PatchGirl.Web.Api
+import           PatchGirl.Web.Id
 import           PatchGirl.Web.ScenarioCollection.Model
 import           PatchGirl.Web.ScenarioNode.Model
 import           PatchGirl.Web.Server
@@ -30,8 +29,8 @@ import           PatchGirl.Web.Server
 -- * client
 
 
-updateScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> UpdateScenarioNode -> ClientM ()
-deleteScenarioNodeHandler :: Auth.Token -> UUID -> UUID -> ClientM ()
+updateScenarioNodeHandler :: Auth.Token -> Id ScenarioCol -> Id Scenario -> UpdateScenarioNode -> ClientM ()
+deleteScenarioNodeHandler :: Auth.Token -> Id ScenarioCol -> Id Scenario -> ClientM ()
 updateScenarioNodeHandler :<|> deleteScenarioNodeHandler =
   client (Proxy :: Proxy (ScenarioNodeApi '[Auth.JWT]))
 
@@ -50,12 +49,12 @@ spec =
     describe "update scenario node" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (updateScenarioNodeHandler token UUID.nil UUID.nil updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateScenarioNodeHandler token nilId nilId updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId _) <- insertSampleScenarioCollection accountId connection
-          try clientEnv (updateScenarioNodeHandler token scenarioCollectionId UUID.nil updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (updateScenarioNodeHandler token scenarioCollectionId nilId updateScenarioNode) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the scenario node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
@@ -87,12 +86,12 @@ spec =
     describe "delete scenario node" $ do
       it "returns 404 when scenario collection doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { token } ->
-          try clientEnv (deleteScenarioNodeHandler token UUID.nil UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteScenarioNodeHandler token nilId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 when scenario node doesnt exist" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, accountId, token } -> do
           (_, ScenarioCollection scenarioCollectionId _) <- insertSampleScenarioCollection accountId connection
-          try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId UUID.nil) `shouldThrow` errorsWithStatus HTTP.notFound404
+          try clientEnv (deleteScenarioNodeHandler token scenarioCollectionId nilId) `shouldThrow` errorsWithStatus HTTP.notFound404
 
       it "returns 404 if the scenario node doesnt belong to the account" $ \clientEnv ->
         cleanDBAndCreateAccount $ \Test { connection, token } -> do
