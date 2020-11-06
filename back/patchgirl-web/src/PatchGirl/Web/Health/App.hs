@@ -17,11 +17,11 @@ import           PatchGirl.Web.Internal.Env
 -- * Model
 
 
-data AppHealth =
-  AppHealth { isAppRunning :: Bool
-            , isDBUp       :: Bool
-            }
-  deriving (Eq, Show, Generic)
+data AppHealth = AppHealth
+    { isAppRunning :: Bool
+    , isDBUp       :: Bool
+    }
+    deriving (Eq, Show, Generic)
 
 instance ToJSON AppHealth
 instance FromJSON AppHealth

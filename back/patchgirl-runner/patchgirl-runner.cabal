@@ -53,6 +53,7 @@ library
     , postgresql-libpq
     , prometheus-client
     , prometheus-metrics-ghc
+    , safe-exceptions
     , say
     , scientific
     , servant-server
@@ -97,6 +98,7 @@ executable patchgirl-runner-exe
     , postgresql-libpq
     , prometheus-client
     , prometheus-metrics-ghc
+    , safe-exceptions
     , say
     , scientific
     , servant-server
@@ -150,6 +152,7 @@ test-suite spec
     , postgresql-libpq
     , prometheus-client
     , prometheus-metrics-ghc
+    , safe-exceptions
     , say
     , scientific
     , servant-client

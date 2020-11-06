@@ -84,3 +84,4 @@ dependencies:
   - stm
   - postgresql-libpq
   - foreign-store
+  - safe-exceptions

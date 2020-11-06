@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 604b9edd07e226991bd662ccee099b5aed39bbb250a15862c01087ab67c40682
+-- hash: ca7caea090e64703b574508efaf64d086a84bc30f4a8ee152656ddd851db126a
 
 name:           patchgirl-web
 version:        0.0.0
@@ -81,6 +81,7 @@ library
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
+    , safe-exceptions
     , say
     , servant
     , servant-auth
@@ -135,6 +136,7 @@ executable patchgirl-web-exe
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
+    , safe-exceptions
     , say
     , servant
     , servant-auth
@@ -212,6 +214,7 @@ test-suite spec
     , postgresql-simple
     , prometheus-client
     , prometheus-metrics-ghc
+    , safe-exceptions
     , say
     , servant
     , servant-auth

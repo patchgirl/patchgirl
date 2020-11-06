@@ -1,25 +1,35 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 
 module DevelMain where
 
 import           Prelude
 
-import           Control.Concurrent (MVar, ThreadId, forkIO, killThread,
-                                     newEmptyMVar, putMVar, takeMVar)
-import           Control.Exception  (finally)
-import           Control.Monad      ((>=>))
-import           Data.IORef         (IORef, newIORef, readIORef, writeIORef)
-import           Foreign.Store      (Store (..), lookupStore, readStore,
-                                     storeAction, withStore)
-import           GHC.Word           (Word32)
+import           Control.Concurrent
+import           Control.Exception.Safe
+import           Control.Monad          ((>=>))
+import           Data.IORef             (IORef, newIORef, readIORef, writeIORef)
+import           Data.Text              (Text)
+import qualified Data.Text              as Text
+import           Data.Typeable
+import           Foreign.Store          (Store (..), lookupStore, readStore,
+                                         storeAction, withStore)
+import           GHC.Word               (Word32)
+import           Say
+import           System.IO
 
 import           Server
+
+tshow :: Show a => a -> Text
+tshow = Text.pack . show
 
 -- | Start or restart the server.
 -- newStore is from foreign-store.
 -- A Store holds onto some data across ghci reloads
 update :: IO ()
 update = do
+  hSetBuffering stdout NoBuffering
+  hSetBuffering stderr NoBuffering
   putStrLn "Updating"
   mtidStore <- lookupStore tidStoreNum
   case mtidStore of
@@ -49,11 +59,29 @@ update = do
     start :: MVar () -- ^ Written to when the thread is killed.
           -> IO ThreadId
     start done =
-        forkIO (finally run
-               -- Note that this implies concurrency
-               -- between shutdownApp and the next app that is starting.
-               -- Normally this should be fine
-                (putMVar done ()))
+      myThreadId <* (do
+                run `catch` \(SomeException e) -> do
+                    say "!!! exception in runAppDevel !!!"
+                    say $ "X    exception type: " <> tshow (typeOf e)
+                    say $ "X    exception     : " <> tshow e
+                say "runAppDevel terminated"
+            )
+            `catch`
+            (\(SomeException err) -> do
+                say "finally action"
+                hFlush stdout
+                hFlush stderr
+                putMVar done ()
+                say $ "Got Exception: " <> tshow err
+                throwIO err
+            )
+            `finally`
+            (do
+                say "finally action"
+                hFlush stdout
+                hFlush stderr
+                putMVar done ()
+                )
 
 -- | kill the server
 shutdown :: IO ()
