@@ -49,6 +49,7 @@ executables:
     main: Main.hs
     dependencies:
       - patchgirl-runner
+      - open-browser
 
 dependencies:
   - patchgirl-web

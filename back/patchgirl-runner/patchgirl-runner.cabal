@@ -93,6 +93,7 @@ executable patchgirl-runner-exe
     , http-types
     , lens
     , mtl
+    , open-browser
     , patchgirl-runner
     , patchgirl-web
     , postgresql-libpq

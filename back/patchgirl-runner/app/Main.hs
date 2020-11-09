@@ -1,6 +1,9 @@
 module Main where
 
 import qualified Lib
+import qualified Web.Browser as Browser
 
 main :: IO ()
-main = Lib.app
+main = do
+  Browser.openBrowser "https://patchgirl.io"
+  Lib.app
