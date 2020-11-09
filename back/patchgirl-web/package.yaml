@@ -40,6 +40,9 @@ tests:
       - warp >= 3.2.4
       - http-client
       - http-types
+      - hedgehog
+      - hspec-hedgehog
+
 
 library:
   source-dirs:

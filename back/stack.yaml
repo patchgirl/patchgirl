@@ -18,6 +18,7 @@ extra-deps:
   - strings-1.1
   - elm-bridge-0.6.1
   - servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
+  - hspec-hedgehog-0.0.1.2@sha256:4d09c7be34cdc941b78e4e964f71013ffeeb099ea32d8ede17ad9c03ae7a62e3,1470
 
 nix:
   enable: true

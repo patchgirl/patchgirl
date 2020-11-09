@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca7caea090e64703b574508efaf64d086a84bc30f4a8ee152656ddd851db126a
+-- hash: c78e09f5b30d65e13be34bb950a0dc00786a63fdc3a0b03337c383aefb1630d1
 
 name:           patchgirl-web
 version:        0.0.0
@@ -168,6 +168,7 @@ test-suite spec
       Account.AppSpec
       DBUtil
       Environment.AppSpec
+      FooSpec
       Helper.App
       PgCollection.AppSpec
       PgFile.AppSpec
@@ -201,7 +202,9 @@ test-suite spec
     , dhall
     , filepath
     , foreign-store
+    , hedgehog
     , hspec
+    , hspec-hedgehog
     , http-api-data
     , http-client
     , http-client-tls

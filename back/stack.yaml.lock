@@ -102,6 +102,13 @@ packages:
       sha256: 491bd345773bf319bc6e703d781f9f139f7869a2d915c45f576cff3bcaf54ae3
   original:
     hackage: servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
+- completed:
+    hackage: hspec-hedgehog-0.0.1.2@sha256:4d09c7be34cdc941b78e4e964f71013ffeeb099ea32d8ede17ad9c03ae7a62e3,1470
+    pantry-tree:
+      size: 379
+      sha256: 8f67eea5401371f7e1ea44f2b74130e2b3b2cc16eec28b097f72c7ffbb56a58c
+  original:
+    hackage: hspec-hedgehog-0.0.1.2@sha256:4d09c7be34cdc941b78e4e964f71013ffeeb099ea32d8ede17ad9c03ae7a62e3,1470
 snapshots:
 - completed:
     size: 496112
