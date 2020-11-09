@@ -194,16 +194,20 @@ folderView id model eName folderChildrenView open =
                                          , icon =
                                            case showMenu of
                                                True -> "edit"
-                                               False ->
-                                                   case open of
-                                                       False -> "keyboard_arrow_right"
-                                                       True -> "keyboard_arrow_down"
+                                               False -> "folder"
                                      }
                     }
               , Input.button [ weight ]
                   { onPress = Just <| ToggleFolder id
                   , label = text name
                   }
+              , iconWithAttr { defaultIconAttribute
+                                 | title = ""
+                                 , icon =
+                                   case open of
+                                       False -> "keyboard_arrow_right"
+                                       True -> "keyboard_arrow_down"
+                             }
               ]
         , case open of
               True ->
