@@ -940,17 +940,6 @@ sceneFormView scenarioKeyValues { scene, sceneName, sceneKeys, sceneUserDefinedK
             List.map keyValueView sceneKeys
         ]
 
-variablesFormView : Model a -> FileRecord ScenarioFileRecord -> Element Msg
-variablesFormView model file =
-    let
-        scenesInfo =
-            List.map (sceneToKeyValues model file) file.scenes
-                |> catMaybes
-                |> List.filter ( \{ sceneKeys } -> (not << List.isEmpty) sceneKeys )
-    in
-    column [ spacing 20, width fill ] <|
-        List.map (sceneFormView (currentEnvironmentKeyValues model file)) scenesInfo
-
 saveScenarioView : FileRecord ScenarioFileRecord -> Element Msg
 saveScenarioView file =
     case file.environmentId of
@@ -1022,14 +1011,23 @@ scenarioSettingView model file =
                  ] <| text "Select scenario environment"
             , envSelectionView model file
             ]
-        , column [ spacing 30, width fill ]
-            [ el [ width fill
-                 , Font.center
-                 , Font.size 22
-                 , Font.underline
-                 ] <| text "Override scenario variables"
-            , variablesFormView model file
-            ]
+        , let
+              scenesInfo =
+                  List.map (sceneToKeyValues model file) file.scenes
+                      |> catMaybes
+                      |> List.filter ( \{ sceneKeys } -> (not << List.isEmpty) sceneKeys )
+         in
+             case List.isEmpty scenesInfo of
+                  True -> none
+                  False -> column [ spacing 30, width fill ]
+                           [ el [ width fill
+                                , Font.center
+                                , Font.size 22
+                                , Font.underline
+                                ] <| text "Override scenario variables"
+                           , column [ spacing 20, width fill ] <|
+                               List.map (sceneFormView (currentEnvironmentKeyValues model file)) scenesInfo
+                           ]
         ]
 
 

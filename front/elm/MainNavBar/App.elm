@@ -114,12 +114,6 @@ view model =
               , el [ centerX, centerY, height fill ] (centerView model)
               , el [ centerY, height fill, alignRight ] (rightView model)
               ]
-        , case model.session of
-              Visitor _ ->
-                  sandboxBanner githubOauthLink
-
-              _ ->
-                  none
         ]
 
 

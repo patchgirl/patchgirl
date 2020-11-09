@@ -114,6 +114,9 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
         msg =
             Task.perform (always CheckRunnerStatus) Time.now
 
+        notification =
+            Just (InfoNotification "Sandbox mode: data will be reset every 5min, sign in to save your data!!" "")
+
         model =
             { session = session
             , page = page
@@ -121,7 +124,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , navigationKey = navigationKey
             , loadingAnimation = loadingAnimation
             , sceneToDemo = sceneToDemo
-            , notification = Nothing
+            , notification = notification
             , notificationAnimation = notificationAnimation
             , whichModal = Nothing
             , showMainMenuName = Nothing

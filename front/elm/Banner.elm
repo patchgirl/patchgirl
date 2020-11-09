@@ -20,20 +20,3 @@ enableRunnerBanner =
                        }
     , el [ centerX ] (text " to have the best experience!")
     ]
-
-sandboxBanner : String -> Element a
-sandboxBanner githubOauthLink =
-    el [ paddingXY 20 10
-       , centerX, centerY
-       , Background.color secondaryColor
-       , Font.color primaryColor
-       , Font.center
-       ] <|
-        row [ centerX ]
-            [ text "Sandbox mode - data will be reset every 5min, "
-            , link []
-                { url = githubOauthLink
-                , label = el [ Font.underline ] (text "sign in")
-                }
-            , text " to keep your data!"
-            ]
