@@ -64,9 +64,9 @@ jobs:
         name: Cache ~/.stack
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-${{ matrix.ghc }}-stack-after-2020-11-10-2
+          key: ${{ runner.os }}-${{ matrix.ghc }}-stack-after-2020-11-10-3
           restore-keys: |
-               ${{ runner.os }}-${{ matrix.ghc }}-stack-after-2020-11-10-2
+               ${{ runner.os }}-${{ matrix.ghc }}-stack-after-2020-11-10-3
 
       - name: Build binary
         run: |
