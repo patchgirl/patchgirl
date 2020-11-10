@@ -65,6 +65,8 @@ jobs:
         with:
           path: ~/.stack
           key: ${{ runner.os }}-${{ matrix.ghc }}-stack-after-2020-11-10-2
+          restore-keys: |
+               ${{ runner.os }}-${{ matrix.ghc }}-stack-after-2020-11-10-2
 
       - name: Build binary
         run: |
