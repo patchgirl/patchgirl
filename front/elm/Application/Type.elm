@@ -125,6 +125,7 @@ type alias NewNode =
 type Notification
     = SuccessNotification String String
     | InfoNotification String String
+    | WarningNotification String String
     | AlertNotification String String
 
 notificationEncoder : Notification -> Value
@@ -137,6 +138,9 @@ notificationEncoder notification =
 
                 InfoNotification message log ->
                     ("info", message, log)
+
+                WarningNotification message log ->
+                    ("warning", message, log)
 
                 AlertNotification message log ->
                     ("alert", message, log)
