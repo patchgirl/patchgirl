@@ -412,3 +412,36 @@ pgNodeView mParentFolderId selectFolderMsg nodes =
                             folderView id mParentFolderId name selectFolderMsg folderChildrenView
                     in
                     currentFolderView :: tailView
+
+
+-- ** pick folder view 3
+
+
+scenarioFolderTreeView : List ScenarioNode -> Maybe Uuid -> msg -> (Uuid -> msg) -> Element msg
+scenarioFolderTreeView nodes mParentFolderId selectRootFolderMsg selectFolderMsg =
+    column [ spacing 10 ]
+        [ text "Select a folder:"
+        , rootFolderView mParentFolderId (NotEdited "/") selectRootFolderMsg (scenarioNodeView mParentFolderId selectFolderMsg nodes)
+        ]
+
+scenarioNodeView : Maybe Uuid -> (Uuid -> b) -> List ScenarioNode -> List (Element b)
+scenarioNodeView mParentFolderId selectFolderMsg nodes =
+    case nodes of
+        [] ->
+            []
+
+        node :: tail ->
+            case node of
+                File _ -> scenarioNodeView mParentFolderId selectFolderMsg tail
+                Folder { id, name, children } ->
+                    let
+                        folderChildrenView =
+                            scenarioNodeView mParentFolderId selectFolderMsg children
+
+                        tailView =
+                            scenarioNodeView mParentFolderId selectFolderMsg tail
+
+                        currentFolderView =
+                            folderView id mParentFolderId name selectFolderMsg folderChildrenView
+                    in
+                    currentFolderView :: tailView
