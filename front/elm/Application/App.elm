@@ -115,7 +115,7 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             Task.perform (always CheckRunnerStatus) Time.now
 
         notification =
-            Just (InfoNotification "Sandbox mode: data will be reset every 5min, sign in to save your data!!" "")
+            Just (WarningNotification "Sandbox mode: data will be reset every 5min, sign in to save your data!!" "")
 
         model =
             { session = session
@@ -413,306 +413,411 @@ mainView model =
 
 homeView : Model -> Element Msg
 homeView model =
-    let
-        banner : Element Msg
-        banner =
-            row [ height (px 150), width fill
-                , Background.color primaryColor
-                , paddingXY 0 50
-                ]
-            [ column [ centerX
-                     , spacing 10
-                     , Font.color secondaryColor
-                     , width fill
-                     ]
-                  [ image [ centerX, height (px 70) ]
-                        { src = "public/images/logo.png"
-                        , description = "logo"
-                        }
-                  , paragraph [ centerX, centerY, Font.size 25, Font.center ]
-                      [ text "Painless & automated QA for devs" ]
-                  ]
-            ]
-
-        mkScene : String -> String -> SceneToDemo -> Element Msg -> Bool -> Element Msg
-        mkScene title icon sceneToDemo arrow selected =
-            column [ centerX, spacing 10, Events.onMouseEnter (ChangeDemoScene sceneToDemo) ]
-                [ el (box [ case selected of
-                                True -> Border.color black
-                                False -> Border.color white
-                          , Border.width 1
-                          , padding 20
-                          , centerX
-                          ]
-                     ) <|
-                      iconWithAttr { defaultIconAttribute
-                                       | icon = icon
-                                       , title = title
-                                       , primIconColor = Just primaryColor
-                                       , iconVerticalAlign = Just "sub"
-                                   }
-                , el [ centerX ] arrow
-                ]
-
-        mkMacOSWinIcon : Color -> Element Msg
-        mkMacOSWinIcon color =
-            el [ Background.color color
-               , width (px 15)
-               , height (px 15)
-               , clip
-               , Border.rounded 10
-               ] (text " ")
-
-        mkFeatureDescription : String -> Element Msg
-        mkFeatureDescription description =
-            el [ Font.size 24, width fill ] <|
-                iconWithAttr { defaultIconAttribute
-                                 | icon = "done_outline"
-                                 , title = description
-                                 , primIconColor = Just primaryColor
-                             }
-
-        leftDescriptionView : Element Msg
-        leftDescriptionView =
-            column [ Font.center, width fill, centerX, spacing 40 ]
-                [ column [ width shrink, centerX, spacing 40, Font.size 30 ]
-                    [ column [ width fill, centerX, spacing 30 ]
-                          [ el [ centerX ] <|
-                                iconWithAttr { defaultIconAttribute
-                                                 | icon = "local_movies"
-                                                 , iconSize = Just "30px"
-                                                 , iconVerticalAlign = Just "sub"
-                                                 , title = " Create and Run test scenarios"
-                                                 , primIconColor = Just primaryColor
-                                             }
-                          , column [ spacing 10, paddingXY 30 0 ]
-                              [ mkFeatureDescription " Save time & energy testing your feature"
-                              , mkFeatureDescription " Make testing easily reproducible"
-                              , mkFeatureDescription " Automatically detect regression"
-                              ]
-                          ]
-                    ]
-                , link [ centerY, centerX
-                     , height (px 100)
-                     , width (fill |> minimum 300 |> maximum 500)
-                     , Background.color primaryColor
-                     , Font.color secondaryColor
-                     , Font.size 30
-                     , mouseOver
-                           [ Background.color secondaryColor
-                           , Font.color primaryColor
-                           ]
-                     ] { url = href (ScenarioPage model.displayedScenarioBuilderView)
-                       , label = el [ centerY, centerX ] <| text "Try it!"
-                       }
-                ]
-
-        macOsView : Element Msg
-        macOsView =
-            column [ alignRight, centerX, width (px 800), height (px 440), spacing 30, Border.color (rgb255 172 172 172), Border.solid, Border.width 1, Border.rounded 10
-                   , Border.shadow
-                       { offset = (0, 0)
-                       , size = 0
-                       , blur = 20
-                       , color = rgb255 172 172 172
-                       }
-                   ]
-                    [ row [ Border.roundEach { topLeft = 10, topRight = 10, bottomLeft = 0, bottomRight = 0 }
-                          , width fill
-                          , Background.color (rgb255 200 198 201)
-                          , Border.widthEach { bottom = 1, left = 0, right = 0, top = 0 }
-                          , Border.color (rgb255 177 174 177)
-                          , paddingXY 10 5
-                          ]
-                          [ row [ width fill ]
-                                [ row [ alignLeft, spacing 10 ]
-                                      [ mkMacOSWinIcon (rgb255 254 97 88)
-                                      , mkMacOSWinIcon (rgb255 255 190 48)
-                                      , mkMacOSWinIcon (rgb255 41 206 65)
-                                      ]
-                                , el [ centerX, Font.color (rgb255 77 73 77) ] (text "PatchGirl")
-                                ]
-                          ]
-                    , wrappedRow [ width fill, paddingXY 10 10 ]
-                        [ column [ alignTop, width shrink, centerX, spacing 15, paddingXY 10 0 ]
-                              [ el [ width fill, Font.center, Font.size 22, Font.underline ] (text "Create a new invoice")
-                              , column [ width fill, spacing 5, Font.center ]
-                                  [ mkScene "Clean Database" "storage" Scene1 arrowDownwardIcon (model.sceneToDemo == Scene1)
-                                  , mkScene "POST new user" "public" Scene2 arrowDownwardIcon (model.sceneToDemo == Scene2)
-                                  , mkScene "POST new invoice" "public" Scene3 none (model.sceneToDemo == Scene3)
-                                  ]
-                              ]
-                        , column ( box [ width fill, spacing 15, alignTop, padding 20, spacing 20 ] ) <|
-                            case model.sceneToDemo of
-                                Scene1 -> scene1View
-                                Scene2 -> scene2View
-                                Scene3 -> scene3View
-                        ]
-                    ]
-
-        scene1View =
-            [ column [ width fill, spacing 10 ]
-                  [ row [ spacing 10, width fill ]
-                        [ iconWithAttr { defaultIconAttribute
-                                           | icon = "storage"
-                                           , title = " Clean DB"
-                                           , primIconColor = Just primaryColor
-                                       }
-                        , el [ alignRight ] clearIcon
-                        ]
-                  , Input.multiline [ Background.color lightGrey ]
-                      { onChange = always NoOp
-                      , text = "TRUNCATE user, invoice;"
-                      , placeholder = Nothing
-                      , label = Input.labelHidden "http gist"
-                      , spellcheck = False
-                      }
-                ]
-            ,  column [ width fill, spacing 20 ]
-                [ Input.multiline []
-                      { onChange = always NoOp
-                      , text = ""
-                      , placeholder = Nothing
-                      , label = Input.labelAbove [ centerY, width fill ]
-                                <| row [ width fill ]
-                            [ el [ alignLeft ] (text "Prescript:")
-                            ]
-                      , spellcheck = False
-                      }
-                , Input.multiline []
-                    { onChange = always NoOp
-                    , text = ""
-                    , placeholder = Nothing
-                    , label = Input.labelAbove [ centerY, width fill ]
-                              <| row [ width fill ]
-                          [ el [ alignLeft ] (text "Postscript:")
-                          ]
-                    , spellcheck = False
-                    }
-                ]
-            ]
-
-        scene2View =
-            [ column [ width fill, spacing 10 ]
-                  [ row [ spacing 10, width fill ]
-                        [ iconWithAttr { defaultIconAttribute
-                                           | icon = "public"
-                                           , title = "POST new user"
-                                           , primIconColor = Just primaryColor
-                                       }
-                        , el [ alignRight ] clearIcon
-                        ]
-                  , Input.multiline [ Background.color lightGrey ]
-                      { onChange = always NoOp
-                      , text = "POST https://{{host}}/users"
-                      , placeholder = Nothing
-                      , label = Input.labelHidden "http gist"
-                      , spellcheck = False
-                      }
-                ]
-            ,  column [ width fill, spacing 20 ]
-                [ Input.multiline []
-                      { onChange = always NoOp
-                      , text = """set(\"host\", \"myGreatApi.com\");"""
-                      , placeholder = Nothing
-                      , label = Input.labelAbove [ centerY, width fill ]
-                                <| row [ width fill ]
-                            [ el [ alignLeft ] (text "Prescript:")
-                            ]
-                      , spellcheck = False
-                      }
-                , Input.multiline []
-                    { onChange = always NoOp
-                    , text = """assertEqual(httpResponseStatus, 200);
-set("userId", httpResponseAsJson["userId"]);"""
-                    , placeholder = Nothing
-                    , label = Input.labelAbove [ centerY, width fill ]
-                              <| row [ width fill ]
-                          [ el [ alignLeft ] (text "Postscript:")
-                          ]
-                    , spellcheck = False
-                    }
-                ]
-            ]
-
-        scene3View =
-            [ column [ width fill, spacing 10 ]
-                  [ row [ spacing 10, width fill ]
-                        [ iconWithAttr { defaultIconAttribute
-                                           | icon = "public"
-                                           , title = "POST new invoice"
-                                           , primIconColor = Just primaryColor
-                                       }
-                        , el [ alignRight ] clearIcon
-                        ]
-                  , Input.multiline [ Background.color lightGrey ]
-                      { onChange = always NoOp
-                      , text = "POST https://{{host}}/invoice"
-                      , placeholder = Nothing
-                      , label = Input.labelHidden "http gist"
-                      , spellcheck = False
-                      }
-                ]
-            ,  column [ width fill, spacing 20 ]
-                [ Input.multiline []
-                      { onChange = always NoOp
-                      , text = """set("host", "myGreatApi.com");
-set("userId", get("userId"));"""
-                      , placeholder = Nothing
-                      , label = Input.labelAbove [ centerY, width fill ]
-                                <| row [ width fill ]
-                            [ el [ alignLeft ] (text "Prescript:")
-                            ]
-                      , spellcheck = False
-                      }
-                , Input.multiline []
-                    { onChange = always NoOp
-                    , text = """assertEqual(httpResponseStatus, 200);"""
-                    , placeholder = Nothing
-                    , label = Input.labelAbove [ centerY, width fill ]
-                              <| row [ width fill ]
-                          [ el [ alignLeft ] (text "Postscript:")
-                          ]
-                    , spellcheck = False
-                    }
-                ]
-            ]
-
-        footer : Element Msg
-        footer =
-            row [ height (px 100), width fill
-                , Font.color primaryColor, Font.size 20, Font.center
-                , spacing 20
-                ]
-                [ link [ centerY, centerX, Font.underline ]
-                    { url = "https://blog.patchgirl.io/"
-                    , label = text "Blog"
-                    }
-                , link [ centerY, centerX, Font.underline ]
-                    { url = "https://github.com/patchgirl/patchgirl"
-                    , label = image [ height (px 40), paddingXY 10 0, alignRight ]
-                        { src = "public/images/github_prim.svg"
-                        , description = "github logo"
-                        }
-                    }
-                ]
-
-    in
     column [ width fill, height fill ]
-        [ column [ width fill, height fill, spacing 50 ]
+        [ column [ width fill, height fill, spacing 100 ]
               [ banner
-              , wrappedRow [ width fill, centerX, spacing 50, paddingXY 20 0 ]
-                  [ leftDescriptionView
-                  , macOsView
-                  ]
+              , column [ centerX ] whySceneView
+              , leftDescriptionView model
+              , macOsView model
+              , footer
               ]
-        , footer
         ]
 
+-- *** why view
+
+mkScene2 : { title : String
+          , bulletPoints : List String
+          , img : String
+          , leftToRight : Bool
+          }
+        -> Element Msg
+mkScene2 { title, bulletPoints, img, leftToRight } =
+    let
+        imgElem =
+            image [ centerX, height (px 300) ]
+                { src = "public/images/" ++ img
+                , description = img
+                }
+
+        descriptionElem =
+            column [ spacing 20, width fill ]
+                [ el [ Font.size 25, centerX ] <| text title
+                , column [ centerX, spacing 10 ] <|
+                    List.map (\point -> paragraph [] [ text point ]) bulletPoints
+                ]
+    in
+    column [ centerX, spacing 20 ]
+        [ row [ width fill, centerX, spacing 20 ]
+              <| case leftToRight of
+                     True -> [ imgElem, descriptionElem ]
+                     False -> [ descriptionElem, imgElem ]
+        ]
+
+whySceneView =
+    [ mkScene2 { title = "Easier manual testing"
+              , bulletPoints = [ "Manual testing is tedious, time consuming, and boring!"
+                               , "PatchGirl makes it easy to do manual QA"
+                               , "Create and run test scenarii by easily combining SQL and HTTP requests"
+                               , "Find errors and debug quickly thanks to our interface"
+                               , "Reproductible. Test as many times as you want "
+                               , "Beginner friendly - you don't need coding skill"
+                               ]
+              , img = "test.png"
+              , leftToRight = True
+              }
+
+    , mkScene2 { title = "Make your team autonomous"
+              , bulletPoints = [ "Testing often requires the help of a developper and create bottlenecks"
+                               , "With PatchGirl, no more curl nor SQL copy/pasting, you can share a test scenario with anyone in your team!"
+                               , "Make your team completely autonomous, scenario are easily parameterizable by anyone"
+                               , "Better/seamless collaboration within your team through a common interface for tech and non-tech people"
+                               ]
+              , img = "collaborate.png"
+              , leftToRight = False
+              }
+
+    , mkScene2 { title = "Automate task"
+              , bulletPoints = [ "Often, non-technical person need to achieve a task that requires a developper help like:"
+                               , "- Fetching some data (e.g: create a report)"
+                               , "- Updating some user data (e.g: modify an invoice for a specific customer)"
+                               , "- Preparing a feature demo"
+                               , "PatchGirl makes it as easy as a simple click!!"
+                               ]
+              , img = "demo.png"
+              , leftToRight = True
+              }
+    ]
 
 
+-- *** how view
 
 
+mkScene : String -> String -> SceneToDemo -> Element Msg -> Bool -> Element Msg
+mkScene title icon sceneToDemo arrow selected =
+    column [ centerX, spacing 10, Events.onMouseEnter (ChangeDemoScene sceneToDemo) ]
+        [ el (box [ case selected of
+                        True -> Border.color black
+                        False -> Border.color white
+                  , Border.width 1
+                  , padding 20
+                  , centerX
+                  ]
+             ) <|
+              iconWithAttr { defaultIconAttribute
+                               | icon = icon
+                               , title = title
+                               , primIconColor = Just primaryColor
+                               , iconVerticalAlign = Just "sub"
+                           }
+        , el [ centerX ] arrow
+        ]
+
+mkMacOSWinIcon : Color -> Element Msg
+mkMacOSWinIcon color =
+    el [ Background.color color
+       , width (px 15)
+       , height (px 15)
+       , clip
+       , Border.rounded 10
+       ] (text " ")
+
+mkFeatureDescription : String -> Element Msg
+mkFeatureDescription description =
+    el [ Font.size 24, width fill ] <|
+        iconWithAttr { defaultIconAttribute
+                         | icon = "done_outline"
+                         , title = description
+                         , primIconColor = Just primaryColor
+                     }
+
+leftDescriptionView : Model -> Element Msg
+leftDescriptionView model =
+    column [ Font.center, width fill, centerX, spacing 40 ]
+        [ column [ width shrink, centerX, spacing 40, Font.size 30 ]
+            [ column [ width fill, centerX, spacing 30 ]
+                  [ el [ centerX ] <|
+                        iconWithAttr { defaultIconAttribute
+                                         | icon = "local_movies"
+                                         , iconSize = Just "30px"
+                                         , iconVerticalAlign = Just "sub"
+                                         , title = " What do I need to do to use it?"
+                                         , primIconColor = Just primaryColor
+                                     }
+                  , column [ spacing 10, paddingXY 30 0, Font.size 24, width fill ]
+                      [ row []
+                            [ iconWithAttr { defaultIconAttribute
+                                                  | icon = "done_outline"
+                                                  , title = " Download and run "
+                                                  , primIconColor = Just primaryColor
+                                              }
+                            , link [ Font.underline ]
+                                { url = "https://github.com/patchgirl/patchgirl/releases"
+                                , label = text "PatchGirl-Runner"
+                                }
+                            ]
+                      , row []
+                          [ iconWithAttr { defaultIconAttribute
+                                             | icon = "done_outline"
+                                             , title = " Go to the "
+                                             , primIconColor = Just primaryColor
+                                         }
+                          , link [ Font.underline ]
+                              { url = "https://patchgirl.io/#app/scenario"
+                              , label = text "PatchGirl app!"
+                              }
+                          ]
+                      , el [] <| iconWithAttr { defaultIconAttribute
+                                                  | icon = "done_outline"
+                                                  , title = " That's it! You can start creating test scenario!"
+                                                  , primIconColor = Just primaryColor
+                                              }
+                      ]
+                  ]
+            ]
+        , link [ centerY, centerX
+             , height (px 100)
+             , width (fill |> minimum 300 |> maximum 500)
+             , Background.color primaryColor
+             , Font.color secondaryColor
+             , Font.size 30
+             , mouseOver
+                   [ Background.color secondaryColor
+                   , Font.color primaryColor
+                   ]
+             ] { url = href (ScenarioPage model.displayedScenarioBuilderView)
+               , label = el [ centerY, centerX ] <| text "Try it for free!"
+               }
+        ]
+
+macOsView : Model -> Element Msg
+macOsView model =
+    column [ centerX, spacing 20 ]
+        [ column [ centerX, spacing 15 ]
+              [ el [ Font.size 30, centerX ] <|
+                    iconWithAttr { defaultIconAttribute
+                                     | icon = "local_movies"
+                                     , iconSize = Just "30px"
+                                     , iconVerticalAlign = Just "sub"
+                                     , title = " Show me an example!"
+                                     , primIconColor = Just primaryColor
+                                 }
+              , el [ Font.size 25, centerX ] <|
+                  text "This is what it a test scenario to create invoices can look like"
+              ]
+        , column [ alignRight, centerX, width (px 800), height (px 440), spacing 30, Border.color (rgb255 172 172 172), Border.solid, Border.width 1, Border.rounded 10
+           , Border.shadow
+               { offset = (0, 0)
+               , size = 0
+               , blur = 20
+               , color = rgb255 172 172 172
+               }
+           ]
+            [ row [ Border.roundEach { topLeft = 10, topRight = 10, bottomLeft = 0, bottomRight = 0 }
+                  , width fill
+                  , Background.color (rgb255 200 198 201)
+                  , Border.widthEach { bottom = 1, left = 0, right = 0, top = 0 }
+                  , Border.color (rgb255 177 174 177)
+                  , paddingXY 10 5
+                  ]
+                  [ row [ width fill ]
+                        [ row [ alignLeft, spacing 10 ]
+                              [ mkMacOSWinIcon (rgb255 254 97 88)
+                              , mkMacOSWinIcon (rgb255 255 190 48)
+                              , mkMacOSWinIcon (rgb255 41 206 65)
+                              ]
+                        , el [ centerX, Font.color (rgb255 77 73 77) ] (text "PatchGirl")
+                        ]
+                  ]
+            , wrappedRow [ width fill, paddingXY 10 10 ]
+                [ column [ alignTop, width shrink, centerX, spacing 15, paddingXY 10 0 ]
+                      [ el [ width fill, Font.center, Font.size 22, Font.underline ] (text "Create a new invoice")
+                      , column [ width fill, spacing 5, Font.center ]
+                          [ mkScene "Clean Database" "storage" Scene1 arrowDownwardIcon (model.sceneToDemo == Scene1)
+                          , mkScene "POST new user" "public" Scene2 arrowDownwardIcon (model.sceneToDemo == Scene2)
+                          , mkScene "POST new invoice" "public" Scene3 none (model.sceneToDemo == Scene3)
+                          ]
+                      ]
+                , column ( box [ width fill, spacing 15, alignTop, padding 20, spacing 20 ] ) <|
+                    case model.sceneToDemo of
+                        Scene1 -> scene1View
+                        Scene2 -> scene2View
+                        Scene3 -> scene3View
+                ]
+            ]
+        ]
+
+scene1View =
+    [ column [ width fill, spacing 10 ]
+          [ row [ spacing 10, width fill ]
+                [ iconWithAttr { defaultIconAttribute
+                                   | icon = "storage"
+                                   , title = " Clean DB"
+                                   , primIconColor = Just primaryColor
+                               }
+                , el [ alignRight ] clearIcon
+                ]
+          , Input.multiline [ Background.color lightGrey ]
+              { onChange = always NoOp
+              , text = "TRUNCATE user, invoice;"
+              , placeholder = Nothing
+              , label = Input.labelHidden "http gist"
+              , spellcheck = False
+              }
+        ]
+    ,  column [ width fill, spacing 20 ]
+        [ Input.multiline []
+              { onChange = always NoOp
+              , text = ""
+              , placeholder = Nothing
+              , label = Input.labelAbove [ centerY, width fill ]
+                        <| row [ width fill ]
+                    [ el [ alignLeft ] (text "Prescript:")
+                    ]
+              , spellcheck = False
+              }
+        , Input.multiline []
+            { onChange = always NoOp
+            , text = ""
+            , placeholder = Nothing
+            , label = Input.labelAbove [ centerY, width fill ]
+                      <| row [ width fill ]
+                  [ el [ alignLeft ] (text "Postscript:")
+                  ]
+            , spellcheck = False
+            }
+        ]
+    ]
+
+scene2View =
+    [ column [ width fill, spacing 10 ]
+          [ row [ spacing 10, width fill ]
+                [ iconWithAttr { defaultIconAttribute
+                                   | icon = "public"
+                                   , title = "POST new user"
+                                   , primIconColor = Just primaryColor
+                               }
+                , el [ alignRight ] clearIcon
+                ]
+          , Input.multiline [ Background.color lightGrey ]
+              { onChange = always NoOp
+              , text = "POST https://{{host}}/users"
+              , placeholder = Nothing
+              , label = Input.labelHidden "http gist"
+              , spellcheck = False
+              }
+        ]
+    ,  column [ width fill, spacing 20 ]
+        [ Input.multiline []
+              { onChange = always NoOp
+              , text = """set(\"host\", \"myGreatApi.com\");"""
+              , placeholder = Nothing
+              , label = Input.labelAbove [ centerY, width fill ]
+                        <| row [ width fill ]
+                    [ el [ alignLeft ] (text "Prescript:")
+                    ]
+              , spellcheck = False
+              }
+        , Input.multiline []
+            { onChange = always NoOp
+            , text = """assertEqual(httpResponseStatus, 200);
+set("userId", httpResponseAsJson["userId"]);"""
+            , placeholder = Nothing
+            , label = Input.labelAbove [ centerY, width fill ]
+                      <| row [ width fill ]
+                  [ el [ alignLeft ] (text "Postscript:")
+                  ]
+            , spellcheck = False
+            }
+        ]
+    ]
+
+scene3View =
+    [ column [ width fill, spacing 10 ]
+          [ row [ spacing 10, width fill ]
+                [ iconWithAttr { defaultIconAttribute
+                                   | icon = "public"
+                                   , title = "POST new invoice"
+                                   , primIconColor = Just primaryColor
+                               }
+                , el [ alignRight ] clearIcon
+                ]
+          , Input.multiline [ Background.color lightGrey ]
+              { onChange = always NoOp
+              , text = "POST https://{{host}}/invoice"
+              , placeholder = Nothing
+              , label = Input.labelHidden "http gist"
+              , spellcheck = False
+              }
+        ]
+    ,  column [ width fill, spacing 20 ]
+        [ Input.multiline []
+              { onChange = always NoOp
+              , text = """set("host", "myGreatApi.com");
+set("userId", get("userId"));"""
+              , placeholder = Nothing
+              , label = Input.labelAbove [ centerY, width fill ]
+                        <| row [ width fill ]
+                    [ el [ alignLeft ] (text "Prescript:")
+                    ]
+              , spellcheck = False
+              }
+        , Input.multiline []
+            { onChange = always NoOp
+            , text = """assertEqual(httpResponseStatus, 200);"""
+            , placeholder = Nothing
+            , label = Input.labelAbove [ centerY, width fill ]
+                      <| row [ width fill ]
+                  [ el [ alignLeft ] (text "Postscript:")
+                  ]
+            , spellcheck = False
+            }
+        ]
+    ]
+
+
+-- *** footer view
+
+footer : Element Msg
+footer =
+    row [ height (px 100), width fill
+        , Font.color primaryColor, Font.size 20, Font.center
+        , spacing 20
+        ]
+        [ link [ centerY, centerX, Font.underline ]
+            { url = "https://blog.patchgirl.io/"
+            , label = text "Blog"
+            }
+        , link [ centerY, centerX, Font.underline ]
+            { url = "https://github.com/patchgirl/patchgirl"
+            , label = image [ height (px 40), paddingXY 10 0, alignRight ]
+                { src = "public/images/github_prim.svg"
+                , description = "github logo"
+                }
+            }
+        ]
+
+-- *** top banner view
+
+
+banner : Element Msg
+banner =
+    row [ height (px 150), width fill
+        , Background.color primaryColor
+        , paddingXY 0 50
+        ]
+    [ column [ centerX
+             , spacing 10
+             , Font.color secondaryColor
+             , width fill
+             ]
+          [ image [ centerX, height (px 70) ]
+                { src = "public/images/logo.png"
+                , description = "logo"
+                }
+          , paragraph [ centerX, centerY, Font.size 25, Font.center ]
+              [ text "Painless & automated QA for devs" ]
+          ]
+    ]
 
 
 -- * subscriptions
