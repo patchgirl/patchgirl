@@ -440,8 +440,8 @@ mkScene2 { title, bulletPoints, img, leftToRight } =
                 }
 
         descriptionElem =
-            column [ spacing 20, width fill ]
-                [ el [ Font.size 25, centerX ] <| text title
+            column [ spacing 20, centerX, width fill ]
+                [ el [ Font.size 30 ] <| text title
                 , column [ centerX, spacing 10 ] <|
                     List.map (\point -> paragraph [] [ text point ]) bulletPoints
                 ]
@@ -456,11 +456,10 @@ mkScene2 { title, bulletPoints, img, leftToRight } =
 whySceneView =
     [ mkScene2 { title = "Easier manual testing"
               , bulletPoints = [ "Manual testing is tedious, time consuming, and boring!"
-                               , "PatchGirl makes it easy to do manual QA"
-                               , "Create and run test scenarii by easily combining SQL and HTTP requests"
-                               , "Find errors and debug quickly thanks to our interface"
-                               , "Reproductible. Test as many times as you want "
-                               , "Beginner friendly - you don't need coding skill"
+                               , "Thanks to PatchGirl, you can:"
+                               , " • Create and run test scenarii without coding by combining SQL and HTTP requests"
+                               , " • Find errors and debug them quickly with our interface"
+                               , " • Make reproducible test scenarii to test without hassle!"
                                ]
               , img = "test.png"
               , leftToRight = True
@@ -468,19 +467,21 @@ whySceneView =
 
     , mkScene2 { title = "Make your team autonomous"
               , bulletPoints = [ "Testing often requires the help of a developper and create bottlenecks"
-                               , "With PatchGirl, no more curl nor SQL copy/pasting, you can share a test scenario with anyone in your team!"
-                               , "Make your team completely autonomous, scenario are easily parameterizable by anyone"
-                               , "Better/seamless collaboration within your team through a common interface for tech and non-tech people"
+                               , "PatchGirl allows you to:"
+                               , " • Have a seamless collaboration within your team with a common interface for tech and non-tech people."
+                               , " • Share a test scenario with anyone in your team and help them be completely autonomous."
+                               , " • No more curl nor SQL copy/pasting!"
+                               , ""
                                ]
               , img = "collaborate.png"
               , leftToRight = False
               }
 
-    , mkScene2 { title = "Automate task"
+    , mkScene2 { title = "Automate tasks"
               , bulletPoints = [ "Often, non-technical person need to achieve a task that requires a developper help like:"
-                               , "- Fetching some data (e.g: create a report)"
-                               , "- Updating some user data (e.g: modify an invoice for a specific customer)"
-                               , "- Preparing a feature demo"
+                               , " • Fetching some data (e.g: create a report)"
+                               , " • Updating some user data (e.g: modify an invoice for a specific customer)"
+                               , " • Preparing a feature demo"
                                , "PatchGirl makes it as easy as a simple click!!"
                                ]
               , img = "demo.png"
