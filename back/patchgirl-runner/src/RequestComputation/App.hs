@@ -101,6 +101,7 @@ buildRequest templatedRequestComputationInput = do
       State.modify $ \s -> s { _scenarioContextCookieJar = newCookieJar }
       return newRequest
 
+
 -- * build request computation input
 
 
@@ -135,15 +136,15 @@ buildRequestComputationInput TemplatedRequestComputationInput{..} = do
 
 -- * run request
 
+
 ioRequestRunner :: Http.CookieJar -> Http.Request -> IO (Http.CookieJar, HttpResponse BSU.ByteString)
 ioRequestRunner cookieJar request = do
   response <- Http.httpBS request
   now <- Time.getCurrentTime
   let newCookieJar = Http.updateCookieJar response request now cookieJar & fst
   return ( newCookieJar
-         , fromResponseToHttpResponse response
+         , fromResponseToHttpResponse request response
          )
-
 
 
 -- * response to computation result
@@ -157,9 +158,11 @@ responseToComputationResult either = do
   case either of
     Right response ->
       return . Right $
-        RequestComputation { _requestComputationStatusCode = Http.statusCode $ httpResponseStatus response
-                           , _requestComputationHeaders    = parseResponseHeaders response
-                           , _requestComputationBody       = BSU.toString $ httpResponseBody response
+        RequestComputation { _requestComputationRequestHeaders = httpResponseRequestHeaders response
+                           , _requestComputationRequestBody = httpResponseRequestBody response
+                           , _requestComputationResponseStatusCode = Http.statusCode $ httpResponseResponseStatus response
+                           , _requestComputationResponseHeaders    = parseResponseHeaders response
+                           , _requestComputationResponseBody       = BSU.toString $ httpResponseResponseBody response
                            }
 
     Left (Http.InvalidUrlException url reason) -> do
@@ -194,7 +197,7 @@ responseToComputationResult either = do
 
 parseResponseHeaders :: HttpResponse BSU.ByteString -> [(String,String)]
 parseResponseHeaders response =
-  map convert (httpResponseHeaders response)
+  map convert (httpResponseResponseHeaders response)
   where
     convert :: (Http.HeaderName, BSU.ByteString) -> (String, String)
     convert (headerKey, headerValue) =

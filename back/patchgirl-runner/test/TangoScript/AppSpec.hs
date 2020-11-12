@@ -145,7 +145,9 @@ spec = do
 
     mkRequestComputationFromBody :: String -> RequestComputation
     mkRequestComputationFromBody body =
-      RequestComputation { _requestComputationStatusCode = 200
-                         , _requestComputationHeaders    = []
-                         , _requestComputationBody       = body
+      RequestComputation { _requestComputationRequestHeaders = []
+                         , _requestComputationRequestBody = ""
+                         , _requestComputationResponseStatusCode = 200
+                         , _requestComputationResponseHeaders    = []
+                         , _requestComputationResponseBody       = body
                          }

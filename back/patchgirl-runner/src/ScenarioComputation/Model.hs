@@ -193,10 +193,10 @@ class ToPrimitive a where
 
 instance ToPrimitive RequestComputation where
   getBody RequestComputation {..} =
-    Right _requestComputationBody
+    Right _requestComputationResponseBody
 
   getStatus RequestComputation {..} =
-    Right $ LInt _requestComputationStatusCode
+    Right $ LInt _requestComputationResponseStatusCode
 
   getSimpleTable _ =
     Left $ CannotUseFunction "function not available for http request"

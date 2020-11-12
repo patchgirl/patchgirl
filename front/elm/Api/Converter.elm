@@ -54,7 +54,7 @@ convertRequestNodesFromBackToFront backRequestNodes =
                         , httpBody = NotEdited file.requestNodeHttpBody
                         , requestComputationResult = Nothing
                         , showResponseView = False
-                        , whichResponseView = BodyResponseView
+                        , whichResponseView = ResponseBodyView
                         , runRequestIconAnimation = Animation.style []
                         }
     in
@@ -315,10 +315,12 @@ convertRequestComputationOutputFromBackToFront backRequestComputationOutput =
 
 convertRequestComputationFromBackToFront : Back.RequestComputation -> Front.RequestComputation
 convertRequestComputationFromBackToFront backRequestComputation =
-    { statusCode = backRequestComputation.requestComputationStatusCode
+    { requestHeaders = Dict.fromList <| backRequestComputation.requestComputationRequestHeaders
+    , requestBody = backRequestComputation.requestComputationRequestBody
+    , statusCode = backRequestComputation.requestComputationResponseStatusCode
     , statusText = ""
-    , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) backRequestComputation.requestComputationHeaders
-    , body = backRequestComputation.requestComputationBody
+    , headers = Dict.fromList <| List.map (Tuple.mapFirst String.toLower) backRequestComputation.requestComputationResponseHeaders
+    , body = backRequestComputation.requestComputationResponseBody
     }
 
 

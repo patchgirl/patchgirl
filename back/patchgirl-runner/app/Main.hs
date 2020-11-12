@@ -5,5 +5,5 @@ import qualified Web.Browser as Browser
 
 main :: IO ()
 main = do
-  Browser.openBrowser "https://patchgirl.io"
+  _ <- Browser.openBrowser "https://patchgirl.io"
   Lib.app

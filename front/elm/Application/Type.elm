@@ -318,8 +318,10 @@ type RequestCollection
 
 
 type HttpResponseView
-    = BodyResponseView
-    | HeaderResponseView
+    = RequestHeaderView
+    | RequestBodyView
+    | ResponseBodyView
+    | ResponseHeaderView
 
 
 -- * pg collection
@@ -509,12 +511,13 @@ type alias RequestComputationInput =
 
 
 type alias RequestComputation =
-    { statusCode : Int
+    { requestHeaders : Dict String String
+    , requestBody : String
+    , statusCode : Int
     , statusText : String
     , headers : Dict String String
     , body : String
     }
-
 
 
 -- ** method

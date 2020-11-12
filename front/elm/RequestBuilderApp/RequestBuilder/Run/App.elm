@@ -69,8 +69,11 @@ type Msg
     | AskSave
     | SaveSuccessfully
     | Animate Animation.Msg
-    | ShowBodyResponseView
-    | ShowHeaderResponseView
+    | ShowRequestBodyView
+    | ShowRequestHeaderView
+    | ShowResponseBodyView
+    | ShowResponseHeaderView
+    | DoNothing
 
 
 -- * update
@@ -253,19 +256,36 @@ update msg model file =
             in
             ( model, newFile, Cmd.none )
 
-        ShowBodyResponseView ->
+        ShowRequestHeaderView ->
             let
                 newFile =
-                    { file | whichResponseView = BodyResponseView }
+                    { file | whichResponseView = RequestHeaderView }
             in
             ( model, newFile, Cmd.none )
 
-        ShowHeaderResponseView ->
+        ShowRequestBodyView ->
             let
                 newFile =
-                    { file | whichResponseView = HeaderResponseView }
+                    { file | whichResponseView = RequestBodyView }
             in
             ( model, newFile, Cmd.none )
+
+        ShowResponseBodyView ->
+            let
+                newFile =
+                    { file | whichResponseView = ResponseBodyView }
+            in
+            ( model, newFile, Cmd.none )
+
+        ShowResponseHeaderView ->
+            let
+                newFile =
+                    { file | whichResponseView = ResponseHeaderView }
+            in
+            ( model, newFile, Cmd.none )
+
+        DoNothing ->
+            (model, file, Cmd.none)
 
         PrintNotification notification ->
             let
@@ -479,15 +499,23 @@ responseView file =
             column [ spacing 10, scrollbars, width fill ]
                 [ statusResponseView requestComputationOutput
                 , whichResponseButtonView
-                      [ ("Body", file.whichResponseView == BodyResponseView, ShowBodyResponseView)
-                      , ("Headers", file.whichResponseView == HeaderResponseView, ShowHeaderResponseView)
+                      [ ("Request Headers", file.whichResponseView == RequestHeaderView, ShowRequestHeaderView)
+                      , ("Request Body", file.whichResponseView == RequestBodyView, ShowRequestBodyView)
+                      , ("Response Body", file.whichResponseView == ResponseBodyView, ShowResponseBodyView)
+                      , ("Response Headers", file.whichResponseView == ResponseHeaderView, ShowResponseHeaderView)
                       ]
                 , case file.whichResponseView of
-                      BodyResponseView ->
-                          bodyResponseView requestComputationOutput SetHttpBodyResponse
+                      RequestHeaderView ->
+                          headersRequestView requestComputationOutput (always DoNothing)
 
-                      HeaderResponseView ->
-                          headersResponseView requestComputationOutput SetHttpBody
+                      RequestBodyView ->
+                          bodyRequestView requestComputationOutput (always DoNothing)
+
+                      ResponseBodyView ->
+                          bodyResponseView requestComputationOutput (always DoNothing)
+
+                      ResponseHeaderView ->
+                          headersResponseView requestComputationOutput (always DoNothing)
                 ]
 
         Just (Err httpException) ->

@@ -212,7 +212,7 @@ mkDefaultRequestFile id name =
     , httpHeaders = NotEdited []
     , httpBody = NotEdited ""
     , showResponseView = False
-    , whichResponseView = BodyResponseView
+    , whichResponseView = ResponseBodyView
     , requestComputationResult = Nothing
     , runRequestIconAnimation = Animation.style []
     }

@@ -10,11 +10,16 @@ module RequestComputation.Model ( RequestComputationInput(..)
                                 ) where
 
 
-import qualified Data.Aeson          as Aeson
-import           GHC.Generics        (Generic)
-import qualified Network.HTTP.Client as Http
-import qualified Network.HTTP.Simple as Http
-import qualified Network.HTTP.Types  as Http
+import qualified Data.Aeson                as Aeson
+import qualified Data.ByteString.Lazy.UTF8 as BLU
+import qualified Data.ByteString.UTF8      as BSU
+import qualified Data.CaseInsensitive      as CI
+import           Data.Function             ((&))
+import           Data.Functor              ((<&>))
+import           GHC.Generics              (Generic)
+import qualified Network.HTTP.Client       as Http
+import qualified Network.HTTP.Simple       as Http
+import qualified Network.HTTP.Types        as Http
 
 import           Interpolator
 import           PatchGirl.Web.Http
@@ -24,19 +29,36 @@ import           PatchGirl.Web.Http
 
 
 data HttpResponse body = HttpResponse
-    { httpResponseStatus  :: Http.Status
-    , httpResponseHeaders :: Http.ResponseHeaders
-    , httpResponseBody    :: body
+    { httpResponseRequestHeaders  :: [(String, String)]
+    , httpResponseRequestBody     :: String
+    , httpResponseResponseStatus  :: Http.Status
+    , httpResponseResponseHeaders :: Http.ResponseHeaders
+    , httpResponseResponseBody    :: body
     }
     deriving (Show)
 
-fromResponseToHttpResponse :: Http.Response a -> HttpResponse a
-fromResponseToHttpResponse response =
-  HttpResponse { httpResponseStatus  = Http.getResponseStatus response
-               , httpResponseHeaders = Http.getResponseHeaders response
-               , httpResponseBody = Http.getResponseBody response
+fromResponseToHttpResponse :: Http.Request -> Http.Response a -> HttpResponse a
+fromResponseToHttpResponse request response =
+  HttpResponse { httpResponseRequestHeaders  = requestHeaders
+               , httpResponseRequestBody     = requestBody
+               , httpResponseResponseStatus  = Http.getResponseStatus response
+               , httpResponseResponseHeaders = Http.getResponseHeaders response
+               , httpResponseResponseBody = Http.getResponseBody response
                }
+  where
+    requestHeaders :: [(String, String)]
+    requestHeaders =
+      Http.requestHeaders request <&> \(headerName, headerValue) ->
+        ( CI.original headerName & BSU.toString
+        , BSU.toString headerValue
+        )
 
+    requestBody :: String
+    requestBody =
+      case Http.requestBody request of
+         Http.RequestBodyLBS bs -> BLU.toString bs
+         Http.RequestBodyBS bs  -> BSU.toString bs
+         _                      -> "body cannot be read"
 
 -- * templated request computation input
 
@@ -82,9 +104,11 @@ instance Aeson.FromJSON RequestComputationInput where
 
 
 data RequestComputation = RequestComputation
-    { _requestComputationStatusCode :: Int
-    , _requestComputationHeaders    :: [(String, String)]
-    , _requestComputationBody       :: String
+    { _requestComputationRequestHeaders     :: [(String, String)]
+    , _requestComputationRequestBody        :: String
+    , _requestComputationResponseStatusCode :: Int
+    , _requestComputationResponseHeaders    :: [(String, String)]
+    , _requestComputationResponseBody       :: String
     }
     deriving (Eq, Show, Read, Generic)
 

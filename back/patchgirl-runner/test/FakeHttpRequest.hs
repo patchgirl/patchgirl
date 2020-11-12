@@ -57,11 +57,13 @@ defaultRequest = do
 
 buildHttpResponse :: HttpResponse BSU.ByteString
 buildHttpResponse =
-  HttpResponse { httpResponseStatus = HTTP.Status { statusCode = 200
-                                                  , statusMessage = BSU.fromString "ok"
-                                                  }
-               , httpResponseHeaders = []
-               , httpResponseBody = BSU.fromString ""
+  HttpResponse { httpResponseRequestHeaders  = [] -- todo fix this
+               , httpResponseRequestBody     = ""
+               , httpResponseResponseStatus = HTTP.Status { statusCode = 200
+                                                          , statusMessage = BSU.fromString "ok"
+                                                          }
+               , httpResponseResponseHeaders = []
+               , httpResponseResponseBody = BSU.fromString ""
                }
 
 -- * exception util
@@ -125,7 +127,6 @@ withHttpMock rawMock = do
     requestRunnerMock
       :: IO.MonadIO m
       => Map FakeHttpRequest (Either HTTP.HttpException (HttpResponse BSU.ByteString))
---      -> (HTTP.Request -> m (HttpResponse BSU.ByteString))
       -> (HTTP.CookieJar -> HTTP.Request -> m (HTTP.CookieJar, HttpResponse BSU.ByteString))
     requestRunnerMock mock =
       \cookieJar request -> do
@@ -134,10 +135,11 @@ withHttpMock rawMock = do
           Right response -> return (cookieJar, response)
         where
           notFoundResponse =
-            HttpResponse { httpResponseStatus =
-                           HTTP.Status { statusCode = 404
-                                       , statusMessage = BSU.fromString "not found"
-                                       }
-                         , httpResponseHeaders = []
-                         , httpResponseBody = BSU.fromString ""
+            HttpResponse { httpResponseRequestHeaders  = []
+                         , httpResponseRequestBody     = ""
+                         , httpResponseResponseStatus = HTTP.Status { statusCode = 404
+                                                                    , statusMessage = BSU.fromString "not found"
+                                                                    }
+                         , httpResponseResponseHeaders = []
+                         , httpResponseResponseBody = BSU.fromString ""
                          }

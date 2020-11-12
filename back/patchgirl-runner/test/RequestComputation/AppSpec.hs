@@ -50,10 +50,7 @@ spec = do
                                              , _templatedRequestComputationInputUrl = [ Sentence "http://foo.com" ]
                                              , _templatedRequestComputationInputBody = [ Sentence "" ]
                                              }
-          , Right (RequestComputation { _requestComputationStatusCode = 200
-                                      , _requestComputationHeaders    = []
-                                      , _requestComputationBody       = ""
-                                      })
+          , Right requestComputation
           )
 
     withClient (withHttpMock mock) $
@@ -75,10 +72,7 @@ spec = do
                                              , _templatedRequestComputationInputUrl = [ Key "host" ]
                                              , _templatedRequestComputationInputBody = [ Sentence "" ]
                                              }
-          , Right (RequestComputation { _requestComputationStatusCode = 200
-                                      , _requestComputationHeaders    = []
-                                      , _requestComputationBody       = ""
-                                      })
+          , Right requestComputation
           )
 
     withClient (withHttpMock mock) $
@@ -111,3 +105,16 @@ spec = do
 
 envVars :: EnvironmentVars
 envVars = emptyEnvironmentVars
+
+
+-- ** build response
+
+
+requestComputation :: RequestComputation
+requestComputation =
+  RequestComputation { _requestComputationRequestHeaders = []
+                     , _requestComputationRequestBody        = ""
+                     , _requestComputationResponseStatusCode = 200
+                     , _requestComputationResponseHeaders    = []
+                     , _requestComputationResponseBody       = ""
+                     }

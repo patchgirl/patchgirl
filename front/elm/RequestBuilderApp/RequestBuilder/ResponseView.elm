@@ -1,5 +1,7 @@
 module RequestBuilderApp.RequestBuilder.ResponseView
     exposing ( statusResponseView
+             , headersRequestView
+             , bodyRequestView
              , bodyResponseView
              , headersResponseView
              )
@@ -39,21 +41,47 @@ statusResponseView requestComputationOutput =
         ]
 
 
--- * body response text
+-- * body view
 
 
-bodyResponseView : RequestComputation -> (String -> a) -> Element a
-bodyResponseView requestComputationOutput msg =
+bodyRequestView : RequestComputation -> (String -> a) -> Element a
+bodyRequestView requestComputationOutput msg =
     Input.multiline [ scrollbars, width fill, height fill ]
         { onChange = msg
-        , text = bodyResponseText requestComputationOutput.body requestComputationOutput.headers
+        , text = bodyText requestComputationOutput.requestBody requestComputationOutput.headers
         , placeholder = Nothing
         , label = labelInputView "body: "
         , spellcheck = False
         }
 
--- * header response view
+bodyResponseView : RequestComputation -> (String -> a) -> Element a
+bodyResponseView requestComputationOutput msg =
+    Input.multiline [ scrollbars, width fill, height fill ]
+        { onChange = msg
+        , text = bodyText requestComputationOutput.body requestComputationOutput.headers
+        , placeholder = Nothing
+        , label = labelInputView "body: "
+        , spellcheck = False
+        }
 
+-- * header view
+
+
+headersRequestView : RequestComputation -> (String -> a) -> Element a
+headersRequestView requestComputationOutput msg =
+    let
+        headers =
+            Dict.toList requestComputationOutput.requestHeaders
+                |> List.map (joinTuple ": ")
+                |> String.join "\n"
+    in
+    Input.multiline [ clipX ]
+        { onChange = msg
+        , text = headers
+        , placeholder = Nothing
+        , label = labelInputView "Headers: "
+        , spellcheck = False
+        }
 
 headersResponseView : RequestComputation -> (String -> a) -> Element a
 headersResponseView requestComputationOutput msg =
@@ -91,8 +119,8 @@ joinTuple : String -> ( String, String ) -> String
 joinTuple separator ( key, value ) =
     key ++ separator ++ value
 
-bodyResponseText : String -> Dict.Dict String String -> String
-bodyResponseText body responseHeaders =
+bodyText : String -> Dict.Dict String String -> String
+bodyText body responseHeaders =
     case Dict.get "content-type" responseHeaders of
         Just contentType ->
             case String.contains "application/json" contentType of

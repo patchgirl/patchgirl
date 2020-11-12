@@ -244,7 +244,7 @@ spec = do
 
   describe "postscript succeed: assert equal http body response" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildHttpResponse { httpResponseBody = "foo" } )
+          [ (buildRequest "GET http://foo.com", Right $ buildHttpResponse { httpResponseResponseBody = "foo" } )
           ]
 
     let (input, output) =
@@ -255,7 +255,7 @@ spec = do
             , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
-            [ mkSceneOutput $ HttpSceneOk $ requestComputation { _requestComputationBody = "foo" }
+            [ mkSceneOutput $ HttpSceneOk $ requestComputation { _requestComputationResponseBody = "foo" }
             ]
           )
 
@@ -269,7 +269,7 @@ spec = do
 
   describe "postscript: fail assert equal http body response" $ do
     let mock =
-          [ (buildRequest "GET http://foo.com", Right $ buildHttpResponse { httpResponseBody = "foo" } )
+          [ (buildRequest "GET http://foo.com", Right $ buildHttpResponse { httpResponseResponseBody = "foo" } )
           ]
 
     let (input, output) =
@@ -280,7 +280,7 @@ spec = do
             , _scenarioInputEnvVars = emptyEnvironmentVars
             }
           , ScenarioOutput
-            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationBody = "foo" }) (AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\"")
+            [ mkSceneOutput $ HttpPostscriptFailed (requestComputation { _requestComputationResponseBody = "foo" }) (AssertionFailed (LString "foo") (LString "bar") "LString \"foo\" is not equal to LString \"bar\"")
             ]
           )
 
@@ -572,7 +572,9 @@ mkSceneOutput sceneComputationOutput =
 
 requestComputation :: RequestComputation
 requestComputation =
-  RequestComputation { _requestComputationStatusCode = 200
-                     , _requestComputationHeaders    = []
-                     , _requestComputationBody       = ""
+  RequestComputation { _requestComputationRequestHeaders = []
+                     , _requestComputationRequestBody        = ""
+                     , _requestComputationResponseStatusCode = 200
+                     , _requestComputationResponseHeaders    = []
+                     , _requestComputationResponseBody       = ""
                      }

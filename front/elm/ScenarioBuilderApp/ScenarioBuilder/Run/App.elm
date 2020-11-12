@@ -70,7 +70,6 @@ type alias Model a =
 -- * msg
 
 
-
 type Msg
     -- create scene
     = ShowSceneSelectionModal (Maybe Uuid)
@@ -95,8 +94,10 @@ type Msg
     | AskRunScenario
     | ScenarioProcessed ScenarioOutput
       -- detailed view
-    | ShowBodyResponseView (FileRecord RequestFileRecord)
-    | ShowHeaderResponseView (FileRecord RequestFileRecord)
+    | ShowRequestHeaderView (FileRecord RequestFileRecord)
+    | ShowRequestBodyView (FileRecord RequestFileRecord)
+    | ShowResponseBodyView (FileRecord RequestFileRecord)
+    | ShowResponseHeaderView (FileRecord RequestFileRecord)
     -- script
     | SetPrescript SceneRecord String
     | SetPostscript SceneRecord String
@@ -112,10 +113,6 @@ type Msg
 update : Msg -> Model a -> FileRecord ScenarioFileRecord -> SceneDetailView -> (Model a, FileRecord ScenarioFileRecord, Cmd Msg)
 update msg model file sceneDetailView =
     case msg of
-
-
--- ** create scene
-
 
         ShowSceneSelectionModal sceneParentId ->
             let
@@ -213,10 +210,6 @@ update msg model file sceneDetailView =
             in
             ( newModel, newFile, newMsg )
 
-
--- ** delete scene
-
-
         AskDeleteScene sceneId ->
             let
                 newMsg =
@@ -264,10 +257,6 @@ update msg model file sceneDetailView =
             in
             ( newModel, newFile, newMsg )
 
-
--- ** update scene
-
-
         AskUpdateSceneScript scene ->
             let
                 payload =
@@ -296,10 +285,6 @@ update msg model file sceneDetailView =
                     { file | scenes = newScenes }
             in
             ( model, newFile, Cmd.none )
-
-
--- ** change scene variable
-
 
         OverrideVariable scene key enabled ->
             let
@@ -389,10 +374,6 @@ update msg model file sceneDetailView =
                     { file | scenes = newScenes }
             in
             ( model, newFile, Cmd.none )
-
-
--- ** scenario
-
 
         AskSaveScenario newEnvironmentId ->
             let
@@ -515,14 +496,11 @@ update msg model file sceneDetailView =
             in
             ( model, newFile, Cmd.none )
 
-
--- ** detailed view
-
-        ShowBodyResponseView requestFileRecord ->
+        ShowRequestHeaderView requestFileRecord ->
             let
                 newRequestFileRecord =
                     { requestFileRecord
-                        | whichResponseView = BodyResponseView
+                        | whichResponseView = RequestHeaderView
                     }
 
                 (RequestCollection id nodes) =
@@ -537,11 +515,11 @@ update msg model file sceneDetailView =
             in
             ( newModel, file, Cmd.none )
 
-        ShowHeaderResponseView requestFileRecord ->
+        ShowRequestBodyView requestFileRecord ->
             let
                 newRequestFileRecord =
                     { requestFileRecord
-                        | whichResponseView = HeaderResponseView
+                        | whichResponseView = RequestBodyView
                     }
 
                 (RequestCollection id nodes) =
@@ -556,9 +534,43 @@ update msg model file sceneDetailView =
             in
             ( newModel, file, Cmd.none )
 
+        ShowResponseBodyView requestFileRecord ->
+            let
+                newRequestFileRecord =
+                    { requestFileRecord
+                        | whichResponseView = ResponseBodyView
+                    }
 
--- ** script
+                (RequestCollection id nodes) =
+                    model.requestCollection
 
+                newNodes : List RequestNode
+                newNodes =
+                    List.map (modifyNode requestFileRecord.id (always (File newRequestFileRecord))) nodes
+
+                newModel =
+                    { model | requestCollection = RequestCollection id newNodes }
+            in
+            ( newModel, file, Cmd.none )
+
+        ShowResponseHeaderView requestFileRecord ->
+            let
+                newRequestFileRecord =
+                    { requestFileRecord
+                        | whichResponseView = ResponseHeaderView
+                    }
+
+                (RequestCollection id nodes) =
+                    model.requestCollection
+
+                newNodes : List RequestNode
+                newNodes =
+                    List.map (modifyNode requestFileRecord.id (always (File newRequestFileRecord))) nodes
+
+                newModel =
+                    { model | requestCollection = RequestCollection id newNodes }
+            in
+            ( newModel, file, Cmd.none )
 
         SetPrescript scene newScriptStr ->
             let
@@ -591,10 +603,6 @@ update msg model file sceneDetailView =
                     { file | scenes = newScenes }
             in
             ( model, newFile, Cmd.none )
-
-
--- ** other
-
 
         SetEnvironmentId mEnvId ->
             let
@@ -1306,14 +1314,22 @@ httpDetailedSceneView file scene fileRecord =
                     column [ width fill ]
                         [ statusResponseView requestComputationOutput
                         , whichResponseButtonView
-                              [ ("Body", fileRecord.whichResponseView == BodyResponseView, ShowBodyResponseView fileRecord)
-                              , ("Headers", fileRecord.whichResponseView == HeaderResponseView, ShowHeaderResponseView fileRecord)
+                              [ ("Request Headers", fileRecord.whichResponseView == RequestHeaderView, ShowRequestHeaderView fileRecord)
+                              , ("Request Body", fileRecord.whichResponseView == RequestBodyView, ShowRequestBodyView fileRecord)
+                              , ("Response Body", fileRecord.whichResponseView == ResponseBodyView, ShowResponseBodyView fileRecord)
+                              , ("Response Headers", fileRecord.whichResponseView == ResponseHeaderView, ShowResponseHeaderView fileRecord)
                               ]
                         , case fileRecord.whichResponseView of
-                              BodyResponseView ->
+                              RequestHeaderView ->
+                                  headersRequestView requestComputationOutput (always DoNothing)
+
+                              RequestBodyView ->
+                                  bodyRequestView requestComputationOutput (always DoNothing)
+
+                              ResponseBodyView ->
                                   bodyResponseView requestComputationOutput (always DoNothing)
 
-                              HeaderResponseView ->
+                              ResponseHeaderView ->
                                   headersResponseView requestComputationOutput (always DoNothing)
                         ]
 
