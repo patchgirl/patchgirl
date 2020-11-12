@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   data-name="Layer 1"
+   viewBox="0 0 944.88188 283.46465"
+   x="0px"
+   y="0px"
+   version="1.1"
+   id="svg16"
+   sodipodi:docname="Patch.svg.2020_11_12_08_58_41.0.svg"
+   width="250mm"
+   height="75mm"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:export-filename="/home/iori/work/patchgirl/public/images/logo.png"
+   inkscape:export-xdpi="120.1"
+   inkscape:export-ydpi="120.1">
+  <metadata
+     id="metadata22">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Artboard 14</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs20" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     id="namedview18"
+     showgrid="false"
+     units="mm"
+     height="296mm"
+     width="210mm"
+     inkscape:zoom="0.97948949"
+     inkscape:cx="411.32302"
+     inkscape:cy="66.130632"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer4"
+     borderlayer="true"
+     inkscape:showpageshadow="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid829" />
+  </sodipodi:namedview>
+  <title
+     id="title2">Artboard 14</title>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="background"
+     style="display:inline">
+    <rect
+       style="opacity:1;fill:#dc7676;fill-opacity:1;stroke:#dc7676;stroke-opacity:1"
+       id="rect4722"
+       width="1020.94"
+       height="337.93115"
+       x="-32.670078"
+       y="-25.880251" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="icon"
+     style="display:inline"
+     transform="translate(0,-90.708661)">
+    <g
+       id="g4719"
+       transform="matrix(0.78716052,0,0,0.78716052,46.853095,87.94114)">
+      <path
+         inkscape:connector-curvature="0"
+         style="fill:#f9e3d0;fill-opacity:1;stroke-width:2.91061473"
+         id="path4"
+         d="m 32.766147,242.95511 40.108272,40.10828 a 18.948101,18.948101 0 0 0 26.748552,0 l 28.320269,-28.23296 28.29119,28.29117 a 18.948101,18.948101 0 0 0 26.74854,0 l 40.13738,-40.16649 a 18.948101,18.948101 0 0 0 0,-26.74854 l -28.23297,-28.32029 28.29118,-28.29118 a 18.948101,18.948101 0 0 0 0,-26.74854 L 183.01208,92.70917 a 18.948101,18.948101 0 0 0 -26.74855,0 L 127.94324,120.94215 99.65207,92.70917 a 18.948101,18.948101 0 0 0 -26.748546,0 l -40.137377,40.10828 a 18.948101,18.948101 0 0 0 0,26.74856 l 28.232963,28.32027 -28.232963,28.29118 a 18.948101,18.948101 0 0 0 0,26.77765 z M 216.97895,222.37707 a 10.187152,10.187152 0 0 1 0,14.55308 l -40.16648,39.96273 a 10.42,10.42 0 0 1 -14.55308,0 l -28.29117,-28.29117 54.69045,-54.54493 z M 38.936651,153.42461 a 10.187152,10.187152 0 0 1 0,-14.55307 L 79.074029,98.87968 a 10.42,10.42 0 0 1 14.553069,0 l 28.291182,28.29118 -54.690455,54.54493 z m 0,68.95246 L 162.40493,98.87968 a 10.187152,10.187152 0 0 1 14.55307,0 l 39.99185,40.13738 a 10.187152,10.187152 0 0 1 0,14.55308 l -92.09186,91.94632 v 0 l -31.376426,31.37642 a 10.42,10.42 0 0 1 -14.553069,0 L 38.936651,236.75551 a 10.187152,10.187152 0 0 1 0,-14.55307 z" />
+      <circle
+         style="fill:#f9e3d0;fill-opacity:1;stroke-width:2.91061473"
+         id="circle6"
+         transform="rotate(-45)"
+         r="8.2661457"
+         cy="223.32558"
+         cx="-42.383587" />
+      <circle
+         style="fill:#f9e3d0;fill-opacity:1;stroke-width:2.91061473"
+         id="circle8"
+         transform="rotate(-45)"
+         r="8.2661457"
+         cy="202.95016"
+         cx="-62.760357" />
+      <circle
+         style="fill:#f9e3d0;fill-opacity:1;stroke-width:2.91061473"
+         id="circle10"
+         transform="rotate(-45)"
+         r="8.2661457"
+         cy="243.70233"
+         cx="-62.758984" />
+      <circle
+         style="fill:#f9e3d0;fill-opacity:1;stroke-width:2.91061473"
+         id="circle12"
+         transform="rotate(-45)"
+         r="8.2661457"
+         cy="202.94878"
+         cx="-22.008224" />
+      <circle
+         style="fill:#f9e3d0;fill-opacity:1;stroke-width:2.91061473"
+         id="circle14"
+         transform="rotate(-45)"
+         r="8.2661457"
+         cy="243.70094"
+         cx="-22.006786" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="text"
+     style="display:inline"
+     transform="translate(0,-90.708661)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:120px;line-height:1.25;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.91061473"
+       x="264.34479"
+       y="282.9552"
+       id="text833"><tspan
+         sodipodi:role="line"
+         id="tspan831"
+         x="264.34479"
+         y="282.9552"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:120px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:2.91061473">PatchGirl</tspan></text>
+  </g>
+</svg>
