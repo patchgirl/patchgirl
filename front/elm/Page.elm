@@ -13,6 +13,7 @@ type Page
     | ReqPage (BuilderView Uuid)
     | PgPage (BuilderView Uuid)
     | EnvPage (BuilderView Uuid)
+    | ConnectionPage (BuilderView Int)
     | ScenarioPage (RichBuilderView Uuid SceneDetailView)
     | NotFoundPage
     | DocumentationPage Documentation
@@ -95,7 +96,6 @@ documentationParser =
     in
     Url.custom "Documentation" parser
 
-
 urlParser : Url.Parser (Page -> a) a
 urlParser =
     let
@@ -103,6 +103,7 @@ urlParser =
     in
     Url.oneOf
         [ Url.map HomePage Url.top
+
         -- http
         , Url.map (ReqPage (LandingView DefaultView)) (appRoot </> Url.s "req")
         , Url.map (ReqPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "req" </> Url.s "new-folder")
@@ -123,11 +124,17 @@ urlParser =
 
         -- env
         , Url.map (EnvPage (LandingView DefaultView)) (appRoot </> Url.s "environment")
-        , Url.map (EnvPage (LandingView CreateDefaultFolderView)) (appRoot </> Url.s "environment" </> Url.s "new-folder")
         , Url.map (EnvPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "environment" </> Url.s "new-file")
         , Url.map (\envId -> EnvPage (EditView (DefaultEditView envId))) (appRoot </> Url.s "environment" </> uuidParser </> Url.s "edit")
         , Url.map (\envId -> EnvPage (EditView (DeleteView envId))) (appRoot </> Url.s "environment" </> uuidParser </> Url.s "edit" </> Url.s "delete")
         , Url.map (\envId -> EnvPage (RunView envId)) (appRoot </> Url.s "environment" </> Url.s "run" </> uuidParser)
+
+        -- connection
+        , Url.map (ConnectionPage (LandingView DefaultView)) (appRoot </> Url.s "connection")
+        , Url.map (ConnectionPage (LandingView CreateDefaultFileView)) (appRoot </> Url.s "connection" </> Url.s "new-file")
+        , Url.map (\envId -> ConnectionPage (EditView (DefaultEditView envId))) (appRoot </> Url.s "connection" </> Url.int </> Url.s "edit")
+        , Url.map (\envId -> ConnectionPage (EditView (DeleteView envId))) (appRoot </> Url.s "connection" </> Url.int </> Url.s "edit" </> Url.s "delete")
+        , Url.map (\envId -> ConnectionPage (RunView envId)) (appRoot </> Url.s "connection" </> Url.s "run" </> Url.int)
 
         -- scenario
         , Url.map (ScenarioPage (RichLandingView DefaultView)) (appRoot </> Url.s "scenario")
@@ -239,6 +246,34 @@ href page =
 
                     in
                     [ "app", "environment" ] ++ mode
+
+                ConnectionPage builderView ->
+                    let
+                        mode =
+                            case builderView of
+                                LandingView DefaultView ->
+                                    []
+
+                                LandingView CreateDefaultFolderView ->
+                                    [ "new-folder" ]
+
+                                LandingView CreateDefaultFileView ->
+                                    [ "new-file" ]
+
+                                EditView (DefaultEditView id) ->
+                                    [ String.fromInt id, "edit" ]
+
+                                EditView (DeleteView id) ->
+                                    [ String.fromInt id, "edit", "delete" ]
+
+                                EditView (DuplicateView id) ->
+                                    [ String.fromInt id, "edit", "duplicate" ]
+
+                                RunView id ->
+                                    [ "run", String.fromInt id ]
+
+                    in
+                    [ "app", "connection" ] ++ mode
 
                 ScenarioPage builderView  ->
                     let

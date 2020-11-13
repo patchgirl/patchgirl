@@ -190,6 +190,16 @@ getCsrfToken session =
             csrfToken
 
 
+-- * connection
+
+
+type Connection = Connection
+    { id : Int
+    , name : Editable String
+    , showRenameInput : Bool
+    , keyValues : List KeyValue
+    }
+
 -- * environment
 
 
@@ -322,6 +332,20 @@ type HttpResponseView
     | RequestBodyView
     | ResponseBodyView
     | ResponseHeaderView
+
+
+-- * pg connection
+
+
+type alias PgConnection =
+    { name : Editable String
+    , id : Int
+    , dbHost : Editable String
+    , dbPassword : Editable String
+    , dbPort : Editable String
+    , dbUser : Editable String
+    , dbName : Editable String
+    }
 
 
 -- * pg collection

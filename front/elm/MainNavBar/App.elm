@@ -35,6 +35,7 @@ type alias Model a =
         , displayedPgBuilderView : BuilderView Uuid
         , displayedEnvironmentBuilderView : BuilderView Uuid
         , displayedDocumentation : Documentation
+        , displayedConnectionBuilderView : BuilderView Int
     }
 
 
@@ -47,7 +48,6 @@ type Msg
     | SignOutFailed
     | ShowMainMenuName MainMenuName
     | HideMainMenuName
-
 
 
 -- * update
@@ -267,10 +267,10 @@ signInView model =
             case model.showMainMenuName of
                 Just SignInMenu ->
                     el [ below (el [ centerX, moveDown 20, Font.size 18 ] (text "Sign in with Github")) ] <|
-                        iconWithTextAndColor "vpn_key" "" primaryColor
+                        iconWithTextAndColor "account_circle" "" primaryColor
 
                 _ ->
-                    el [ centerX ] (iconWithTextAndColor "vpn_key" "" secondaryColor)
+                    el [ centerX ] (iconWithTextAndColor "account_circle" "" secondaryColor)
         }
 
 
@@ -335,6 +335,11 @@ centerView model =
             { url = href (PgPage model.displayedPgBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "storage", title = " Postgres" })
             }
+        , link
+            (mainLinkAttribute ++ mainLinkAttributeWhenActive  (isConnectionPage model.page))
+            { url = href (ConnectionPage model.displayedConnectionBuilderView)
+            , label = el [] (iconWithAttr { menuIconAttributes | icon = "vpn_key", title = " Connection" })
+            }
         , link (mainLinkAttribute ++ mainLinkAttributeWhenActive (isEnvPage model.page))
             { url = href (EnvPage model.displayedEnvironmentBuilderView)
             , label = el [] (iconWithAttr { menuIconAttributes | icon = "build", title = " Environment" })
@@ -384,6 +389,15 @@ isScenarioPage : Page -> Bool
 isScenarioPage page =
     case page of
         ScenarioPage _ ->
+            True
+
+        _ ->
+            False
+
+isConnectionPage : Page -> Bool
+isConnectionPage page =
+    case page of
+        ConnectionPage _ ->
             True
 
         _ ->

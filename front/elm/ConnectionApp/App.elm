@@ -1,23 +1,27 @@
-module EnvironmentEdition.App exposing (..)
+module ConnectionApp.App exposing (..)
 
-import Api.Converter as Client
-import Api.WebGeneratedClient as Client
+import Application.Model as Application
 import Application.Type exposing (..)
 import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
 import Element.Font as Font
-import Page exposing (..)
-import Element.Input as Input
-import Http
+import Element.Background as Background
+import Html
+import Html.Attributes as Html
+import Html.Events as Html
+import Html.Events.Extra exposing (targetValueIntParse)
+import Json.Decode as Json
 import List.Extra as List
+import Page exposing (..)
+import BuilderUtil exposing (..)
 import Util exposing (..)
-import StringTemplate exposing(..)
-import Browser.Navigation as Navigation
-import HttpError exposing (..)
 import Uuid exposing (Uuid)
-import EnvironmentEdition.Tree.App as Tree
-import EnvironmentEdition.Builder.App as Builder
+import Api.RunnerGeneratedClient as Client
+import Browser.Navigation as Navigation
+import Banner exposing (..)
+import Element.Input as Input
+import Element.Events exposing (..)
+import ConnectionApp.Tree.App as Tree
+import ConnectionApp.Builder.App as Builder
 
 
 -- * model
@@ -25,15 +29,15 @@ import EnvironmentEdition.Builder.App as Builder
 
 type alias Model a =
     { a
-        | environments : List Environment
-        , newEnvironmentName : String
-        , session : Session
+        | pgConnections : List PgConnection
+        , selectedPgConnectionId : Maybe Int
+        , selectedPgConnectionToRun : Maybe Int
+        , displayedPgConnectionMenuId : Maybe Int
+        , displayedConnectionBuilderView : BuilderView Int
+        , newConnectionName : String
         , notification : Maybe Notification
-        , displayedEnvId : Maybe Uuid
-        , displayedEnvironmentNodeMenuId : Maybe Uuid
-        , displayedEnvironmentBuilderView : BuilderView Uuid
-        , navigationKey : Navigation.Key
         , page : Page
+        , navigationKey : Navigation.Key
     }
 
 
@@ -75,6 +79,6 @@ view model =
                      ]
               [ el (box [ spacing 20, padding 20, height fill ]) <| map TreeMsg (Tree.view model)
               , el [ width (fillPortion 9), height fill, centerX, alignTop ] <|
-                  map BuilderMsg (Builder.view model)
+                  text "coucuo"
               ]
         ]

@@ -146,6 +146,23 @@ CREATE TABLE key_value(
 );
 
 
+-- * connection
+
+
+CREATE TYPE connection_type AS ENUM ('PG');
+
+CREATE TABLE connection(
+    id UUID PRIMARY KEY,
+    account_id UUID REFERENCES account(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    tag connection_type NOT NULL,
+    pg_host TEXT,
+    pg_password TEXT,
+    pg_port TEXT,
+    pg_user TEXT,
+    pg_db_name TEXT
+);
+
 -- * scenario node
 
 

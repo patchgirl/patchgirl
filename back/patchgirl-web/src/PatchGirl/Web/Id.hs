@@ -46,3 +46,4 @@ data Actor = Actor
 data Account = Account
 data EnvId = EnvId
 data KeyValueId = KeyValueId
+data Con = Con

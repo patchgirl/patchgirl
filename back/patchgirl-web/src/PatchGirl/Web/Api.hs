@@ -8,6 +8,7 @@ module PatchGirl.Web.Api( WebApi
                         , PgCollectionApi
                         , ScenarioCollectionApi
                         , EnvironmentApi
+                        , ConnectionApi
                         , ScenarioNodeApi
                         , ScenarioFileApi
                         , ScenarioFolderApi
@@ -36,6 +37,8 @@ import           Servant.Auth.Server                    (Auth, AuthResult (..),
 import           Servant.Auth.Server.Internal.ThrowAll  (ThrowAll)
 
 import           PatchGirl.Web.Account.App
+import           PatchGirl.Web.Connection.App
+import           PatchGirl.Web.Connection.Model
 import           PatchGirl.Web.Environment.App
 import           PatchGirl.Web.Environment.Model
 import           PatchGirl.Web.Github.App
@@ -80,6 +83,7 @@ type RestApi auths =
   PgCollectionApi auths :<|>
   ScenarioCollectionApi auths :<|>
   EnvironmentApi auths :<|>
+  ConnectionApi auths :<|>
   ScenarioNodeApi auths :<|>
   ScenarioFileApi auths :<|>
   ScenarioFolderApi auths :<|>
@@ -101,6 +105,7 @@ restApiServer cookieSettings jwtSettings =
   :<|> pgCollectionApiServer
   :<|> scenarioCollectionApiServer
   :<|> environmentApiServer
+  :<|> connectionApiServer
   :<|> scenarioNodeApiServer
   :<|> scenarioFileApiServer
   :<|> scenarioFolderApiServer
@@ -181,6 +186,31 @@ environmentApiServer =
   :<|> authorizeWithAccountId deleteEnvironmentHandler
   :<|> authorizeWithAccountId updateKeyValuesHandler
   :<|> authorizeWithAccountId deleteKeyValueHandler
+
+
+-- * connection
+
+
+type ConnectionApi auths =
+  Flat (Auth auths CookieSession :> "api" :> "connection" :> (
+    ReqBody '[JSON] NewConnection :> Post '[JSON] () :<|> -- createConnection
+    Get '[JSON] [Connection] :<|> -- getConnections
+    Capture "connectionId" (Id Con) :> (
+      ReqBody '[JSON] UpdateConnection :> Put '[JSON] () :<|> -- updateConnection
+      Delete '[JSON] () -- deleteConnection
+    )
+  ))
+
+connectionApiServer
+  :: (AuthResult CookieSession -> NewConnection -> AppM ())
+  :<|> ((AuthResult CookieSession -> AppM [Connection])
+  :<|> ((AuthResult CookieSession -> Id Con -> UpdateConnection -> AppM ())
+  :<|> (AuthResult CookieSession -> Id Con -> AppM ())))
+connectionApiServer =
+  authorizeWithAccountId createConnectionHandler
+  :<|> authorizeWithAccountId getConnectionsHandler
+  :<|> authorizeWithAccountId updateConnectionHandler
+  :<|> authorizeWithAccountId deleteConnectionHandler
 
 
 -- * scenario node

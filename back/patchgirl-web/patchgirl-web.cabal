@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca7caea090e64703b574508efaf64d086a84bc30f4a8ee152656ddd851db126a
+-- hash: c6edf5478e1ffc9d8579019d8207ea3b16c6f40335f411acdd2cefafc577691f
 
 name:           patchgirl-web
 version:        0.0.0
@@ -17,6 +17,8 @@ library
       PatchGirl.Web.Account.Sql
       PatchGirl.Web.Api
       PatchGirl.Web.CaseInsensitive
+      PatchGirl.Web.Connection.App
+      PatchGirl.Web.Connection.Model
       PatchGirl.Web.DB
       PatchGirl.Web.ElmOption
       PatchGirl.Web.Environment.App
@@ -166,6 +168,7 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       Account.AppSpec
+      Connection.AppSpec
       DBUtil
       Environment.AppSpec
       Helper.App

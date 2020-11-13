@@ -14,6 +14,7 @@ import List.Extra as List
 import Page exposing (..)
 import PGBuilderApp.PGBuilder.App as PgBuilder
 import PGBuilderApp.PGTree.App as Tree
+import PGBuilderApp.Connection.App as Connection
 import BuilderUtil exposing (..)
 import Util exposing (..)
 import Uuid exposing (Uuid)
@@ -28,6 +29,9 @@ import Banner exposing (..)
 type alias Model a =
     { a
         | pgCollection : PgCollection
+        , pgConnections : List PgConnection
+        , selectedPgConnectionToRun : Maybe Int
+        , displayedPgConnectionMenuId : Maybe Int
         , notification : Maybe Notification
         , displayedPgNodeMenuId : Maybe Uuid
         , displayedPgBuilderView : BuilderView Uuid
@@ -47,6 +51,7 @@ type alias Model a =
 type Msg
     = BuilderMsg PgBuilder.Msg
     | TreeMsg Tree.Msg
+    | ConnectionMsg Connection.Msg
     | SelectEnvironment Uuid
 
 
@@ -62,6 +67,14 @@ update msg model =
                     { model | selectedEnvironmentToRunId = Just id }
             in
             ( newModel, Cmd.none )
+
+        ConnectionMsg subMsg ->
+            let
+                ( newModel, newSubMsg ) =
+                    Connection.update subMsg model
+            in
+            ( newModel, Cmd.map ConnectionMsg newSubMsg )
+
 
         TreeMsg subMsg ->
             let
@@ -98,6 +111,13 @@ view model =
                                , width (fillPortion 1)
                                ]
                          ) <| environmentSelectionView model.environments model.selectedEnvironmentToRunId SelectEnvironment
+                    , el ( box [ alignTop
+                               , spacing 20
+                               , centerX
+                               , padding 20
+                               , width (fillPortion 1)
+                               ]
+                         ) <| map ConnectionMsg (Connection.view model)
                     , el ( box [ alignTop
                                , spacing 20
                                , centerX

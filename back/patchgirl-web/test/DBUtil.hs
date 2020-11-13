@@ -20,8 +20,10 @@ import qualified Database.PostgreSQL.Simple.FromField   as PG
 import           Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple.Types       as PG
 import           GHC.Generics
+import           GHC.Int                                (Int64)
 
 import           PatchGirl.Web.CaseInsensitive
+import           PatchGirl.Web.Connection.Model
 import           PatchGirl.Web.Environment.Model
 import           PatchGirl.Web.Http
 import           PatchGirl.Web.Id
@@ -1190,6 +1192,105 @@ selectFakeKeyValues environmentId connection =
           SELECT id, key, value, hidden
           FROM key_value
           WHERE environment_id = ?
+          |]
+
+
+-- * connection
+
+
+-- ** insert fake connection
+
+
+mkNewFakeConnection :: IO NewFakeConnection
+mkNewFakeConnection = do
+  id <- UUID.nextRandom
+  return $ NewFakeConnection
+    { _newFakeConnectionId = Id id
+    , _newFakeConnectionName = "name"
+    , _newFakeConnectionTag = PgTag
+    , _newFakeConnectionPgHost = "host"
+    , _newFakeConnectionPgPassword = "password"
+    , _newFakeConnectionPgPort     = "port"
+    , _newFakeConnectionPgUser     = "user"
+    , _newFakeConnectionPgDbName   = "dbname"
+    }
+
+data NewFakeConnection = NewFakeConnection
+    { _newFakeConnectionId         :: Id Con
+    , _newFakeConnectionName       :: String
+    , _newFakeConnectionTag        :: ConnectionTag
+    , _newFakeConnectionPgHost     :: String
+    , _newFakeConnectionPgPassword :: String
+    , _newFakeConnectionPgPort     :: String
+    , _newFakeConnectionPgUser     :: String
+    , _newFakeConnectionPgDbName   :: String
+    }
+    deriving (Eq, Show, Generic, PG.ToRow)
+
+insertNewFakeConnection :: NewFakeConnection -> Id Account -> PG.Connection -> IO Int64
+insertNewFakeConnection NewFakeConnection{..} accountId connection = do
+  let payload = ( _newFakeConnectionId
+                , accountId
+                , _newFakeConnectionName
+                , _newFakeConnectionTag
+                , _newFakeConnectionPgHost
+                , _newFakeConnectionPgPassword
+                , _newFakeConnectionPgPort
+                , _newFakeConnectionPgUser
+                , _newFakeConnectionPgDbName
+                )
+  PG.execute connection rawQuery payload
+  where
+    rawQuery =
+      [sql|
+          INSERT INTO connection (
+            id,
+            account_id,
+            name,
+            tag,
+            pg_host,
+            pg_password,
+            pg_port,
+            pg_user,
+            pg_db_name
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          |]
+
+
+-- ** fake connection
+
+
+data FakeConnection = FakeConnection
+    { _fakeConnectionId         :: Id Con
+    , _fakeConnectionAccountId  :: Id Account
+    , _fakeConnectionName       :: String
+    , _fakeConnectionTag        :: ConnectionTag
+    , _fakeConnectionPgHost     :: String
+    , _fakeConnectionPgPassword :: String
+    , _fakeConnectionPgPort     :: String
+    , _fakeConnectionPgUser     :: String
+    , _fakeConnectionPgDbName   :: String
+    }
+    deriving (Eq, Show, Generic, PG.FromRow)
+
+selectFakeConnection :: Id Con -> PG.Connection -> IO (Maybe FakeConnection)
+selectFakeConnection connectionId connection =
+  PG.query connection rawQuery (PG.Only connectionId) <&> Maybe.listToMaybe
+  where
+    rawQuery =
+      [sql|
+          SELECT
+            id,
+            account_id,
+            name,
+            tag,
+            pg_host,
+            pg_password,
+            pg_port,
+            pg_user,
+            pg_db_name
+          FROM connection
+          WHERE id = ?
           |]
 
 

@@ -21,6 +21,7 @@ import PGBuilderApp.App as PGBuilderApp
 import ScenarioBuilderApp.App as ScenarioBuilderApp
 import DocumentationApp.App as DocumentationApp
 import TangoScriptApp.App as TangoScriptApp
+import ConnectionApp.App as ConnectionApp
 --import ScenarioBuilderApp.ScenarioBuilder.App as ScenarioBuilder
 import Url
 import Url.Parser as Url
@@ -58,6 +59,7 @@ type Msg
     | ChangeDemoScene SceneToDemo
     | NextDemo
     | UrlChanged Url.Url
+    | ConnectionAppMsg ConnectionApp.Msg
     | DocumentationMsg DocumentationApp.Msg
     | BuilderAppMsg RequestBuilderApp.Msg
     | PGBuilderAppMsg PGBuilderApp.Msg
@@ -117,18 +119,60 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
         notification =
             Just (WarningNotification "Sandbox mode: data will be reset every 5min, sign in to save your data!!" "")
 
+        pgConnections =
+            [ { name = NotEdited "dev"
+              , id = 0
+              , dbHost = NotEdited "dev"
+              , dbPassword = NotEdited "pass"
+              , dbPort = NotEdited "5432"
+              , dbUser = NotEdited "dev"
+              , dbName = NotEdited "dev"
+              }
+            , { name = NotEdited "prod"
+              , id = 1
+              , dbHost = NotEdited "prod"
+              , dbPassword = NotEdited "supersecret"
+              , dbPort = NotEdited "5432"
+              , dbUser = NotEdited "root"
+              , dbName = NotEdited "root"
+              }
+            ]
+        selectedPgConnectionToRun = Nothing
+        displayedPgConnectionMenuId = Nothing
+        selectedPgConnectionId = Nothing
+        displayedConnectionBuilderView = LandingView DefaultView
+        newConnectionName = ""
+
         model =
-            { session = session
-            , page = page
-            , url = url
+            { page = page
             , navigationKey = navigationKey
+            , url = url
+            , session = session
             , loadingAnimation = loadingAnimation
-            , sceneToDemo = sceneToDemo
+
+            -- notification
             , notification = notification
             , notificationAnimation = notificationAnimation
+
+            -- documentation
+            , displayedDocumentation = RequestDoc
+
+            -- landing page demo
+            , sceneToDemo = sceneToDemo
+
+            -- modal
             , whichModal = Nothing
+
+            -- menu
             , showMainMenuName = Nothing
+
+            -- HTTP
+            , displayedRequestNodeMenuId = Nothing
+            , displayedRequestBuilderView = LandingView DefaultView
             , requestCollection = requestCollection
+            , requestNewNode = { name = "", parentFolderId = Nothing }
+
+            -- pg
             , displayedPgNodeMenuId = Nothing
             , displayedPgBuilderView = LandingView DefaultView
             , displayedPgId = Nothing
@@ -136,26 +180,37 @@ init { session, requestCollection, environments, scenarioCollection, pgCollectio
             , pgNewNode = { name = "", parentFolderId = Nothing }
             , sqlQuery = NotEdited ""
             , pgComputation = Nothing
-            , displayedRequestNodeMenuId = Nothing
-            , displayedRequestBuilderView = LandingView DefaultView
-            , requestNewNode = { name = "", parentFolderId = Nothing }
+
+            -- pg connection
+            , pgConnections = pgConnections
+            , selectedPgConnectionToRun = selectedPgConnectionToRun
+            , displayedPgConnectionMenuId = displayedPgConnectionMenuId
+            , selectedPgConnectionId = selectedPgConnectionId
+            , displayedConnectionBuilderView = displayedConnectionBuilderView
+            , newConnectionName = newConnectionName
+
+            -- scenario
             , scenarioCollection = scenarioCollection
             , displayedScenarioNodeMenuId = Nothing
             , displayedScenarioBuilderView = RichLandingView DefaultView
-            , scenarioNewNode = { name = "", parentFolderId = Nothing }
             , displayedScenarioId = Nothing
+            , scenarioNewNode = { name = "", parentFolderId = Nothing }
             , displayedSceneId = Nothing
-            , script = ""
+
+            -- environment
             , selectedEnvironmentToRunId = selectedEnvironmentToRunId
             , selectedEnvironmentToEditId = selectedEnvironmentToEditId
             , displayedEnvId = Nothing
             , displayedEnvironmentBuilderView = LandingView DefaultView
             , displayedEnvironmentNodeMenuId = Nothing
-            , environments = environments
             , newEnvironmentName = ""
+            , environments = environments
+
             , runnerRunning = False
-            , displayedDocumentation = RequestDoc
+
             , isLoading = []
+
+            , script = ""
             }
     in
     ( updateModelWithPage page model, msg )
@@ -223,6 +278,13 @@ update msg model =
                     RequestBuilderApp.update subMsg model
             in
             (newModel, (Cmd.map BuilderAppMsg newMsg))
+
+        ConnectionAppMsg subMsg ->
+            let
+                ( newModel, newMsg ) =
+                    ConnectionApp.update subMsg model
+            in
+            (newModel, (Cmd.map ConnectionAppMsg newMsg))
 
         PGBuilderAppMsg subMsg ->
             let
@@ -302,6 +364,9 @@ updateModelWithPage page model =
             case page of
                 ReqPage builder ->
                     { model | displayedRequestBuilderView = builder }
+
+                ConnectionPage builder ->
+                    { model | displayedConnectionBuilderView = builder }
 
                 PgPage builder ->
                     { model | displayedPgBuilderView = builder }
@@ -385,6 +450,9 @@ mainView model =
         case model.page of
             HomePage ->
                 homeView model
+
+            ConnectionPage _ ->
+                appLayout <| map ConnectionAppMsg (ConnectionApp.view model)
 
             NotFoundPage ->
                 appLayout <| el [ centerY, centerX ] (text "not found")

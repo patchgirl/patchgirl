@@ -52,6 +52,15 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: connection_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.connection_type AS ENUM (
+    'PG'
+);
+
+
+--
 -- Name: header_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -423,6 +432,23 @@ CREATE TABLE public.basket_product_test (
 
 
 --
+-- Name: connection; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.connection (
+    id uuid NOT NULL,
+    account_id uuid,
+    name text NOT NULL,
+    tag public.connection_type NOT NULL,
+    pg_host text,
+    pg_password text,
+    pg_port text,
+    pg_user text,
+    pg_db_name text
+);
+
+
+--
 -- Name: environment; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -735,6 +761,14 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
+-- Name: connection connection_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.connection
+    ADD CONSTRAINT connection_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: environment environment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -884,6 +918,14 @@ ALTER TABLE ONLY public.basket_product_test
 
 ALTER TABLE ONLY public.basket_product_test
     ADD CONSTRAINT basket_product_test_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_test(id) ON DELETE CASCADE;
+
+
+--
+-- Name: connection connection_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.connection
+    ADD CONSTRAINT connection_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id) ON DELETE CASCADE;
 
 
 --

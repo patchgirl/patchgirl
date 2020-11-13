@@ -37,13 +37,13 @@ type alias Model =
     -- MENU
     , showMainMenuName : Maybe MainMenuName
 
-    -- BUILDER APP
+    -- HTTP
     , displayedRequestNodeMenuId : Maybe Uuid
     , displayedRequestBuilderView : BuilderView Uuid
     , requestCollection : RequestCollection
     , requestNewNode : NewNode
 
-    -- SQL
+    -- PG
     , displayedPgNodeMenuId : Maybe Uuid
     , displayedPgBuilderView : BuilderView Uuid
     , displayedPgId : Maybe Uuid
@@ -52,6 +52,14 @@ type alias Model =
     , sqlQuery : Editable String
     , pgComputation : Maybe PgComputation
 
+    -- PG Connection
+    , pgConnections : List PgConnection
+    , selectedPgConnectionToRun : Maybe Int
+    , displayedPgConnectionMenuId : Maybe Int
+    , selectedPgConnectionId : Maybe Int
+    , displayedConnectionBuilderView : BuilderView Int
+    , newConnectionName : String
+
     -- SCENARIO APP
     , scenarioCollection : ScenarioCollection
     , displayedScenarioNodeMenuId : Maybe Uuid
@@ -59,9 +67,6 @@ type alias Model =
     , displayedScenarioId : Maybe Uuid
     , scenarioNewNode : NewNode
     , displayedSceneId : Maybe Uuid
-
-    -- TANGOSCRIPT APP
-    , script : String
 
     -- ENVIRONMENT
     , selectedEnvironmentToRunId : Maybe Uuid
@@ -77,6 +82,9 @@ type alias Model =
 
     -- LOADING
     , isLoading : List Loader
+
+    -- TANGOSCRIPT APP
+    , script : String
     }
 
 
