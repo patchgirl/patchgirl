@@ -8,7 +8,7 @@ A postman/postwoman like, web app to test your APIs !
 ## How to use
 
 To use PatchGirl, you only need to go to the [app page 🚀](https://patchgirl.io).
-However, for a full experience, you'll to run **patchgirl-runner** on your computer. It acts as a tiny proxy that runs your request (HTTP, SQL,...) from you computer.
+However, for a full experience, you will want to run **patchgirl-runner** on your computer. It acts as a tiny proxy that runs your request (HTTP, SQL,...) from you computer.
 
 ## Installing Patchgirl-runner
 
